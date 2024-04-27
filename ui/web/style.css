@@ -1,0 +1,126 @@
+@font-face {
+    font-family: 'RDRLino';
+    src: url(fonts/RDRLino-Regular.ttf);
+}
+
+/* body { background: #444; } */
+
+/* div {
+    border-style: dashed;
+    border-width: 0px;
+} */
+
+#dev-display {
+    padding: 10px;
+    padding-top: 25px;
+    padding-bottom: 10px;
+    position: absolute;
+    width: 8%;
+    height: relative;
+    right: 7%;
+    bottom: 10%;
+    background: rgb(0,0,0,0.4);
+    background-size: 100% 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+    border-width: 0px;
+    border-radius: 8px;
+    display: none;
+    font-size: 1.05vw;
+}
+
+/* #header {
+    padding: 5px;
+    position: relative;
+    text-align: center;
+} */
+
+#footer {
+    font-size: 0.95vw;
+    padding-top: 5px;
+    padding-right: 12px;
+    position: relative;
+    text-align: right;
+    margin-top: 4px;
+}
+
+.spacer {
+    height: 0.2rem;
+    /* background-image: url(img/rdr_h_spacer.png); */
+    background-size: 97% 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+#devOptions,#menuOptions {
+    padding: 0px;
+    margin-bottom: 4px;
+    position: relative;
+}
+
+.column {
+    float: left;
+    width: auto;
+    margin-right: 0.4em;
+}
+
+.key {
+    text-align: center;
+    text-transform: capitalize;
+    width: 1.3em;
+    background-color: #50c1ee;
+    /* background-color: #666; */
+    border-radius: 4px;
+    font-weight: 750;
+    font-family: Menlo,Consolas,Monaco,Liberation Mono,Lucida Console,monospace;
+    font-size: 0.55vw;
+    color: #000;
+    text-shadow:
+        0 0 2px #444;
+}
+
+#treeOptions > div,#devOptions > div {
+    margin-top: 3px;
+    padding-top: 5px;
+    /* background-image: url(img/rdr_menu_row.png); */
+    background-size: 100% 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.value {
+    font-size: 0.65vw;
+    /* color: #DDDDDD; */
+    margin-left: 0.8em;
+    width: 75%;
+}
+
+.footervalue {
+    font-size: 0.95vw;
+    margin-left: 0.9em;
+    width: 75%;
+}
+
+.row:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.hud-text {
+    font-family: Menlo,Consolas,Monaco,Liberation Mono,Lucida Console,monospace;
+    text-align: left;
+    text-transform: capitalize;
+    font-size: 0.65vw;
+    color: #50c1ee;
+    text-shadow:
+        0 0 2px #444,
+        0 0 3px #444,
+        0 0 4px,
+        0 0 10px;
+}
+
+i {
+    color: #666666;
+    padding-right: 0.5em;
+}
