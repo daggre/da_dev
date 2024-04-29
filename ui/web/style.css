@@ -11,12 +11,13 @@
 } */
 
 #header {
-    padding-top: 3px;
+    padding-left: 12%;
+    padding-top: 1px;
     margin-bottom: 6px;
     border: 0px;
     color: #04101d;
-    letter-spacing: 8px;
-    text-align: right;
+    letter-spacing: 10px;
+    text-align: center;
     border-bottom: 1px solid var(--style-color);
     border-top-left-radius: 6px;
     border-top-right-radius: 6px;
@@ -112,7 +113,7 @@
     text-align: left;
     text-transform: lowercase;
     font-size: 0.65vw;
-    font-weight: 600;
+    font-weight: 300;
     color: var(--style-color);
     text-shadow:
         0 0 2px #444,
