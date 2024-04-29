@@ -3,16 +3,16 @@ DevMenu.Option = {}
 DevMenu.OptionLookup = {}
 
 DevMenu.root = {
-    subMenu = {
-        Teleport = {
-            key = "t",
-            subMenu = {
-                Towns = { key = "t", },
-                Save = { key = "s", },
-            }
+        subMenu = {
+            Teleport = {
+                key = "t",
+                subMenu = {
+                    Towns = { key = "t", },
+                    Save = { key = "s", },
+                }
+            },
         },
-    },
-}
+    }
 
 DevMenu.Option.Register = function(optionName, menuName, key, fn)
     if not DevMenu.OptionLookup[menuName] then
@@ -28,12 +28,3 @@ DevMenu.Option.Trigger = function(menuName, optionName, params)
         DevMenu.OptionLookup[menuName][optionName].fn(params)
     end
 end
-
--- Example Register
-DevMenu.Option.Register("NoClip", "root", "z", function()
-    da.Dev.NoClip()
-end)
-
-DevMenu.Option.Register("Clothing", "root", "c", function()
-    TriggerEvent('clothing:openMenu', true, false, true) -- Barber disabled
-end)

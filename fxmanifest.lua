@@ -19,6 +19,7 @@ server_scripts {
 
 client_scripts {
     "ui/tree.lua",
+    "root.lua",
     "noclip/noclip.lua",
     "teleport/teleport.lua",
     "ui/ui.lua",

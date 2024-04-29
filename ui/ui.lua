@@ -6,7 +6,8 @@ Citizen.CreateThread(function()
         -- if (IsControlJustPressed(0, z) and IsInputDisabled(0)) then
         -- end
         if (IsControlJustReleased(0, z) and IsInputDisabled(0)) then
-            optionTree = GetOptionTree("root", { subMenu = { root = DevMenu.root }})
+            optionTree = GetOptionTree("tree", { subMenu = { root = DevMenu.root }})
+            -- da.Log.Debug(optionTree)
             SetNuiFocus(true, false)
             SendNUIMessage({
                 type = "show",
@@ -18,19 +19,26 @@ Citizen.CreateThread(function()
 end)
 
 GetOptionTree = function(name, menu)
-    local optionTree = nil
+    local subMenuTree = nil
     if menu.subMenu then
-        optionTree = { subMenu = {}, options = {}, }
+        subMenuTree = {}
         for subMenuName, subMenu in pairs(menu.subMenu) do
-            optionTree.menuName = subMenuName
-            optionTree.key = subMenu.key
-            table.insert(optionTree.subMenu, GetOptionTree(subMenuName, subMenu))
-            optionTree.options = GetMenuOptions(subMenuName)
-            table.sort(optionTree.options, function(a, b) return a.key < b.key end)
+            optionTree = {
+                menuName = subMenuName,
+                key = subMenu.key,
+                subMenu = GetOptionTree(subMenuName, subMenu),
+                options = GetMenuOptions(subMenuName),
+            }
+            if optionTree.options then
+                table.sort(optionTree.options, function(a, b) return a.key < b.key end)
+            end
+            if optionTree.subMenu then
+                table.sort(optionTree.subMenu, function(a, b) return a.key < b.key end)
+            end
+            table.insert(subMenuTree, optionTree)
         end
-        table.sort(optionTree.subMenu, function(a, b) return a.key < b.key end)
     end
-    return optionTree
+    return subMenuTree
 end
 
 GetMenuOptions = function(name)

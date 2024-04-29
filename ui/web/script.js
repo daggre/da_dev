@@ -17,7 +17,7 @@ window.onload = function() {
         // console.log(msg);
         switch(msg.data.type) {
             case "show":
-                InitializeTree(msg.data.optionTree);
+                InitializeTree(msg.data.optionTree[0]);
                 Show();
                 break;
             case "hide":
@@ -49,11 +49,7 @@ InitializeTree = function(optionTree) {
 
     $('#menuOptions').html("");
     $('#devOptions').html("");
-    $("#menuSpacer").hide();
-    $("#optionsSpacer").hide();
-    $('#footer').html("");
 
-    // console.log("tree", optionTree)
     if (optionTree.subMenu) {
         for (idx in optionTree.subMenu) {
             AppendMenuOption(idx, optionTree.subMenu[idx])
@@ -69,21 +65,13 @@ InitializeTree = function(optionTree) {
 
 AppendOption = function(index, value) {
     DevKeys[value.key] = index;
-    if (value.name == "Exit") {
-        const html = '<div class="row"> <div class="column footervalue">Cancel</div> <div class="column key">C</div> </div>'
-        $("#footer").append(html);
-    } else {
-        $("#optionsSpacer").show();
-        const html = '<div class="row"> <div class="column value">'+value.optionName+'</div> <div class="column key">'+value.key+'</div> </div>';
-        $("#devOptions").append(html);
-    }
+    const html = '<div class="row"> <div class="column value">'+value.optionName+'</div> <div class="column key">'+value.key+'</div> </div>';
+    $("#devOptions").append(html);
 }
 
 AppendMenuOption = function(index, value) {
-    $("#menuSpacer").show();
     TreeKeys[value.key] = index;
     const html = '<div class="row"> <div class="column value"> \> '+value.menuName+'</div> <div class="column key">'+value.key+'</div> </div>';
-
     $("#menuOptions").append(html);
 }
 
@@ -103,7 +91,6 @@ HandleKey = function(key) {
     let translatedKey = KeyTranslate(key)
     if (TreeKeys[translatedKey]) {
         let idx = TreeKeys[translatedKey]
-        $("#header").html(HudTree.subMenu[idx].name)
         InitializeTree(HudTree.subMenu[idx])
     } else if (DevKeys[translatedKey]) {
         let idx = DevKeys[translatedKey]
