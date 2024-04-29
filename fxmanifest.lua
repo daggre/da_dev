@@ -22,6 +22,7 @@ client_scripts {
     "root.lua",
     "noclip/noclip.lua",
     "teleport/teleport.lua",
+    "env.lua",
     "ui/ui.lua",
 }
 

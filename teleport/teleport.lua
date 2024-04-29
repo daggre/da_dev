@@ -7,6 +7,7 @@ local TeleportLocations = {
     ["Butcher Creek"] = { key = "c", location = vector3(2576.028, 768.841, 80.947), },
     ["St Denis"] = { key = "d", location = vector3(2628.322, -1221.465, 59.598), category = "towns", },
     ["Hanging Dog"] = { key = "h", location = vector4(-2204.896, 711.084, 122.266, 240.798), },
+    ["Van Horn"] = { key = "h", location = vector3(2930.864, 512.522, 45.882), category = "towns", },
     ["Mt Shan"] = { key = "m", location = vector3(-1976.458, 31.508, 330.356), },
     ["Mother Tree"] = { key = "n", location = vector3(-2238.192, 610.82, 118.201), },
     ["Rhodes"] = { key = "r", location = vector3(1373.57, -1293.563, 77.077), category = "towns", },
@@ -14,7 +15,6 @@ local TeleportLocations = {
     ["Strawberry"] = { key = "s", location = vector3(-1787.239, -370.698, 159.9), category = "towns", },
     ["Tumbleweed"] = { key = "t", location = vector3(-5530.891, -2964.492, -1.245), category = "towns", },
     ["Valentine"] = { key = "v", location = vector3(-280.086, 798.556, 119.349), category = "towns", },
-    ["Van Horn"] = { key = "v", location = vector3(2930.864, 512.522, 45.882), category = "towns", },
     ["Wallace"] = { key = "w", location = vector4(-1303.765, 393.19, 95.439, 257.936), },
     ["Arikoan"] = { key = "z", location = vector3(-2534.068, -98.345, 166.177), },
 }
