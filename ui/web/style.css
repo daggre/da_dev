@@ -12,8 +12,8 @@
 
 #dev-display {
     padding: 10px;
-    padding-top: 25px;
-    padding-bottom: 10px;
+    padding-top: 20px;
+    padding-bottom: 20px;
     position: absolute;
     width: 8%;
     height: relative;
@@ -29,33 +29,19 @@
     font-size: 1.05vw;
 }
 
-/* #header {
-    padding: 5px;
-    position: relative;
-    text-align: center;
-} */
-
-#footer {
-    font-size: 0.95vw;
-    padding-top: 5px;
-    padding-right: 12px;
-    position: relative;
-    text-align: right;
-    margin-top: 4px;
-}
-
-.spacer {
-    height: 0.2rem;
-    /* background-image: url(img/rdr_h_spacer.png); */
-    background-size: 97% 100%;
-    background-position: center;
-    background-repeat: no-repeat;
-}
-
 #devOptions,#menuOptions {
     padding: 0px;
     margin-bottom: 4px;
     position: relative;
+}
+
+#devOptions > div,#menuOptions > div {
+    margin-top: 3px;
+    padding-top: 2px;
+    /* background-image: url(img/rdr_menu_row.png); */
+    background-size: 100% 100%;
+    background-position: center;
+    background-repeat: no-repeat;
 }
 
 .column {
@@ -68,24 +54,20 @@
     text-align: center;
     text-transform: capitalize;
     width: 1.3em;
-    background-color: #50c1ee;
+    border-color: #50c1ee;
+    border-width: 1px;
+    border-style: solid;
     /* background-color: #666; */
     border-radius: 4px;
     font-weight: 750;
     font-family: Menlo,Consolas,Monaco,Liberation Mono,Lucida Console,monospace;
     font-size: 0.55vw;
-    color: #000;
+    color: #50c1ee;
     text-shadow:
-        0 0 2px #444;
-}
-
-#treeOptions > div,#devOptions > div {
-    margin-top: 3px;
-    padding-top: 5px;
-    /* background-image: url(img/rdr_menu_row.png); */
-    background-size: 100% 100%;
-    background-position: center;
-    background-repeat: no-repeat;
+        0 0 2px #444,
+        0 0 3px #444,
+        0 0 4px,
+        0 0 10px;
 }
 
 .value {
@@ -110,7 +92,7 @@
 .hud-text {
     font-family: Menlo,Consolas,Monaco,Liberation Mono,Lucida Console,monospace;
     text-align: left;
-    text-transform: capitalize;
+    text-transform: lowercase;
     font-size: 0.65vw;
     color: #50c1ee;
     text-shadow:
