@@ -1,10 +1,7 @@
-DevMenu.Option.Register("NoClip", "root", "z", function() da.Dev.NoClip() end)
-DevMenu.Option.Register("Clothing", "root", "c", function() TriggerEvent('clothing:openMenu', true, false, true) end) -- Barber disabled
-DevMenu.Option.Register("Revive", "root", "r", function() TriggerEvent('TMC:Command:Revive') end)
-DevMenu.Option.Register("cpy vec3", "root", "3", function() TriggerEvent("v3copycoords") end)
-DevMenu.Option.Register("cpy vec4", "root", "4", function() TriggerEvent("v4copycoords") end)
+da.Dev.Menu.RegisterOption("root", "noclip", "z", function() da.Dev.NoClip() end)
+da.Dev.Menu.RegisterOption("root", "revive", "r", function() TriggerEvent('TMC:Command:Revive') end)
 
-DevMenu.Option.Register("stats", "root", "s", function()
+da.Dev.Menu.RegisterOption("root", "stats", "s", function()
     local playerPedId = PlayerPedId()
     for i = 0, 1 do
         Citizen.InvokeNative(0xC6258F41D86676E0, playerPedId, i, 100) -- SetAttributeCoreValue
@@ -24,3 +21,19 @@ DevMenu.Option.Register("stats", "root", "s", function()
     -- Citizen.InvokeNative(0x835F131E7DC8F97A, PlayerPedId(), 1000) --ChangeEntityHeath
 end)
 
+da.Dev.Menu.RegisterMenu("root", "pos", "v")
+da.Dev.Menu.RegisterOption("pos", "cpy vec2", "2", function() TriggerEvent("v2copycoords") end)
+da.Dev.Menu.RegisterOption("pos", "cpy vec3", "3", function() TriggerEvent("v3copycoords") end)
+da.Dev.Menu.RegisterOption("pos", "cpy vec4", "4", function() TriggerEvent("v4copycoords") end)
+
+da.Dev.Menu.RegisterMenu("root", "menu", "m")
+da.Dev.Menu.RegisterOption("menu", "clothing", "c", function() TriggerEvent('clothing:openMenu', true, false, true) end) -- Barber disabled
+da.Dev.Menu.RegisterOption("menu", "horsetack", "h", function()
+    local horseEntity, dist = TMC.Functions.GetClosestHorse()
+    if dist > 25 or not horseEntity or not Entity(horseEntity) or not Entity(horseEntity).state then
+        da.Log.Debug("No horse close enough")
+        return
+    end
+    local horseId = Entity(horseEntity).state and Entity(horseEntity).state.horseId
+    TriggerServerEvent('stables:server:getTack', horseId, horseEntity)
+end)
