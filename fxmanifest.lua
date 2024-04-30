@@ -24,13 +24,13 @@ client_scripts {
     "teleport/teleport.lua",
     "env.lua",
     "ui/ui.lua",
+    "dat/animations.lua",
 }
 
 files {
     'ui/web/index.html',
     'ui/web/script.js',
     'ui/web/style.css',
-    'ui/web/fonts/RDRLino-Regular.ttf',
 }
 
 ui_page {
