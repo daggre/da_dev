@@ -37,3 +37,6 @@ da.Dev.Menu.RegisterOption("menu", "horsetack", "h", function()
     local horseId = Entity(horseEntity).state and Entity(horseEntity).state.horseId
     TriggerServerEvent('stables:server:getTack', horseId, horseEntity)
 end)
+da.Dev.Menu.RegisterOption("menu", "anim", "a", function()
+    TriggerEvent('inventory:openInventory')
+end)

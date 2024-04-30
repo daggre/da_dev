@@ -3,6 +3,8 @@
         <title>da_dev</title>
         <link rel="stylesheet" href="style.css">
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+        <script src="https://kit.fontawesome.com/4e5717b1f7.js" crossorigin="anonymous" ></script>
+        <script src="script.js" type="text/javascript"></script>
     </head>
     <body>
         <div id="dev-display">
@@ -27,6 +29,322 @@
                 <!-- <div class="row"> <div class="column footervalue">Cancel</div> <div class="column key">C</div> </div> -->
             </div>
         </div>
+
+        <div id="hud-column-left">
+        <div id="animation" class="hudGroup">
+            <div id="anim-main" class="hudElement">
+            <!-- <div class="glowbar"></div> -->
+            <div class="kitElement">
+                <ul>
+                <li>
+                    <div class="title">controls</div>
+                    <div class="glowbar"></div>
+                    <div
+                    id="icon-reset"
+                    class="glow-icon"
+                    tabindex="0"
+                    role="button"
+                    aria-pressed="false"
+                    onclick="toggleOption('anim-restart');"
+                    >
+                    <i class="fa-solid fa-backward-step"></i>
+                    </div>
+                    <div
+                    id="icon-play"
+                    class="glow-icon"
+                    tabindex="0"
+                    role="button"
+                    aria-pressed="false"
+                    onclick="toggleOption('anim-play');"
+                    >
+                    <i class="fa-solid fa-play"></i>
+                    </div>
+                    <div
+                    id="icon-stop"
+                    class="glow-icon"
+                    tabindex="0"
+                    role="button"
+                    aria-pressed="false"
+                    onclick="toggleOption('anim-stop');"
+                    >
+                    <i class="fa-solid fa-stop"></i>
+                    </div>
+                    <div
+                    id="icon-loop"
+                    class="glow-icon"
+                    tabindex="0"
+                    role="button"
+                    aria-pressed="false"
+                    onclick="toggleFlag(1)"
+                    >
+                    <i class="fa-solid fa-repeat"></i>
+                    </div>
+                </li>
+                <li>
+                    <div class="title">animDict</div>
+                    <div class="glowbar"></div>
+                    <div id="active-animDict" class="field" onclick="copyToClipboard('copyAnimDict')">
+                    </div>
+                </li>
+                <li>
+                    <div class="title">anim</div>
+                    <div class="glowbar"></div>
+                    <div id="active-anim" class="field small" onclick="copyToClipboard('copyAnim')">
+                    </div>
+                </li>
+                <li>
+                    <div class="title">
+                    <i class="fa-solid fa-gear"></i>
+                    </div>
+                    <div class="glowbar"></div>
+                    <div
+                    id="icon-timings"
+                    class="glow-icon"
+                    tabindex="0"
+                    role="button"
+                    aria-pressed="false"
+                    onclick="toggleOption('timings')"
+                    >
+                    <i class="fa-solid fa-stopwatch"></i>
+                    </div>
+                    <div
+                    id="icon-flags"
+                    class="glow-icon"
+                    tabindex="0"
+                    role="button"
+                    aria-pressed="false"
+                    onclick="toggleOption('flags')"
+                    >
+                    <i class="fa-solid fa-flag"></i>
+                    </div>
+                    <div
+                    id="icon-entity"
+                    class="glow-icon"
+                    tabindex="0"
+                    role="button"
+                    aria-pressed="false"
+                    onclick="toggleOption('entity')"
+                    >
+                    <i class="fa-solid fa-user"></i>
+                    </div>
+                    <!-- <div
+                    id="icon-freeze"
+                    class="glow-icon"
+                    tabindex="0"
+                    role="button"
+                    aria-pressed="false"
+                    onclick="toggleElement(event.currentTarget, 'anim-freeze')"
+                    >
+                    <i class="fa-solid fa-dice-d6"></i>
+                    </div> -->
+                    <div
+                    id="icon-search"
+                    class="glow-icon"
+                    tabindex="0"
+                    role="button"
+                    aria-pressed="false"
+                    onclick="toggleOption('search')"
+                    >
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    </div>
+                </li>
+                </ul>
+            </div>
+            </div>
+            <div id="anim-entity" class="hudElement">
+            <!-- <div class="glowbar"></div> -->
+            <div class="kitElement">
+                <ul>
+                <li>
+                    <div class="title">entity</div>
+                    <div class="glowbar"></div>
+                    <div id="target-entity" class="field" contenteditable="true"></div>
+                </li>
+                </ul>
+            </div>
+            </div>
+            <div id="anim-timings" class="hudElement">
+            <!-- <div class="glowbar"></div> -->
+            <div class="kitElement">
+                <ul>
+                <li>
+                    <div class="title">blend-in</div>
+                    <div class="glowbar"></div>
+                    <div id="blendin-field" class="field smallest" contenteditable="true">1.0</div>
+                    <div class="field-extra">
+                    <input
+                        type="range"
+                        min="0.0"
+                        max="12.0"
+                        value="1.0"
+                        step="0.05"
+                        oninput="document.getElementById('blendin-field').innerHTML = this.value;"
+                    />
+                    </div>
+                </li>
+                <li>
+                    <div class="title">blend-out</div>
+                    <div class="glowbar"></div>
+                    <div id="blendout-field" class="field smallest" contenteditable="true">1.0</div>
+                    <div class="field-extra">
+                    <input
+                        type="range"
+                        min="0.0"
+                        max="12.0"
+                        value="1.0"
+                        step="0.05"
+                        oninput="document.getElementById('blendout-field').innerHTML = this.value;"
+                    />
+                    </div>
+                </li>
+                <li>
+                    <div class="title">playback</div>
+                    <div class="glowbar"></div>
+                    <div id="playback-field" class="field smallest" contenteditable="true">0</div>
+                    <div class="field-extra">
+                    <input
+                        type="range"
+                        min="0.0"
+                        max="1.0"
+                        value="0.0"
+                        step="0.001"
+                        oninput="document.getElementById('playback-field').innerHTML = this.value;"
+                    />
+                    </div>
+                </li>
+                <li>
+                    <div class="title">duration</div>
+                    <div class="glowbar"></div>
+                    <div id="duration-field" class="field smallest" contenteditable="true">-1</div>
+                </li>
+                </ul>
+            </div>
+            </div>
+            <div id="anim-flags" class="hudElement">
+            <!-- <div class="glowbar"></div> -->
+            <div class="kitElement">
+                <ul>
+                <li>
+                    <div class="title">loop</div>
+                    <div class="glowbar"></div>
+                    <div
+                        class="glow-icon"
+                        id="flag-1"
+                        tabindex="0"
+                        role="button"
+                        aria-pressed="false"
+                        onclick="toggleFlag(1)"
+                    >
+                        <i class="fa-solid fa-x"></i>
+                    </div>
+                </li>
+                <li>
+                    <div class="title">freeze</div>
+                    <div class="glowbar"></div>
+                    <div
+                        class="glow-icon"
+                        id="flag-2"
+                        tabindex="0"
+                        role="button"
+                        aria-pressed="false"
+                        onclick="toggleFlag(2)"
+                    >
+                        <i class="fa-solid fa-x"></i>
+                    </div>
+                </li>
+                <li>
+                    <div class="title">?</div>
+                    <div class="glowbar"></div>
+                    <div
+                        class="glow-icon"
+                        id="flag-4"
+                        tabindex="0"
+                        role="button"
+                        aria-pressed="false"
+                        onclick="toggleFlag(4)"
+                    >
+                        <i class="fa-solid fa-x"></i>
+                    </div>
+                </li>
+                <li>
+                    <div class="title">torso</div>
+                    <div class="glowbar"></div>
+                    <div
+                        class="glow-icon"
+                        id="flag-8"
+                        tabindex="0"
+                        role="button"
+                        aria-pressed="false"
+                        onclick="toggleFlag(8)"
+                    >
+                        <i class="fa-solid fa-x"></i>
+                    </div>
+                </li>
+                <li>
+                    <div class="title">rotate</div>
+                    <div class="glowbar"></div>
+                    <div
+                        class="glow-icon"
+                        id="flag-16"
+                        tabindex="0"
+                        role="button"
+                        aria-pressed="false"
+                        onclick="toggleFlag(16)"
+                    >
+                        <i class="fa-solid fa-x"></i>
+                    </div>
+                </li>
+                <li>
+                    <div class="title">?</div>
+                    <div class="glowbar"></div>
+                    <div
+                        class="glow-icon"
+                        id="flag-32"
+                        tabindex="0"
+                        role="button"
+                        aria-pressed="false"
+                        onclick="toggleFlag(32)"
+                    >
+                        <i class="fa-solid fa-x"></i>
+                    </div>
+                </li>
+                <li>
+                    <div class="title">flag</div>
+                    <div class="glowbar"></div>
+                    <div id="flag-totals" class="field" style="width: 4.5%" contenteditable="true">
+                    0
+                    </div>
+                </li>
+                </ul>
+            </div>
+            </div>
+            <div id="anim-search" class="hudElement">
+            <!-- <div class="glowbar"></div> -->
+            <div class="kitElement">
+                <ul>
+                <li>
+                    <div class="title">search</div>
+                    <div class="glowbar"></div>
+                    <div id="anim-search" class="field" contenteditable="true"></div>
+                </li>
+                <li>
+                    <div class="title">animDicts</div>
+                    <div class="glowbar"></div>
+                    <div id="dict-results"></div>
+                </li>
+                <li>
+                    <div class="title">anims</div>
+                    <div class="glowbar"></div>
+                    <div id="anim-results"></div>
+                </li>
+                </ul>
+            </div>
+            </div>
+        </div>
+        </div>
+        <div id="copyField">
+            <div id="copyAnimDict" style="display:none;"></div>
+            <div id="copyAnim" style="display:none;"></div>
+        </div>
     </body>
-    <script src="script.js" type="text/javascript"></script>
 </html>
