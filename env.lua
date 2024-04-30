@@ -3,11 +3,32 @@ local freezeWeather = false
 local freezeWind = false
 
 local currentHour = 12
+local currentMinute = 0
 
 da.Dev.Menu.RegisterMenu("root", "env", "e")
 da.Dev.Menu.RegisterMenu("env", "time", "t")
 da.Dev.Menu.RegisterMenu("env", "weather", "w")
 -- da.Dev.Menu.RegisterMenu("env", "wind", "d")
+
+da.Dev.Menu.RegisterOption("wind", "frz wind", "z", function()
+    freezeWind = true
+    TMC.Functions.TriggerServerEvent("weather:server:set", { type = "wind", isFrozen = freezeWind, })
+end, function() return not freezeWind end)
+
+da.Dev.Menu.RegisterOption("wind", "unfrz wind", "z", function()
+    freezeWind = false
+    TMC.Functions.TriggerServerEvent("weather:server:set", { type = "wind", isFrozen = freezeWind, })
+end, function() return freezeWind end)
+
+da.Dev.Menu.RegisterOption("weather", "unfrz wthr", "z", function()
+    freezeWeather = false
+    TMC.Functions.TriggerServerEvent("weather:server:set", { type = "weather", isFrozen = freezeWeather, })
+end, function() return freezeWeather end)
+
+da.Dev.Menu.RegisterOption("weather", "frz wthr", "z", function()
+    freezeWeather = true
+    TMC.Functions.TriggerServerEvent("weather:server:set", { type = "weather", isFrozen = freezeWeather, })
+end, function() return not freezeWeather end)
 
 da.Dev.Menu.RegisterOption("time", "frz time", "z", function()
     freezeTime = true
@@ -15,21 +36,11 @@ da.Dev.Menu.RegisterOption("time", "frz time", "z", function()
         type = "time",
         isFrozen = freezeTime,
         day = 1,
-        hour = currentHour,
-        minute = 0,
+        hour = currentHour or 12,
+        minute = currentMinute or 0,
         second = 0,
     })
 end, function() return not freezeTime end)
-
-da.Dev.Menu.RegisterOption("weather", "frz wthr", "z", function()
-    freezeWeather = true
-    TMC.Functions.TriggerServerEvent("weather:server:set", { type = "weather", isFrozen = freezeWeather, })
-end, function() return not freezeWeather end)
-
-da.Dev.Menu.RegisterOption("wind", "frz wind", "z", function()
-    freezeWind = true
-    TMC.Functions.TriggerServerEvent("weather:server:set", { type = "wind", isFrozen = freezeWind, })
-end, function() return not freezeWind end)
 
 da.Dev.Menu.RegisterOption("time", "unfrz time", "z", function()
     freezeTime = false
@@ -37,117 +48,37 @@ da.Dev.Menu.RegisterOption("time", "unfrz time", "z", function()
         type = "time",
         isFrozen = freezeTime,
         day = 1,
-        hour = currentHour,
-        minute = 0,
+        hour = currentHour or 12,
+        minute = currentMinute or 0,
         second = 0,
     })
 end, function() return freezeTime end)
 
-da.Dev.Menu.RegisterOption("weather", "unfrz wthr", "z", function()
-    freezeWeather = false
-    TMC.Functions.TriggerServerEvent("weather:server:set", { type = "weather", isFrozen = freezeWeather, })
-end, function() return freezeWeather end)
+local timeOptions = {
+    { name = "dawn", hour = 5, minute = 30 },
+    { name = "sunrise", hour = 6, minute = 0 },
+    { name = "morning", hour = 8, minute = 0 },
+    { name = "noon", hour = 12, minute = 0 },
+    { name = "dusk", hour = 18, minute = 0 },
+    { name = "sunset", hour = 20, minute = 0 },
+    { name = "evening", hour = 20, minute = 0 },
+    { name = "night", hour = 2, minute = 0 },
+}
 
-da.Dev.Menu.RegisterOption("wind", "unfrz wind", "z", function()
-    freezeWind = false
-    TMC.Functions.TriggerServerEvent("weather:server:set", { type = "wind", isFrozen = freezeWind, })
-end, function() return freezeWind end)
-
-da.Dev.Menu.RegisterOption("time", "dawn", "1", function()
-    currentHour = 5
-    TMC.Functions.TriggerServerEvent("weather:server:set", {
-        type = "time",
-        isFrozen = freezeTime,
-        day = 1,
-        hour = currentHour,
-        minute = 30,
-        second = 0,
-    })
-end)
-
-da.Dev.Menu.RegisterOption("time", "sunrise", "2", function()
-    currentHour = 6
-    TMC.Functions.TriggerServerEvent("weather:server:set", {
-        type = "time",
-        isFrozen = freezeTime,
-        day = 1,
-        hour = currentHour,
-        minute = 0,
-        second = 0,
-    })
-end)
-
-da.Dev.Menu.RegisterOption("time", "morning", "3", function()
-    currentHour = 8
-    TMC.Functions.TriggerServerEvent("weather:server:set", {
-        type = "time",
-        isFrozen = freezeTime,
-        day = 1,
-        hour = currentHour,
-        minute = 0,
-        second = 0,
-    })
-end)
-
-da.Dev.Menu.RegisterOption("time", "noon", "4", function()
-    currentHour = 12
-    TMC.Functions.TriggerServerEvent("weather:server:set", {
-        type = "time",
-        isFrozen = freezeTime,
-        day = 1,
-        hour = currentHour,
-        minute = 0,
-        second = 0,
-    })
-end)
-
-da.Dev.Menu.RegisterOption("time", "dusk", "5", function()
-    currentHour = 18
-    TMC.Functions.TriggerServerEvent("weather:server:set", {
-        type = "time",
-        isFrozen = freezeTime,
-        day = 1,
-        hour = currentHour,
-        minute = 0,
-        second = 0,
-    })
-end)
-
-da.Dev.Menu.RegisterOption("time", "sunset", "6", function()
-    currentHour = 20
-    TMC.Functions.TriggerServerEvent("weather:server:set", {
-        type = "time",
-        isFrozen = freezeTime,
-        day = 1,
-        hour = currentHour,
-        minute = 0,
-        second = 0,
-    })
-end)
-
-da.Dev.Menu.RegisterOption("time", "evening", "7", function()
-    currentHour = 20
-    TMC.Functions.TriggerServerEvent("weather:server:set", {
-        type = "time",
-        isFrozen = freezeTime,
-        day = 1,
-        hour = currentHour,
-        minute = 0,
-        second = 0,
-    })
-end)
-
-da.Dev.Menu.RegisterOption("time", "night", "8", function()
-    currentHour = 2
-    TMC.Functions.TriggerServerEvent("weather:server:set", {
-        type = "time",
-        isFrozen = freezeTime,
-        day = 1,
-        hour = currentHour,
-        minute = 0,
-        second = 0,
-    })
-end)
+for i, option in ipairs(timeOptions) do
+    da.Dev.Menu.RegisterOption("time", option.name, tostring(i), function()
+        currentHour = option.hour
+        currentMinute = option.minute
+        TMC.Functions.TriggerServerEvent("weather:server:set", {
+            type = "time",
+            isFrozen = freezeTime,
+            day = 1,
+            hour = option.hour or 12,
+            minute = option.minute or 0,
+            second = 0,
+        })
+    end)
+end
 
 local weatherTypes = {
     blizzard = "blizzard",
