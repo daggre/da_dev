@@ -34,7 +34,7 @@ RegisterNUICallback('animHUD', function(data, cb)
 end)
 
 RegisterNUICallback('playAnim', function(data, cb)
-    if data.type == "entity" then
+    if data.entity and data.entity ~= "entity" then
         -- TODO improve this
         da.Anim.Object(
             tonumber(data.entity),
