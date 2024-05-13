@@ -15,6 +15,7 @@ shared_scripts {
 }
 
 server_scripts {
+    "db/convert.lua",
 }
 
 client_scripts {
