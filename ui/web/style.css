@@ -401,3 +401,26 @@ li.largeResult:hover {
         0 0 4px,
         0 0 10px;
  }
+
+
+#crosshair {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	font-size: 3.5vh;
+	color: white;
+	font-family: Times;
+}
+
+#crosshair.inactive {
+	color: white;
+}
+
+#crosshair.active {
+	color: var(--style-t);
+}
+
+#crosshair.attached {
+	color: var(--style-color);
+}

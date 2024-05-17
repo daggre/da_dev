@@ -39,6 +39,12 @@ window.onload = function() {
                 HideDevDisplay();
                 HideAnimDisplay();
                 break;
+            case "objSelectMode":
+                ShowCrosshair(msg.data.data);
+                break;
+            case "objUpdate":
+                UpdateCrosshair(msg.data.data);
+                break;
         }
     })
 }
@@ -150,6 +156,28 @@ HandleKey = function(key) {
         HideAnimDisplay();
     }
 }
+
+ShowCrosshair = function(data) {
+    if (data) {
+        $('#objselect-hud').show();
+    } else {
+        $('#objselect-hud').hide();
+    }
+}
+
+UpdateCrosshair = function(data) {
+    // console.log("Updating crosshair", data)
+	var crosshair = document.querySelector('#crosshair');
+	if (data.attached) {
+		crosshair.className = 'attached';
+	} else if (data.obj > 0) {
+		crosshair.className = 'active';
+	} else {
+		crosshair.className = 'inactive';
+    }
+}
+
+
 
 ShowDevDisplay = function() {
     $("#dev-display").show();

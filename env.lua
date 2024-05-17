@@ -5,10 +5,10 @@ local freezeWind = false
 local currentHour = 12
 local currentMinute = 0
 
-da.Dev.Menu.RegisterMenu("root", "env", "e")
+da.Dev.Menu.RegisterMenu("root", "env", "w")
 da.Dev.Menu.RegisterMenu("env", "time", "t")
 da.Dev.Menu.RegisterMenu("env", "weather", "w")
--- da.Dev.Menu.RegisterMenu("env", "wind", "d")
+da.Dev.Menu.RegisterMenu("env", "wind", "d")
 
 da.Dev.Menu.RegisterOption("wind", "frz wind", "z", function()
     freezeWind = true
