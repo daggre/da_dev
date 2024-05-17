@@ -20,6 +20,7 @@ local TeleportLocations = {
     ["Arikoan"] = { key = "z", location = vector3(-2534.068, -98.345, 166.177), },
     ["Graverobbing"] = { key = "g", location = vector4(2413.753, 1772.332, 89.543, 300.794), category = "npc", },
     ["Coal Chute"] = { key = "c", location = vector4(2945.651, 1378.808, 51.357, 79.818), category = "npc", },
+    ["Mining Fence"] = { key = "f", location = vector4(2731.39, 1368.416, 68.47, 107.077), category = "npc" },
 }
 
 da.Dev.Teleport = function(coords) TriggerEvent('TMC:Command:TeleportToCoords', coords) end
@@ -57,3 +58,18 @@ for i=1,5 do
         return SavedLocations[i] ~= nil
     end)
 end
+
+da.Dev.Menu.RegisterOption("teleport", "disappear", "0", function()
+    local coords = GetEntityCoords(PlayerPedId())
+    da.Fx.New("des_bnk_safe_exp", "ent_ray_bnk_safe_exp_end", {
+        coords = coords,
+        networked = true,
+    })
+    Citizen.Wait(1000)
+    da.Dev.NoClip(true)
+    da.Fx.New("anm_shows", "ent_anim_magician_smoke", {
+        coords = coords,
+        networked = true,
+    })
+
+end)

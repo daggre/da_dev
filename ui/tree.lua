@@ -11,6 +11,15 @@ da.Dev.Menu.RegisterOption = function(menuName, optionName, key, fn, condition)
     if not OptionLookup[menuName] then
         OptionLookup[menuName] = {}
     end
+    for menu, menuData in pairs(OptionLookup[menuName]) do
+        if menuData.key == key then
+            if not condition or not menuData.condition then
+                da.Log.Error(("Key %s assigned to %s"):format(key, menu))
+                return
+            end
+            da.Log.Debug(("Key %s conditionally assigned to %s"):format(key, menu))
+        end
+    end
     OptionLookup[menuName][optionName] = {
         key = key,
         fn = fn,
@@ -35,6 +44,12 @@ end
 da.Dev.Menu.RegisterMenu = function(parentMenu, menuName, key)
     if not MenuLookup[parentMenu] then
         MenuLookup[parentMenu] = {}
+    end
+    for menu, menuData in pairs(MenuLookup[parentMenu]) do
+        if menuData.key == key then
+            da.Log.Error(("Key %s already assigned to %s"):format(key, menu))
+            return
+        end
     end
     MenuLookup[parentMenu][menuName] = {
         key = key,
