@@ -1,7 +1,9 @@
 da.Dev.Menu.RegisterOption("root", "noclip", "z", function() da.Dev.NoClip() end)
 da.Dev.Menu.RegisterOption("root", "revive", "r", function() TriggerEvent('TMC:Command:Revive') end, function() return LocalPlayer.state.metadata.isdead end)
+da.Dev.Menu.RegisterOption("objSelRoot", "noclip", "z", function() da.Dev.NoClip() end)
+da.Dev.Menu.RegisterOption("objSelRoot", "revive", "r", function() TriggerEvent('TMC:Command:Revive') end, function() return LocalPlayer.state.metadata.isdead end)
 
-da.Dev.Menu.RegisterOption("root", "max ply stat", "s", function()
+da.Dev.Menu.RegisterOption("root", "max cores", "c", function()
     local playerPedId = PlayerPedId()
     for i = 0, 1 do
         Citizen.InvokeNative(0xC6258F41D86676E0, playerPedId, i, 100) -- SetAttributeCoreValue

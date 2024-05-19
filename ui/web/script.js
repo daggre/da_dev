@@ -16,7 +16,7 @@ function SendClientMessage(endpoint, data) {
     });
 }
 
-function copyToClipboard(element) {
+function copyElementToClipboard(element) {
     setTimeout(function() {
         var $temp = $("<input>");
         $("#copyField").append($temp);
@@ -25,6 +25,15 @@ function copyToClipboard(element) {
         document.execCommand("copy");
         $temp.remove();
     }, 500);
+}
+
+function copyToClipboard(val) {
+    var $temp = $("<input>");
+    $("#copyField").append($temp);
+    $temp.val(val).select();
+    console.log(val)
+    document.execCommand("copy");
+    $temp.remove();
 }
 
 window.onload = function() {
@@ -44,6 +53,9 @@ window.onload = function() {
                 break;
             case "objUpdate":
                 UpdateCrosshair(msg.data.data);
+                break;
+            case "clipboard":
+                copyToClipboard(msg.data.text);
                 break;
         }
     })
@@ -168,8 +180,8 @@ ShowCrosshair = function(data) {
 UpdateCrosshair = function(data) {
     // console.log("Updating crosshair", data)
 	var crosshair = document.querySelector('#crosshair');
-	if (data.attached) {
-		crosshair.className = 'attached';
+	if (data.selected) {
+		crosshair.className = 'selected';
 	} else if (data.obj > 0) {
 		crosshair.className = 'active';
 	} else {

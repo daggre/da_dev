@@ -1,15 +1,17 @@
+CurrentTree = "optionTree"
+
 Citizen.CreateThread(function()
     local z = 0x26E9DC00
     while true do
         Citizen.Wait(5)
         -- if (IsControlJustPressed(0, z) and IsInputDisabled(0)) then
         -- end
-        if (IsControlJustReleased(0, z) and IsInputDisabled(0)) then
+        if (IsControlJustReleased(0, z) and IsInputDisabled(0)) and not IsDisabledControlPressed(0, 0xD7DE6B1E) then
             SetNuiFocus(true, false)
             SetNuiFocusKeepInput(false)
             SendNUIMessage({
                 type = "show",
-                optionTree = da.Dev.Menu.GetTree("optionTree"),
+                optionTree = da.Dev.Menu.GetTree(CurrentTree),
             })
         end
     end
@@ -34,8 +36,9 @@ RegisterNUICallback('animHUD', function(data, cb)
 end)
 
 RegisterNUICallback('playAnim', function(data, cb)
-    if data.entity and data.entity ~= "entity" then
-        -- TODO improve this
+    da.Log.Debug("playAnim:", data)
+    local entity = data.entity and tonumber(data.entity) or nil
+    if data.entity and IsEntityAnObject(entity) and not IsEntityAPed(entity) then
         da.Anim.Object(
             tonumber(data.entity),
             data.animDict,
@@ -43,7 +46,7 @@ RegisterNUICallback('playAnim', function(data, cb)
         )
     elseif data.type == "advanced" then
         da.Anim.Adv(
-            tonumber(data.entity) or PlayerPedId(),
+            entity or PlayerPedId(),
             data.animDict,
             data.animName,
             tonumber(data.posX),
@@ -61,7 +64,7 @@ RegisterNUICallback('playAnim', function(data, cb)
         )
     else
         da.Anim.Ped(
-            PlayerPedId(),
+            entity or PlayerPedId(),
             data.animDict,
             data.animName,
             data.blendInSpeed,
@@ -82,4 +85,11 @@ end)
 
 RegisterNUICallback('initAnims', function(data, cb)
     cb({ animations = json.encode(Animations) })
+end)
+
+AddEventHandler('onResourceStop', function(resourceName)
+    if resourceName == GetCurrentResourceName() then
+        SetNuiFocus(false, false)
+        da.Control.Passthrough(false)
+    end
 end)

@@ -1,7 +1,13 @@
+
+@font-face {
+    font-family: 'LiterationMonoNerd';
+    src: url(./assets/LiterationMonoNerd.ttf);
+}
+
 :root {
     --style-color: #50c1ee;
     --style-t: #50c1ee80;
-    /* --style-color: #00daaf; */
+    --style-aux: #00daaf;
     --aux: #ddd;
 }
 
@@ -91,7 +97,7 @@
     /* background-color: #666; */
     border-radius: 4px;
     font-weight: 750;
-    font-family: Menlo,Consolas,Monaco,Liberation Mono,Lucida Console,monospace;
+    font-family: LiterationMonoNerd,Menlo,Consolas,monospace;
     font-size: 0.55vw;
     color: var(--style-color);
     text-shadow:
@@ -114,7 +120,7 @@
 }
 
 .hud-text {
-    font-family: Menlo,Consolas,Monaco,Liberation Mono,Lucida Console,monospace;
+    font-family: LiterationMonoNerd,Menlo,Consolas,monospace;
     text-align: left;
     text-transform: lowercase;
     font-size: 0.65vw;
@@ -131,7 +137,7 @@ body {
     margin: 0px;
     padding: 0px;
     /* background: #444; */
-    font-family: Menlo,Consolas,Monaco,Liberation Mono,Lucida Console,monospace;
+    font-family: LiterationMonoNerd,Menlo,Consolas,monospace;
     font-size: 0.65vw;
     text-shadow: 0 0 2px;
     color: var(--aux);
@@ -408,19 +414,19 @@ li.largeResult:hover {
 	top: 50%;
 	left: 50%;
 	transform: translate(-50%, -50%);
-	font-size: 3.5vh;
+	font-size: 1.9vh;
 	color: white;
-	font-family: Times;
+    font-family: LiterationMonoNerd,Menlo,Consolas,monospace;
 }
 
 #crosshair.inactive {
-	color: white;
+	color: #FFFFFF;
 }
 
 #crosshair.active {
-	color: var(--style-t);
+	color: var(--style-color);
 }
 
-#crosshair.attached {
-	color: var(--style-color);
+#crosshair.selected {
+	color: var(--style-aux);
 }
