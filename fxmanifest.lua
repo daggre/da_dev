@@ -21,9 +21,11 @@ server_scripts {
 client_scripts {
     "ui/tree.lua",
     "root.lua",
+    -- "control/disco_keys.lua",
     "noclip/noclip.lua",
     "teleport/teleport.lua",
     "env.lua",
+    "obj/gizmo.lua",
     "obj/gfx_util.lua",
     "obj/select.lua",
     "ui/ui.lua",
@@ -34,6 +36,9 @@ files {
     'ui/web/index.html',
     'ui/web/script.js',
     'ui/web/style.css',
+    'ui/web/assets/index.js',
+    'ui/web/assets/index.css',
+    'ui/web/assets/LiterationMonoNerd.ttf',
 }
 
 ui_page {

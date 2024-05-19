@@ -62,7 +62,7 @@ local NoClipControlTranslation = function(playerPedId, x, y, z)
     -- Speed Modifier
     if IsControlPressed(0, NoClip.Control.LeftShift) then
         modifier = NoClip.Speed.Fast
-    elseif IsControlPressed(0, NoClip.Control.LeftControl) then
+    elseif IsControlPressed(0, NoClip.Control.LeftControl) or IsDisabledControlPressed(0, NoClip.Control.LeftControl) then
         modifier = NoClip.Speed.Slow
     end
 
@@ -110,9 +110,9 @@ local InitNoClip = function()
         end
 
         FreezeEntityPosition(playerPedId, false)
-        SetEntityInvincible(playerPedId, false)
         SetEntityVisible(playerPedId, true)
         NetworkSetEntityInvisibleToNetwork(playerPedId, false)
+        Citizen.SetTimeout(5000, function() SetEntityInvincible(playerPedId, false) end)
     end)
 end
 

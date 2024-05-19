@@ -2,11 +2,14 @@
     <head>
         <title>da_dev</title>
         <link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="./assets/index.css">
+        <script type="module" crossorigin src="./assets/index.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
         <script src="https://kit.fontawesome.com/4e5717b1f7.js" crossorigin="anonymous" ></script>
         <script src="script.js" type="text/javascript"></script>
     </head>
     <body>
+        <div id="gizmo"></div>
         <div id="objselect-hud" style="display:none;">
             <div id ="crosshair" class="inactive">+</div>
         </div>
@@ -86,13 +89,13 @@
                 <li>
                     <div class="title">animDict</div>
                     <div class="glowbar"></div>
-                    <div id="active-animDict" class="field" onclick="copyToClipboard('copyAnimDict')">
+                    <div id="active-animDict" class="field" onclick="copyElementToClipboard('copyAnimDict')">
                     </div>
                 </li>
                 <li>
                     <div class="title">anim</div>
                     <div class="glowbar"></div>
-                    <div id="active-anim" class="field small" onclick="copyToClipboard('copyAnim')">
+                    <div id="active-anim" class="field small" onclick="copyElementToClipboard('copyAnim')">
                     </div>
                 </li>
                 <li>
