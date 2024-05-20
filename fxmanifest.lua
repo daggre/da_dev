@@ -15,7 +15,7 @@ shared_scripts {
 }
 
 server_scripts {
-    "db/convert.lua",
+    -- "db/convert.lua",
 }
 
 client_scripts {
@@ -25,9 +25,9 @@ client_scripts {
     "noclip/noclip.lua",
     "teleport/teleport.lua",
     "env.lua",
-    "obj/gizmo.lua",
-    "obj/gfx_util.lua",
-    "obj/select.lua",
+    "object/gizmo.lua",
+    "object/gfx_util.lua",
+    "object/select.lua",
     "ui/ui.lua",
     "dat/animations.lua",
 }
