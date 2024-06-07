@@ -29,6 +29,7 @@ client_scripts {
     "object/gfx_util.lua",
     "object/select.lua",
     "ui/ui.lua",
+    "ui/map.lua",
     "dat/animations.lua",
 }
 
