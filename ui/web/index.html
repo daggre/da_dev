@@ -40,40 +40,44 @@
             <div id="animControl" class="borderTop row">
                 <div class="row"><ul><li>
                     <div
+                        id="button-restart"
                         class="column control"
                         tabindex="0"
                         role="button"
                         aria-pressed="false"
-                        onclick="toggleOption('anim-restart');"
+                        onclick="toggleOption('control-restart');"
                     ></div>
                     <div
+                        id="button-play"
                         class="column control"
                         tabindex="0"
                         role="button"
                         aria-pressed="false"
-                        onclick="toggleOption('anim-play');"
+                        onclick="toggleOption('control-play');"
                     ></div> <!--  -->
                     <div
+                        id="button-stop"
                         class="column control"
                         tabindex="0"
                         role="button"
                         aria-pressed="false"
-                        onclick="toggleOption('anim-stop');"
+                        onclick="toggleOption('control-stop');"
                     ></div>
                     <div
+                        id="button-repeat"
                         class="column control"
                         tabindex="0"
                         role="button"
                         aria-pressed="false"
-                        onclick="toggleOption('anim-repeat');"
+                        onclick="toggleOption('control-repeat');"
                     ></div>
                 </li></ul></div>
                 <!-- <div class="row"><ul><li> -->
                 <!-- </li></ul></div> -->
             </div>
         </div>
-        <div id="devTextEntry" class="dev textEntryField">
-            <div id="textEntry" class="textEntryField" contenteditable="true"></div>
+        <div id="devTextEntry" class="dev">
+            <div id="textEntry" class="" contenteditable="true"></div>
         </div>
 
         <div id="hud-column-left">

@@ -125,6 +125,12 @@ $(document).ready(function() {
         }
     });
 
+    $("div#textEntry").keydown(function(e) {
+        if (e.code == "Enter") {
+            e.preventDefault();
+        }
+    });
+
     $("div#anim-search.field").keydown(function(e) {
         if (e.code == "Enter") {
             e.preventDefault();
@@ -256,32 +262,48 @@ HideAnimDisplay = function() {
 function toggleOption(option) {
     var element = null;
     switch (option) {
-        case "anim-restart":
-            element = document.getElementById('icon-reset')
+        case "control-restart":
+            element = document.getElementById('button-restart');
             element.classList.toggle('selected');
-            var iconPlayElement = document.getElementById('icon-play');
-            if (iconPlayElement.classList.contains('selected')) {
-                playAnimation();
+            if (element.classList.contains('selected')) {
+                playElement = document.getElementById('button-play')
+                if (playElement.classList.contains('selected')) {
+                    playAnimation();
+                }
+                setTimeout(function() {
+                    if (element.classList.contains('selected')) {
+                        element.classList.toggle('selected');
+                    }
+                }, 200);
             }
-            element.classList.toggle('selected');
             break;
-        case "anim-play":
-            element = document.getElementById('icon-play')
+        case "control-play":
+            element = document.getElementById('button-play')
             if (!element.classList.contains('selected')) {
                 element.classList.toggle('selected');
             }
             playAnimation();
             break;
-        case "anim-stop":
-            element = document.getElementById('icon-stop')
+        case "control-stop":
+            element = document.getElementById('button-stop')
             element.classList.toggle('selected');
-            stopAnimation();
-            element.classList.toggle('selected');
-            var iconPlayElement = document.getElementById('icon-play');
-            if (iconPlayElement.classList.contains('selected')) {
-                iconPlayElement.classList.toggle('selected');
+            var playElement = document.getElementById('button-play');
+            if (playElement.classList.contains('selected')) {
+                playElement.classList.toggle('selected');
             }
+            setTimeout(function() {
+                if (element.classList.contains('selected')) {
+                    element.classList.toggle('selected');
+                }
+            }, 200);
+            stopAnimation();
             break;
+        case "control-repeat":
+            element = document.getElementById('button-repeat')
+            element.classList.toggle('selected');
+            break;
+
+        // Old anim code
         case "timings":
             element = document.getElementById('icon-timings')
             element.classList.toggle('selected');
