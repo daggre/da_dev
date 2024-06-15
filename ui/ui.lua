@@ -31,12 +31,27 @@ end)
 
 RegisterNUICallback('animHUD', function(data, cb)
     SetNuiFocus(true, true)
+    -- SetNuiFocusKeepInput(true)
+    -- da.Control.Passthrough(true)
+end)
+
+RegisterNUICallback('controlPass', function(data, cb)
+    da.Log.Debug("controlPassthrough")
     SetNuiFocusKeepInput(true)
     da.Control.Passthrough(true)
 end)
 
+RegisterNUICallback('controlPassEnd', function(data, cb)
+    da.Log.Debug("controlPassthroughEnd")
+    SetNuiFocusKeepInput(false)
+    da.Control.Passthrough(false)
+end)
+
+
+
 RegisterNUICallback('playAnim', function(data, cb)
-    da.Log.Debug("playAnim:", data)
+    -- The flag anim has some linebreaks in it so I need to find out why
+    -- da.Log.Debug("playAnim:", data)
     local entity = data.entity and tonumber(data.entity) or nil
     if data.entity and IsEntityAnObject(entity) and not IsEntityAPed(entity) then
         da.Anim.Object(
@@ -90,6 +105,7 @@ end)
 AddEventHandler('onResourceStop', function(resourceName)
     if resourceName == GetCurrentResourceName() then
         SetNuiFocus(false, false)
+        SetNuiFocusKeepInput(false)
         da.Control.Passthrough(false)
     end
 end)

@@ -2,12 +2,34 @@ var TreeKeys = {}
 var DevKeys = {}
 var HudTree = {}
 
-var debug = false;
-var animations = {};
-var flagTotals = 0;
+var debug = false
+var animations = {}
+var flagTotals = 0
+
+function SendClientMessagePromise(endpoint, data) {
+    const url = `https://${GetParentResourceName()}/${endpoint}`;
+    console.log(`Sending request to ${url}:`, data);
+    return fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: JSON.stringify(data),
+    }).then(response => {
+            if (!response.ok) {
+                throw new Error(`Server error: ${response.statusText}`);
+            }
+            return response.json();
+        }).catch(error => {
+            console.error('Fetch error:', error, url, data);
+            throw error;
+        });
+}
 
 function SendClientMessage(endpoint, data) {
-    return fetch(`https://${GetParentResourceName()}/${endpoint}`, {
+    const url = `https://${GetParentResourceName()}/${endpoint}`;
+    console.log(`Sending message to ${url}:`, data);
+    return fetch(url, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json; charset=UTF-8',
@@ -62,6 +84,28 @@ window.onload = function() {
 }
 
 $(document).ready(function() {
+    $(document).mousedown(function(event) {
+        if ($('#animation').is(':visible')) {
+            switch(event.button) {
+            case 2: // Right Click
+                console.log("Right Click");
+                SendClientMessage('controlPass', {});
+                break;
+            }
+        }
+    });
+
+    $(document).mouseup(function(event) {
+        if ($('#animation').is(':visible')) {
+            switch(event.button) {
+            case 2: // Right Click
+                console.log("Right Click Release");
+                SendClientMessage('controlPassEnd', {});
+                break;
+            }
+        }
+    });
+
     $(document).keydown(function(event) {
         switch(event.key) {
             case "Escape": //ESC
@@ -75,10 +119,10 @@ $(document).ready(function() {
                 break;
             default:
                 if ($('#dev-display').is(':visible')) {
-                    HandleKey(event.key)
+                    HandleKey(event.key);
                 }
                 break;
-        };
+        }
     });
 
     $("div#anim-search.field").keydown(function(e) {
@@ -94,8 +138,7 @@ $(document).ready(function() {
         }
     });
 
-    SendClientMessage('initAnims', {}).then(resp => resp.json())
-        .then(function(resp) {
+    SendClientMessagePromise('initAnims', {}).then(function(resp) {
             animations = JSON.parse(resp.animations);
         });
 });
@@ -129,7 +172,7 @@ AppendOption = function(index, value) {
 
 AppendMenuOption = function(index, value) {
     TreeKeys[value.key] = index;
-    const html = '<div class="row"> <div class="column value"> \> '+value.menuName+'</div> <div class="column key">'+value.key+'</div> </div>';
+    const html = '<div class="row"> <div class="column value">  '+value.menuName+'</div> <div class="column key">'+value.key+'</div> </div>';
     $("#menuOptions").append(html);
 }
 
@@ -140,7 +183,7 @@ KeyTranslate = function(key) {
         'é': '2',
         '"': '3',
         '\'': '4',
-    };
+    }
     let lowercaseKey = key.toLowerCase();
     return map.hasOwnProperty(lowercaseKey) ? map[lowercaseKey] : lowercaseKey;
 }
@@ -154,7 +197,7 @@ HandleKey = function(key) {
         let idx = DevKeys[translatedKey]
         if (HudTree.options[idx].menuName == "menu" && HudTree.options[idx].optionName == "anim") {
             ShowAnimDisplay();
-            SendClientMessage('animHUD', {})
+            SendClientMessage('animHUD', {});
         } else {
             SendClientMessage('trigger', {
                 menuName: HudTree.options[idx].menuName,
@@ -469,4 +512,3 @@ function searchAnimDicts(searchValue) {
 
 window.addEventListener('load', function() {
 });
-
