@@ -37,7 +37,7 @@
             <!-- </div> -->
         </div>
         <div id="devAnimControl" class="dev">
-            <div id="animControl" class="borderTop row">
+            <div id="animControl" class="row">
                 <div class="row"><ul><li>
                     <div
                         id="button-restart"
@@ -46,7 +46,7 @@
                         role="button"
                         aria-pressed="false"
                         onclick="toggleOption('control-restart');"
-                    ></div>
+                    ></div>
                     <div
                         id="button-play"
                         class="column control"
@@ -70,14 +70,23 @@
                         role="button"
                         aria-pressed="false"
                         onclick="toggleOption('control-repeat');"
-                    ></div>
+                    ></div>
+                    <div
+                        id="button-settings"
+                        class="column control"
+                        tabindex="0"
+                        role="button"
+                        aria-pressed="false"
+                        onclick="toggleOption('control-settings');"
+                    ></div>
+
                 </li></ul></div>
                 <!-- <div class="row"><ul><li> -->
                 <!-- </li></ul></div> -->
             </div>
         </div>
         <div id="devTextEntry" class="dev">
-            <div id="textEntry" class="" contenteditable="true"></div>
+            <div id="textEntry" class="textEntryField" contenteditable="true"></div>
         </div>
 
         <div id="hud-column-left">

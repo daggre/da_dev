@@ -43,7 +43,6 @@
     font-size: 0.65vw;
     font-weight: 300;
     text-align: left;
-    text-transform: lowercase;
     text-shadow:
         0 0 0px var(--style-color),
         0 0 14px var(--style-color);
@@ -63,36 +62,56 @@
     width: 8%;
     right: 7%;
     bottom: 10%;
+    text-transform: lowercase;
 }
 
 #devAnimControl {
-    color: var(--aux);
+    color: var(--style-color);
     /*text-shadow: none;*/
-    top: 3%;
+    top: 2%;
     right: 50%;
 	transform: translate(50%);
     width: auto;
-    padding-top: 0px;
-    padding-bottom: 2px;
+    padding: 0px;
     display: block;
+}
+
+#animControl ul {
+    padding-inline-start: 2px;
+    padding-inline-end: 0px;
+}
+
+#animControl li {
+    margin: 0px;
+    padding: 0px;
+    padding-top: 1px;
 }
 
 #devTextEntry {
     color: var(--aux);
-    top: 10%;
+    bottom: 2%;
     right: 50%;
 	transform: translate(50%);
-    padding-left: 7px;
-    padding-right: 7px;
-    padding-top: 5px;
+    /*padding-left: 7px;*/
+    /*padding-right: 7px;*/
+    /*padding-top: 5px;*/
+    padding: 0px;
+    margin: 0px;
     overflow: hidden;
     white-space: nowrap;
-    border-left: 2px solid var(--style-color);
-    border-right: 2px solid var(--style-color);
-    /*display: block;*/
+    /*border-left: 2px solid var(--style-color);*/
+    /*border-right: 2px solid var(--style-color);*/
+    display: block;
 }
 
-.textEntryField {
+.textEntryField:before {
+    color: var(--style-color);
+    content: "█ ";
+}
+
+.textEntryField:after {
+    color: transparent;
+    content: " ";
 }
 
 .borderTop {
@@ -150,7 +169,7 @@
 }
 
 .control.selected {
-    color: var(--style-color);
+    color: var(--aux);
     text-shadow:
         0 0 2px #444,
         0 0 3px #444,
