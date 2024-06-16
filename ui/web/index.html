@@ -38,51 +38,92 @@
         </div>
         <div id="devAnimControl" class="dev">
             <div id="animControl" class="row">
-                <div class="row"><ul><li>
-                    <div
-                        id="button-restart"
-                        class="column control"
-                        tabindex="0"
-                        role="button"
-                        aria-pressed="false"
-                        onclick="toggleOption('control-restart');"
-                    ></div>
-                    <div
-                        id="button-play"
-                        class="column control"
-                        tabindex="0"
-                        role="button"
-                        aria-pressed="false"
-                        onclick="toggleOption('control-play');"
-                    ></div> <!--  -->
-                    <div
-                        id="button-stop"
-                        class="column control"
-                        tabindex="0"
-                        role="button"
-                        aria-pressed="false"
-                        onclick="toggleOption('control-stop');"
-                    ></div>
-                    <div
-                        id="button-repeat"
-                        class="column control"
-                        tabindex="0"
-                        role="button"
-                        aria-pressed="false"
-                        onclick="toggleOption('control-repeat');"
-                    ></div>
-                    <div
-                        id="button-settings"
-                        class="column control"
-                        tabindex="0"
-                        role="button"
-                        aria-pressed="false"
-                        onclick="toggleOption('control-settings');"
-                    ></div>
-
-                </li></ul></div>
-                <!-- <div class="row"><ul><li> -->
-                <!-- </li></ul></div> -->
+                <ul>
+                <li id="anim-settings-options" style="display:none;">
+                <div
+                    id="button-search"
+                    class="column control"
+                    tabindex="2"
+                    role="button"
+                    aria-pressed="false"
+                    onclick="toggleOption('control-search');"
+                ></div>
+                <div
+                    id="button-timings"
+                    class="column control"
+                    tabindex="2"
+                    role="button"
+                    aria-pressed="false"
+                    onclick="toggleOption('control-timings');"
+                ></div>
+                <div
+                    id="button-flags"
+                    class="column control"
+                    tabindex="2"
+                    role="button"
+                    aria-pressed="false"
+                    onclick="toggleOption('control-flags');"
+                ></div>
+                <div
+                    id="button-entity"
+                    class="column control"
+                    tabindex="2"
+                    role="button"
+                    aria-pressed="false"
+                    onclick="toggleOption('control-entity');"
+                ></div>
+                <div
+                    id="button-ped"
+                    class="column control"
+                    tabindex="2"
+                    role="button"
+                    aria-pressed="false"
+                    onclick="toggleOption('control-ped');"
+                ></div>
+                </li>
+                <li>
+                <div
+                    id="button-settings"
+                    class="column control"
+                    tabindex="1"
+                    role="button"
+                    aria-pressed="false"
+                    onclick="toggleOption('control-settings');"
+                ></div>
+                <div
+                    id="button-restart"
+                    class="column control"
+                    tabindex="3"
+                    role="button"
+                    aria-pressed="false"
+                    onclick="toggleOption('control-restart');"
+                ></div>
+                <div
+                    id="button-play"
+                    class="column control"
+                    tabindex="3"
+                    role="button"
+                    aria-pressed="false"
+                    onclick="toggleOption('control-play');"
+                ></div>
+                <div
+                    id="button-stop"
+                    class="column control"
+                    tabindex="3"
+                    role="button"
+                    aria-pressed="false"
+                    onclick="toggleOption('control-stop');"
+                ></div>
+                <div
+                    id="button-repeat"
+                    class="column control"
+                    tabindex="3"
+                    role="button"
+                    aria-pressed="false"
+                    onclick="toggleOption('control-repeat');"
+                ></div>
+                </li>
+                </ul>
             </div>
         </div>
         <div id="devTextEntry" class="dev">
