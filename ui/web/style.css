@@ -68,28 +68,33 @@
 #devAnimControl {
     color: var(--style-color);
     /*text-shadow: none;*/
-    top: 2%;
+    bottom: 2%;
     right: 50%;
-	transform: translate(50%);
     width: auto;
     padding: 0px;
     display: block;
+    /*background: none;*/
+    transform: translate(50%);
 }
 
 #animControl ul {
+    flex-direction: column;
+    list-style-type: none;
+    display: flex;
     padding-inline-start: 2px;
     padding-inline-end: 0px;
 }
 
 #animControl li {
     margin: 0px;
+    /*margin-bottom: 2px;*/
     padding: 0px;
-    padding-top: 1px;
 }
+
 
 #devTextEntry {
     color: var(--aux);
-    bottom: 2%;
+    bottom: 8%;
     right: 50%;
 	transform: translate(50%);
     /*padding-left: 7px;*/
@@ -101,12 +106,12 @@
     white-space: nowrap;
     /*border-left: 2px solid var(--style-color);*/
     /*border-right: 2px solid var(--style-color);*/
-    display: block;
+    display: none;
 }
 
 .textEntryField:before {
     color: var(--style-color);
-    content: "█ ";
+    content: "██ ";
 }
 
 .textEntryField:after {

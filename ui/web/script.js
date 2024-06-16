@@ -107,21 +107,43 @@ $(document).ready(function() {
     });
 
     $(document).keydown(function(event) {
+        var textEntryElement = document.getElementById('textEntry');
+        if (textEntryElement == document.activeElement) {
+            if (event.key == "Escape") {
+                textEntryElement.blur()
+                toggleSearch();
+            }
+            return;
+        }
+
         switch(event.key) {
             case "Escape": //ESC
-                // Explicitly handle Escape as exit UI
-                SendClientMessage('exit', {});
-                HideDevDisplay();
-                HideAnimDisplay();
-                break;
-            case " ":
-                spacebarToggle(event.target);
-                break;
-            default:
-                if ($('#dev-display').is(':visible')) {
-                    HandleKey(event.key);
-                }
-                break;
+            SendClientMessage('exit', {});
+            HideDevDisplay();
+            HideAnimDisplay();
+            return;
+        }
+
+
+        if ($('#dev-display').is(':visible')) {
+            // dev key hud is visible, handle key press
+            HandleDevMenuKey(event.key);
+
+        } else if ($('#devAnimControl').is(':visible')) {
+            switch(event.key) {
+                case " ":
+                    spacebarToggle(event.target);
+                    break;
+                case "s":
+                    toggleSettings();
+                    break;
+                case "f":
+                    toggleSearch();
+                    if (textEntryElement == document.activeElement) {
+                        event.preventDefault();
+                    }
+                    break;
+            }
         }
     });
 
@@ -194,7 +216,7 @@ KeyTranslate = function(key) {
     return map.hasOwnProperty(lowercaseKey) ? map[lowercaseKey] : lowercaseKey;
 }
 
-HandleKey = function(key) {
+HandleDevMenuKey = function(key) {
     let translatedKey = KeyTranslate(key)
     if (TreeKeys[translatedKey]) {
         let idx = TreeKeys[translatedKey]
@@ -278,14 +300,14 @@ function toggleOption(option) {
             }
             break;
         case "control-play":
-            element = document.getElementById('button-play')
+            element = document.getElementById('button-play');
             if (!element.classList.contains('selected')) {
                 element.classList.toggle('selected');
             }
             playAnimation();
             break;
         case "control-stop":
-            element = document.getElementById('button-stop')
+            element = document.getElementById('button-stop');
             element.classList.toggle('selected');
             var playElement = document.getElementById('button-play');
             if (playElement.classList.contains('selected')) {
@@ -299,13 +321,19 @@ function toggleOption(option) {
             stopAnimation();
             break;
         case "control-repeat":
-            element = document.getElementById('button-repeat')
+            element = document.getElementById('button-repeat');
             element.classList.toggle('selected');
+            break;
+        case "control-settings":
+            toggleSettings();
+            break;
+        case "control-search":
+            toggleSearch();
             break;
 
         // Old anim code
         case "timings":
-            element = document.getElementById('icon-timings')
+            element = document.getElementById('icon-timings');
             element.classList.toggle('selected');
             if (element.classList.contains('selected')) {
                 $('#anim-timings').css("display", "flex");
@@ -529,6 +557,30 @@ function searchAnimDicts(searchValue) {
         })
 
         resultUL.appendChild(li);
+    }
+}
+
+function toggleSettings() {
+    var element = document.getElementById('button-settings');
+    element.classList.toggle('selected');
+    var settingsElement = document.getElementById('anim-settings-options');
+    if (element.classList.contains('selected')) {
+        settingsElement.style.display = "flex";
+    } else {
+        settingsElement.style.display = "none";
+    }
+}
+
+function toggleSearch() {
+    var element = document.getElementById('button-search');
+    element.classList.toggle('selected');
+    var searchElement = document.getElementById('devTextEntry');
+    if (element.classList.contains('selected')) {
+        searchElement.style.display = "flex";
+        var searchField = document.getElementById('textEntry');
+        searchField.focus();
+    } else {
+        searchElement.style.display = "none";
     }
 }
 
