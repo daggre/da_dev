@@ -59,6 +59,10 @@ function copyToClipboard(val) {
 }
 
 window.onload = function() {
+    // TODO: Remove the scrollLeft for debugging initial test values
+    document.getElementById("animDictList").scrollLeft = -1000;
+    document.getElementById("animList").scrollLeft = -1000;
+
     window.addEventListener('message', function(msg) {
         // console.log(msg);
         switch(msg.data.type) {
@@ -150,6 +154,15 @@ $(document).ready(function() {
     $("div#textEntry").keydown(function(e) {
         if (e.code == "Enter") {
             e.preventDefault();
+            var dictList = document.getElementById("animDictList");
+            var animList = document.getElementById("animList");
+            // dictList.innerHTML = "";
+            dictList.scrollTop = 0;
+            dictList.scrollLeft = -1000;
+            // animList.innerHTML = "";
+            animList.scrollTop = 0;
+            animList.scrollLeft = -1000;
+            searchAnimDicts(this.innerHTML);
         }
     });
 
@@ -163,6 +176,10 @@ $(document).ready(function() {
             animResults.innerHTML = "";
             animResults.scrollTop = 0;
             searchAnimDicts(this.innerHTML);
+        }
+
+        if (e.code == "Tab") {
+            e.preventDefault();
         }
     });
 
