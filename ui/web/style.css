@@ -9,10 +9,11 @@
     --style-t: #50c1ee80;
     --style-aux: #00daaf;
     --style-pur: #bb73eb;
+    --style-bg: rgba(4, 16, 29, 0.669);
     --aux: #ddd;
 }
 
- body {
+body {
     background: #555;
     /*background-image: url(buwth80q93191.webp);*/
 }
@@ -46,14 +47,13 @@
     text-shadow:
         0 0 0px var(--style-color),
         0 0 14px var(--style-color);
-    padding-bottom: 4px;
     height: relative;
     border-color: var(--style-color);
     /*border-top-left-radius: 8px;*/
     /*border-top-right-radius: 8px;*/
     /*border-bottom-right-radius: 8px;*/
-    /* border-radius: 8px; */
-    background: rgba(4, 16, 29, 0.769);
+    border-radius: 8px;
+    background: var(--style-bg);
     position: absolute;
     overflow: hidden;
     white-space: nowrap;
@@ -61,10 +61,12 @@
 }
 
 #devMenu {
-    width: 8%;
-    right: 7vw;
-    bottom: 10vh;
+    width: 6.2vw;
+    right: 12.5vw;
+    bottom: 6vh;
+    transform: translate(50%);
     text-transform: lowercase;
+    display: block;
 }
 
 #devAnimControl {
@@ -87,7 +89,7 @@
 
 #animControl li {
     margin: 0px;
-    /*margin-bottom: 2px;*/
+    margin-right: 0.1vw;
     padding: 0px;
 }
 
@@ -127,34 +129,36 @@
 #animDictList {
     width: fit-content;
     max-width: 100%;
-    display: flex;
+    display: none;
     direction: rtl;
     overflow-x: hidden;
     overflow-y: auto;
-    background: rgba(4, 16, 29, 0.769);
-    border-left: 2px solid var(--style-color);
+    background: var(--style-bg);
+    /*border-left: 2px solid var(--style-color);*/
+    border-radius: 8px;
 }
 
 #animList {
     margin-top: 2vh;
     width: fit-content;
     max-height: 20vh;
-    display: flex;
+    display: none;
     direction: rtl;
     overflow-y: auto;
-    background: rgba(4, 16, 29, 0.769);
-    border-left: 2px solid var(--style-color);
+    background: var(--style-bg);
+    /*border-left: 2px solid var(--style-color);*/
+    border-radius: 8px;
 }
 
 #animList li, #animDictList li {
-    color: var(--aux);
+    color: var(--style-color);
     text-shadow:
         0 0 0px var(--style-color),
         0 0 14px var(--style-color);
 }
 
 #animList li:hover, #animDictList li:hover {
-    color: var(--style-color);
+    color: var(--aux);
     text-shadow:
         0 0 8px #444,
         0 0 10px #777,
@@ -177,38 +181,34 @@
 .column {
     float: left;
     width: auto;
-    margin-right: 0.4em;
+    margin-right: 0.1vw;
 }
 
 .key {
+    color: var(--style-bg);
+    background-color: var(--style-color);
     text-align: center;
+    vertical-align: middle;
     text-transform: capitalize;
-    padding-top: 1px;
-    width: 1.3em;
-    border-color: var(--style-color);
-    border-width: 1px;
-    border-style: solid;
-    /* background-color: #666; */
+    padding: 0px;
+    width: 1.4vh;
+    border: 0px solid var(--style-color);
     border-radius: 4px;
-    font-weight: 750;
-    font-family: LiterationMonoNerd,Menlo,Consolas,monospace;
-    font-size: 0.55vw;
-    color: var(--style-color);
+    font-weight: 900;
+    font-size: 1.29vh;
     text-shadow:
-        0 0 2px #444,
-        0 0 3px #444,
-        0 0 4px;
+        0 0 1px var(--style-bg);
 }
 
 .value {
-    font-size: 0.65vw;
-    margin-left: 0.8em;
-    width: 75%;
+    font-size: 1.29vh;
+    margin-left: 0.3vw;
+    width: 80%;
 }
 
 .control {
-    margin-left: 0.3em;
-    font-size: 1.0vw;
+    margin-left: 0.1vw;
+    font-size: 2.2vh;
 }
 
 .control.selected {
@@ -392,15 +392,18 @@ li div.glow-icon {
 }
 
 ::-webkit-scrollbar {
+    display: none;
     width: 3px;
     height: 1px;
 }
 
 ::-webkit-scrollbar-thumb {
+    display: none;
     background: var(--style-color);
 }
 
 ::-webkit-scrollbar-thumb:hover {
+    display: none;
     background: var(--aux);
 }
 

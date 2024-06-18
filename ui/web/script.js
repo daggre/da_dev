@@ -5,8 +5,10 @@ var HudTree = {}
 var debug = false
 var animations = {}
 var flagTotals = 0
+var repeatS = false
 
 function SendClientMessagePromise(endpoint, data) {
+    return; // TODO: REMOVE
     const url = `https://${GetParentResourceName()}/${endpoint}`;
     console.log(`Sending request to ${url}:`, data);
     return fetch(url, {
@@ -27,6 +29,7 @@ function SendClientMessagePromise(endpoint, data) {
 }
 
 function SendClientMessage(endpoint, data) {
+    return; // TODO: REMOVE
     const url = `https://${GetParentResourceName()}/${endpoint}`;
     console.log(`Sending message to ${url}:`, data);
     return fetch(url, {
@@ -59,10 +62,6 @@ function copyToClipboard(val) {
 }
 
 window.onload = function() {
-    // TODO: Remove the scrollLeft for debugging initial test values
-    document.getElementById("animDictList").scrollLeft = -1000;
-    document.getElementById("animList").scrollLeft = -1000;
-
     window.addEventListener('message', function(msg) {
         // console.log(msg);
         switch(msg.data.type) {
@@ -115,7 +114,6 @@ $(document).ready(function() {
         if (textEntryElement == document.activeElement) {
             if (event.key == "Escape") {
                 textEntryElement.blur()
-                toggleSearch();
             }
             return;
         }
@@ -134,17 +132,50 @@ $(document).ready(function() {
             HandleDevMenuKey(event.key);
 
         } else if ($('#devAnimControl').is(':visible')) {
+            console.log(event);
             switch(event.key) {
                 case " ":
-                    spacebarToggle(event.target);
+                    console.log(event)
+                    if (typeof event.target.onclick == "function") {
+                        event.target.onclick.apply();
+                    } else {
+                        togglePlay();
+                    }
                     break;
-                case "s":
-                    toggleSettings();
+                case "Backspace":
+                    toggleStop();
+                    break;
+                case "c":
+                    toggleSettings("toggle");
+                    break;
+                case "t":
+                    toggleTimings("toggle");
                     break;
                 case "f":
-                    toggleSearch();
+                    toggleFlags("toggle");
+                    break;
+                case "e":
+                    toggleEntity("toggle");
+                    break;
+                case "k":
+                    toggleStop();
+                    break;
+                case "l":
+                    toggleLoop();
+                    break;
+                case "S":
+                case "s":
+                    var searchElement = document.getElementById('button-search');
+                    if (searchElement.classList.contains('selected') &&
+                        (repeatS || event.shiftKey || event.ctrlKey)) {
+                        textEntryElement.focus();
+                    }
                     if (textEntryElement == document.activeElement) {
                         event.preventDefault();
+                    } else {
+                        toggleSearch("toggle");
+                        repeatS = true;
+                        setTimeout(function() { repeatS = false; }, 500);
                     }
                     break;
             }
@@ -156,6 +187,8 @@ $(document).ready(function() {
             e.preventDefault();
             var dictList = document.getElementById("animDictList");
             var animList = document.getElementById("animList");
+            document.getElementById('animDictList').style.display = "flex";
+            document.getElementById('animList').style.display = "flex";
             // dictList.innerHTML = "";
             dictList.scrollTop = 0;
             dictList.scrollLeft = -1000;
@@ -301,51 +334,20 @@ HideAnimDisplay = function() {
 function toggleOption(option) {
     var element = null;
     switch (option) {
-        case "control-restart":
-            element = document.getElementById('button-restart');
-            element.classList.toggle('selected');
-            if (element.classList.contains('selected')) {
-                playElement = document.getElementById('button-play')
-                if (playElement.classList.contains('selected')) {
-                    playAnimation();
-                }
-                setTimeout(function() {
-                    if (element.classList.contains('selected')) {
-                        element.classList.toggle('selected');
-                    }
-                }, 200);
-            }
-            break;
         case "control-play":
-            element = document.getElementById('button-play');
-            if (!element.classList.contains('selected')) {
-                element.classList.toggle('selected');
-            }
-            playAnimation();
+            togglePlay();
             break;
         case "control-stop":
-            element = document.getElementById('button-stop');
-            element.classList.toggle('selected');
-            var playElement = document.getElementById('button-play');
-            if (playElement.classList.contains('selected')) {
-                playElement.classList.toggle('selected');
-            }
-            setTimeout(function() {
-                if (element.classList.contains('selected')) {
-                    element.classList.toggle('selected');
-                }
-            }, 200);
-            stopAnimation();
+            toggleStop();
             break;
         case "control-repeat":
-            element = document.getElementById('button-repeat');
-            element.classList.toggle('selected');
+            toggleLoop();
             break;
         case "control-settings":
-            toggleSettings();
+            toggleSettings("toggle");
             break;
         case "control-search":
-            toggleSearch();
+            toggleSearch("toggle");
             break;
 
         // Old anim code
@@ -437,21 +439,6 @@ function toggleFlag(flag) {
     if (flag16) { flagTotals += 16 }
     if (flag32) { flagTotals += 32; }
     document.getElementById("flag-totals").innerHTML = flagTotals;
-}
-
-function toggleElement(element, elementName) {
-    element.classList.toggle("selected");
-    if (element.classList.contains("selected")) {
-        $("#"+elementName).css("display", "flex");
-    } else {
-        $("#"+elementName).hide();
-    }
-}
-
-function spacebarToggle(element) {
-    if (typeof element.onclick == "function") {
-        element.onclick.apply();
-    }
 }
 
 function playAnimation() {
@@ -577,10 +564,49 @@ function searchAnimDicts(searchValue) {
     }
 }
 
-function toggleSettings() {
-    var element = document.getElementById('button-settings');
+function togglePlay(state) {
+    var element = document.getElementById('button-play');
+    if (state == "on") {
+        element.classList.add('selected');
+    } else if (state == "off") {
+        element.classList.remove('selected');
+        return;
+    } else {
+        element.classList.remove('selected');
+        setTimeout(function() {
+            element.classList.add('selected');
+        }, 100);
+    }
+    playAnimation();
+}
+
+function toggleStop() {
+    element = document.getElementById('button-stop');
     element.classList.toggle('selected');
+    var playElement = document.getElementById('button-play');
+    playElement.classList.remove('selected');
+    setTimeout(function() {
+        element.classList.remove('selected');
+    }, 200);
+    stopAnimation();
+}
+
+function toggleLoop() {
+    document.getElementById('button-repeat').classList.toggle('selected');
+}
+
+function toggleSettings(state) {
+    var element = document.getElementById('button-settings');
     var settingsElement = document.getElementById('anim-settings-options');
+
+    if (state == "on") {
+        element.classList.add('selected');
+    } else if (state == "off") {
+        element.classList.remove('selected');
+    } else {
+        element.classList.toggle('selected');
+    }
+
     if (element.classList.contains('selected')) {
         settingsElement.style.display = "flex";
     } else {
@@ -588,16 +614,98 @@ function toggleSettings() {
     }
 }
 
-function toggleSearch() {
+function toggleSearch(state) {
     var element = document.getElementById('button-search');
-    element.classList.toggle('selected');
-    var searchElement = document.getElementById('devTextEntry');
+
+    if (state == "on") {
+        element.classList.add('selected');
+    } else if (state == "off") {
+        element.classList.remove('selected');
+    } else if (state == "toggle") {
+        element.classList.toggle('selected');
+    }
+
     if (element.classList.contains('selected')) {
-        searchElement.style.display = "flex";
-        var searchField = document.getElementById('textEntry');
-        searchField.focus();
+        toggleSettings("on")
+        toggleTimings("off")
+        toggleFlags("off")
+        toggleEntity("off")
+        document.getElementById('devTextEntry').style.display = "flex";
+        document.getElementById('animDictList').style.display = "flex";
+        document.getElementById("animDictList").scrollLeft = -1000;
+        document.getElementById('animList').style.display = "flex";
+        document.getElementById("animList").scrollLeft = -1000;
     } else {
-        searchElement.style.display = "none";
+        document.getElementById('devTextEntry').style.display = "none";
+        document.getElementById('animDictList').style.display = "none";
+        document.getElementById('animList').style.display = "none";
+        document.getElementById('textEntry').blur();
+    }
+}
+
+function toggleTimings(state) {
+    var element = document.getElementById('button-timings');
+
+    if (state == "on") {
+        element.classList.add('selected');
+    } else if (state == "off") {
+        element.classList.remove('selected');
+    } else if (state == "toggle") {
+        element.classList.toggle('selected');
+    }
+
+    if (element.classList.contains('selected')) {
+        toggleSettings("on")
+        toggleSearch("off")
+        toggleFlags("off")
+        toggleEntity("off")
+        // TODO: Display elements
+    } else {
+        // TODO: Hide elements
+    }
+}
+
+function toggleFlags(state) {
+    var element = document.getElementById('button-flags');
+
+    if (state == "on") {
+        element.classList.add('selected');
+    } else if (state == "off") {
+        element.classList.remove('selected');
+    } else if (state == "toggle") {
+        element.classList.toggle('selected');
+    }
+
+    if (element.classList.contains('selected')) {
+        toggleSettings("on")
+        toggleSearch("off")
+        toggleTimings("off")
+        toggleEntity("off")
+        // TODO: Display elements
+    } else {
+        // TODO: Hide elements
+    }
+}
+
+function toggleEntity(state) {
+    var element = document.getElementById('button-entity');
+
+    if (state == "on") {
+        element.classList.add('selected');
+    } else if (state == "off") {
+        element.classList.remove('selected');
+    } else if (state == "toggle") {
+        element.classList.toggle('selected');
+    }
+
+    if (element.classList.contains('selected')) {
+        toggleSettings("on")
+        toggleSearch("off")
+        toggleTimings("off")
+        toggleFlags("off")
+        // TODO: Display elements
+    } else {
+        // TODO: Hide elements
     }
 }
 
