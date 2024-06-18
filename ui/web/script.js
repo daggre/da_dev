@@ -109,12 +109,19 @@ $(document).ready(function() {
 
     $(document).keydown(function(event) {
         var textEntryElement = document.getElementById('textEntry');
-        if (textEntryElement == document.activeElement) {
+
+        if (document.activeElement.classList.contains('entryField')) {
             if (event.key == "Escape") {
-                textEntryElement.blur()
+                document.activeElement.blur()
             }
             return;
         }
+        // if (textEntryElement == document.activeElement) {
+        //     if (event.key == "Escape") {
+        //         textEntryElement.blur()
+        //     }
+        //     return;
+        // }
 
         switch(event.key) {
             case "Escape": //ESC
@@ -147,6 +154,7 @@ $(document).ready(function() {
                     break;
                 case "t":
                     toggleTimings("toggle");
+                    event.preventDefault();
                     break;
                 case "f":
                     toggleFlags("toggle");
@@ -162,18 +170,15 @@ $(document).ready(function() {
                     break;
                 case "S":
                 case "s":
-                    var searchElement = document.getElementById('button-search');
-                    if (searchElement.classList.contains('selected') &&
-                        (repeatS || event.shiftKey || event.ctrlKey)) {
+                    if (repeatS || event.shiftKey) {
+                        toggleSearch("on");
                         textEntryElement.focus();
-                    }
-                    if (textEntryElement == document.activeElement) {
                         event.preventDefault();
                     } else {
                         toggleSearch("toggle");
-                        repeatS = true;
-                        setTimeout(function() { repeatS = false; }, 650);
                     }
+                    repeatS = true;
+                    setTimeout(function() { repeatS = false; }, 650);
                     break;
             }
         }
@@ -636,6 +641,7 @@ function toggleSearch(state) {
         toggleTimings("off")
         toggleFlags("off")
         toggleEntity("off")
+        document.getElementById('button-search').focus();
         document.getElementById('animSearchField').style.display = "flex";
         document.getElementById('animDictList').style.display = "flex";
         document.getElementById("animDictList").scrollLeft = -1000;
@@ -665,9 +671,13 @@ function toggleTimings(state) {
         toggleSearch("off")
         toggleFlags("off")
         toggleEntity("off")
-        // TODO: Display elements
+        document.getElementById('button-timings').focus();
+        document.getElementById('animTimingsOptions').style.display = "flex";
     } else {
-        // TODO: Hide elements
+        document.getElementById('animTimingsOptions').style.display = "none";
+        if (document.activeElement.classList.contains('entryField')) {
+            document.activeElement.blur();
+        }
     }
 }
 
@@ -687,9 +697,13 @@ function toggleFlags(state) {
         toggleSearch("off")
         toggleTimings("off")
         toggleEntity("off")
-        // TODO: Display elements
+        document.getElementById('button-flags').focus();
+        document.getElementById('animFlagsOptions').style.display = "flex";
     } else {
-        // TODO: Hide elements
+        document.getElementById('animFlagsOptions').style.display = "none";
+        if (document.activeElement.classList.contains('entryField')) {
+            document.activeElement.blur();
+        }
     }
 }
 
@@ -709,6 +723,7 @@ function toggleEntity(state) {
         toggleSearch("off")
         toggleTimings("off")
         toggleFlags("off")
+        document.getElementById('button-entity').focus();
         // TODO: Display elements
     } else {
         // TODO: Hide elements
