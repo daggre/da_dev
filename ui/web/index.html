@@ -11,38 +11,28 @@
     </head>
     <body>
         <div id="gizmo"></div>
-        <div id="objselect-hud" style="display:none;">
+        <div id="objSelHud" style="display:none;">
             <div id ="crosshair" class="inactive">+</div>
         </div>
         <div id="devMenu" class="dev">
-            <!-- <div id="header" class=""> -->
-            <!--     <div class="row"><div class="column value"> da dev </div></div> -->
-            <!-- </div> -->
-            <!-- <div class="spacer"></div> -->
-            <div id="menuOptions" class="">
-                <div class="row"> <div class="column value">  tp</div><div class="column key">t</div> </div>
-                <div class="row"> <div class="column value">  entity</div><div class="column key">e</div> </div>
-                <div class="row"> <div class="column value">  misc</div><div class="column key">o</div> </div>
-            </div>
-            <!-- <div id="menuSpacer" class="spacer"></div> -->
-
-            <div id="devOptions" class="">
-                <div class="row"> <div class="column value">v3 cpy</div><div class="column key">3</div> </div>
-                <div class="row"> <div class="column value">v4 cpy</div><div class="column key">4</div> </div>
-                <div class="row"> <div class="column value">revive</div><div class="column key">r</div> </div>
-            </div>
-            <!-- <div id="optionsSpacer" class="spacer"></div> -->
-            <!-- <div id="footer" class=""> -->
-                <!-- <div class="row"> <div class="column footervalue">Cancel</div> <div class="column key">C</div> </div> -->
-            <!-- </div> -->
+            <ul id="menuOptions" class="">
+                <!-- <li> <div class="value"> tp</div><div class="key">t</div> </li> -->
+                <!-- <li> <div class="value"> entity</div><div class="key">e</div> </li> -->
+                <!-- <li> <div class="value"> misc</div><div class="key">o</div> </li> -->
+            </ul>
+            <ul id="devOptions" class="">
+                <!-- <li> <div class="value">v3 cpy</div><div class="key">3</div> </li> -->
+                <!-- <li> <div class="value">v4 cpy</div><div class="key">4</div> </li> -->
+                <!-- <li> <div class="value">revive</div><div class="key">r</div> </li> -->
+            </ul>
         </div>
-        <div id="devAnimControl" class="dev">
+        <div id="animControlOptions" class="dev">
             <div id="animControl" class="row">
                 <ul>
-                <li id="anim-settings-options" style="display:none;">
+                <li id="animSettings" style="display:none;">
                 <div
                     id="button-search"
-                    class="column control"
+                    class="control"
                     tabindex="2"
                     role="button"
                     aria-pressed="false"
@@ -50,7 +40,7 @@
                 ></div>
                 <div
                     id="button-timings"
-                    class="column control"
+                    class="control"
                     tabindex="4"
                     role="button"
                     aria-pressed="false"
@@ -58,7 +48,7 @@
                 ></div>
                 <div
                     id="button-flags"
-                    class="column control"
+                    class="control"
                     tabindex="4"
                     role="button"
                     aria-pressed="false"
@@ -66,7 +56,7 @@
                 ></div>
                 <div
                     id="button-entity"
-                    class="column control"
+                    class="control"
                     tabindex="4"
                     role="button"
                     aria-pressed="false"
@@ -76,7 +66,7 @@
                 <li id ="anim-control-options">
                 <div
                     id="button-settings"
-                    class="column control"
+                    class="control"
                     tabindex="1"
                     role="button"
                     aria-pressed="false"
@@ -84,7 +74,7 @@
                 ></div>
                 <div
                     id="button-play"
-                    class="column control"
+                    class="control"
                     tabindex="5"
                     role="button"
                     aria-pressed="false"
@@ -92,7 +82,7 @@
                 ></div>
                 <div
                     id="button-stop"
-                    class="column control"
+                    class="control"
                     tabindex="5"
                     role="button"
                     aria-pressed="false"
@@ -100,7 +90,7 @@
                 ></div>
                 <div
                     id="button-repeat"
-                    class="column control"
+                    class="control"
                     tabindex="5"
                     role="button"
                     aria-pressed="false"
@@ -110,7 +100,7 @@
                 </ul>
             </div>
         </div>
-        <div id="devAnimDictList" class="dev">
+        <div id="animSearchLists" class="dev">
             <div id="animDictList">
                 <ul>
                     <li>amb_work@</li>
@@ -195,7 +185,7 @@
                 </ul>
             </div>
         </div>
-        <div id="devTextEntry" class="dev">
+        <div id="animSearchField" class="dev">
             <div
                 id="textEntry"
                 class="textEntryField"
