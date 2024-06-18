@@ -13,6 +13,14 @@
     --aux: #ddd;
 }
 
+:focus {
+    color: var(--style-aux)!important;
+    outline: none;
+    text-shadow:
+        0 0 0px var(--style-aux),
+        0 0 14px var(--style-aux);
+}
+
 body {
     background: #555;
     /*background-image: url(buwth80q93191.webp);*/
@@ -27,8 +35,6 @@ body {
     letter-spacing: 10px;
     text-align: center;
     border-bottom: 1px solid var(--style-color);
-    /*border-top-left-radius: 6px;*/
-    /*border-top-right-radius: 6px;*/
     background: var(--style-color);
     text-shadow:
         0 0 2px #04101d;
@@ -44,7 +50,7 @@ body {
     overflow: hidden;
     white-space: nowrap;
     font-family: LiterationMonoNerd,Menlo,Consolas,monospace;
-    font-size: 0.65vw;
+    font-size: 1.0vh;
     font-weight: 300;
     text-align: left;
     text-shadow:
@@ -92,7 +98,8 @@ body {
 
 .textEntryField:before {
     color: var(--style-color);
-    content: "██ ";
+    /*content: "██ ";*/
+    content: " ";
 }
 
 .textEntryField:after {
@@ -101,12 +108,12 @@ body {
 }
 
 #animSearchLists {
-    padding: 0px;
     color: var(--aux);
     left: 2vh;
     top: 2vh;
     width: 20vw;
     max-height: 80vh;
+    padding: 0px;
     display: flex;
     flex-direction: column;
     background: none;
@@ -117,10 +124,9 @@ body {
     max-width: 100%;
     display: none;
     direction: rtl;
-    overflow-x: hidden;
+    /*overflow-x: hidden;*/
     overflow-y: auto;
     background: var(--style-bg);
-    /*border-left: 2px solid var(--style-color);*/
     border-radius: 8px;
 }
 
@@ -132,24 +138,110 @@ body {
     direction: rtl;
     overflow-y: auto;
     background: var(--style-bg);
-    /*border-left: 2px solid var(--style-color);*/
     border-radius: 8px;
 }
 
 #animList li, #animDictList li {
     color: var(--style-color);
-    text-shadow:
-        0 0 0px var(--style-color),
-        0 0 14px var(--style-color);
+    text-shadow: none;
+    /*overflow-y: hidden;*/
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
+
+/*@keyframes marquee {*/
+/*    0% { transform: translateX(0%); }*/
+/*    100% { transform: translateX(-50%); }*/
+/*}*/
 
 #animList li:hover, #animDictList li:hover {
     color: var(--aux);
+    /*animation: marquee 5s both infinite;*/
     text-shadow:
         0 0 8px #444,
         0 0 10px #777,
         0 0 14px;
 }
+
+#animTimingsOptions {
+    left: 2vh;
+    top: 2vh;
+    width: 10vw;
+    max-height: 80vh;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    background: none;
+    /*display: flex;*/
+}
+
+#animTimingsOptions li, #animFlagsOptions li {
+    margin-bottom: 3px;
+    overflow: hidden;
+}
+
+#animTimings .entryField {
+    min-width: 5vh;
+}
+
+#animFlagsOptions {
+    left: 2vh;
+    top: 2vh;
+    width: 10vw;
+    max-height: 80vh;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    background: none;
+    /*display: flex;*/
+}
+
+.entryLabel {
+    color: var(--style-bg);
+    height: auto;
+    padding-top: 1px;
+    font-weight: 900;
+    font-size: 1.2vh;
+    text-shadow: 0 0 0.5px var(--style-bg);
+    text-align: right;
+    padding-left: 7px;
+    padding-right: 5px;
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+    background: var(--style-color);
+}
+
+#animTimings li, #animFlags li {
+    float: right;
+}
+
+.check {
+    width: min-content;
+    min-width: 3.5vh;
+}
+
+.entryField {
+    color: var(--aux);
+    font-size: 1.4vh;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+    background: var(--style-bg);
+}
+
+.entryField:before {
+    color: var(--style-color);
+    content: " ";
+    text-shadow:
+        0 0 4px var(--style-color),
+        0 0 10px var(--style-color),
+        0 0 14px var(--style-color),
+        0 0 18px var(--style-color);
+}
+
+.entryField:after {
+    color: transparent;
+    content: " ";
+}
+
 
 #devMenu {
     width: 6.5vw;
@@ -163,7 +255,7 @@ body {
     /*display: flex;*/
 }
 
-#devOptions,#menuOptions,#animControl {
+#devOptions,#menuOptions,#animControl #animTimings {
     position: relative;
 }
 
