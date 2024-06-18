@@ -91,7 +91,6 @@ $(document).ready(function() {
         if ($('#animation').is(':visible')) {
             switch(event.button) {
             case 2: // Right Click
-                console.log("Right Click");
                 SendClientMessage('controlPass', {});
                 break;
             }
@@ -102,7 +101,6 @@ $(document).ready(function() {
         if ($('#animation').is(':visible')) {
             switch(event.button) {
             case 2: // Right Click
-                console.log("Right Click Release");
                 SendClientMessage('controlPassEnd', {});
                 break;
             }
@@ -131,8 +129,7 @@ $(document).ready(function() {
             // dev key hud is visible, handle key press
             HandleDevMenuKey(event.key);
 
-        } else if ($('#devAnimControl').is(':visible')) {
-            console.log(event);
+        } else if ($('#animControlOptions').is(':visible')) {
             switch(event.key) {
                 case " ":
                     console.log(event)
@@ -175,7 +172,7 @@ $(document).ready(function() {
                     } else {
                         toggleSearch("toggle");
                         repeatS = true;
-                        setTimeout(function() { repeatS = false; }, 500);
+                        setTimeout(function() { repeatS = false; }, 650);
                     }
                     break;
             }
@@ -292,9 +289,9 @@ HandleDevMenuKey = function(key) {
 
 ShowCrosshair = function(data) {
     if (data) {
-        $('#objselect-hud').show();
+        $('#objSelHud').show();
     } else {
-        $('#objselect-hud').hide();
+        $('#objSelHud').hide();
     }
 }
 
@@ -348,6 +345,15 @@ function toggleOption(option) {
             break;
         case "control-search":
             toggleSearch("toggle");
+            break;
+        case "control-timings":
+            toggleTimings("toggle");
+            break;
+        case "control-flags":
+            toggleFlags("toggle");
+            break;
+        case "control-entity":
+            toggleEntity("toggle");
             break;
 
         // Old anim code
@@ -597,7 +603,7 @@ function toggleLoop() {
 
 function toggleSettings(state) {
     var element = document.getElementById('button-settings');
-    var settingsElement = document.getElementById('anim-settings-options');
+    var settingsElement = document.getElementById('animSettings');
 
     if (state == "on") {
         element.classList.add('selected');
@@ -608,7 +614,7 @@ function toggleSettings(state) {
     }
 
     if (element.classList.contains('selected')) {
-        settingsElement.style.display = "flex";
+        settingsElement.style.display = "inline-flex";
     } else {
         settingsElement.style.display = "none";
     }
@@ -630,13 +636,13 @@ function toggleSearch(state) {
         toggleTimings("off")
         toggleFlags("off")
         toggleEntity("off")
-        document.getElementById('devTextEntry').style.display = "flex";
+        document.getElementById('animSearchField').style.display = "flex";
         document.getElementById('animDictList').style.display = "flex";
         document.getElementById("animDictList").scrollLeft = -1000;
         document.getElementById('animList').style.display = "flex";
         document.getElementById("animList").scrollLeft = -1000;
     } else {
-        document.getElementById('devTextEntry').style.display = "none";
+        document.getElementById('animSearchField').style.display = "none";
         document.getElementById('animDictList').style.display = "none";
         document.getElementById('animList').style.display = "none";
         document.getElementById('textEntry').blur();

@@ -39,7 +39,10 @@ body {
 }
 
 .dev {
-    color: var(--style-color);
+    position: absolute;
+    height: relative;
+    overflow: hidden;
+    white-space: nowrap;
     font-family: LiterationMonoNerd,Menlo,Consolas,monospace;
     font-size: 0.65vw;
     font-weight: 300;
@@ -47,29 +50,14 @@ body {
     text-shadow:
         0 0 0px var(--style-color),
         0 0 14px var(--style-color);
-    height: relative;
-    border-color: var(--style-color);
-    /*border-top-left-radius: 8px;*/
-    /*border-top-right-radius: 8px;*/
-    /*border-bottom-right-radius: 8px;*/
     border-radius: 8px;
+    border-color: var(--style-color);
+    color: var(--style-color);
     background: var(--style-bg);
-    position: absolute;
-    overflow: hidden;
-    white-space: nowrap;
     display: none;
 }
 
-#devMenu {
-    width: 6.2vw;
-    right: 12.5vw;
-    bottom: 6vh;
-    transform: translate(50%);
-    text-transform: lowercase;
-    display: block;
-}
-
-#devAnimControl {
+#animControlOptions {
     color: var(--style-color);
     padding: 0px;
     width: auto;
@@ -83,18 +71,16 @@ body {
     flex-direction: column;
     list-style-type: none;
     display: flex;
-    padding-inline-start: 2px;
+    padding-inline-start: 0px;
     padding-inline-end: 0px;
 }
 
 #animControl li {
-    margin: 0px;
-    margin-right: 0.1vw;
     padding: 0px;
 }
 
 
-#devTextEntry {
+#animSearchField {
     color: var(--aux);
     bottom: 8vh;
     right: 50vw;
@@ -114,7 +100,7 @@ body {
     content: " ";
 }
 
-#devAnimDictList {
+#animSearchLists {
     padding: 0px;
     color: var(--aux);
     left: 2vh;
@@ -165,26 +151,24 @@ body {
         0 0 14px;
 }
 
+#devMenu {
+    width: 6.5vw;
+    right: 12vw;
+    bottom: 8vh;
+    transform: translate(50%);
+    text-transform: lowercase;
+    flex-direction: column;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    /*display: flex;*/
+}
+
 #devOptions,#menuOptions,#animControl {
     position: relative;
 }
 
-#devOptions > div,#menuOptions > div {
-    margin-top: 2px;
-    margin-bottom: 2px;
-    /* background-image: url(img/rdr_menu_row.png); */
-    background-size: 100% 100%;
-    background-position: center;
-    background-repeat: no-repeat;
-}
-
-.column {
-    float: left;
-    width: auto;
-    margin-right: 0.1vw;
-}
-
 .key {
+    float: right;
     color: var(--style-bg);
     background-color: var(--style-color);
     text-align: center;
@@ -192,22 +176,25 @@ body {
     text-transform: capitalize;
     padding: 0px;
     width: 1.4vh;
+    height: 1.4vh;
     border: 0px solid var(--style-color);
     border-radius: 4px;
     font-weight: 900;
-    font-size: 1.29vh;
+    font-size: 1.1vh;
     text-shadow:
         0 0 1px var(--style-bg);
 }
 
 .value {
+    float: left;
+    width: 100%;
     font-size: 1.29vh;
-    margin-left: 0.3vw;
-    width: 80%;
+    /*margin-left: 0.3vw;*/
 }
 
 .control {
-    margin-left: 0.1vw;
+    margin-left: 0.2vw;
+    margin-right: 0.1vw;
     font-size: 2.2vh;
 }
 
@@ -229,11 +216,15 @@ body {
         0 0 10px;
 }
 
-.row:after {
-    content: "";
-    display: table;
-    clear: both;
+.row {
+    margin-top: 1px;
 }
+
+/*.row:after {*/
+/*    content: "";*/
+/*    display: table;*/
+/*    clear: both;*/
+/*}*/
 
 body {
     margin: 0px;
@@ -338,15 +329,16 @@ div[id$="-main"] {
 
 ul {
     margin: 0px;
-    padding-inline-start: 10px;
-    padding-inline-end: 10px;
+    padding-inline-start: 0px;
+    padding-inline-end: 0px;
 }
 
 li {
-    display: flex;
     align-items: stretch;
+    margin-right: 0.3vw;
+    margin-left: 0.3vw;
+    display: flex;
     clear: both;
-    /* overflow-x: hidden; */
 }
 
 #dict-results ul, #dict-results ul li, #anim-results ul, #anim-results ul li {
