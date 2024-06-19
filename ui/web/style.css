@@ -21,11 +21,6 @@
         0 0 14px var(--style-aux);
 }
 
-body {
-    background: #555;
-    /*background-image: url(buwth80q93191.webp);*/
-}
-
 #header {
     padding-left: 12%;
     padding-top: 1px;
@@ -69,7 +64,7 @@ body {
     width: auto;
     right: 50vw;
     bottom: 2vh;
-    display: block;
+    /*display: block;*/
     transform: translate(50%);
 }
 
@@ -112,7 +107,7 @@ body {
     left: 2vh;
     top: 2vh;
     width: 20vw;
-    max-height: 80vh;
+    max-height: 70vh;
     padding: 0px;
     display: flex;
     flex-direction: column;
@@ -120,6 +115,8 @@ body {
 }
 
 #animDictList {
+    flex: 1 1.2 auto;
+    min-height: 30vh;
     width: fit-content;
     max-width: 100%;
     display: none;
@@ -131,9 +128,9 @@ body {
 }
 
 #animList {
+    flex: 1 1.5 auto;
     margin-top: 2vh;
     width: fit-content;
-    max-height: 20vh;
     display: none;
     direction: rtl;
     overflow-y: auto;
@@ -175,59 +172,106 @@ body {
     /*display: flex;*/
 }
 
-#animTimingsOptions li, #animFlagsOptions li {
+#animTimingsOptions li,
+#animFlagsOptions li,
+#animEntityOptions li,
+#activeAnimDisplay li {
     margin-bottom: 3px;
     overflow: hidden;
 }
 
 #animTimings .entryField {
-    min-width: 5vh;
+    min-width: fit-content;
+}
+
+#animTimings li {
+    float: left;
 }
 
 #animFlagsOptions {
     left: 2vh;
     top: 2vh;
-    width: 10vw;
-    max-height: 80vh;
+    width: 15vw;
+    max-height: 70vh;
     padding-top: 2px;
     padding-bottom: 2px;
     background: none;
     /*display: flex;*/
 }
 
+#animFlags li {
+    float: right;
+}
+
+#animEntityOptions {
+    left: 2vh;
+    top: 2vh;
+    width: 10vw;
+    max-height: 70vh;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    background: none;
+    /*display: flex;*/
+}
+
+#activeAnimDisplay {
+    left: 50vw;
+    top: 2vh;
+    width: fit-content;
+    max-height: 10vh;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    transform: translate(-50%);
+    background: none;
+    /*display: flex;*/
+}
+
+#animActive li {
+    display: flex;
+    justify-content: center;
+}
+
 .entryLabel {
-    color: var(--style-bg);
+    color: black;
     height: auto;
     padding-top: 1px;
     font-weight: 900;
-    font-size: 1.2vh;
-    text-shadow: 0 0 0.5px var(--style-bg);
+    font-size: 1.0vh;
+    text-shadow: none;
     text-align: right;
-    padding-left: 7px;
+    padding-left: 8px;
     padding-right: 5px;
     border-top-left-radius: 8px;
     border-bottom-left-radius: 8px;
+    /*border-left: 1px solid var(--style-color);*/
     background: var(--style-color);
-}
-
-#animTimings li, #animFlags li {
-    float: right;
 }
 
 .check {
     width: min-content;
-    min-width: 3.5vh;
 }
 
-.entryField {
+.entryField, .toggleField {
     color: var(--aux);
-    font-size: 1.4vh;
+    font-size: 1.0vh;
     border-top-right-radius: 8px;
     border-bottom-right-radius: 8px;
     background: var(--style-bg);
 }
 
-.entryField:before {
+.entryField:focus, .toggleField:focus {
+    border-right: 2px solid var(--style-aux);
+}
+
+.toggleField {
+    min-width: 2.5vh;
+}
+
+.toggleField.selected:after {
+    content: " ";
+}
+
+.entryField:before, .toggleField:before {
     color: var(--style-color);
     content: " ";
     text-shadow:
@@ -239,19 +283,18 @@ body {
 
 .entryField:after {
     color: transparent;
-    content: " ";
+    content: "  ";
 }
 
 
 #devMenu {
-    width: 6.5vw;
+    width: 6.0vw;
     right: 12vw;
     bottom: 8vh;
     transform: translate(50%);
     text-transform: lowercase;
     flex-direction: column;
-    padding-top: 2px;
-    padding-bottom: 2px;
+    padding: 2px;
     /*display: flex;*/
 }
 
@@ -267,27 +310,27 @@ body {
     vertical-align: middle;
     text-transform: capitalize;
     padding: 0px;
-    width: 1.4vh;
-    height: 1.4vh;
-    border: 0px solid var(--style-color);
+    width: 1.1vh;
+    height: 1.1vh;
+    /*border: 0px solid var(--style-color);*/
     border-radius: 4px;
     font-weight: 900;
-    font-size: 1.1vh;
+    font-size: 0.9vh;
     text-shadow:
         0 0 1px var(--style-bg);
 }
 
 .value {
     float: left;
-    width: 100%;
-    font-size: 1.29vh;
+    width: 80%;
+    font-size: 1.1vh;
     /*margin-left: 0.3vw;*/
 }
 
 .control {
     margin-left: 0.2vw;
     margin-right: 0.1vw;
-    font-size: 2.2vh;
+    font-size: 2.0vh;
 }
 
 .control.selected {
@@ -321,9 +364,9 @@ body {
 body {
     margin: 0px;
     padding: 0px;
-    /* background: #444; */
+    /*background: #444;*/
     font-family: LiterationMonoNerd,Menlo,Consolas,monospace;
-    font-size: 0.65vw;
+    font-size: 1.0vh;
     text-shadow: 0 0 2px;
     color: var(--aux);
 }
