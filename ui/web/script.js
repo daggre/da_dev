@@ -67,6 +67,9 @@ window.onload = function() {
                 InitializeTree(msg.data.optionTree[0]);
                 ShowDevDisplay();
                 break;
+            case "showAnim":
+                ShowAnimDisplay();
+                break;
             case "hide":
                 HideDevDisplay();
                 HideAnimDisplay();
@@ -293,20 +296,14 @@ HandleDevMenuKey = function(key) {
         InitializeTree(HudTree.subMenu[idx])
     } else if (DevKeys[translatedKey]) {
         let idx = DevKeys[translatedKey]
-        if (HudTree.options[idx].menuName == "menu" && HudTree.options[idx].optionName == "anim") {
-            ShowAnimDisplay();
-            SendClientMessage('animHUD', {});
-        } else {
-            SendClientMessage('trigger', {
-                menuName: HudTree.options[idx].menuName,
-                optionName: HudTree.options[idx].optionName
-            });
-        }
+        SendClientMessage('trigger', {
+            menuName: HudTree.options[idx].menuName,
+            optionName: HudTree.options[idx].optionName
+        });
         HideDevDisplay();
     } else {
         SendClientMessage('exit', { key: translatedKey });
         HideDevDisplay();
-        HideAnimDisplay();
     }
 }
 
