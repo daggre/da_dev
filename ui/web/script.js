@@ -8,7 +8,7 @@ var flagTotals = 0
 var repeatS = false
 var controlPassActive = false
 
-function SendClientMessagePromise(endpoint, data) {
+function SendClientMessage(endpoint, data) {
     const url = `https://${GetParentResourceName()}/${endpoint}`;
     // console.log(`Sending request to ${url}:`, data);
     return fetch(url, {
@@ -26,18 +26,6 @@ function SendClientMessagePromise(endpoint, data) {
             console.error('Fetch error:', error, url, data);
             throw error;
         });
-}
-
-function SendClientMessage(endpoint, data) {
-    const url = `https://${GetParentResourceName()}/${endpoint}`;
-    // console.log(`Sending message to ${url}:`, data);
-    return fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: JSON.stringify(data),
-    });
 }
 
 function copyToClipboard(val) {
@@ -240,11 +228,11 @@ $(document).ready(function() {
         }
     });
 
-    SendClientMessagePromise('initAnims', {}).then(function(resp) {
+    SendClientMessage('initAnims', {}).then(function(resp) {
             animations = JSON.parse(resp.animations);
         });
 
-    SendClientMessagePromise('initAnimFlags', {}).then(function(resp) {
+    SendClientMessage('initAnimFlags', {}).then(function(resp) {
         var flagList = document.getElementById('animFlagsOptions');
         var ul = document.createElement('ul');
         ul.setAttribute('id', 'animFlags');
