@@ -6,10 +6,11 @@ var debug = false
 var animations = {}
 var flagTotals = 0
 var repeatS = false
+var controlPassActive = false
 
 function SendClientMessagePromise(endpoint, data) {
     const url = `https://${GetParentResourceName()}/${endpoint}`;
-    console.log(`Sending request to ${url}:`, data);
+    // console.log(`Sending request to ${url}:`, data);
     return fetch(url, {
         method: 'POST',
         headers: {
@@ -29,7 +30,7 @@ function SendClientMessagePromise(endpoint, data) {
 
 function SendClientMessage(endpoint, data) {
     const url = `https://${GetParentResourceName()}/${endpoint}`;
-    console.log(`Sending message to ${url}:`, data);
+    // console.log(`Sending message to ${url}:`, data);
     return fetch(url, {
         method: 'POST',
         headers: {
@@ -37,17 +38,6 @@ function SendClientMessage(endpoint, data) {
         },
         body: JSON.stringify(data),
     });
-}
-
-function copyElementToClipboard(element) {
-    setTimeout(function() {
-        var $temp = $("<input>");
-        $("#copyField").append($temp);
-        $temp.val($('#'+element).text()).select();
-        console.log($('#'+element).text())
-        document.execCommand("copy");
-        $temp.remove();
-    }, 500);
 }
 
 function copyToClipboard(val) {
@@ -89,11 +79,17 @@ window.onload = function() {
 
 $(document).ready(function() {
     $(document).mousedown(function(event) {
-        console.log(event)
         if ($('#animControlOptions').is(':visible')) {
-            console.log("controlPassCheck");
             switch(event.button) {
+            case 0: // Left Click
+                if (event.target.id == "activeAnimDict" || event.target.id == "activeAnimName") {
+                    if (event.target.innerHTML != "") {
+                        copyToClipboard(event.target.innerHTML);
+                    }
+                }
+                break;
             case 2: // Right Click
+                controlPassActive = true;
                 SendClientMessage('controlPass', {});
                 break;
             }
@@ -104,6 +100,7 @@ $(document).ready(function() {
         if ($('#animControlOptions').is(':visible')) {
             switch(event.button) {
             case 2: // Right Click
+                controlPassActive = false;
                 SendClientMessage('controlPassEnd', {});
                 break;
             }
@@ -111,9 +108,11 @@ $(document).ready(function() {
     });
 
     $(document).keydown(function(event) {
+        if (controlPassActive) { return; }
         var animSearchElement = document.getElementById('valueAnimSearch');
+        // Check if target element has attribute contenteditable
+        if (event.key != "Escape" && event.target.getAttribute('contenteditable') == "true") { return; }
 
-        // TODO: Make it so first press of escape just closes the active settings window and 2nd press closes anim menu
         if ($('#animControlOptions').is(':visible') && event.key == "Escape") {
             var escaped = false;
             if ($('#animSearchField').is(':visible')) {
@@ -188,6 +187,38 @@ $(document).ready(function() {
                     repeatS = true;
                     setTimeout(function() { repeatS = false; }, 650);
                     break;
+                case "x":
+                    if ($('#animSearchField').is(':visible')) {
+                        // Clear search
+                        document.getElementById('animDictList').innerHTML = "";
+                        document.getElementById('animList').innerHTML = "";
+                        animSearchElement.innerHTML = "";
+                        animSearchElement.focus();
+                    } else if ($('#animTimingsOptions').is(':visible')) {
+                        // Reset timings to defaults
+                        document.getElementById("timingBlendIn").innerHTML = "1.0";
+                        document.getElementById("timingBlendOut").innerHTML = "1.0";
+                        document.getElementById("timingPlayback").innerHTML = "0";
+                        document.getElementById("timingDuration").innerHTML = "-1";
+                    } else if ($('#animFlagsOptions').is(':visible')) {
+                        // Clear all flags
+                        for (var i=0; i < 32 ; i++) {
+                            let value = toUint32(1 << i);
+                            var flagElement = document.getElementById("flag-" + value);
+                            if (flagElement.classList.contains("selected")) {
+                                toggleFlag(value);
+                            }
+                        }
+                    } else if ($('#animEntityOptions').is(':visible')) {
+                        // Reset entity to player
+                        document.getElementById("animEntityField").innerHTML = "";
+                    } else {
+                        // Clear the selected animDict and animName
+                        document.getElementById("activeAnimDict").innerHTML = "";
+                        document.getElementById("activeAnimName").innerHTML = "";
+                    }
+                    event.preventDefault();
+                    break;
             }
         }
     });
@@ -240,6 +271,22 @@ $(document).ready(function() {
             ul.appendChild(li);
         });
 
+
+        var flagLabel = document.createElement('div');
+        flagLabel.classList.add('check');
+        flagLabel.classList.add('entryLabel');
+        flagLabel.innerHTML = "TOTAL";
+
+        var flagField = document.createElement('div');
+        flagField.setAttribute('id', "flagTotals");
+        flagField.classList.add('check');
+        flagField.classList.add('entryField');
+        flagField.innerHTML = "0";
+
+        var li = document.createElement('li');
+        li.appendChild(flagLabel);
+        li.appendChild(flagField);
+        ul.appendChild(li);
         flagList.appendChild(ul);
     })
 });
@@ -422,70 +469,51 @@ function toggleOption(option) {
     }
 }
 
+toUint32 = function(value) {
+    return value >>> 0;
+}
+
 toggleFlag = function(flag) {
     var flagElement = document.getElementById("flag-" + flag);
     flagElement.classList.toggle("selected");
-}
-
-
-function toggleFlag_dep(flag) {
-    var loopElement = document.getElementById("icon-loop");
-    var flag1Element = document.getElementById("flag-1");
-    var flag2Element = document.getElementById("flag-2");
-    var flag4Element = document.getElementById("flag-4");
-    var flag8Element = document.getElementById("flag-8");
-    var flag16Element = document.getElementById("flag-16");
-    var flag32Element = document.getElementById("flag-32");
-
-    switch (flag) {
-        case 1:
-            loopElement.classList.toggle("selected");
-            flag1Element.classList.toggle("selected");
-            break;
-        case 2:
-            flag2Element.classList.toggle("selected");
-            break;
-        case 4:
-            flag4Element.classList.toggle("selected");
-            break;
-        case 8:
-            flag8Element.classList.toggle("selected");
-            break;
-        case 16:
-            flag16Element.classList.toggle("selected");
-            break;
-        case 32:
-            flag32Element.classList.toggle("selected");
-            break;
-        default:
-            break;
-    }
-    var flag1 = flag1Element.classList.contains("selected");
-    var flag2 = flag2Element.classList.contains("selected");
-    var flag4 = flag4Element.classList.contains("selected");
-    var flag8 = flag8Element.classList.contains("selected");
-    var flag16 = flag16Element.classList.contains("selected");
-    var flag32 = flag32Element.classList.contains("selected");
 
     flagTotals = 0;
-    if (flag1) { flagTotals += 1; }
-    if (flag2) { flagTotals += 2; }
-    if (flag4) { flagTotals += 4; }
-    if (flag8) { flagTotals += 8; }
-    if (flag16) { flagTotals += 16 }
-    if (flag32) { flagTotals += 32; }
-    document.getElementById("flag-totals").innerHTML = flagTotals;
+    for (var i=0; i < 32 ; i++) {
+        let value = toUint32(1 << i);
+        var calcFlagElement = document.getElementById("flag-" + value);
+        if (calcFlagElement.classList.contains("selected")) {
+            flagTotals += value;
+        }
+    }
+    document.getElementById("flagTotals").innerHTML = flagTotals;
+
+    switch(flag) {
+        case 1:
+            var selected = flagElement.classList.contains("selected");
+            if (selected) {
+                document.getElementById("button-repeat").classList.add("selected");
+            } else {
+                document.getElementById("button-repeat").classList.remove("selected");
+            }
+            break;
+        }
 }
 
+
 function playAnimation() {
-    var entity = document.getElementById("target-entity").innerHTML;
-    var animDict = document.getElementById("active-animDict").innerHTML;
-    var anim = document.getElementById("active-anim").innerHTML;
-    var blendIn = document.getElementById("blendin-field").innerHTML;
-    var blendOut = document.getElementById("blendout-field").innerHTML;
-    var playback = document.getElementById("playback-field").innerHTML;
-    var duration = document.getElementById("duration-field").innerHTML;
-    var flag = document.getElementById("flag-totals").innerHTML;
+    var entity = document.getElementById("animEntityField").innerHTML;
+    var animDict = document.getElementById("activeAnimDict").innerHTML;
+    var anim = document.getElementById("activeAnimName").innerHTML;
+    if (anim == "" || animDict == "") {
+        setTimeout(function() {
+            togglePlay("off");
+        }, 500)
+        return;
+    }
+    var blendIn = document.getElementById("timingBlendIn").innerHTML;
+    var blendOut = document.getElementById("timingBlendOut").innerHTML;
+    var playback = document.getElementById("timingPlayback").innerHTML;
+    var duration = document.getElementById("timingDuration").innerHTML;
     SendClientMessage('playAnim', {
         entity: entity,
         animDict: animDict,
@@ -494,7 +522,7 @@ function playAnimation() {
         blendOutSpeed: blendOut,
         playbackRate: playback,
         duration: duration,
-        flag: flag,
+        flag: flagTotals,
     });
 }
 
@@ -525,7 +553,7 @@ function searchAnims(animDict) {
         li.innerHTML = results[i].anim;
         li.addEventListener('click', function() {
             document.getElementById("activeAnimName").innerHTML = this.innerHTML;
-            toggleOption('anim-play');
+            togglePlay("on");
         });
         ul.appendChild(li);
     }
@@ -627,7 +655,7 @@ function toggleStop() {
 }
 
 function toggleLoop() {
-    document.getElementById('button-repeat').classList.toggle('selected');
+    toggleFlag(1);
 }
 
 function toggleSettings(state) {

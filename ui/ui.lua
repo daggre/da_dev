@@ -20,11 +20,13 @@ end)
 RegisterNUICallback('exit', function(data, cb)
     SetNuiFocus(false, false)
     da.Control.Passthrough(false)
+    cb(true)
 end)
 
 RegisterNUICallback('trigger', function(data, cb)
     SetNuiFocus(false, false)
     da.Dev.Menu.TriggerOption(data.menuName, data.optionName, data.params)
+    cb(true)
 end)
 
 -- Animations
@@ -33,25 +35,28 @@ RegisterNUICallback('animHUD', function(data, cb)
     SetNuiFocus(true, true)
     -- SetNuiFocusKeepInput(true)
     -- da.Control.Passthrough(true)
+    cb(true)
 end)
 
 RegisterNUICallback('controlPass', function(data, cb)
-    da.Log.Debug("controlPassthrough")
+    -- da.Log.Debug("controlPassthrough")
     SetNuiFocusKeepInput(true)
     da.Control.Passthrough(true)
+    cb(true)
 end)
 
 RegisterNUICallback('controlPassEnd', function(data, cb)
-    da.Log.Debug("controlPassthroughEnd")
+    -- da.Log.Debug("controlPassthroughEnd")
     SetNuiFocusKeepInput(false)
     da.Control.Passthrough(false)
+    cb(true)
 end)
 
 
 
 RegisterNUICallback('playAnim', function(data, cb)
     -- The flag anim has some linebreaks in it so I need to find out why
-    -- da.Log.Debug("playAnim:", data)
+    da.Log.Debug("playAnim:", data)
     local entity = data.entity and tonumber(data.entity) or nil
     if data.entity and IsEntityAnObject(entity) and not IsEntityAPed(entity) then
         da.Anim.Object(
@@ -91,11 +96,13 @@ RegisterNUICallback('playAnim', function(data, cb)
             data.taskFilter
         )
     end
+    cb(true)
 end)
 
 RegisterNUICallback('stopAnim', function(data, cb)
     local ped = data.entity or PlayerPedId()
     ClearPedTasksImmediately(ped)
+    cb(true)
 end)
 
 RegisterNUICallback('initAnims', function(data, cb)

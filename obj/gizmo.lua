@@ -110,6 +110,7 @@ end)
 
 RegisterNUICallback('gizmoStop', function()
     gizmoThreadStarted = false
+    cb(true)
 end)
 
 AddEventHandler("stopGizmo", function()
