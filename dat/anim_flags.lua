@@ -31,7 +31,7 @@ AnimFlags = {
     { name = "BlendoutWRTLastFrame", value = (1<<29), },
     { name = "DisablePhysicalActivation", value = (1<<30), },
     { name = "DisableReleaseEvents", value = (1<<31), },
-    { name = "Bit32", value = (1<<32), },
+    -- { name = "Bit32", value = (1<<32), },
     -- Combo Flags
     -- Move = (1<<3)|(1<<4), -- UpperBody, Secondary
     -- MoveLoop = (1<<0)|(1<<3)|(1<<4), -- UpperBody, Secondary, Loop

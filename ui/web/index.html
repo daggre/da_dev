@@ -43,11 +43,11 @@
             <li id="anim-control-options">
                 <div id="button-settings" class="control" tabindex="1" role="button" aria-pressed="false"
                     onclick="toggleOption('control-settings');"></div>
-                <div id="button-play" class="control" tabindex="5" role="button" aria-pressed="false"
+                <div id="button-play" class="control" tabindex="11" role="button" aria-pressed="false"
                     onclick="toggleOption('control-play');"></div>
-                <div id="button-stop" class="control" tabindex="5" role="button" aria-pressed="false"
+                <div id="button-stop" class="control" tabindex="11" role="button" aria-pressed="false"
                     onclick="toggleOption('control-stop');"></div>
-                <div id="button-repeat" class="control" tabindex="5" role="button" aria-pressed="false"
+                <div id="button-repeat" class="control" tabindex="11" role="button" aria-pressed="false"
                     onclick="toggleOption('control-repeat');"></div>
             </li>
         </ul>
@@ -66,19 +66,19 @@
         <ul id="animTimings">
             <li>
                 <div class="entryLabel">Blend-In</div>
-                <div id="timing-BlendIn" class="entryField" contenteditable="true" tabindex="3">1.0</div>
+                <div id="timingBlendIn" class="entryField" contenteditable="true" tabindex="3">1.0</div>
             </li>
             <li>
                 <div class="entryLabel">Blend-Out</div>
-                <div class="entryField" contenteditable="true" tabindex="3">1.0</div>
+                <div id="timingBlendOut" class="entryField" contenteditable="true" tabindex="3">1.0</div>
             </li>
             <li>
                 <div class="entryLabel">Playback</div>
-                <div class="entryField" contenteditable="true" tabindex="3">0</div>
+                <div id="timingPlayback" class="entryField" contenteditable="true" tabindex="3">0</div>
             </li>
             <li>
                 <div class="entryLabel">Duration</div>
-                <div class="entryField" contenteditable="true" tabindex="3">-1</div>
+                <div id="timingDuration" class="entryField" contenteditable="true" tabindex="3">-1</div>
             </li>
         </ul>
     </div>
@@ -88,7 +88,7 @@
         <ul id="animEntity">
             <li>
                 <div class="entryLabel">Entity</div>
-                <div class="entryField" contenteditable="true" tabindex="5"></div>
+                <div id="animEntityField" class="entryField" contenteditable="true" tabindex="5"></div>
             </li>
         </ul>
     </div>
@@ -97,8 +97,6 @@
             <li>
                 <div class="entryLabel">animDict</div>
                 <div id="activeAnimDict" class="entryField"></div>
-            </li>
-            <li>
                 <div class="entryLabel">anim</div>
                 <div id="activeAnimName" class="entryField"></div>
             </li>
