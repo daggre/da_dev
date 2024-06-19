@@ -102,6 +102,10 @@ RegisterNUICallback('initAnims', function(data, cb)
     cb({ animations = json.encode(Animations) })
 end)
 
+RegisterNUICallback('initAnimFlags', function(data, cb)
+    cb({ flags = json.encode(AnimFlags) })
+end)
+
 AddEventHandler('onResourceStop', function(resourceName)
     if resourceName == GetCurrentResourceName() then
         SetNuiFocus(false, false)

@@ -8,7 +8,6 @@ var flagTotals = 0
 var repeatS = false
 
 function SendClientMessagePromise(endpoint, data) {
-    return; // TODO: REMOVE
     const url = `https://${GetParentResourceName()}/${endpoint}`;
     console.log(`Sending request to ${url}:`, data);
     return fetch(url, {
@@ -29,7 +28,6 @@ function SendClientMessagePromise(endpoint, data) {
 }
 
 function SendClientMessage(endpoint, data) {
-    return; // TODO: REMOVE
     const url = `https://${GetParentResourceName()}/${endpoint}`;
     console.log(`Sending message to ${url}:`, data);
     return fetch(url, {
@@ -63,9 +61,9 @@ function copyToClipboard(val) {
 
 window.onload = function() {
     window.addEventListener('message', function(msg) {
-        // console.log(msg);
         switch(msg.data.type) {
             case "show":
+                console.log("Showing dev display")
                 InitializeTree(msg.data.optionTree[0]);
                 ShowDevDisplay();
                 break;
@@ -88,7 +86,9 @@ window.onload = function() {
 
 $(document).ready(function() {
     $(document).mousedown(function(event) {
-        if ($('#animation').is(':visible')) {
+        console.log(event)
+        if ($('#animControlOptions').is(':visible')) {
+            console.log("controlPassCheck");
             switch(event.button) {
             case 2: // Right Click
                 SendClientMessage('controlPass', {});
@@ -98,7 +98,7 @@ $(document).ready(function() {
     });
 
     $(document).mouseup(function(event) {
-        if ($('#animation').is(':visible')) {
+        if ($('#animControlOptions').is(':visible')) {
             switch(event.button) {
             case 2: // Right Click
                 SendClientMessage('controlPassEnd', {});
@@ -108,38 +108,43 @@ $(document).ready(function() {
     });
 
     $(document).keydown(function(event) {
-        var textEntryElement = document.getElementById('textEntry');
+        var animSearchElement = document.getElementById('valueAnimSearch');
 
-        if (document.activeElement.classList.contains('entryField')) {
-            if (event.key == "Escape") {
-                document.activeElement.blur()
+        // TODO: Make it so first press of escape just closes the active settings window and 2nd press closes anim menu
+        if ($('#animControlOptions').is(':visible') && event.key == "Escape") {
+            var escaped = false;
+            if ($('#animSearchField').is(':visible')) {
+                toggleSearch("off");
+                escaped = true;
             }
-            return;
-        }
-        // if (textEntryElement == document.activeElement) {
-        //     if (event.key == "Escape") {
-        //         textEntryElement.blur()
-        //     }
-        //     return;
-        // }
+            if ($('#animTimingsOptions').is(':visible')) {
+                toggleTimings("off");
+                escaped = true;
+            }
+            if ($('#animFlagsOptions').is(':visible')) {
+                toggleFlags("off");
+                escaped = true;
+            }
+            if ($('#animEntityOptions').is(':visible')) {
+                toggleEntity("off");
+                escaped = true;
+            }
+            if (escaped == true) { return; }
 
-        switch(event.key) {
-            case "Escape": //ESC
             SendClientMessage('exit', {});
             HideDevDisplay();
             HideAnimDisplay();
+
             return;
         }
 
-
-        if ($('#dev-display').is(':visible')) {
+        if ($('#devMenu').is(':visible')) {
             // dev key hud is visible, handle key press
             HandleDevMenuKey(event.key);
 
         } else if ($('#animControlOptions').is(':visible')) {
             switch(event.key) {
                 case " ":
-                    console.log(event)
                     if (typeof event.target.onclick == "function") {
                         event.target.onclick.apply();
                     } else {
@@ -172,7 +177,7 @@ $(document).ready(function() {
                 case "s":
                     if (repeatS || event.shiftKey) {
                         toggleSearch("on");
-                        textEntryElement.focus();
+                        animSearchElement.focus();
                         event.preventDefault();
                     } else {
                         toggleSearch("toggle");
@@ -184,43 +189,56 @@ $(document).ready(function() {
         }
     });
 
-    $("div#textEntry").keydown(function(e) {
+    $("div#valueAnimSearch.entryField").keydown(function(e) {
         if (e.code == "Enter") {
             e.preventDefault();
             var dictList = document.getElementById("animDictList");
             var animList = document.getElementById("animList");
             document.getElementById('animDictList').style.display = "flex";
             document.getElementById('animList').style.display = "flex";
-            // dictList.innerHTML = "";
+            dictList.innerHTML = "";
             dictList.scrollTop = 0;
             dictList.scrollLeft = -1000;
-            // animList.innerHTML = "";
+            animList.innerHTML = "";
             animList.scrollTop = 0;
             animList.scrollLeft = -1000;
-            searchAnimDicts(this.innerHTML);
-        }
-    });
-
-    $("div#anim-search.field").keydown(function(e) {
-        if (e.code == "Enter") {
-            e.preventDefault();
-            var dictResults = document.getElementById("dict-results");
-            var animResults = document.getElementById("anim-results");
-            dictResults.innerHTML = "";
-            dictResults.scrollTop = 0;
-            animResults.innerHTML = "";
-            animResults.scrollTop = 0;
-            searchAnimDicts(this.innerHTML);
-        }
-
-        if (e.code == "Tab") {
-            e.preventDefault();
+            searchRedMAnims(this.innerHTML);
         }
     });
 
     SendClientMessagePromise('initAnims', {}).then(function(resp) {
             animations = JSON.parse(resp.animations);
         });
+
+    SendClientMessagePromise('initAnimFlags', {}).then(function(resp) {
+        var flagList = document.getElementById('animFlagsOptions');
+        var ul = document.createElement('ul');
+        ul.setAttribute('id', 'animFlags');
+
+        var flags = JSON.parse(resp.flags);
+        flags.forEach(flag => {
+            var flagLabel = document.createElement('div');
+            flagLabel.classList.add('check');
+            flagLabel.classList.add('entryLabel');
+            flagLabel.innerHTML = flag.name;
+
+            var flagField = document.createElement('div');
+            flagField.setAttribute('id', "flag-" + flag.value);
+            flagField.classList.add('check');
+            flagField.classList.add('toggleField');
+            flagField.setAttribute('tabindex', "4");
+            flagField.setAttribute('role', "button");
+            flagField.setAttribute('aria-pressed', "false");
+            flagField.setAttribute('onclick', "toggleFlag(" + flag.value + ")");
+
+            var li = document.createElement('li');
+            li.appendChild(flagLabel);
+            li.appendChild(flagField);
+            ul.appendChild(li);
+        });
+
+        flagList.appendChild(ul);
+    })
 });
 
 InitializeTree = function(optionTree) {
@@ -313,26 +331,30 @@ UpdateCrosshair = function(data) {
 }
 
 
-
 ShowDevDisplay = function() {
-    $("#dev-display").show();
+    document.getElementById('devMenu').style.display = "flex";
 }
 
 HideDevDisplay = function() {
-    $("#dev-display").hide();
+    document.getElementById('devMenu').style.display = "none";
 }
 
 ShowAnimDisplay = function() {
-    $("#animation").show();
+    document.getElementById('animControlOptions').style.display = "flex";
+    document.getElementById('activeAnimDisplay').style.display = "flex";
 }
 
 HideAnimDisplay = function() {
-    $("#animation").hide();
+    document.getElementById('animControlOptions').style.display = "none";
+    document.getElementById('activeAnimDisplay').style.display = "none";
+    document.getElementById('animDictList').style.display = "none";
+    document.getElementById('animList').style.display = "none";
+    document.getElementById('animSearchField').style.display = "none";
+    document.getElementById('animTimingsOptions').style.display = "none";
+    document.getElementById('animFlagsOptions').style.display = "none";
 }
 
-
 // Animation HUD
-
 function toggleOption(option) {
     var element = null;
     switch (option) {
@@ -403,7 +425,13 @@ function toggleOption(option) {
     }
 }
 
-function toggleFlag(flag) {
+toggleFlag = function(flag) {
+    var flagElement = document.getElementById("flag-" + flag);
+    flagElement.classList.toggle("selected");
+}
+
+
+function toggleFlag_dep(flag) {
     var loopElement = document.getElementById("icon-loop");
     var flag1Element = document.getElementById("flag-1");
     var flag2Element = document.getElementById("flag-2");
@@ -478,13 +506,7 @@ function stopAnimation() {
 }
 
 function searchAnims(animDict) {
-    var animResults = document.getElementById("anim-results");
-    animResults.innerHTML = "";
-    animResults.scrollTop = 0;
-    var resultUL = document.createElement('ul');
-    animResults.appendChild(resultUL);
     var results = [];
-
     Object.values(animations[animDict]).forEach(anim => {
         results.push({
             anim: anim,
@@ -493,38 +515,38 @@ function searchAnims(animDict) {
     });
 
     results.sort(function(a, b) {
-        if (a.anim < b.anim) {
-            return -1;
-        }
-        if (a.anim > b.anim) {
-            return 1;
-        }
+        if (a.anim < b.anim) { return -1; }
+        if (a.anim > b.anim) { return 1; }
         return 0;
     });
 
+    var animResults = document.getElementById("animList");
+    animResults.innerHTML = "";
+    var ul = document.createElement('ul');
     for (var i=0; i < results.length; ++i) {
         var li = document.createElement('li');
-        li.setAttribute('data-animDict', results[i].animDict);
-        li.setAttribute('class', "largeResult")
         li.innerHTML = results[i].anim;
         li.addEventListener('click', function() {
-            document.getElementById("active-anim").innerHTML = this.innerHTML;
-            $("#copyAnim").html(this.innerHTML);
+            document.getElementById("activeAnimName").innerHTML = this.innerHTML;
             toggleOption('anim-play');
         });
-        resultUL.appendChild(li);
+        ul.appendChild(li);
     }
+    animResults.appendChild(ul);
+    if (results.length < 4) {
+        animResults.style.minHeight = results.length + ".4vh";
+    } else {
+        animResults.style.minHeight = "none";
+    }
+    animResults.scrollTop = 0;
+    animResults.scrollLeft = -1000;
+
 }
 
-function searchAnimDicts(searchValue) {
+function searchRedMAnims(searchValue) {
+    var dictResults = document.getElementById("animDictList");
     var maxResults = 10000;
-    var dictResults = document.getElementById("dict-results");
-    dictResults.innerHTML = "";
-    dictResults.scrollTop = 0;
-    var resultUL = document.createElement('ul');
-    dictResults.appendChild(resultUL);
     var results = [];
-
     if (!searchValue || searchValue == "") {
         dictResults.innerHTML = "";
         return;
@@ -558,21 +580,26 @@ function searchAnimDicts(searchValue) {
         return 0;
     });
 
+    dictResults.innerHTML = "";
+    var ul = document.createElement('ul');
     for (var i=0; i < results.length && i < maxResults; ++i) {
         var li = document.createElement('li');
-        li.setAttribute('data-animDict', results[i].animDict);
-        li.setAttribute('class', "largeResult")
-        li.innerHTML = results[i].animDict;
         li.addEventListener('click', function() {
-            document.getElementById("active-animDict").innerHTML = this.innerHTML;
-            $("#copyAnimDict").html(this.innerHTML);
-            document.getElementById("active-anim").innerHTML = "";
-            $("#copyAnim").html("");
+            document.getElementById("activeAnimDict").innerHTML = this.innerHTML;
+            document.getElementById("activeAnimName").innerHTML = "";
             searchAnims(this.innerHTML)
         })
-
-        resultUL.appendChild(li);
+        li.innerHTML = results[i].animDict;
+        ul.appendChild(li);
     }
+    dictResults.appendChild(ul);
+    if (results.length < 30) {
+        dictResults.style.minHeight = results.length + ".4vh";
+    } else {
+        dictResults.style.minHeight = "30vh";
+    }
+    dictResults.scrollTop = 0;
+    dictResults.scrollLeft = -1000;
 }
 
 function togglePlay(state) {
@@ -651,7 +678,7 @@ function toggleSearch(state) {
         document.getElementById('animSearchField').style.display = "none";
         document.getElementById('animDictList').style.display = "none";
         document.getElementById('animList').style.display = "none";
-        document.getElementById('textEntry').blur();
+        document.getElementById('valueAnimSearch').blur();
     }
 }
 
@@ -724,9 +751,9 @@ function toggleEntity(state) {
         toggleTimings("off")
         toggleFlags("off")
         document.getElementById('button-entity').focus();
-        // TODO: Display elements
+        document.getElementById('animEntityOptions').style.display = "flex";
     } else {
-        // TODO: Hide elements
+        document.getElementById('animEntityOptions').style.display = "none";
     }
 }
 
