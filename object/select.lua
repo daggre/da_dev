@@ -50,6 +50,7 @@ local SelectModeControlCheck = function(obj)
                     SelectedObject = nil
                 else
                     SelectedObject = HoveredObject
+                    SendNUIMessage({type = "clipboard", text = SelectedObject})
                 end
             else
                 SelectedObject = nil
