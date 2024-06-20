@@ -2,11 +2,11 @@ var TreeKeys = {}
 var DevKeys = {}
 var HudTree = {}
 
-var debug = false
-var animations = {}
-var flagTotals = 0
-var repeatS = false
-var controlPassActive = false
+var Animations = {}
+var FlagTotals = 0
+var IKFlagTotals = 0
+var RepeatF = false
+var ControlPassActive = false
 
 function SendClientMessage(endpoint, data) {
     const url = `https://${GetParentResourceName()}/${endpoint}`;
@@ -76,7 +76,7 @@ $(document).ready(function() {
                 }
                 break;
             case 2: // Right Click
-                controlPassActive = true;
+                ControlPassActive = true;
                 SendClientMessage('controlPass', {});
                 break;
             }
@@ -87,7 +87,7 @@ $(document).ready(function() {
         if ($('#animControlOptions').is(':visible')) {
             switch(event.button) {
             case 2: // Right Click
-                controlPassActive = false;
+                ControlPassActive = false;
                 SendClientMessage('controlPassEnd', {});
                 break;
             }
@@ -95,7 +95,7 @@ $(document).ready(function() {
     });
 
     $(document).keydown(function(event) {
-        if (controlPassActive) { return; }
+        if (ControlPassActive) { return; }
         var animSearchElement = document.getElementById('valueAnimSearch');
         // Check if target element has attribute contenteditable
         if (event.key != "Escape" && event.target.getAttribute('contenteditable') == "true") { return; }
@@ -112,6 +112,10 @@ $(document).ready(function() {
             }
             if ($('#animFlagsOptions').is(':visible')) {
                 toggleFlags("off");
+                escaped = true;
+            }
+            if ($('#animIKFlagsOptions').is(':visible')) {
+                toggleIKFlags("off");
                 escaped = true;
             }
             if ($('#animEntityOptions').is(':visible')) {
@@ -150,29 +154,33 @@ $(document).ready(function() {
                     toggleTimings("toggle");
                     event.preventDefault();
                     break;
-                case "f":
+                case "o":
                     toggleFlags("toggle");
+                    break;
+                case "i":
+                    toggleIKFlags("toggle");
                     break;
                 case "e":
                     toggleEntity("toggle");
                     break;
+                case "s":
                 case "k":
                     toggleStop();
                     break;
                 case "l":
                     toggleLoop();
                     break;
-                case "S":
-                case "s":
-                    if (repeatS || event.shiftKey) {
+                case "F":
+                case "f":
+                    if (RepeatF || event.shiftKey) {
                         toggleSearch("on");
                         animSearchElement.focus();
                         event.preventDefault();
                     } else {
                         toggleSearch("toggle");
                     }
-                    repeatS = true;
-                    setTimeout(function() { repeatS = false; }, 650);
+                    RepeatF = true;
+                    setTimeout(function() { RepeatF = false; }, 650);
                     break;
                 case "x":
                     if ($('#animSearchField').is(':visible')) {
@@ -194,6 +202,15 @@ $(document).ready(function() {
                             var flagElement = document.getElementById("flag-" + value);
                             if (flagElement.classList.contains("selected")) {
                                 toggleFlag(value);
+                            }
+                        }
+                    } else if ($('#animIKFlagsOptions').is(':visible')) {
+                        // Clear all ikflags
+                        for (var i=0; i < 32 ; i++) {
+                            let value = toUint32(1 << i);
+                            var flagElement = document.getElementById("ikflag-" + value);
+                            if (flagElement.classList.contains("selected")) {
+                                toggleIKFlag(value);
                             }
                         }
                     } else if ($('#animEntityOptions').is(':visible')) {
@@ -228,7 +245,7 @@ $(document).ready(function() {
     });
 
     SendClientMessage('initAnims', {}).then(function(resp) {
-            animations = JSON.parse(resp.animations);
+            Animations = JSON.parse(resp.animations);
         });
 
     SendClientMessage('initAnimFlags', {}).then(function(resp) {
@@ -247,7 +264,7 @@ $(document).ready(function() {
             flagField.setAttribute('id', "flag-" + flag.value);
             flagField.classList.add('check');
             flagField.classList.add('toggleField');
-            flagField.setAttribute('tabindex', "4");
+            flagField.setAttribute('tabindex', "5");
             flagField.setAttribute('role', "button");
             flagField.setAttribute('aria-pressed', "false");
             flagField.setAttribute('onclick', "toggleFlag(" + flag.value + ")");
@@ -266,6 +283,52 @@ $(document).ready(function() {
 
         var flagField = document.createElement('div');
         flagField.setAttribute('id', "flagTotals");
+        flagField.classList.add('check');
+        flagField.classList.add('entryField');
+        flagField.innerHTML = "0";
+
+        var li = document.createElement('li');
+        li.appendChild(flagLabel);
+        li.appendChild(flagField);
+        ul.appendChild(li);
+        flagList.appendChild(ul);
+    })
+
+    SendClientMessage('initIKAnimFlags', {}).then(function(resp) {
+        var flagList = document.getElementById('animIKFlagsOptions');
+        var ul = document.createElement('ul');
+        ul.setAttribute('id', 'animIKFlags');
+
+        var flags = JSON.parse(resp.flags);
+        flags.forEach(flag => {
+            var flagLabel = document.createElement('div');
+            flagLabel.classList.add('check');
+            flagLabel.classList.add('entryLabel');
+            flagLabel.innerHTML = flag.name;
+
+            var flagField = document.createElement('div');
+            flagField.setAttribute('id', "ikflag-" + flag.value);
+            flagField.classList.add('check');
+            flagField.classList.add('toggleField');
+            flagField.setAttribute('tabindex', "4");
+            flagField.setAttribute('role', "button");
+            flagField.setAttribute('aria-pressed', "false");
+            flagField.setAttribute('onclick', "toggleIKFlag(" + flag.value + ")");
+
+            var li = document.createElement('li');
+            li.appendChild(flagLabel);
+            li.appendChild(flagField);
+            ul.appendChild(li);
+        });
+
+
+        var flagLabel = document.createElement('div');
+        flagLabel.classList.add('check');
+        flagLabel.classList.add('entryLabel');
+        flagLabel.innerHTML = "TOTAL";
+
+        var flagField = document.createElement('div');
+        flagField.setAttribute('id', "IKFlagTotals");
         flagField.classList.add('check');
         flagField.classList.add('entryField');
         flagField.innerHTML = "0";
@@ -382,6 +445,7 @@ HideAnimDisplay = function() {
     document.getElementById('animSearchField').style.display = "none";
     document.getElementById('animTimingsOptions').style.display = "none";
     document.getElementById('animFlagsOptions').style.display = "none";
+    document.getElementById('animIKFlagsOptions').style.display = "none";
 }
 
 // Animation HUD
@@ -409,6 +473,9 @@ function toggleOption(option) {
         case "control-flags":
             toggleFlags("toggle");
             break;
+        case "control-ikflags":
+            toggleIKFlags("toggle");
+            break;
         case "control-entity":
             toggleEntity("toggle");
             break;
@@ -426,15 +493,15 @@ toggleFlag = function(flag) {
     var flagElement = document.getElementById("flag-" + flag);
     flagElement.classList.toggle("selected");
 
-    flagTotals = 0;
+    FlagTotals = 0;
     for (var i=0; i < 32 ; i++) {
         let value = toUint32(1 << i);
         var calcFlagElement = document.getElementById("flag-" + value);
         if (calcFlagElement.classList.contains("selected")) {
-            flagTotals += value;
+            FlagTotals += value;
         }
     }
-    document.getElementById("flagTotals").innerHTML = flagTotals;
+    document.getElementById("flagTotals").innerHTML = FlagTotals;
 
     switch(flag) {
         case 1:
@@ -446,6 +513,21 @@ toggleFlag = function(flag) {
             }
             break;
         }
+}
+
+toggleIKFlag = function(flag) {
+    var flagElement = document.getElementById("ikflag-" + flag);
+    flagElement.classList.toggle("selected");
+
+    IKFlagTotals = 0;
+    for (var i=0; i < 31 ; i++) {
+        let value = toUint32(1 << i);
+        var calcFlagElement = document.getElementById("ikflag-" + value);
+        if (calcFlagElement.classList.contains("selected")) {
+            IKFlagTotals += value;
+        }
+    }
+    document.getElementById("IKFlagTotals").innerHTML = IKFlagTotals;
 }
 
 
@@ -471,7 +553,8 @@ function playAnimation() {
         blendOutSpeed: blendOut,
         playbackRate: playback,
         duration: duration,
-        flag: flagTotals,
+        flag: FlagTotals,
+        ikFlag: IKFlagTotals,
     });
 }
 
@@ -481,7 +564,7 @@ function stopAnimation() {
 
 function searchAnims(animDict) {
     var results = [];
-    Object.values(animations[animDict]).forEach(anim => {
+    Object.values(Animations[animDict]).forEach(anim => {
         results.push({
             anim: anim,
             animDict: animDict,
@@ -526,13 +609,13 @@ function searchRedMAnims(searchValue) {
         return;
     }
 
-    Object.keys(animations).forEach(animDict => {
+    Object.keys(Animations).forEach(animDict => {
         if (animDict.toLowerCase().includes(searchValue.toLowerCase())) {
             results.push({
                 animDict: animDict
             });
         } else {
-            animations[animDict].every(animName => {
+            Animations[animDict].every(animName => {
                 if (animName.toLowerCase().includes(searchValue.toLowerCase())) {
                     results.push({
                         animDict: animDict
@@ -638,10 +721,11 @@ function toggleSearch(state) {
     }
 
     if (element.classList.contains('selected')) {
-        toggleSettings("on")
-        toggleTimings("off")
-        toggleFlags("off")
-        toggleEntity("off")
+        toggleSettings("on");
+        toggleTimings("off");
+        toggleFlags("off");
+        toggleIKFlags("off");
+        toggleEntity("off");
         document.getElementById('button-search').focus();
         document.getElementById('animSearchField').style.display = "flex";
         document.getElementById('animDictList').style.display = "flex";
@@ -668,10 +752,11 @@ function toggleTimings(state) {
     }
 
     if (element.classList.contains('selected')) {
-        toggleSettings("on")
-        toggleSearch("off")
-        toggleFlags("off")
-        toggleEntity("off")
+        toggleSettings("on");
+        toggleSearch("off");
+        toggleFlags("off");
+        toggleIKFlags("off");
+        toggleEntity("off");
         document.getElementById('button-timings').focus();
         document.getElementById('animTimingsOptions').style.display = "flex";
     } else {
@@ -694,14 +779,42 @@ function toggleFlags(state) {
     }
 
     if (element.classList.contains('selected')) {
-        toggleSettings("on")
-        toggleSearch("off")
-        toggleTimings("off")
-        toggleEntity("off")
+        toggleSettings("on");
+        toggleSearch("off");
+        toggleTimings("off");
+        toggleIKFlags("off");
+        toggleEntity("off");
         document.getElementById('button-flags').focus();
         document.getElementById('animFlagsOptions').style.display = "flex";
     } else {
         document.getElementById('animFlagsOptions').style.display = "none";
+        if (document.activeElement.classList.contains('entryField')) {
+            document.activeElement.blur();
+        }
+    }
+}
+
+function toggleIKFlags(state) {
+    var element = document.getElementById('button-ikflags');
+
+    if (state == "on") {
+        element.classList.add('selected');
+    } else if (state == "off") {
+        element.classList.remove('selected');
+    } else if (state == "toggle") {
+        element.classList.toggle('selected');
+    }
+
+    if (element.classList.contains('selected')) {
+        toggleSettings("on");
+        toggleSearch("off");
+        toggleTimings("off");
+        toggleFlags("off");
+        toggleEntity("off");
+        document.getElementById('button-ikflags').focus();
+        document.getElementById('animIKFlagsOptions').style.display = "flex";
+    } else {
+        document.getElementById('animIKFlagsOptions').style.display = "none";
         if (document.activeElement.classList.contains('entryField')) {
             document.activeElement.blur();
         }
@@ -720,10 +833,11 @@ function toggleEntity(state) {
     }
 
     if (element.classList.contains('selected')) {
-        toggleSettings("on")
-        toggleSearch("off")
-        toggleTimings("off")
-        toggleFlags("off")
+        toggleSettings("on");
+        toggleSearch("off");
+        toggleTimings("off");
+        toggleFlags("off");
+        toggleIKFlags("off");
         document.getElementById('button-entity').focus();
         document.getElementById('animEntityOptions').style.display = "flex";
     } else {
