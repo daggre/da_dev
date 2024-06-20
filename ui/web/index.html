@@ -35,9 +35,11 @@
                     onclick="toggleOption('control-search');"></div>
                 <div id="button-timings" class="control" tabindex="3" role="button" aria-pressed="false"
                     onclick="toggleOption('control-timings');"></div>
-                <div id="button-flags" class="control" tabindex="4" role="button" aria-pressed="false"
+                <div id="button-ikflags" class="control" tabindex="4" role="button" aria-pressed="false"
+                    onclick="toggleOption('control-ikflags');"></div>
+                <div id="button-flags" class="control" tabindex="5" role="button" aria-pressed="false"
                     onclick="toggleOption('control-flags');"></div>
-                <div id="button-entity" class="control" tabindex="5" role="button" aria-pressed="false"
+                <div id="button-entity" class="control" tabindex="6" role="button" aria-pressed="false"
                     onclick="toggleOption('control-entity');"></div>
             </li>
             <li id="anim-control-options">
@@ -49,6 +51,8 @@
                     onclick="toggleOption('control-stop');"></div>
                 <div id="button-repeat" class="control" tabindex="11" role="button" aria-pressed="false"
                     onclick="toggleOption('control-repeat');"></div>
+                <div id="button-torso" class="control" tabindex="11" role="button" aria-pressed="false"
+                    onclick="toggleOption('control-torso');"></div>
             </li>
         </ul>
     </div>
@@ -84,11 +88,13 @@
     </div>
     <div id="animFlagsOptions" class="dev">
     </div>
+    <div id="animIKFlagsOptions" class="dev">
+    </div>
     <div id="animEntityOptions" class="dev">
         <ul id="animEntity">
             <li>
                 <div class="entryLabel">Entity</div>
-                <div id="animEntityField" class="entryField" contenteditable="true" tabindex="5"></div>
+                <div id="animEntityField" class="entryField" contenteditable="true" tabindex="6"></div>
             </li>
         </ul>
     </div>

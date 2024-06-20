@@ -92,7 +92,7 @@ RegisterNUICallback('playAnim', function(data, cb)
             data.duration,
             data.flag,
             data.playbackRate,
-            data.ikFlags,
+            data.ikFlag,
             data.taskFilter
         )
     end
@@ -111,6 +111,10 @@ end)
 
 RegisterNUICallback('initAnimFlags', function(data, cb)
     cb({ flags = json.encode(AnimFlags) })
+end)
+
+RegisterNUICallback('initIKAnimFlags', function(data, cb)
+    cb({ flags = json.encode(IKFlags) })
 end)
 
 AddEventHandler('onResourceStop', function(resourceName)

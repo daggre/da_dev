@@ -174,6 +174,7 @@
 
 #animTimingsOptions li,
 #animFlagsOptions li,
+#animIKFlagsOptions li,
 #animEntityOptions li,
 #activeAnimDisplay li {
     margin-bottom: 3px;
@@ -188,10 +189,10 @@
     float: left;
 }
 
-#animFlagsOptions {
+#animFlagsOptions, #animIKFlagsOptions {
     left: 2vh;
     top: 2vh;
-    width: 15vw;
+    width: 20vw;
     max-height: 70vh;
     padding-top: 2px;
     padding-bottom: 2px;
@@ -199,7 +200,7 @@
     /*display: flex;*/
 }
 
-#animFlags li {
+#animFlags li, #animIKFlags li {
     float: right;
 }
 

@@ -31,7 +31,8 @@ client_scripts {
     "ui/ui.lua",
     "ui/map.lua",
     "dat/animations.lua",
-    "dat/anim_flags.lua",
+    "dat/af_flags.lua",
+    "dat/aik_flags.lua",
 }
 
 files {
