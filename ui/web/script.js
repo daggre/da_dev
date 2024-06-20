@@ -41,7 +41,6 @@ window.onload = function() {
     window.addEventListener('message', function(msg) {
         switch(msg.data.type) {
             case "show":
-                console.log("Showing dev display")
                 InitializeTree(msg.data.optionTree[0]);
                 ShowDevDisplay();
                 break;
@@ -351,7 +350,6 @@ ShowCrosshair = function(data) {
 }
 
 UpdateCrosshair = function(data) {
-    // console.log("Updating crosshair", data)
 	var crosshair = document.querySelector('#crosshair');
 	if (data.selected) {
 		crosshair.className = 'selected';
@@ -415,43 +413,6 @@ function toggleOption(option) {
             toggleEntity("toggle");
             break;
 
-        // Old anim code
-        case "timings":
-            element = document.getElementById('icon-timings');
-            element.classList.toggle('selected');
-            if (element.classList.contains('selected')) {
-                $('#anim-timings').css("display", "flex");
-            } else {
-                $('#anim-timings').hide();
-            }
-            break;
-        case "flags":
-            element = document.getElementById('icon-flags')
-            element.classList.toggle('selected');
-            if (element.classList.contains('selected')) {
-                $('#anim-flags').css("display", "flex");
-            } else {
-                $('#anim-flags').hide();
-            }
-            break;
-        case "entity":
-            element = document.getElementById('icon-entity')
-            element.classList.toggle('selected');
-            if (element.classList.contains('selected')) {
-                $('#anim-entity').css("display", "flex");
-            } else {
-                $('#anim-entity').hide();
-            }
-            break;
-        case "search":
-            element = document.getElementById('icon-search')
-            element.classList.toggle('selected');
-            if (element.classList.contains('selected')) {
-                $('#anim-search').css("display", "flex");
-            } else {
-                $('#anim-search').hide();
-            }
-            break;
         default:
             break;
     }
