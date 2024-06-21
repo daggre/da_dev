@@ -1,12 +1,8 @@
-var TreeKeys = {}
-var DevKeys = {}
-var HudTree = {}
-
-var Animations = {}
-var FlagTotals = 0
-var IKFlagTotals = 0
-var RepeatF = false
 var ControlPassActive = false
+
+function toUint32(value) {
+    return value >>> 0;
+}
 
 function SendClientMessage(endpoint, data) {
     const url = `https://${GetParentResourceName()}/${endpoint}`;
@@ -42,7 +38,7 @@ window.onload = function() {
         switch(msg.data.type) {
             case "show":
                 if ($('#animControlOptions').is(':visible')) {
-                    HideAnimDisplay();
+                    toggleAnimDisplay("off");
                     SendClientMessage('transitionControl', {
                         from: "Anim",
                         to: "Dev",
@@ -50,20 +46,25 @@ window.onload = function() {
                     ControlPassActive = false;
                 }
                 InitializeTree(msg.data.optionTree[0]);
-                ShowDevDisplay();
+                document.getElementById('devMenu').style.display = "flex";
                 break;
             case "showAnim":
-                ShowAnimDisplay();
+                toggleAnimDisplay("on");
                 break;
             case "hide":
-                HideDevDisplay();
-                HideAnimDisplay();
+                ToggleDevDisplay("off");
+                document.getElementById('devMenu').style.display = "none";
+                toggleAnimDisplay("off");
                 break;
             case "objSelectMode":
-                ShowCrosshair(msg.data.data);
+                if (msg.data.data) {
+                    toggleObjectMode("on");
+                } else {
+                    toggleObjectMode("off");
+                }
                 break;
             case "objUpdate":
-                UpdateCrosshair(msg.data.data);
+                updateCrosshair(msg.data.data);
                 break;
             case "clipboard":
                 copyToClipboard(msg.data.text);
@@ -137,15 +138,15 @@ $(document).ready(function() {
             if (escaped == true) { return; }
 
             SendClientMessage('exit', {});
-            HideDevDisplay();
-            HideAnimDisplay();
+            document.getElementById('devMenu').style.display = "none";
+            toggleAnimDisplay("off");
 
             return;
         }
 
         if ($('#devMenu').is(':visible')) {
             // dev key hud is visible, handle key press
-            HandleDevMenuKey(event.key);
+            handleDevMenuKey(event.key);
 
         } else if ($('#animControlOptions').is(':visible')) {
             switch(event.key) {
@@ -274,8 +275,8 @@ $(document).ready(function() {
     });
 
     SendClientMessage('initAnims', {}).then(function(resp) {
-            Animations = JSON.parse(resp.animations);
-        });
+        Animations = JSON.parse(resp.animations);
+    });
 
     SendClientMessage('initAnimFlags', {}).then(function(resp) {
         var flagList = document.getElementById('animFlagsOptions');
@@ -304,7 +305,6 @@ $(document).ready(function() {
             ul.appendChild(li);
         });
 
-
         var flagLabel = document.createElement('div');
         flagLabel.classList.add('check');
         flagLabel.classList.add('entryLabel');
@@ -321,7 +321,7 @@ $(document).ready(function() {
         li.appendChild(flagField);
         ul.appendChild(li);
         flagList.appendChild(ul);
-    })
+    });
 
     SendClientMessage('initIKAnimFlags', {}).then(function(resp) {
         var flagList = document.getElementById('animIKFlagsOptions');
@@ -367,10 +367,17 @@ $(document).ready(function() {
         li.appendChild(flagField);
         ul.appendChild(li);
         flagList.appendChild(ul);
-    })
+    });
+
 });
 
-InitializeTree = function(optionTree) {
+// Dev Tree //
+
+var DevKeys = {}
+var HudTree = {}
+var TreeKeys = {}
+
+function InitializeTree(optionTree) {
     TreeKeys = {}
     DevKeys = {}
     HudTree = optionTree
@@ -391,19 +398,19 @@ InitializeTree = function(optionTree) {
     }
 }
 
-AppendOption = function(index, value) {
+function AppendOption(index, value) {
     DevKeys[value.key] = index;
     const html = '<div class="row"> <div class="column value">'+value.optionName+'</div> <div class="column key">'+value.key+'</div> </div>';
     $("#devOptions").append(html);
 }
 
-AppendMenuOption = function(index, value) {
+function AppendMenuOption(index, value) {
     TreeKeys[value.key] = index;
     const html = '<div class="row"> <div class="column value">  '+value.menuName+'</div> <div class="column key">'+value.key+'</div> </div>';
     $("#menuOptions").append(html);
 }
 
-KeyTranslate = function(key) {
+function KeyTranslate(key) {
     let map = {
         // Translate fr keyboard
         '&': '1',
@@ -415,7 +422,7 @@ KeyTranslate = function(key) {
     return map.hasOwnProperty(lowercaseKey) ? map[lowercaseKey] : lowercaseKey;
 }
 
-HandleDevMenuKey = function(key) {
+function handleDevMenuKey(key) {
     let translatedKey = KeyTranslate(key)
     if (TreeKeys[translatedKey]) {
         let idx = TreeKeys[translatedKey]
@@ -426,22 +433,29 @@ HandleDevMenuKey = function(key) {
             menuName: HudTree.options[idx].menuName,
             optionName: HudTree.options[idx].optionName
         });
-        HideDevDisplay();
+        document.getElementById('devMenu').style.display = "none";
     } else {
         SendClientMessage('exit', { key: translatedKey });
-        HideDevDisplay();
+        document.getElementById('devMenu').style.display = "none";
     }
 }
 
-ShowCrosshair = function(data) {
-    if (data) {
-        $('#objSelHud').show();
+// Crosshair //
+function toggleObjectMode(state) {
+    if (state == "on") {
+        document.getElementById('objSelHud').style.display = "flex";
+    } else if (state == "off") {
+        document.getElementById('objSelHud').style.display = "none";
     } else {
-        $('#objSelHud').hide();
+        if ($('#objSelHud').is(':visible')) {
+            document.getElementById('objSelHud').style.display = "none";
+        } else {
+            document.getElementById('objSelHud').style.display = "flex";
+        }
     }
 }
 
-UpdateCrosshair = function(data) {
+function updateCrosshair(data) {
 	var crosshair = document.querySelector('#crosshair');
 	if (data.selected) {
 		crosshair.className = 'selected';
@@ -452,127 +466,39 @@ UpdateCrosshair = function(data) {
     }
 }
 
+// Animation HUD //
 
-ShowDevDisplay = function() {
-    document.getElementById('devMenu').style.display = "flex";
-}
+var Animations = {}
+var FlagTotals = 0
+var IKFlagTotals = 0
+var RepeatF = false
 
-HideDevDisplay = function() {
-    document.getElementById('devMenu').style.display = "none";
-}
-
-ShowAnimDisplay = function() {
-    document.getElementById('animControlOptions').style.display = "flex";
-    document.getElementById('activeAnimDisplay').style.display = "flex";
-}
-
-HideAnimDisplay = function() {
-    document.getElementById('animControlOptions').style.display = "none";
-    document.getElementById('activeAnimDisplay').style.display = "none";
+function toggleAnimDisplay(state) {
+    // document.getElementById('animControlOptions').style.display = "none";
+    // document.getElementById('activeAnimDisplay').style.display = "none";
     document.getElementById('animDictList').style.display = "none";
     document.getElementById('animList').style.display = "none";
     document.getElementById('animSearchField').style.display = "none";
     document.getElementById('animTimingsOptions').style.display = "none";
     document.getElementById('animFlagsOptions').style.display = "none";
     document.getElementById('animIKFlagsOptions').style.display = "none";
-}
-
-// Animation HUD
-function toggleOption(option) {
-    var element = null;
-    switch (option) {
-        case "control-play":
-            togglePlay();
-            break;
-        case "control-stop":
-            toggleStop();
-            break;
-        case "control-repeat":
-            toggleLoop();
-            break;
-        case "control-settings":
-            toggleSettings("toggle");
-            break;
-        case "control-search":
-            toggleSearch("toggle");
-            break;
-        case "control-timings":
-            toggleTimings("toggle");
-            break;
-        case "control-flags":
-            toggleFlags("toggle");
-            break;
-        case "control-ikflags":
-            toggleIKFlags("toggle");
-            break;
-        case "control-entity":
-            toggleEntity("toggle");
-            break;
-        case "control-torso":
-            toggleTorso("toggle");
-            break;
-
-        default:
-            break;
-    }
-}
-
-toUint32 = function(value) {
-    return value >>> 0;
-}
-
-toggleFlag = function(flag) {
-    var flagElement = document.getElementById("flag-" + flag);
-    flagElement.classList.toggle("selected");
-
-    FlagTotals = 0;
-    for (var i=0; i < 32 ; i++) {
-        let value = toUint32(1 << i);
-        var calcFlagElement = document.getElementById("flag-" + value);
-        if (calcFlagElement.classList.contains("selected")) {
-            FlagTotals += value;
+    document.getElementById('animEntityOptions').style.display = "none";
+    if (state == "on") {
+        document.getElementById('animControlOptions').style.display = "flex";
+        document.getElementById('activeAnimDisplay').style.display = "flex";
+    } else if (state == "off") {
+        document.getElementById('animControlOptions').style.display = "none";
+        document.getElementById('activeAnimDisplay').style.display = "none";
+    } else {
+        if ($('#animControlOptions').is(':visible')) {
+            document.getElementById('animControlOptions').style.display = "none";
+            document.getElementById('activeAnimDisplay').style.display = "none";
+        } else {
+            document.getElementById('animControlOptions').style.display = "none";
+            document.getElementById('activeAnimDisplay').style.display = "none";
         }
     }
-    document.getElementById("flagTotals").innerHTML = FlagTotals;
-
-    switch(flag) {
-        case 1:
-            var selected = flagElement.classList.contains("selected");
-            if (selected) {
-                document.getElementById("button-repeat").classList.add("selected");
-            } else {
-                document.getElementById("button-repeat").classList.remove("selected");
-            }
-            break;
-        case 8:
-        case 16:
-            var flag8selected = document.getElementById("flag-8").classList.contains("selected");
-            var flag16selected = document.getElementById("flag-16").classList.contains("selected");
-            if (flag8selected && flag16selected) {
-                document.getElementById("button-torso").classList.add("selected");
-            } else {
-                document.getElementById("button-torso").classList.remove("selected");
-            }
-            break;
-            break;
-    }
 }
-
-toggleIKFlag = function(flag) {
-    var flagElement = document.getElementById("ikflag-" + flag);
-    flagElement.classList.toggle("selected");
-
-    IKFlagTotals = 0;
-    for (var i=0; i < 31 ; i++) {
-        let value = toUint32(1 << i);
-        var calcFlagElement = document.getElementById("ikflag-" + value);
-        if (calcFlagElement.classList.contains("selected")) {
-            IKFlagTotals += value;
-        }
-    }
-    document.getElementById("IKFlagTotals").innerHTML = IKFlagTotals;
-}
-
 
 function playAnimation() {
     var entity = document.getElementById("animEntityField").innerHTML;
@@ -866,6 +792,43 @@ function toggleFlags(state) {
     }
 }
 
+function toggleFlag(flag) {
+    var flagElement = document.getElementById("flag-" + flag);
+    flagElement.classList.toggle("selected");
+
+    FlagTotals = 0;
+    for (var i=0; i < 32 ; i++) {
+        let value = toUint32(1 << i);
+        var calcFlagElement = document.getElementById("flag-" + value);
+        if (calcFlagElement.classList.contains("selected")) {
+            FlagTotals += value;
+        }
+    }
+    document.getElementById("flagTotals").innerHTML = FlagTotals;
+
+    switch(flag) {
+        case 1:
+            var selected = flagElement.classList.contains("selected");
+            if (selected) {
+                document.getElementById("button-repeat").classList.add("selected");
+            } else {
+                document.getElementById("button-repeat").classList.remove("selected");
+            }
+            break;
+        case 8:
+        case 16:
+            var flag8selected = document.getElementById("flag-8").classList.contains("selected");
+            var flag16selected = document.getElementById("flag-16").classList.contains("selected");
+            if (flag8selected && flag16selected) {
+                document.getElementById("button-torso").classList.add("selected");
+            } else {
+                document.getElementById("button-torso").classList.remove("selected");
+            }
+            break;
+            break;
+    }
+}
+
 function toggleIKFlags(state) {
     var element = document.getElementById('button-ikflags');
 
@@ -892,6 +855,21 @@ function toggleIKFlags(state) {
             document.activeElement.blur();
         }
     }
+}
+
+function toggleIKFlag(flag) {
+    var flagElement = document.getElementById("ikflag-" + flag);
+    flagElement.classList.toggle("selected");
+
+    IKFlagTotals = 0;
+    for (var i=0; i < 31 ; i++) {
+        let value = toUint32(1 << i);
+        var calcFlagElement = document.getElementById("ikflag-" + value);
+        if (calcFlagElement.classList.contains("selected")) {
+            IKFlagTotals += value;
+        }
+    }
+    document.getElementById("IKFlagTotals").innerHTML = IKFlagTotals;
 }
 
 function toggleEntity(state) {
@@ -934,5 +912,3 @@ function toggleAnimHelp(state) {
     }
 }
 
-window.addEventListener('load', function() {
-});
