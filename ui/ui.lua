@@ -52,7 +52,22 @@ RegisterNUICallback('controlPassEnd', function(data, cb)
     cb(true)
 end)
 
+RegisterNUICallback('transitionControl', function(data, cb)
+    da.Log.DebugVerbose("transitionControl:", data)
+    -- Handle any transition away
+    if data.from == "Anim" then
+        da.Control.Passthrough(false)
+        SetNuiFocus(false, false)
+    end
 
+    -- Handle any transition to
+    if data.to == "Dev" then
+        SetNuiFocus(true, false)
+        SetNuiFocusKeepInput(false)
+    end
+
+    cb(true)
+end)
 
 RegisterNUICallback('playAnim', function(data, cb)
     -- The flag anim has some linebreaks in it so I need to find out why

@@ -41,6 +41,14 @@ window.onload = function() {
     window.addEventListener('message', function(msg) {
         switch(msg.data.type) {
             case "show":
+                if ($('#animControlOptions').is(':visible')) {
+                    HideAnimDisplay();
+                    SendClientMessage('transitionControl', {
+                        from: "Anim",
+                        to: "Dev",
+                    });
+                    ControlPassActive = false;
+                }
                 InitializeTree(msg.data.optionTree[0]);
                 ShowDevDisplay();
                 break;
@@ -102,6 +110,10 @@ $(document).ready(function() {
 
         if ($('#animControlOptions').is(':visible') && event.key == "Escape") {
             var escaped = false;
+            if ($('#animHelp').is(':visible')) {
+                toggleAnimHelp("off");
+                return;
+            }
             if ($('#animSearchField').is(':visible')) {
                 toggleSearch("off");
                 escaped = true;
@@ -143,6 +155,10 @@ $(document).ready(function() {
                     } else {
                         togglePlay();
                     }
+                    break;
+                case "?":
+                case "h":
+                    toggleAnimHelp("toggle");
                     break;
                 case "Backspace":
                     toggleStop();
@@ -779,6 +795,7 @@ function toggleSearch(state) {
         toggleFlags("off");
         toggleIKFlags("off");
         toggleEntity("off");
+        toggleAnimHelp("off");
         document.getElementById('button-search').focus();
         document.getElementById('animSearchField').style.display = "flex";
         document.getElementById('animDictList').style.display = "flex";
@@ -810,6 +827,7 @@ function toggleTimings(state) {
         toggleFlags("off");
         toggleIKFlags("off");
         toggleEntity("off");
+        toggleAnimHelp("off");
         document.getElementById('button-timings').focus();
         document.getElementById('animTimingsOptions').style.display = "flex";
     } else {
@@ -837,6 +855,7 @@ function toggleFlags(state) {
         toggleTimings("off");
         toggleIKFlags("off");
         toggleEntity("off");
+        toggleAnimHelp("off");
         document.getElementById('button-flags').focus();
         document.getElementById('animFlagsOptions').style.display = "flex";
     } else {
@@ -864,6 +883,7 @@ function toggleIKFlags(state) {
         toggleTimings("off");
         toggleFlags("off");
         toggleEntity("off");
+        toggleAnimHelp("off");
         document.getElementById('button-ikflags').focus();
         document.getElementById('animIKFlagsOptions').style.display = "flex";
     } else {
@@ -891,10 +911,26 @@ function toggleEntity(state) {
         toggleTimings("off");
         toggleFlags("off");
         toggleIKFlags("off");
+        toggleAnimHelp("off");
         document.getElementById('button-entity').focus();
         document.getElementById('animEntityOptions').style.display = "flex";
     } else {
         document.getElementById('animEntityOptions').style.display = "none";
+    }
+}
+
+function toggleAnimHelp(state) {
+    helpElement = document.getElementById('animHelp');
+    if (state == "on") {
+        helpElement.style.display = "block";
+    } else if (state == "off") {
+        helpElement.style.display = "none";
+    } else if (state == "toggle") {
+        if ($('#animHelp').is(':visible')) {
+            helpElement.style.display = "none";
+        } else {
+            helpElement.style.display = "block";
+        }
     }
 }
 

@@ -58,6 +58,25 @@
     display: none;
 }
 
+#animHelp {
+    top: 50vh;
+    left: 50vw;
+    width: fit-content;
+    height: fit-content;
+    transform: translate(-50%, -50%);
+    padding: 20px;
+    /*display: block;*/
+}
+
+#animHelpTitle {
+    text-align: center;
+    margin-bottom: 1vh;
+}
+
+#animHelp li {
+    margin-top: 2px;
+}
+
 #animControlOptions {
     color: var(--style-color);
     padding: 0px;
