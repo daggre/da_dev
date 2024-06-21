@@ -87,12 +87,12 @@ RegisterNUICallback('playAnim', function(data, cb)
             entity or PlayerPedId(),
             data.animDict,
             data.animName,
-            data.blendInSpeed,
-            data.blendOutSpeed,
-            data.duration,
-            data.flag,
-            data.playbackRate,
-            data.ikFlag,
+            tonumber(data.blendInSpeed),
+            tonumber(data.blendOutSpeed),
+            tonumber(data.duration),
+            tonumber(data.flag),
+            tonumber(data.playbackRate),
+            tonumber(data.ikFlag),
             data.taskFilter
         )
     end
