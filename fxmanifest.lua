@@ -25,6 +25,7 @@ client_scripts {
     "noclip/noclip.lua",
     "teleport/teleport.lua",
     "env.lua",
+    "entity/entity.lua",
     "object/gizmo.lua",
     "object/gfx_util.lua",
     "object/select.lua",

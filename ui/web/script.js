@@ -150,16 +150,20 @@ $(document).ready(function() {
                 case "c":
                     toggleSettings("toggle");
                     break;
+                case "2":
                 case "t":
                     toggleTimings("toggle");
                     event.preventDefault();
                     break;
+                case "4":
                 case "o":
                     toggleFlags("toggle");
                     break;
+                case "3":
                 case "i":
                     toggleIKFlags("toggle");
                     break;
+                case "5":
                 case "e":
                     toggleEntity("toggle");
                     break;
@@ -170,6 +174,10 @@ $(document).ready(function() {
                 case "l":
                     toggleLoop();
                     break;
+                case "u":
+                    toggleTorso("toggle");
+                    break;
+                case "1":
                 case "F":
                 case "f":
                     if (RepeatF || event.shiftKey) {
@@ -222,6 +230,11 @@ $(document).ready(function() {
                         document.getElementById("activeAnimName").innerHTML = "";
                     }
                     event.preventDefault();
+                    break;
+                case "r":
+                case "q":
+                case "p":
+                    togglePlay();
                     break;
             }
         }
@@ -479,6 +492,9 @@ function toggleOption(option) {
         case "control-entity":
             toggleEntity("toggle");
             break;
+        case "control-torso":
+            toggleTorso("toggle");
+            break;
 
         default:
             break;
@@ -512,7 +528,18 @@ toggleFlag = function(flag) {
                 document.getElementById("button-repeat").classList.remove("selected");
             }
             break;
-        }
+        case 8:
+        case 16:
+            var flag8selected = document.getElementById("flag-8").classList.contains("selected");
+            var flag16selected = document.getElementById("flag-16").classList.contains("selected");
+            if (flag8selected && flag16selected) {
+                document.getElementById("button-torso").classList.add("selected");
+            } else {
+                document.getElementById("button-torso").classList.remove("selected");
+            }
+            break;
+            break;
+    }
 }
 
 toggleIKFlag = function(flag) {
@@ -590,10 +617,10 @@ function searchAnims(animDict) {
         ul.appendChild(li);
     }
     animResults.appendChild(ul);
-    if (results.length < 4) {
+    if (results.length < 15) {
         animResults.style.minHeight = results.length + ".4vh";
     } else {
-        animResults.style.minHeight = "none";
+        animResults.style.minHeight = "15.4vh";
     }
     animResults.scrollTop = 0;
     animResults.scrollLeft = -1000;
@@ -688,6 +715,32 @@ function toggleStop() {
 
 function toggleLoop() {
     toggleFlag(1);
+}
+
+function toggleTorso(state) {
+    var element = document.getElementById('button-torso');
+    var flag8 = document.getElementById('flag-8');
+    var flag16 = document.getElementById('flag-16');
+
+    if (state == "on") {
+        element.classList.add('selected');
+        if (!flag8.classList.contains('selected')) { toggleFlag(8); }
+        if (!flag16.classList.contains('selected')) { toggleFlag(16); }
+    } else if (state == "off") {
+        element.classList.remove('selected');
+        if (flag8.classList.contains('selected')) { toggleFlag(8); }
+        if (flag16.classList.contains('selected')) { toggleFlag(16); }
+    } else if (state == "toggle") {
+        element.classList.toggle('selected');
+        var enabled = element.classList.contains('selected');
+        if (enabled) {
+            if (!flag8.classList.contains('selected')) { toggleFlag(8); }
+            if (!flag16.classList.contains('selected')) { toggleFlag(16); }
+        } else {
+            if (flag8.classList.contains('selected')) { toggleFlag(8); }
+            if (flag16.classList.contains('selected')) { toggleFlag(16); }
+        }
+    }
 }
 
 function toggleSettings(state) {
