@@ -37,8 +37,8 @@ window.onload = function() {
     window.addEventListener('message', function(msg) {
         switch(msg.data.type) {
             case "show":
-                if ($('#animControlOptions').is(':visible')) {
-                    toggleAnimDisplay("off");
+                if ($('#animHUD').is(':visible')) {
+                    toggleAnimHUD("off");
                     SendClientMessage('transitionControl', {
                         from: "Anim",
                         to: "Dev",
@@ -49,12 +49,12 @@ window.onload = function() {
                 document.getElementById('devMenu').style.display = "flex";
                 break;
             case "showAnim":
-                toggleAnimDisplay("on");
+                toggleAnimHUD("on");
                 break;
             case "hide":
                 ToggleDevDisplay("off");
                 document.getElementById('devMenu').style.display = "none";
-                toggleAnimDisplay("off");
+                toggleAnimHUD("off");
                 break;
             case "objSelectMode":
                 if (msg.data.data) {
@@ -75,7 +75,7 @@ window.onload = function() {
 
 $(document).ready(function() {
     $(document).mousedown(function(event) {
-        if ($('#animControlOptions').is(':visible')) {
+        if ($('#animHUD').is(':visible')) {
             switch(event.button) {
             case 0: // Left Click
                 if (event.target.id == "activeAnimDict" || event.target.id == "activeAnimName") {
@@ -93,7 +93,7 @@ $(document).ready(function() {
     });
 
     $(document).mouseup(function(event) {
-        if ($('#animControlOptions').is(':visible')) {
+        if ($('#animHUD').is(':visible')) {
             switch(event.button) {
             case 2: // Right Click
                 ControlPassActive = false;
@@ -105,155 +105,16 @@ $(document).ready(function() {
 
     $(document).keydown(function(event) {
         if (ControlPassActive) { return; }
-        var animSearchElement = document.getElementById('valueAnimSearch');
-        // Check if target element has attribute contenteditable
         if (event.key != "Escape" && event.target.getAttribute('contenteditable') == "true") { return; }
 
-        if ($('#animControlOptions').is(':visible') && event.key == "Escape") {
-            var escaped = false;
-            if ($('#animHelp').is(':visible')) {
-                toggleAnimHelp("off");
-                return;
-            }
-            if ($('#animSearchField').is(':visible')) {
-                toggleSearch("off");
-                escaped = true;
-            }
-            if ($('#animTimingsOptions').is(':visible')) {
-                toggleTimings("off");
-                escaped = true;
-            }
-            if ($('#animFlagsOptions').is(':visible')) {
-                toggleFlags("off");
-                escaped = true;
-            }
-            if ($('#animIKFlagsOptions').is(':visible')) {
-                toggleIKFlags("off");
-                escaped = true;
-            }
-            if ($('#animEntityOptions').is(':visible')) {
-                toggleEntity("off");
-                escaped = true;
-            }
-            if (escaped == true) { return; }
-
-            SendClientMessage('exit', {});
-            document.getElementById('devMenu').style.display = "none";
-            toggleAnimDisplay("off");
-
+        if ($('#devMenu').is(':visible')) {
+            HandleDevMenuKey(event);
             return;
         }
 
-        if ($('#devMenu').is(':visible')) {
-            // dev key hud is visible, handle key press
-            handleDevMenuKey(event.key);
-
-        } else if ($('#animControlOptions').is(':visible')) {
-            switch(event.key) {
-                case " ":
-                    if (typeof event.target.onclick == "function") {
-                        event.target.onclick.apply();
-                    } else {
-                        togglePlay();
-                    }
-                    break;
-                case "?":
-                case "h":
-                    toggleAnimHelp("toggle");
-                    break;
-                case "Backspace":
-                    toggleStop();
-                    break;
-                case "c":
-                    toggleSettings("toggle");
-                    break;
-                case "2":
-                case "t":
-                    toggleTimings("toggle");
-                    event.preventDefault();
-                    break;
-                case "4":
-                case "o":
-                    toggleFlags("toggle");
-                    break;
-                case "3":
-                case "i":
-                    toggleIKFlags("toggle");
-                    break;
-                case "5":
-                case "e":
-                    toggleEntity("toggle");
-                    break;
-                case "s":
-                case "k":
-                    toggleStop();
-                    break;
-                case "l":
-                    toggleLoop();
-                    break;
-                case "u":
-                    toggleTorso("toggle");
-                    break;
-                case "1":
-                case "F":
-                case "f":
-                    if (RepeatF || event.shiftKey) {
-                        toggleSearch("on");
-                        animSearchElement.focus();
-                        event.preventDefault();
-                    } else {
-                        toggleSearch("toggle");
-                    }
-                    RepeatF = true;
-                    setTimeout(function() { RepeatF = false; }, 650);
-                    break;
-                case "x":
-                    if ($('#animSearchField').is(':visible')) {
-                        // Clear search
-                        document.getElementById('animDictList').innerHTML = "";
-                        document.getElementById('animList').innerHTML = "";
-                        animSearchElement.innerHTML = "";
-                        animSearchElement.focus();
-                    } else if ($('#animTimingsOptions').is(':visible')) {
-                        // Reset timings to defaults
-                        document.getElementById("timingBlendIn").innerHTML = "1.0";
-                        document.getElementById("timingBlendOut").innerHTML = "1.0";
-                        document.getElementById("timingPlayback").innerHTML = "0";
-                        document.getElementById("timingDuration").innerHTML = "-1";
-                    } else if ($('#animFlagsOptions').is(':visible')) {
-                        // Clear all flags
-                        for (var i=0; i < 32 ; i++) {
-                            let value = toUint32(1 << i);
-                            var flagElement = document.getElementById("flag-" + value);
-                            if (flagElement.classList.contains("selected")) {
-                                toggleFlag(value);
-                            }
-                        }
-                    } else if ($('#animIKFlagsOptions').is(':visible')) {
-                        // Clear all ikflags
-                        for (var i=0; i < 32 ; i++) {
-                            let value = toUint32(1 << i);
-                            var flagElement = document.getElementById("ikflag-" + value);
-                            if (flagElement.classList.contains("selected")) {
-                                toggleIKFlag(value);
-                            }
-                        }
-                    } else if ($('#animEntityOptions').is(':visible')) {
-                        // Reset entity to player
-                        document.getElementById("animEntityField").innerHTML = "";
-                    } else {
-                        // Clear the selected animDict and animName
-                        document.getElementById("activeAnimDict").innerHTML = "";
-                        document.getElementById("activeAnimName").innerHTML = "";
-                    }
-                    event.preventDefault();
-                    break;
-                case "r":
-                case "q":
-                case "p":
-                    togglePlay();
-                    break;
-            }
+        if ($('#animHUD').is(':visible')) {
+            HandleAnimHUDKeys(event);
+            return;
         }
     });
 
@@ -372,7 +233,6 @@ $(document).ready(function() {
 });
 
 // Dev Tree //
-
 var DevKeys = {}
 var HudTree = {}
 var TreeKeys = {}
@@ -422,7 +282,8 @@ function KeyTranslate(key) {
     return map.hasOwnProperty(lowercaseKey) ? map[lowercaseKey] : lowercaseKey;
 }
 
-function handleDevMenuKey(key) {
+function HandleDevMenuKey(event) {
+    let key = event.key
     let translatedKey = KeyTranslate(key)
     if (TreeKeys[translatedKey]) {
         let idx = TreeKeys[translatedKey]
@@ -467,15 +328,13 @@ function updateCrosshair(data) {
 }
 
 // Animation HUD //
-
 var Animations = {}
 var FlagTotals = 0
 var IKFlagTotals = 0
-var RepeatF = false
+var KeyPressRepeat = false
 
-function toggleAnimDisplay(state) {
-    // document.getElementById('animControlOptions').style.display = "none";
-    // document.getElementById('activeAnimDisplay').style.display = "none";
+function toggleAnimHUD(state) {
+    // Toggle all submenus off
     document.getElementById('animDictList').style.display = "none";
     document.getElementById('animList').style.display = "none";
     document.getElementById('animSearchField').style.display = "none";
@@ -483,19 +342,24 @@ function toggleAnimDisplay(state) {
     document.getElementById('animFlagsOptions').style.display = "none";
     document.getElementById('animIKFlagsOptions').style.display = "none";
     document.getElementById('animEntityOptions').style.display = "none";
+
     if (state == "on") {
+        document.getElementById('animHUD').style.display = "flex";
         document.getElementById('animControlOptions').style.display = "flex";
         document.getElementById('activeAnimDisplay').style.display = "flex";
     } else if (state == "off") {
+        document.getElementById('animHUD').style.display = "none";
         document.getElementById('animControlOptions').style.display = "none";
         document.getElementById('activeAnimDisplay').style.display = "none";
     } else {
-        if ($('#animControlOptions').is(':visible')) {
+        if ($('#animHUD').is(':visible')) {
+            document.getElementById('animHUD').style.display = "none";
             document.getElementById('animControlOptions').style.display = "none";
             document.getElementById('activeAnimDisplay').style.display = "none";
         } else {
-            document.getElementById('animControlOptions').style.display = "none";
-            document.getElementById('activeAnimDisplay').style.display = "none";
+            document.getElementById('animHUD').style.display = "flex";
+            document.getElementById('animControlOptions').style.display = "flex";
+            document.getElementById('activeAnimDisplay').style.display = "flex";
         }
     }
 }
@@ -525,10 +389,6 @@ function playAnimation() {
         flag: FlagTotals,
         ikFlag: IKFlagTotals,
     });
-}
-
-function stopAnimation() {
-    SendClientMessage('stopAnim', {});
 }
 
 function searchAnims(animDict) {
@@ -652,7 +512,7 @@ function toggleStop() {
     setTimeout(function() {
         element.classList.remove('selected');
     }, 200);
-    stopAnimation();
+    SendClientMessage('stopAnimation')
 }
 
 function toggleLoop() {
@@ -725,9 +585,9 @@ function toggleSearch(state) {
         document.getElementById('button-search').focus();
         document.getElementById('animSearchField').style.display = "flex";
         document.getElementById('animDictList').style.display = "flex";
-        document.getElementById("animDictList").scrollLeft = -1000;
+        document.getElementById('animDictList').scrollLeft = -1000;
         document.getElementById('animList').style.display = "flex";
-        document.getElementById("animList").scrollLeft = -1000;
+        document.getElementById('animList').scrollLeft = -1000;
     } else {
         document.getElementById('animSearchField').style.display = "none";
         document.getElementById('animDictList').style.display = "none";
@@ -909,6 +769,148 @@ function toggleAnimHelp(state) {
         } else {
             helpElement.style.display = "block";
         }
+    }
+}
+
+function HandleAnimHUDKeys(event) {
+    switch(event.key) {
+        case "Escape":
+            var escaped = false;
+            if ($('#animHelp').is(':visible')) {
+                toggleAnimHelp("off");
+                return;
+            }
+            if ($('#animSearchField').is(':visible')) {
+                toggleSearch("off");
+                escaped = true;
+            }
+            if ($('#animTimingsOptions').is(':visible')) {
+                toggleTimings("off");
+                escaped = true;
+            }
+            if ($('#animFlagsOptions').is(':visible')) {
+                toggleFlags("off");
+                escaped = true;
+            }
+            if ($('#animIKFlagsOptions').is(':visible')) {
+                toggleIKFlags("off");
+                escaped = true;
+            }
+            if ($('#animEntityOptions').is(':visible')) {
+                toggleEntity("off");
+                escaped = true;
+            }
+            if (escaped == true) { return; }
+
+            SendClientMessage('exit', {});
+            document.getElementById('devMenu').style.display = "none";
+            toggleAnimHUD("off");
+
+            return;
+
+        case " ":
+            if (typeof event.target.onclick == "function") {
+                event.target.onclick.apply();
+            } else {
+                togglePlay();
+            }
+            break;
+        case "?":
+        case "h":
+            toggleAnimHelp("toggle");
+            break;
+        case "Backspace":
+            toggleStop();
+            break;
+        case "c":
+            toggleSettings("toggle");
+            break;
+        case "2":
+        case "t":
+            toggleTimings("toggle");
+            event.preventDefault();
+            break;
+        case "4":
+        case "o":
+            toggleFlags("toggle");
+            break;
+        case "3":
+        case "i":
+            toggleIKFlags("toggle");
+            break;
+        case "5":
+        case "e":
+            toggleEntity("toggle");
+            break;
+        case "s":
+        case "k":
+            toggleStop();
+            break;
+        case "l":
+            toggleLoop();
+            break;
+        case "u":
+            toggleTorso("toggle");
+            break;
+        case "1":
+        case "F":
+        case "f":
+            if (KeyPressRepeat || event.shiftKey) {
+                toggleSearch("on");
+                document.getElementById('valueAnimSearch').focus();
+                event.preventDefault();
+            } else {
+                toggleSearch("toggle");
+            }
+            KeyPressRepeat = true;
+            setTimeout(function() { KeyPressRepeat = false; }, 650);
+            break;
+        case "x":
+            if ($('#animSearchField').is(':visible')) {
+                // Clear search
+                document.getElementById('animDictList').innerHTML = "";
+                document.getElementById('animList').innerHTML = "";
+                document.getElementById('valueAnimSearch').innerHTML = "";
+                document.getElementById('valueAnimSearch').focus();
+            } else if ($('#animTimingsOptions').is(':visible')) {
+                // Reset timings to defaults
+                document.getElementById("timingBlendIn").innerHTML = "1.0";
+                document.getElementById("timingBlendOut").innerHTML = "1.0";
+                document.getElementById("timingPlayback").innerHTML = "0";
+                document.getElementById("timingDuration").innerHTML = "-1";
+            } else if ($('#animFlagsOptions').is(':visible')) {
+                // Clear all flags
+                for (var i=0; i < 32 ; i++) {
+                    let value = toUint32(1 << i);
+                    var flagElement = document.getElementById("flag-" + value);
+                    if (flagElement.classList.contains("selected")) {
+                        toggleFlag(value);
+                    }
+                }
+            } else if ($('#animIKFlagsOptions').is(':visible')) {
+                // Clear all ikflags
+                for (var i=0; i < 32 ; i++) {
+                    let value = toUint32(1 << i);
+                    var flagElement = document.getElementById("ikflag-" + value);
+                    if (flagElement.classList.contains("selected")) {
+                        toggleIKFlag(value);
+                    }
+                }
+            } else if ($('#animEntityOptions').is(':visible')) {
+                // Reset entity to player
+                document.getElementById("animEntityField").innerHTML = "";
+            } else {
+                // Clear the selected animDict and animName
+                document.getElementById("activeAnimDict").innerHTML = "";
+                document.getElementById("activeAnimName").innerHTML = "";
+            }
+            event.preventDefault();
+            break;
+        case "r":
+        case "q":
+        case "p":
+            togglePlay();
+            break;
     }
 }
 
