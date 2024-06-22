@@ -10,7 +10,8 @@ Citizen.CreateThread(function()
             SetNuiFocus(true, false)
             SetNuiFocusKeepInput(false)
             SendNUIMessage({
-                type = "show",
+                type = "displayHUD",
+                value = "devTreeHUD",
                 optionTree = da.Dev.Menu.GetTree(CurrentTree),
             })
         end
@@ -33,35 +34,27 @@ end)
 
 RegisterNUICallback('animHUD', function(data, cb)
     SetNuiFocus(true, true)
-    -- SetNuiFocusKeepInput(true)
-    -- da.Control.Passthrough(true)
     cb(true)
 end)
 
 RegisterNUICallback('controlPass', function(data, cb)
+    local enable = data.enable
     -- da.Log.Debug("controlPassthrough")
-    SetNuiFocusKeepInput(true)
-    da.Control.Passthrough(true)
-    cb(true)
-end)
-
-RegisterNUICallback('controlPassEnd', function(data, cb)
-    -- da.Log.Debug("controlPassthroughEnd")
-    SetNuiFocusKeepInput(false)
-    da.Control.Passthrough(false)
+    SetNuiFocusKeepInput(data.enable)
+    da.Control.Passthrough(data.enable)
     cb(true)
 end)
 
 RegisterNUICallback('transitionControl', function(data, cb)
     da.Log.DebugVerbose("transitionControl:", data)
     -- Handle any transition away
-    if data.from == "Anim" then
+    if data.from == "animHUD" then
         da.Control.Passthrough(false)
         SetNuiFocus(false, false)
     end
 
     -- Handle any transition to
-    if data.to == "Dev" then
+    if data.to == "devTreeHUD" then
         SetNuiFocus(true, false)
         SetNuiFocusKeepInput(false)
     end

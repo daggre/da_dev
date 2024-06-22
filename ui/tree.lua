@@ -99,5 +99,5 @@ end
 
 -- Register the tree and root menu
 da.Dev.Menu.RegisterMenu("optionTree", "root", "z")
-da.Dev.Menu.RegisterMenu("objSelTree", "objSelRoot", "z")
+da.Dev.Menu.RegisterMenu("objectTree", "objectRoot", "z")
 
