@@ -116,7 +116,7 @@ local StartSelectModeThread = function(id)
     SelectModeThread = {}
     Citizen.CreateThread(function()
         SelectModeThread[id] = true
-        CurrentTree = "objSelTree"
+        CurrentTree = "objectTree"
         playerPedId = PlayerPedId()
         while SelectModeThread[id] and EnableSelectMode do
             SelectModeTick()
@@ -131,20 +131,20 @@ local SelectModeToggle = function(state)
     if state ~= nil and EnableSelectMode == state then return; end
     EnableSelectMode = not EnableSelectMode
     da.Log.Info(("Entity select mode: %s"):format(EnableSelectMode and "^2ON^7" or "^1OFF^7"))
-    SendNUIMessage({type = "objSelectMode", data = EnableSelectMode})
+    SendNUIMessage({type = "displayHUD", value = "objectHUD", mode = EnableSelectMode and "on" or "off"})
     if EnableSelectMode then
         StartSelectModeThread(_GetSelectModeThreadId())
     end
 end
 
-da.Dev.Menu.RegisterMenu("root", "obj sel mode", "e")
-da.Dev.Menu.RegisterOption("obj sel mode", "enter mode", "e", function() SelectModeToggle() end, function() return not EnableSelectMode end)
+da.Dev.Menu.RegisterMenu("root", "object mode", "e")
+da.Dev.Menu.RegisterOption("object mode", "enter mode", "e", function() SelectModeToggle() end, function() return not EnableSelectMode end)
 
-da.Dev.Menu.RegisterMenu("objSelRoot", "obj sel mode", "e")
-da.Dev.Menu.RegisterOption("obj sel mode", "exit mode", "e", function() SelectModeToggle() end, function() return EnableSelectMode end)
-da.Dev.Menu.RegisterOption("objSelRoot", "mov/rot", "r", function() StartGizmo(SelectedObject) end, function() return SelectedObject ~= nil and not LocalPlayer.state.metadata.isdead end)
+da.Dev.Menu.RegisterMenu("objectRoot", "object mode", "e")
+da.Dev.Menu.RegisterOption("object mode", "exit mode", "e", function() SelectModeToggle() end, function() return EnableSelectMode end)
+da.Dev.Menu.RegisterOption("objectRoot", "mov/rot", "r", function() StartGizmo(SelectedObject) end, function() return SelectedObject ~= nil and not LocalPlayer.state.metadata.isdead end)
 
-da.Dev.Menu.RegisterMenu("objSelRoot", "obj clipboard", "c")
+da.Dev.Menu.RegisterMenu("objectRoot", "obj clipboard", "c")
 
 da.Dev.Menu.RegisterOption("obj clipboard", "pos v3", "3", function()
         local v3 = GetEntityCoords(SelectedObject)
@@ -175,7 +175,7 @@ da.Dev.Menu.RegisterOption("obj clipboard", "model hash", "m", function()
     function() return SelectedObject ~= nil end)
 
 
-da.Dev.Menu.RegisterMenu("objSelRoot", "obj set", "s")
+da.Dev.Menu.RegisterMenu("objectRoot", "obj set", "s")
 
 da.Dev.Menu.RegisterOption("obj set", "pos v3", "3", function()
         local pos = GetEntityCoords(HoveredObject)
@@ -200,7 +200,7 @@ da.Dev.Menu.RegisterOption("obj set", "pos xy", "x", function()
         return SelectedObject ~= nil and HoveredObject ~= nil
     end)
 
-da.Dev.Menu.RegisterOption("objSelRoot", "reset rot", "]", function()
+da.Dev.Menu.RegisterOption("objectRoot", "reset rot", "]", function()
         local obj = HoveredObject ~= nil and HoveredObject or SelectedObject
         SetEntityRotation(obj, 0, 0, 0)
     end,
@@ -209,14 +209,14 @@ da.Dev.Menu.RegisterOption("objSelRoot", "reset rot", "]", function()
     end)
 
 -- Freeze
-da.Dev.Menu.RegisterOption("objSelRoot", "frz", "f", function()
+da.Dev.Menu.RegisterOption("objectRoot", "frz", "f", function()
         local obj = HoveredObject ~= nil and HoveredObject or SelectedObject
         FreezeEntityPosition(obj, true)
     end, function()
         local obj = HoveredObject ~= nil and HoveredObject or SelectedObject
         return obj ~= nil and IsEntityFrozen(obj) == 0
     end)
-da.Dev.Menu.RegisterOption("objSelRoot", "unfrz", "f", function()
+da.Dev.Menu.RegisterOption("objectRoot", "unfrz", "f", function()
         local obj = HoveredObject ~= nil and HoveredObject or SelectedObject
         FreezeEntityPosition(obj, false)
     end, function()
