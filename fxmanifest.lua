@@ -21,6 +21,7 @@ server_scripts {
 client_scripts {
     "ui/tree.lua",
     "root.lua",
+    "camera/camera.lua",
     -- "control/disco_keys.lua",
     "noclip/noclip.lua",
     "teleport/teleport.lua",
