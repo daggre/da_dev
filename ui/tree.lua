@@ -17,7 +17,7 @@ da.Dev.Menu.RegisterOption = function(menuName, optionName, key, fn, condition)
                 da.Log.Error(("Key %s assigned to %s"):format(key, menu))
                 return
             end
-            da.Log.Debug(("Key %s conditionally assigned to %s"):format(key, menu))
+            da.Log.DebugVerbose(("Key %s conditionally assigned to %s"):format(key, menu))
         end
     end
     OptionLookup[menuName][optionName] = {

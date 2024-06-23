@@ -72,6 +72,8 @@ window.onload = function() {
             case "clipboard":
                 ClipboardCopy(msg.data.text);
                 break;
+            case "noClipUpdate":
+
         }
     })
 }
@@ -134,7 +136,7 @@ $(document).ready(function() {
             animList.innerHTML = "";
             animList.scrollTop = 0;
             animList.scrollLeft = -1000;
-            searchRedMAnims(this.innerHTML);
+            SearchRedMAnims(this.innerHTML);
         }
     });
 
@@ -235,7 +237,8 @@ $(document).ready(function() {
 
 });
 
-// Dev Tree //
+
+// Dev Tree HUD //
 var DevKeys = {}
 var HudTree = {}
 var TreeKeys = {}
@@ -310,7 +313,8 @@ function HandleDevMenuKey(event) {
     }
 }
 
-// Crosshair //
+
+// Object HUD //
 function ToggleObjectHUD(state) {
     if (state == "on") {
         document.getElementById('objectHUD').style.display = "flex";
@@ -335,6 +339,7 @@ function UpdateCrosshair(data) {
 		crosshair.className = 'inactive';
     }
 }
+
 
 // Animation HUD //
 var Animations = {}
@@ -400,7 +405,7 @@ function PlayAnimation() {
     });
 }
 
-function searchAnims(animDict) {
+function SearchAnims(animDict) {
     var results = [];
     Object.values(Animations[animDict]).forEach(anim => {
         results.push({
@@ -438,7 +443,7 @@ function searchAnims(animDict) {
 
 }
 
-function searchRedMAnims(searchValue) {
+function SearchRedMAnims(searchValue) {
     var dictResults = document.getElementById("animDictList");
     var maxResults = 10000;
     var results = [];
@@ -482,7 +487,7 @@ function searchRedMAnims(searchValue) {
         li.addEventListener('click', function() {
             document.getElementById("activeAnimDict").innerHTML = this.innerHTML;
             document.getElementById("activeAnimName").innerHTML = "";
-            searchAnims(this.innerHTML)
+            SearchAnims(this.innerHTML)
         })
         li.innerHTML = results[i].animDict;
         ul.appendChild(li);
@@ -521,7 +526,7 @@ function ToggleStop() {
     setTimeout(function() {
         element.classList.remove('selected');
     }, 200);
-    SendClientMessage('stopAnimation')
+    SendClientMessage('stopAnim', {})
 }
 
 function ToggleLoop() {

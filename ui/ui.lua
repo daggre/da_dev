@@ -6,7 +6,7 @@ Citizen.CreateThread(function()
         Citizen.Wait(5)
         -- if (IsControlJustPressed(0, z) and IsInputDisabled(0)) then
         -- end
-        if (IsControlJustReleased(0, z) and IsInputDisabled(0)) and not IsDisabledControlPressed(0, 0xD7DE6B1E) then
+        if (IsControlJustReleased(0, z) or IsDisabledControlJustReleased(0, z)) and not IsDisabledControlPressed(0, 0xD7DE6B1E) then
             SetNuiFocus(true, false)
             SetNuiFocusKeepInput(false)
             SendNUIMessage({
