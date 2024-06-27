@@ -38,7 +38,7 @@ local Mode = {
         priority = 3,
         getFocus = function()
             local focusKeyboard = false
-            local focusCursor = true
+            local focusCursor = false
             local keepFocus = false
             local passthrough = false
             return focusKeyboard, focusCursor, keepFocus, passthrough
