@@ -21,8 +21,7 @@ function StartGizmo(entity)
             rotation = GetEntityRotation(entity),
         }
     })
-    SetNuiFocus(true, true)
-    SetNuiFocusKeepInput(true)
+    da.Dev.Mode.Add("gizmo")
     GizmoThread()
 end
 
@@ -92,7 +91,7 @@ function GizmoThread()
                 shown = false
             }
         })
-        SetNuiFocus(false, false)
+        da.Dev.Mode.Remove("gizmo")
         gizmoThreadStarted = false
     end)
 end

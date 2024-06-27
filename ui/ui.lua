@@ -7,8 +7,7 @@ Citizen.CreateThread(function()
         -- if (IsControlJustPressed(0, z) and IsInputDisabled(0)) then
         -- end
         if (IsControlJustReleased(0, z) or IsDisabledControlJustReleased(0, z)) and not IsDisabledControlPressed(0, 0xD7DE6B1E) then
-            SetNuiFocus(true, false)
-            SetNuiFocusKeepInput(false)
+            da.Dev.Mode.Add("devTree")
             SendNUIMessage({
                 type = "displayHUD",
                 value = "devTreeHUD",
@@ -19,13 +18,13 @@ Citizen.CreateThread(function()
 end)
 
 RegisterNUICallback('exit', function(data, cb)
-    SetNuiFocus(false, false)
-    da.Control.Passthrough(false)
+    da.Dev.Mode.Remove("anim")
+    da.Dev.Mode.Remove("devTree")
     cb(true)
 end)
 
 RegisterNUICallback('trigger', function(data, cb)
-    SetNuiFocus(false, false)
+    da.Dev.Mode.Remove("devTree")
     da.Dev.Menu.TriggerOption(data.menuName, data.optionName, data.params)
     cb(true)
 end)
@@ -33,15 +32,7 @@ end)
 -- Animations
 
 RegisterNUICallback('animHUD', function(data, cb)
-    SetNuiFocus(true, true)
-    cb(true)
-end)
-
-RegisterNUICallback('controlPass', function(data, cb)
-    local enable = data.enable
-    -- da.Log.Debug("controlPassthrough")
-    SetNuiFocusKeepInput(data.enable)
-    da.Control.Passthrough(data.enable)
+    da.Dev.Mode.Add("anim")
     cb(true)
 end)
 
@@ -49,14 +40,12 @@ RegisterNUICallback('transitionControl', function(data, cb)
     da.Log.DebugVerbose("transitionControl:", data)
     -- Handle any transition away
     if data.from == "animHUD" then
-        da.Control.Passthrough(false)
-        SetNuiFocus(false, false)
+        da.Dev.Mode.Remove("anim")
     end
 
     -- Handle any transition to
     if data.to == "devTreeHUD" then
-        SetNuiFocus(true, false)
-        SetNuiFocusKeepInput(false)
+        da.Dev.Mode.Add("devTree")
     end
 
     cb(true)
@@ -125,10 +114,3 @@ RegisterNUICallback('initIKAnimFlags', function(data, cb)
     cb({ flags = json.encode(IKFlags) })
 end)
 
-AddEventHandler('onResourceStop', function(resourceName)
-    if resourceName == GetCurrentResourceName() then
-        SetNuiFocus(false, false)
-        SetNuiFocusKeepInput(false)
-        da.Control.Passthrough(false)
-    end
-end)

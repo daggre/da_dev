@@ -1,3 +1,4 @@
+
 local playerPedId = nil
 local EnableSelectMode = false
 local SelectModeThread = {}
@@ -133,7 +134,10 @@ local SelectModeToggle = function(state)
     da.Log.Info(("Entity select mode: %s"):format(EnableSelectMode and "^2ON^7" or "^1OFF^7"))
     SendNUIMessage({type = "displayHUD", value = "objectHUD", mode = EnableSelectMode and "on" or "off"})
     if EnableSelectMode then
+        da.Dev.Mode.Add("object")
         StartSelectModeThread(_GetSelectModeThreadId())
+    else
+        da.Dev.Mode.Remove("object")
     end
 end
 
@@ -144,7 +148,7 @@ da.Dev.Menu.RegisterMenu("objectRoot", "object mode", "e")
 da.Dev.Menu.RegisterOption("object mode", "exit mode", "e", function() SelectModeToggle() end, function() return EnableSelectMode end)
 da.Dev.Menu.RegisterOption("objectRoot", "mov/rot", "r", function() StartGizmo(SelectedObject) end, function() return SelectedObject ~= nil and not LocalPlayer.state.metadata.isdead end)
 
-da.Dev.Menu.RegisterMenu("objectRoot", "obj clipboard", "c")
+da.Dev.Menu.RegisterMenu("objectRoot", "obj clipboard", "q")
 
 da.Dev.Menu.RegisterOption("obj clipboard", "pos v3", "3", function()
         local v3 = GetEntityCoords(SelectedObject)

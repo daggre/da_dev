@@ -1,49 +1,66 @@
-local Camera = nil
-local CameraMode = "player"
+
+local Camera = {}
+Camera.Handle = nil
+Camera.Mode = "player"
+
+local NoClip = {}
+NoClip.Enabled = false
 
 local Speed = {}
 Speed.Fast = 5
-Speed.Default = 1
-Speed.Slow = 0.2
+Speed.Default = 0.1
+Speed.Fine = 0.45
+Speed.Current = Speed.Default
+Speed.RateChange = 6
+
+local Fov = {}
+Fov.RateChange = 18
+Fov.Max = 90
+Fov.Min = 10
+
 local Control = {}
 Control.W = `INPUT_MOVE_UP_ONLY`
 Control.A = `INPUT_MOVE_LEFT_ONLY`
 Control.S = `INPUT_MOVE_DOWN_ONLY`
 Control.D = `INPUT_MOVE_RIGHT_ONLY`
 Control.Q = `INPUT_FRONTEND_LB`
-Control.C = `INPUT_DUCK`
+Control.Crouch = `INPUT_DUCK`
 Control.E = `INPUT_DYNAMIC_SCENARIO`
 Control.Spacebar = `INPUT_JUMP`
+Control.LeftAlt = `INPUT_PC_FREE_LOOK`
 Control.LeftShift = `INPUT_SPRINT`
 Control.LeftControl = `INPUT_FRONTEND_RUP`
 Control.MouseLR = `INPUT_LOOK_LR`
 Control.MouseUD = `INPUT_LOOK_UD`
-Control.MouseSpeed = 8.0
+Control.MouseSpeed = 6.0
+Control.WheelUp = `INPUT_PREV_WEAPON`
+Control.WheelDown = `INPUT_NEXT_WEAPON`
 
 local radian = math.pi / 180
 
 local GetCoords = function(ped)
-    if CameraMode == "free" then
-        return table.unpack(GetCamCoord(Camera))
-    elseif CameraMode == "player" then
+    if Camera.Mode == "free" then
+        return table.unpack(GetCamCoord(Camera.Handle))
+    elseif Camera.Mode == "player" then
         return table.unpack(GetEntityCoords(ped))
     end
 end
 
 local GetRot = function()
-    if CameraMode == "free" then
-        return table.unpack(GetCamRot(Camera,2))
-    elseif CameraMode == "player" then
+    if Camera.Mode == "free" then
+        return table.unpack(GetCamRot(Camera.Handle,2))
+    elseif Camera.Mode == "player" then
         return table.unpack(GetGameplayCamRot())
     end
 end
 
-local SetCoords = function(ped, x, y, z, pitch, roll, yaw)
-    if CameraMode == "free" then
-        SetCamCoord(Camera, x, y, z)
-        SetCamRot(Camera, pitch, 0.0, yaw, 2)
-    elseif CameraMode == "player" then
-        SetEntityRotation(ped, 0, 0, yaw)
+local SetCoords = function(ped, x, y, z, rot_x, rot_y, rot_z, fov)
+    if Camera.Mode == "free" then
+        SetCamCoord(Camera.Handle, x, y, z)
+        SetCamRot(Camera.Handle, rot_x, 0.0, rot_z, 2)
+        SetCamFov(Camera.Handle, fov+0.0)
+    elseif Camera.Mode == "player" then
+        SetEntityRotation(ped, 0, 0, rot_z)
         SetEntityCoordsNoOffset(ped, x, y, z, true, true, true)
     end
 end
@@ -84,17 +101,34 @@ end
 ---@param z number Origin Z Coordinate
 ---@param rot_x number Rotation X
 ---@param rot_z number Rotation Z
+---@param fov number Field of View
 ---@return number x Translated X Coordinate
 ---@return number y Translated Y Coordinate
 ---@return number z Translated Z Coordinate
-local ControlTranslation = function(x, y, z, rot_x, rot_z)
-    local modifier = Speed.Default
+local ControlTranslation = function(x, y, z, rot_x, rot_z, fov)
+    if IsDisabledControlPressed(0, Control.WheelUp) then
+        if IsDisabledControlPressed(0, Control.LeftAlt) then
+            local fovDelta = fov / Fov.RateChange
+            fov = math.max(fov - fovDelta, Fov.Min)
+        else
+            Speed.Current = Speed.Current + (Speed.Current / Speed.RateChange)
+        end
+    elseif IsDisabledControlPressed(0, Control.WheelDown) then
+        if IsDisabledControlPressed(0, Control.LeftAlt) then
+            local fovDelta = fov / Fov.RateChange
+            fov = math.min(fov + fovDelta, Fov.Max)
+        else
+            Speed.Current = Speed.Current - (Speed.Current / Speed.RateChange)
+        end
+    end
+
+    local modifier = Speed.Current
 
     -- Speed Modifier
     if IsDisabledControlPressed(0, Control.LeftShift) then
         modifier = Speed.Fast
-    elseif IsDisabledControlPressed(0, Control.LeftControl) then
-        modifier = Speed.Slow
+    elseif IsDisabledControlPressed(0, Control.Spacebar) then
+        modifier = (modifier * Speed.Fine)
     end
 
     -- Translate Coordinates
@@ -110,25 +144,28 @@ local ControlTranslation = function(x, y, z, rot_x, rot_z)
     if IsDisabledControlPressed(0, Control.D) then
         x, y, z = Translate(x, y, z, rot_x, rot_z, 0 - modifier, true)
     end
-    if IsDisabledControlPressed(0, Control.Spacebar) or IsDisabledControlPressed(0, Control.Q) then
-        z = z + modifier
+    if IsDisabledControlPressed(0, Control.Q) then
+        z = z + (modifier/2)
     end
-    if IsDisabledControlPressed(0, Control.C) or IsDisabledControlPressed(0, Control.E) then
-        z = z - modifier
+    if IsDisabledControlPressed(0, Control.E) then
+        z = z - (modifier/2)
     end
 
-    local deltaLR = GetDisabledControlNormal(0, Control.MouseLR)
-    local deltaUD = GetDisabledControlNormal(0, Control.MouseUD)
 
-    if deltaLR ~= 0.0 then
-        rot_z = rot_z + deltaLR * -1.0 * Control.MouseSpeed
-    end
-    if deltaUD ~= 0.0 then
-        rot_x = math.max(math.min(89.9, rot_x + deltaUD * -1.0 * Control.MouseSpeed), -89.9)
+    if Camera.Mode == "free" then
+        local deltaLR = GetDisabledControlNormal(0, Control.MouseLR)
+        local deltaUD = GetDisabledControlNormal(0, Control.MouseUD)
+
+        if deltaLR ~= 0.0 then
+            rot_z = rot_z + deltaLR * -1.0 * (Control.MouseSpeed * (math.min(fov,50)/50))
+        end
+        if deltaUD ~= 0.0 then
+            rot_x = math.max(math.min(89.9, rot_x + deltaUD * -1.0 * (Control.MouseSpeed * (math.min(fov,50)/50))), -89.9)
+        end
     end
 
     -- Set Coords
-    return x, y, z, rot_x, rot_z
+    return x, y, z, rot_x, rot_z, fov
 end
 
 ---Begin noclip movement and control thread
@@ -136,14 +173,19 @@ local InitCamControl = function()
     local playerPedId = PlayerPedId()
     local x, y, z = GetCoords(playerPedId)
     local rot_x, rot_y, rot_z = GetRot()
+	local fov = GetGameplayCamFov()
     Citizen.CreateThread(function()
-        while CameraMode == "free" do
+        while Camera.Mode == "free" or NoClip.Enabled do
             DisableAllControlActions(0)
+            if Camera.Mode == "player" then
+                EnableControlAction(0, Control.MouseLR)
+                EnableControlAction(0, Control.MouseUD)
+            end
             Citizen.Wait(0)
             x, y, z = GetCoords(playerPedId)
             rot_x, rot_y, rot_z = GetRot()
-            x, y, z, rot_x, rot_z = ControlTranslation(x, y, z, rot_x, rot_z)
-            SetCoords(playerPedId, x, y, z, rot_x, rot_y, rot_z)
+            x, y, z, rot_x, rot_z, fov = ControlTranslation(x, y, z, rot_x, rot_z, fov)
+            SetCoords(playerPedId, x, y, z, rot_x, rot_y, rot_z, fov)
         end
     end)
 end
@@ -152,48 +194,63 @@ function EnableFreeCam()
 	local x, y, z = table.unpack(GetGameplayCamCoord())
 	local pitch, roll, yaw = table.unpack(GetGameplayCamRot(2))
 	local fov = GetGameplayCamFov()
-	Camera = CreateCam("DEFAULT_SCRIPTED_CAMERA", true)
-	SetCamCoord(Camera, x, y, z)
-	SetCamRot(Camera, pitch, roll, yaw, 2)
-	SetCamFov(Camera, fov)
+	Camera.Handle = CreateCam("DEFAULT_SCRIPTED_CAMERA", true)
+	SetCamCoord(Camera.Handle, x, y, z)
+	SetCamRot(Camera.Handle, pitch, roll, yaw, 2)
+	SetCamFov(Camera.Handle, fov+0.0)
 	RenderScriptCams(true, true, 500, true, true)
+    da.Dev.Mode.Add("freecam")
 end
 
 function DisableFreeCam()
+    da.Dev.Mode.Remove("freecam")
     RenderScriptCams(false, true, 500, true, true)
-    SetCamActive(Camera, false)
-    DetachCam(Camera)
-    DestroyCam(Camera, true)
-    Camera = nil
+    SetCamActive(Camera.Handle, false)
+    DetachCam(Camera.Handle)
+    DestroyCam(Camera.Handle, true)
+    Camera.Handle = nil
 end
 
 da.Dev.Menu.RegisterMenu("root", "camera", "c")
-
-da.Dev.Menu.RegisterOption("camera", "free", "f", function()
-    da.Log.Debug("Free camera")
-    if CameraMode ~= "free" then
-        CameraMode = "free"
-        EnableFreeCam()
-        InitCamControl()
-    end
-end)
+da.Dev.Menu.RegisterMenu("objectRoot", "camera", "c")
 
 da.Dev.Menu.RegisterOption("camera", "player", "p", function()
-    da.Log.Debug("Player camera")
-    if CameraMode ~= "player" then
-        CameraMode = "player"
+    if Camera.Mode ~= "player" then
+        Camera.Mode = "player"
         DisableFreeCam()
     end
 end)
 
 da.Dev.Menu.RegisterOption("camera", "toggle mode", "c", function()
-    da.Log.Debug("Player camera")
-    if CameraMode == "free" then
-        CameraMode = "player"
+    if Camera.Mode == "free" then
+        Camera.Mode = "player"
         DisableFreeCam()
-    elseif CameraMode == "player" then
-        CameraMode = "free"
+    elseif Camera.Mode == "player" then
+        Camera.Mode = "free"
         EnableFreeCam()
         InitCamControl()
     end
 end)
+
+da.Dev.NoClip = function(state)
+    local playerPedId = PlayerPedId()
+    if state == nil then
+        NoClip.Enabled = not NoClip.Enabled
+    else
+        NoClip.Enabled = state
+    end
+    if NoClip.Enabled then
+        FreezeEntityPosition(playerPedId, true)
+        SetEntityInvincible(playerPedId, true)
+        SetEntityVisible(playerPedId, false)
+        NetworkSetEntityInvisibleToNetwork(playerPedId, true)
+        da.Dev.Mode.Add("noclip")
+        InitCamControl()
+    else
+        da.Dev.Mode.Remove("noclip")
+        FreezeEntityPosition(playerPedId, false)
+        SetEntityVisible(playerPedId, true)
+        NetworkSetEntityInvisibleToNetwork(playerPedId, false)
+        Citizen.SetTimeout(5000, function() SetEntityInvincible(playerPedId, false) end)
+    end
+end
