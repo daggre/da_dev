@@ -51,6 +51,7 @@ function GizmoThread()
 
             DisablePlayerFiring(ped, true)
             if not IsDisabledControlPressed(0, `INPUT_AIM`, true) then
+                -- EnableControlAction(0, `SKIPCUTSCENE`, true)
                 DisableAllControlActions(0)
                 if IsDisabledControlPressed(0, `INPUT_FRONTEND_RRIGHT`, true) then
                     break
@@ -96,14 +97,27 @@ function GizmoThread()
     end)
 end
 
+local ExpirerRunning = false
+local StartGizmoMovedExpirer = function()
+    if ExpirerRunning then return; end
+    ExpirerRunning = true
+    while ExpirerRunning and GizmoMovedRecently > GetGameTimer() do
+        Citizen.Wait(200)
+    end
+    GizmoMovedRecently = nil
+    ExpirerRunning = false
+end
+
+
 RegisterNUICallback('moveGizmoEntity', function(data, cb)
-    da.Log.Debug("gz", data)
     if data.handle then
         if DoesEntityExist(data.handle) then
             SetEntityCoords(data.handle, data.position.x, data.position.y, data.position.z)
             SetEntityRotation(data.handle, data.rotation.x, data.rotation.y, data.rotation.z)
         end
     end
+    GizmoMovedRecently = GetGameTimer() + 500
+    StartGizmoMovedExpirer()
 
     cb(true)
 end)

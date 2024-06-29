@@ -23,7 +23,7 @@ client_scripts {
     "root.lua",
     "mode/mode.lua",
     "camera/camera.lua",
-    -- "control/disco_keys.lua",
+    "control/disco_keys.lua",
     "teleport/teleport.lua",
     "env.lua",
     "entity/entity.lua",

@@ -791,7 +791,7 @@ function DiscoKeys(state)
 
     if DiscoKeysThread then
         local allKeys = GetKeys()
-        Citizen.SetTimeout(5000, function()
+        Citizen.SetTimeout(15000, function()
             da.Log.Debug(DiscoKeyLog)
             DiscoKeysThread = false
         end)
@@ -803,7 +803,8 @@ function DiscoKeys(state)
                         DiscoKeyLog[keyHash] = name
                     end
                 end
-                Citizen.Wait(0)
+                da.Log.Debug(DiscoKeyLog)
+                Citizen.Wait(100)
             end
             DiscoKeysThread = false
             da.Log.Debug("DiscoKeys ^1OFF^7")
