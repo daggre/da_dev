@@ -1,6 +1,6 @@
 da.Dev.Mode = {}
 
-local ActiveMode = nil
+ActiveMode = nil
 local AllActiveModes = {}
 
 local Mode = {

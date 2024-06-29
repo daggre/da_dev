@@ -1,5 +1,4 @@
-
-local Camera = {}
+Camera = {}
 Camera.Handle = nil
 Camera.Mode = "player"
 
@@ -43,14 +42,6 @@ local GetCoords = function(ped)
         return table.unpack(GetCamCoord(Camera.Handle))
     elseif Camera.Mode == "player" then
         return table.unpack(GetEntityCoords(ped))
-    end
-end
-
-local GetRot = function()
-    if Camera.Mode == "free" then
-        return table.unpack(GetCamRot(Camera.Handle,2))
-    elseif Camera.Mode == "player" then
-        return table.unpack(GetGameplayCamRot())
     end
 end
 
@@ -152,7 +143,7 @@ local ControlTranslation = function(x, y, z, rot_x, rot_z, fov)
     end
 
 
-    if Camera.Mode == "free" then
+    if Camera.Mode == "free" and ActiveMode ~= "gizmo" then
         local deltaLR = GetDisabledControlNormal(0, Control.MouseLR)
         local deltaUD = GetDisabledControlNormal(0, Control.MouseUD)
 
@@ -172,7 +163,7 @@ end
 local InitCamControl = function()
     local playerPedId = PlayerPedId()
     local x, y, z = GetCoords(playerPedId)
-    local rot_x, rot_y, rot_z = GetRot()
+    local rot_x, rot_y, rot_z = table.unpack(GetFinalRenderedCamRot())
 	local fov = GetGameplayCamFov()
     Citizen.CreateThread(function()
         while Camera.Mode == "free" or NoClip.Enabled do
@@ -183,7 +174,7 @@ local InitCamControl = function()
             end
             Citizen.Wait(0)
             x, y, z = GetCoords(playerPedId)
-            rot_x, rot_y, rot_z = GetRot()
+            rot_x, rot_y, rot_z = table.unpack(GetFinalRenderedCamRot())
             x, y, z, rot_x, rot_z, fov = ControlTranslation(x, y, z, rot_x, rot_z, fov)
             SetCoords(playerPedId, x, y, z, rot_x, rot_y, rot_z, fov)
         end
@@ -214,12 +205,20 @@ end
 da.Dev.Menu.RegisterMenu("root", "camera", "c")
 da.Dev.Menu.RegisterMenu("objectRoot", "camera", "c")
 
-da.Dev.Menu.RegisterOption("camera", "player", "p", function()
+da.Dev.Menu.RegisterOption("camera", "free", "f", function()
+    if Camera.Mode ~= "free" then
+        Camera.Mode = "free"
+        EnableFreeCam()
+        InitCamControl()
+    end
+end, function() return Camera.Mode == "player" end)
+
+da.Dev.Menu.RegisterOption("camera", "player", "g", function()
     if Camera.Mode ~= "player" then
         Camera.Mode = "player"
         DisableFreeCam()
     end
-end)
+end, function() return Camera.Mode == "free" end)
 
 da.Dev.Menu.RegisterOption("camera", "toggle mode", "c", function()
     if Camera.Mode == "free" then

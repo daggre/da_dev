@@ -36,7 +36,7 @@ local _SendNUIUpdate = function(obj)
     }})
 end
 
-local SelectModeControlCheck = function(obj)
+local SelectModeControlCheck = function()
     DisablePlayerFiring(playerPedId, true)
     for _, control in pairs(Control) do
         DisableControlAction(0, control, true)
@@ -91,11 +91,12 @@ end
 local SelectModeTick = function()
     local model = nil
     local hit = nil
+    local obj = nil
     local hover = nil
     if SelectedObject then
         DrawBoundingBox(SelectedObject, Green)
     end
-    hit, obj = RayCastCamera(playerPedId, 500.0)
+    hit, obj = RayCastCamera(playerPedId, 500.0, Camera.Mode == "free" and Camera.Handle or nil)
     if hit then
         if SelectedObject ~= obj then
             model = GetEntityModel(obj)
@@ -109,7 +110,7 @@ local SelectModeTick = function()
         end
     end
     if not hover then HoveredObject = nil; end
-    SelectModeControlCheck(obj)
+    SelectModeControlCheck()
     _SendNUIUpdate(obj)
 end
 
