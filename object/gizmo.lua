@@ -18,7 +18,7 @@ function StartGizmo(entity)
             name = 'Unknown Game Object',
             handle = entity,
             position = GetEntityCoords(entity),
-            rotation = GetEntityRotation(entity),
+            rotation = GetEntityRotation(entity) * vec3(1, -1, 1), -- Gizmo is swapping the y rot, so correct for that ahead of time
         }
     })
     da.Dev.Mode.Add("gizmo")
@@ -57,7 +57,7 @@ function GizmoThread()
                 end
             end
 
-            if IsDisabledControlPressed(0, 0x8FFC75D6) and IsDisabledControlJustPressed(0, `INPUT_MOVE_RIGHT_ONLY`) then
+            if IsDisabledControlPressed(0, 0x8FFC75D6) and IsDisabledControlJustPressed(0, `INPUT_MOVE_RIGHT_ONLY`) then -- Shift D (Duplicate)
                 local model = GetEntityModel(gizmoEntity)
                 local pos = GetEntityCoords(gizmoEntity)
                 local rot = GetEntityRotation(gizmoEntity)
@@ -97,6 +97,7 @@ function GizmoThread()
 end
 
 RegisterNUICallback('moveGizmoEntity', function(data, cb)
+    da.Log.Debug("gz", data)
     if data.handle then
         if DoesEntityExist(data.handle) then
             SetEntityCoords(data.handle, data.position.x, data.position.y, data.position.z)

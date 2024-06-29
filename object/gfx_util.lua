@@ -1,8 +1,8 @@
 local Deg2Rad = math.pi / 180
 
-function RayCastCamera(ped, distance)
-    local pos = GetGameplayCamCoord()
-    local rot = GetGameplayCamRot()
+function RayCastCamera(ped, distance, cameraHandle)
+    local pos = GetFinalRenderedCamCoord()
+    local rot = GetFinalRenderedCamRot()
     local yaw = rot.z * Deg2Rad
     local pitch = rot.x * Deg2Rad
     local hdg = {
