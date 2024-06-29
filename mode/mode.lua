@@ -5,7 +5,7 @@ local AllActiveModes = {}
 
 local Mode = {
     gizmo = {
-        priority = 6,
+        priority = 7,
         getFocus = function()
             local focusKeyboard = true
             local focusCursor = true
@@ -15,7 +15,7 @@ local Mode = {
         end,
     },
     devTree = {
-        priority = 5,
+        priority = 6,
         getFocus = function()
             local focusKeyboard = true
             local focusCursor = false
@@ -25,7 +25,7 @@ local Mode = {
         end
     },
     anim = {
-        priority = 4,
+        priority = 5,
         getFocus = function()
             local focusKeyboard = true
             local focusCursor = true
@@ -35,6 +35,16 @@ local Mode = {
         end,
     },
     object = {
+        priority = 4,
+        getFocus = function()
+            local focusKeyboard = false
+            local focusCursor = false
+            local keepFocus = false
+            local passthrough = false
+            return focusKeyboard, focusCursor, keepFocus, passthrough
+        end,
+    },
+    focus = {
         priority = 3,
         getFocus = function()
             local focusKeyboard = false
@@ -44,7 +54,7 @@ local Mode = {
             return focusKeyboard, focusCursor, keepFocus, passthrough
         end,
     },
-    noclip = {
+    freecam = {
         priority = 2,
         getFocus = function()
             local focusKeyboard = false
@@ -54,7 +64,7 @@ local Mode = {
             return focusKeyboard, focusCursor, keepFocus, passthrough
         end,
     },
-    freecam = {
+    noclip = {
         priority = 1,
         getFocus = function()
             local focusKeyboard = false

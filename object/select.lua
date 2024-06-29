@@ -1,8 +1,6 @@
-
 local playerPedId = nil
 local EnableSelectMode = false
 local SelectModeThread = {}
-local SelectedObject = nil
 local LightBlue = {r=80, g=193, b=238, a=255}
 local Green = {r=0, g=218, b=175, a=255}
 local Control = {
