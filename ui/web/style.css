@@ -58,7 +58,7 @@
     display: none;
 }
 
-#animHelp {
+#animHelp, #camHelp, #objHelp {
     top: 50vh;
     left: 50vw;
     width: fit-content;
@@ -68,13 +68,52 @@
     /*display: block;*/
 }
 
-#animHelpTitle {
+#animHelpTitle, #camHelpTitle, #objHelpTitle {
     text-align: center;
     margin-bottom: 1vh;
 }
 
-#animHelp li {
+#animHelp li, #camHelp li, #objHelp li {
     margin-top: 2px;
+}
+
+#camStatus {
+    max-height: 5vh;
+    flex-direction: column;
+    color: var(--style-color);
+    padding: 0px;
+    left: 50vw;
+    top: 3vh;
+    display: flex;
+    transform: translate(-50%);
+    background: none;
+    border-radius: none;
+    align-items: center;
+}
+
+#camStatusIcons {
+    width: fit-content;
+    background: var(--style-bg);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+#camStatusSpeed {
+    display: flex;
+    overflow: hidden;
+    margin-bottom: 4px;
+}
+
+#camStatus ul {
+    flex-direction: column;
+    list-style-type: none;
+    display: flex;
+    padding-inline-start: 0px;
+    padding-inline-end: 0px;
+}
+
+#camStatus li {
+    padding: 0px;
 }
 
 #animControlOptions {
@@ -236,7 +275,7 @@
 
 #activeAnimDisplay {
     left: 50vw;
-    top: 2vh;
+    top: 1vh;
     width: fit-content;
     max-height: 10vh;
     padding-top: 2px;

@@ -127,27 +127,42 @@ local StartSelectModeThread = function(id)
     end)
 end
 
-local SelectModeToggle = function(state)
+local ObjectModeToggle = function(state)
     if state ~= nil and EnableSelectMode == state then return; end
     EnableSelectMode = not EnableSelectMode
     da.Log.Info(("Entity select mode: %s"):format(EnableSelectMode and "^2ON^7" or "^1OFF^7"))
-    SendNUIMessage({type = "displayHUD", value = "objectHUD", mode = EnableSelectMode and "on" or "off"})
+    SendNUIMessage({type = "displayHUD", value = "objectHUD", enable = EnableSelectMode and "on" or "off"})
     if EnableSelectMode then
         da.Dev.Mode.Add("object")
         StartSelectModeThread(_GetSelectModeThreadId())
+        if Camera.Mode ~= "free" then
+            Camera.Mode = "free"
+            EnableFreeCam()
+            InitCamControl()
+        end
     else
         da.Dev.Mode.Remove("object")
+        if Camera.Mode ~= "player" then
+            Camera.Mode = "player"
+            DisableFreeCam()
+        end
     end
 end
 
-da.Dev.Menu.RegisterMenu("root", "object mode", "e")
-da.Dev.Menu.RegisterOption("object mode", "enter mode", "e", function() SelectModeToggle() end, function() return not EnableSelectMode end)
+RegisterNUICallback('objectMode', function(data, cb)
+    ObjectModeToggle(data.enable == "on")
+    cb(true)
+end)
 
-da.Dev.Menu.RegisterMenu("objectRoot", "object mode", "e")
-da.Dev.Menu.RegisterOption("object mode", "exit mode", "e", function() SelectModeToggle() end, function() return EnableSelectMode end)
+-- da.Dev.Menu.RegisterMenu("root", "object mode", "e")
+da.Dev.Menu.RegisterOption("root", "obj mode", "e", function() ObjectModeToggle() end, function() return not EnableSelectMode end)
+da.Dev.Menu.RegisterOption("objectRoot", "obj mode", "e", function() ObjectModeToggle() end, function() return EnableSelectMode end)
+
+-- da.Dev.Menu.RegisterMenu("objectRoot", "object mode", "e")
+-- da.Dev.Menu.RegisterOption("object mode", "exit mode", "e", function() ObjectModeToggle() end, function() return EnableSelectMode end)
 da.Dev.Menu.RegisterOption("objectRoot", "mov/rot", "r", function() StartGizmo(SelectedObject) end, function() return SelectedObject ~= nil and not LocalPlayer.state.metadata.isdead end)
-
 da.Dev.Menu.RegisterMenu("objectRoot", "obj clipboard", "q")
+
 
 da.Dev.Menu.RegisterOption("obj clipboard", "pos v3", "3", function()
         local v3 = GetEntityCoords(SelectedObject)

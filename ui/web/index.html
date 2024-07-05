@@ -13,7 +13,63 @@
 
     <body>
         <div id="gizmo"></div>
+        <div id="cameraHUD" style="display:none;">
+            <div id="camHelp" class="dev">
+                <div id="camHelpTitle">FreeCam and NoClip by daggre_actual</div>
+                <div id="camHelpTitle" style="font-size:3vh;"> </div>
+                <ul id="camHelpOptions">
+                    <li><div class="entryLabel">w</div><div class="entryField">Move Forward</div></li>
+                    <li><div class="entryLabel">a</div><div class="entryField">Move Left</div></li>
+                    <li><div class="entryLabel">s</div><div class="entryField">Move Back</div></li>
+                    <li><div class="entryLabel">d</div><div class="entryField">Move Right</div></li>
+                    <li><div class="entryLabel">q</div><div class="entryField">Move Up</div></li>
+                    <li><div class="entryLabel">e</div><div class="entryField">Move Down</div></li>
+                    <li> </li>
+                    <li><div class="entryLabel">Wheel Up</div><div class="entryField">Increase Camera Speed</div></li>
+                    <li><div class="entryLabel">Wheel Down</div><div class="entryField">Decrease Camera Speed</div></li>
+                    <li><div class="entryLabel">Spacebar (HOLD)</div><div class="entryField">Fine Adjustment Speed ( 45% )</div></li>
+                    <li><div class="entryLabel">LSHIFT (HOLD)</div><div class="entryField">Fast Travel Speed ( 5.0 )</div></li>
+                    <li> </li>
+                    <li><div class="entryLabel">LCTRL + Wheel Up</div><div class="entryField">Decrease FreeCam FOV</div></li>
+                    <li><div class="entryLabel">LCTRL + Wheel Down</div><div class="entryField">Increase FreeCam FOV</div></li>
+                    <li> </li>
+                    <li><div class="entryLabel">z</div><div class="entryField">Open Dev Tree Menu</div></li>
+                    <li><div class="entryLabel">?</div><div class="entryField">Toggle Help Panel</div></li>
+                    <li><div class="entryLabel">h</div><div class="entryField">Toggle Help Panel</div></li>
+                    <li><div class="entryLabel">Esc</div><div class="entryField">Exit FreeCam/NoClip</div></li>
+                </ul>
+            </div>
+            <div id="camStatus" class="dev">
+                <div id="camStatusSpeed">
+                    <div class="entryLabel">speed</div> <div id="cam-speed" class="entryField"></div>
+                </div>
+                <div id="camStatusIcons">
+                    <ul id="camStatusValues" class="row">
+                        <li id="camStatusValues">
+                            <div id="cam-mode" class="control" role="button" aria-pressed="false"></div>
+                            <div id="cam-noclip" class="control" role="button" aria-pressed="false"></div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
         <div id="objectHUD" style="display:none;">
+            <div id="objHelp" class="dev">
+                <div id="objHelpTitle">Object Mode by daggre_actual</div>
+                <div id="objHelpTitle" style="font-size:3vh;"></div>
+                <ul id="objHelpOptions">
+                    <li><div class="entryLabel">f</div><div class="entryField">Focus Selected/Hovered Object</div></li>
+                    <li><div class="entryLabel">r</div><div class="entryField">Move/Rotate Hovered/Selected Object</div></li>
+                    <li><div class="entryLabel">Mouse1</div><div class="entryField">Move Selected Object To Cursor</div></li>
+                    <li><div class="entryLabel">Mouse2</div><div class="entryField">Select Object Under Cursor</div></li>
+                    <li> </li>
+                    <li><div class="entryLabel">z</div><div class="entryField">Open Dev Tree Menu</div></li>
+                    <li><div class="entryLabel">?</div><div class="entryField">Toggle Help Panel</div></li>
+                    <li><div class="entryLabel">h</div><div class="entryField">Toggle Help Panel</div></li>
+                    <li><div class="entryLabel">Esc</div><div class="entryField">Exit Move/Rotate Mode</div></li>
+                    <li><div class="entryLabel">Backspace</div><div class="entryField">Exit Object Mode</div></li>
+                </ul>
+            </div>
             <div id="crosshair" class="inactive">+</div>
         </div>
         <div id="devTreeHUD" class="dev">
