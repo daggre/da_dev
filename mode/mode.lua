@@ -37,9 +37,9 @@ local Mode = {
     object = {
         priority = 4,
         getFocus = function()
-            local focusKeyboard = false
+            local focusKeyboard = true
             local focusCursor = false
-            local keepFocus = false
+            local keepFocus = true
             local passthrough = false
             return focusKeyboard, focusCursor, keepFocus, passthrough
         end,
@@ -47,9 +47,9 @@ local Mode = {
     focus = {
         priority = 3,
         getFocus = function()
-            local focusKeyboard = false
+            local focusKeyboard = true
             local focusCursor = false
-            local keepFocus = false
+            local keepFocus = true
             local passthrough = false
             return focusKeyboard, focusCursor, keepFocus, passthrough
         end,
@@ -57,9 +57,9 @@ local Mode = {
     freecam = {
         priority = 2,
         getFocus = function()
-            local focusKeyboard = false
+            local focusKeyboard = true
             local focusCursor = false
-            local keepFocus = false
+            local keepFocus = true
             local passthrough = false
             return focusKeyboard, focusCursor, keepFocus, passthrough
         end,
@@ -67,9 +67,9 @@ local Mode = {
     noclip = {
         priority = 1,
         getFocus = function()
-            local focusKeyboard = false
+            local focusKeyboard = true
             local focusCursor = false
-            local keepFocus = false
+            local keepFocus = true
             local passthrough = false
             return focusKeyboard, focusCursor, keepFocus, passthrough
         end,
@@ -146,6 +146,16 @@ RegisterNUICallback('controlPass', function(data, cb)
     da.Control.Passthrough(data.enable)
     cb(true)
 end)
+
+-- RegisterNUICallback('mode', function(data, cb)
+--     local enable = data.mode == "on"
+--     if enable then
+--         da.Dev.Mode.Add(data.modeName)
+--     else
+--         da.Dev.Mode.Remove(data.modeName)
+--     end
+--     cb(true)
+-- end)
 
 AddEventHandler('onResourceStop', function(resourceName)
     if resourceName == GetCurrentResourceName() then

@@ -803,7 +803,6 @@ function DiscoKeys(state)
                         DiscoKeyLog[keyHash] = name
                     end
                 end
-                da.Log.Debug(DiscoKeyLog)
                 Citizen.Wait(100)
             end
             DiscoKeysThread = false
@@ -813,5 +812,5 @@ function DiscoKeys(state)
     end
 end
 
-da.Dev.Menu.RegisterOption("menu", "discokeys", "k", function() DiscoKeys() end)
+-- da.Dev.Menu.RegisterOption("menu", "discokeys", "k", function() DiscoKeys() end)
 

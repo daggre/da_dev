@@ -55,6 +55,12 @@ function ShowHUD(data) {
         case "objectHUD":
             ToggleObjectHUD(data.mode);
             break;
+        case "cameraHUD":
+            ToggleCamHUD(data.mode)
+            if (data.mode == "on") {
+                UpdateCamHUD(data.camera)
+            }
+            break;
         default:
             break;
     }
@@ -72,8 +78,6 @@ window.onload = function() {
             case "clipboard":
                 ClipboardCopy(msg.data.text);
                 break;
-            case "noClipUpdate":
-
         }
     })
 }
@@ -121,6 +125,17 @@ $(document).ready(function() {
             HandleAnimHUDKeys(event);
             return;
         }
+
+        if ($('#objectHUD').is(':visible')) {
+            HandleObjectHUDKeys(event);
+            return;
+        }
+
+        if ($('#cameraHUD').is(':visible')) {
+            HandleCamHUDKeys(event);
+            return;
+        }
+
     });
 
     $("div#valueAnimSearch.entryField").keydown(function(e) {
@@ -313,7 +328,6 @@ function HandleDevMenuKey(event) {
     }
 }
 
-
 // Object HUD //
 function ToggleObjectHUD(state) {
     if (state == "on") {
@@ -340,6 +354,25 @@ function UpdateCrosshair(data) {
     }
 }
 
+function ToggleCamHUD(state) {
+    if (state == "on") {
+        document.getElementById('cameraHUD').style.display = "flex";
+    } else if (state == "off") {
+        document.getElementById('cameraHUD').style.display = "none";
+    } else {
+        if ($('#cameraHUD').is(':visible')) {
+            document.getElementById('cameraHUD').style.display = "none";
+        } else {
+            document.getElementById('cameraHUD').style.display = "flex";
+        }
+    }
+}
+
+function UpdateCamHUD(data) {
+    document.getElementById('cam-speed').innerHTML = data.speed;
+    document.getElementById('cam-mode').innerHTML = data.cameraMode;
+    document.getElementById('cam-noclip').innerHTML = data.noclip;
+}
 
 // Animation HUD //
 var Animations = {}
@@ -924,6 +957,72 @@ function HandleAnimHUDKeys(event) {
         case "q":
         case "p":
             TogglePlay();
+            break;
+    }
+}
+
+function ToggleCamHelp(state) {
+    helpElement = document.getElementById('camHelp');
+    if (state == "on") {
+        helpElement.style.display = "block";
+    } else if (state == "off") {
+        helpElement.style.display = "none";
+    } else if (state == "toggle") {
+        if ($('#camHelp').is(':visible')) {
+            helpElement.style.display = "none";
+        } else {
+            helpElement.style.display = "block";
+        }
+    }
+}
+
+function HandleCamHUDKeys(event) {
+    switch(event.key) {
+        case "Escape":
+            if ($('#camHelp').is(':visible')) {
+                ToggleCamHelp("off");
+                return;
+            }
+            SendClientMessage('camera', { mode: "player" });
+            SendClientMessage('noclip', { mode: "off" });
+            break;
+        case "?":
+        case "h":
+            ToggleCamHelp("toggle");
+            break;
+            }
+}
+
+function ToggleObjectHelp(state) {
+    helpElement = document.getElementById('objHelp');
+    if (state == "on") {
+        helpElement.style.display = "block";
+    } else if (state == "off") {
+        helpElement.style.display = "none";
+    } else if (state == "toggle") {
+        if ($('#objHelp').is(':visible')) {
+            helpElement.style.display = "none";
+        } else {
+            helpElement.style.display = "block";
+        }
+    }
+}
+
+function HandleObjectHUDKeys(event) {
+    switch(event.key) {
+        case "Escape":
+            if ($('#objHelp').is(':visible')) {
+                ToggleObjectHelp("off");
+                return;
+            }
+            // Gizmo exit also would exit object mode which we dont want
+            break;
+        case "Backspace":
+            SendClientMessage('objectMode', { mode: "off" });
+            break;
+        case "?":
+        case "h":
+            ToggleObjectHelp("toggle");
             break;
     }
 }
