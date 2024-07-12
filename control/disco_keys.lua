@@ -799,7 +799,8 @@ function DiscoKeys(state)
             da.Log.Debug("DiscoKeys ^2ON^7")
             while DiscoKeysThread do
                 for name, keyHash in pairs(allKeys) do
-                    if IsControlJustPressed(0, keyHash) then
+                    if IsControlPressed(0, keyHash) then
+                        da.Log.Debug(name)
                         DiscoKeyLog[keyHash] = name
                     end
                 end
@@ -812,5 +813,5 @@ function DiscoKeys(state)
     end
 end
 
--- da.Dev.Menu.RegisterOption("menu", "discokeys", "k", function() DiscoKeys() end)
+da.Dev.Menu.RegisterOption("menu", "discokeys", "k", function() DiscoKeys() end)
 

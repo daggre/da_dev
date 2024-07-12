@@ -94,7 +94,7 @@ local SelectModeTick = function()
     if SelectedObject then
         DrawBoundingBox(SelectedObject, Green)
     end
-    hit, obj = RayCastCamera(playerPedId, 500.0, Camera.Mode == "free" and Camera.Handle or nil)
+    hit, obj = RayCastCamera(playerPedId, 500.0)
     if hit then
         if SelectedObject ~= obj then
             model = GetEntityModel(obj)
