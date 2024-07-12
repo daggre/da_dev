@@ -1,6 +1,6 @@
 local Deg2Rad = math.pi / 180
 
-function RayCastCamera(ped, distance, cameraHandle)
+function RayCastCamera(ped, distance)
     local pos = GetFinalRenderedCamCoord()
     local rot = GetFinalRenderedCamRot()
     local yaw = rot.z * Deg2Rad
