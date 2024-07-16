@@ -58,7 +58,7 @@
     display: none;
 }
 
-#animHelp, #camHelp, #objHelp {
+.help {
     top: 50vh;
     left: 50vw;
     width: fit-content;
@@ -68,12 +68,12 @@
     /*display: block;*/
 }
 
-#animHelpTitle, #camHelpTitle, #objHelpTitle {
+.helpTitle {
     text-align: center;
     margin-bottom: 1vh;
 }
 
-#animHelp li, #camHelp li, #objHelp li {
+.help > ul > li {
     margin-top: 2px;
 }
 
@@ -116,7 +116,7 @@
     padding: 0px;
 }
 
-#animControlOptions {
+.controlGroup {
     color: var(--style-color);
     padding: 0px;
     width: auto;
@@ -126,7 +126,8 @@
     transform: translate(50%);
 }
 
-#animControl ul {
+.controlGroup > ul {
+    position: relative;
     flex-direction: column;
     list-style-type: none;
     display: flex;
@@ -134,12 +135,18 @@
     padding-inline-end: 0px;
 }
 
-#animControl li {
+.controlGroup > ul > li {
     padding: 0px;
 }
 
+.inlineCG {
+    position: static;
+    transform: none;
+    width: min-content;
+    margin-bottom: 4px;
+}
 
-#animSearchField {
+.searchField {
     color: var(--aux);
     bottom: 8vh;
     right: 50vw;
@@ -160,7 +167,7 @@
     content: " ";
 }
 
-#animSearchLists {
+#animSearchLists, #objSearchList {
     color: var(--aux);
     left: 2vh;
     top: 2vh;
@@ -172,7 +179,7 @@
     background: none;
 }
 
-#animDictList {
+#animDictList, #objSearchResults {
     flex: 1 1.2 auto;
     min-height: 30vh;
     width: fit-content;
@@ -196,7 +203,7 @@
     border-radius: 8px;
 }
 
-#animList li, #animDictList li {
+#animList li, #animDictList li, #objSearchResults li {
     color: var(--style-color);
     text-shadow: none;
     /*overflow-y: hidden;*/
@@ -210,7 +217,7 @@
 /*    100% { transform: translateX(-50%); }*/
 /*}*/
 
-#animList li:hover, #animDictList li:hover {
+#animList li:hover, #animDictList li:hover, #objSearchResults li:hover {
     color: var(--aux);
     /*animation: marquee 5s both infinite;*/
     text-shadow:
@@ -361,10 +368,6 @@ div#activeAnimDict {
     /*display: flex;*/
 }
 
-#devOptions,#menuOptions,#animControl #animTimings {
-    position: relative;
-}
-
 .key {
     float: right;
     color: var(--style-bg);
@@ -414,14 +417,14 @@ div#activeAnimDict {
         0 0 10px;
 }
 
-.row {
-    margin-top: 1px;
-}
+/* .row { */
+/*     margin-top: 1px; */
+/* } */
 
 body {
     margin: 0px;
     padding: 0px;
-    /*background: #444;*/
+    background: #444;
     font-family: LiterationMonoNerd,Menlo,Consolas,monospace;
     font-size: 1.0vh;
     text-shadow: 0 0 2px;
@@ -430,8 +433,10 @@ body {
 
 ul {
     margin: 0px;
+    margin-top: 1px;
     padding-inline-start: 0px;
     padding-inline-end: 0px;
+    direction: ltr;
 }
 
 li {
@@ -446,10 +451,6 @@ li {
     display: none;
     width: 3px;
     height: 1px;
-}
-
-ul {
-    direction: ltr;
 }
 
 #crosshair {

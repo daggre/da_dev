@@ -1,4 +1,48 @@
+var RedMObjects = {
+    "p_campfire02x": "Campfire",
+    "p_ik_handshake": 0x4,
+}
 var ControlPassActive = false
+var SelectedObjectSpawnType = "object"
+var SelectedObjectFavs = false
+
+function ToggleSpawnFavs(state) {
+    var favselement = document.getElementById('button-spawnfavs');
+
+    if (state == "on") {
+        favselement.classList.add('selected');
+    } else if (state == "off") {
+        favselement.classList.remove('selected');
+    } else if (state == "toggle") {
+        favselement.classList.toggle('selected');
+    }
+
+    SelectedObjectFavs = favselement.classList.contains('selected');
+    console.log("SelectedObjectFavs: " + SelectedObjectFavs);
+}
+
+function SelectSpawnType(spawnType) {
+    if (spawnType == SelectedObjectSpawnType) { return; }
+    if (spawnType != "object" &&
+        spawnType != "ped" &&
+        spawnType != "vehicle" &&
+        spawnType != "propset" &&
+        spawnType != "other") {
+        console.log("Invalid spawn type: " + spawnType);
+        return;
+    }
+    document.getElementById('button-spawn' + SelectedObjectSpawnType).classList.remove('selected');
+    SelectedObjectSpawnType = spawnType;
+    document.getElementById('button-spawn' + SelectedObjectSpawnType).classList.add('selected');
+
+    var objSearchResults = document.getElementById('objSearchResults');
+    objSearchResults.style.display = "none";
+    objSearchResults.innerHTML = "";
+    objSearchResults.scrollTop = 0;
+    objSearchResults.scrollLeft = -1000;
+    document.getElementById('objSearch').innerHTML = "";
+    document.getElementById('objSearch').focus();
+}
 
 function ToUint32(value) {
     return value >>> 0;
@@ -80,6 +124,8 @@ window.onload = function() {
                 break;
         }
     })
+    ShowHUD({value: "objectHUD"});
+    ShowHUD({value: "cameraHUD"});
 }
 
 $(document).ready(function() {
@@ -155,8 +201,24 @@ $(document).ready(function() {
         }
     });
 
+    $("div#objSearch.entryField").keydown(function(e) {
+        if (e.code == "Enter") {
+            e.preventDefault();
+            var resultList = document.getElementById("objSearchResults");
+            document.getElementById('objSearchResults').style.display = "flex";
+            resultList.innerHTML = "";
+            resultList.scrollTop = 0;
+            resultList.scrollLeft = -1000;
+            SearchBasicRedMList(this.innerHTML, RedMObjects, "objSearchResults");
+        }
+    });
+
     SendClientMessage('initAnims', {}).then(function(resp) {
         Animations = JSON.parse(resp.animations);
+    });
+
+    SendClientMessage('initObjects', {}).then(function(resp) {
+        RedMObjects = JSON.parse(resp.objects);
     });
 
     SendClientMessage('initAnimFlags', {}).then(function(resp) {
@@ -330,15 +392,22 @@ function HandleDevMenuKey(event) {
 
 // Object HUD //
 function ToggleObjectHUD(state) {
+    document.getElementById('objSearchField').style.display = "none";
+    document.getElementById('objSearchResults').style.display = "none";
+
     if (state == "on") {
         document.getElementById('objectHUD').style.display = "flex";
+        document.getElementById('objControlOptions').style.display = "flex";
     } else if (state == "off") {
         document.getElementById('objectHUD').style.display = "none";
+        document.getElementById('objControlOptions').style.display = "none";
     } else {
         if ($('#objectHUD').is(':visible')) {
             document.getElementById('objectHUD').style.display = "none";
+            document.getElementById('objControlOptions').style.display = "none";
         } else {
             document.getElementById('objectHUD').style.display = "flex";
+            document.getElementById('objControlOptions').style.display = "flex";
         }
     }
 }
@@ -474,6 +543,54 @@ function SearchAnims(animDict) {
     animResults.scrollTop = 0;
     animResults.scrollLeft = -1000;
 
+}
+
+function SearchBasicRedMList(searchValue, searchList, elementId) {
+    var objectResults = document.getElementById(elementId);
+    var maxResults = 10000;
+    var results = [];
+    if (!searchValue || searchValue == "") {
+        objectResults.innerHTML = "";
+        return;
+    }
+
+    Object.keys(searchList).forEach(v => {
+        if (v.toLowerCase().includes(searchValue.toLowerCase())) {
+            results.push({
+                value: v
+            });
+        }
+    });
+
+    results.sort(function(a, b) {
+        if (a.value < b.value) {
+            return -1;
+        }
+        if (a.value > b.value) {
+            return 1;
+        }
+        return 0;
+    });
+
+    objectResults.innerHTML = "";
+    var ul = document.createElement('ul');
+    for (var i=0; i < results.length && i < maxResults; ++i) {
+        var li = document.createElement('li');
+        li.addEventListener('click', function() {
+            document.getElementById("activeObject").innerHTML = this.innerHTML;
+            // Select Object
+        })
+        li.innerHTML = results[i].value;
+        ul.appendChild(li);
+    }
+    objectResults.appendChild(ul);
+    if (results.length < 30) {
+        objectResults.style.minHeight = results.length + ".4vh";
+    } else {
+        objectResults.style.minHeight = "30vh";
+    }
+    objectResults.scrollTop = 0;
+    objectResults.scrollLeft = -1000;
 }
 
 function SearchRedMAnims(searchValue) {
@@ -995,27 +1112,133 @@ function HandleCamHUDKeys(event) {
 
 function ToggleObjectHelp(state) {
     helpElement = document.getElementById('objHelp');
+    cursorElement = document.getElementById('crosshair');
     if (state == "on") {
         helpElement.style.display = "block";
+        cursorElement.style.display = "none";
     } else if (state == "off") {
         helpElement.style.display = "none";
+        cursorElement.style.display = "block";
     } else if (state == "toggle") {
         if ($('#objHelp').is(':visible')) {
             helpElement.style.display = "none";
+            cursorElement.style.display = "block";
         } else {
             helpElement.style.display = "block";
+            cursorElement.style.display = "none";
         }
+    }
+}
+
+function ToggleObjectControlSpawnOptions(state) {
+    var element = document.getElementById('button-objectspawn');
+    var optionsElement = document.getElementById('objControlSpawnOptions');
+
+    if (state == "on") {
+        element.classList.add('selected');
+    } else if (state == "off") {
+        element.classList.remove('selected');
+    } else {
+        element.classList.toggle('selected');
+    }
+
+    if (element.classList.contains('selected')) {
+        optionsElement.style.display = "inline-flex";
+    } else {
+        optionsElement.style.display = "none";
+    }
+}
+
+function ToggleObjectSpawn(state) {
+    var element = document.getElementById('button-spawn');
+
+    if (state == "on") {
+        element.classList.add('selected');
+    } else if (state == "off") {
+        element.classList.remove('selected');
+    } else if (state == "toggle") {
+        element.classList.toggle('selected');
+    }
+
+    if (element.classList.contains('selected')) {
+        ToggleObjectHelp("off");
+        ToggleSceneControl("off");
+        ToggleObjectControlSpawnOptions("on");
+        document.getElementById('objSearchField').style.display = "flex";
+        document.getElementById('objSearchList').style.display = "flex";
+        document.getElementById('objSpawnOptions').style.display = "inline-flex";
+    } else {
+        document.getElementById('objSearchField').style.display = "none";
+        document.getElementById('objSearchList').style.display = "none";
+        document.getElementById('objSpawnOptions').style.display = "none";
+        if (document.activeElement.classList.contains('entryField')) {
+            document.activeElement.blur();
+        }
+    }
+}
+
+function ToggleSceneControl(state) {
+    var element = document.getElementById('button-objectscene');
+
+    if (state == "on") {
+        element.classList.add('selected');
+    } else if (state == "off") {
+        element.classList.remove('selected');
+    } else if (state == "toggle") {
+        element.classList.toggle('selected');
+    }
+
+    if (element.classList.contains('selected')) {
+        ToggleObjectHelp("off");
+        ToggleObjectSpawn("off");
+        ToggleObjectControlSpawnOptions("off");
+        document.getElementById('objSceneOptions').style.display = "inline-flex";
+    } else {
+        document.getElementById('objSceneOptions').style.display = "none";
     }
 }
 
 function HandleObjectHUDKeys(event) {
     switch(event.key) {
         case "Escape":
-            if ($('#objHelp').is(':visible')) {
-                ToggleObjectHelp("off");
+            if (document.activeElement.classList.contains('entryField')) {
+                document.activeElement.blur();
                 return;
             }
-            // Gizmo exit also would exit object mode which we dont want
+            if ($('#objHelp').is(':visible')) {
+                ToggleObjectHelp("off");
+                escaped = true;
+            }
+            if ($('#objSearchField').is(':visible')) {
+                ToggleObjectSpawn("off");
+                escaped = true;
+            }
+            if (escaped == true) { return; }
+
+            // Usually would exit object mode, but Gizmo exit also would exit
+            // object mode, unless we can detect gizmo exit
+            break;
+        case "1":
+            if ($('#objSearchField').is(':visible')) {
+                document.getElementById('objSearch').focus();
+                event.preventDefault();
+                break;
+            }
+            ToggleObjectSpawn("toggle");
+            if ($('#objSearchField').is(':visible')) {
+                document.getElementById('objSearch').focus();
+                event.preventDefault();
+            }
+            break;
+        case "2":
+            ToggleSceneControl("toggle");
+            break;
+        case "3":
+            break;
+        case "4":
+            break;
+        case "5":
+            ToggleObjSelect("toggle");
             break;
         case "Backspace":
             SendClientMessage('objectMode', { mode: "off" });
