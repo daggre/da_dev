@@ -6,6 +6,25 @@ var ControlPassActive = false
 var SelectedObjectSpawnType = "object"
 var SelectedObjectFavs = false
 
+function ToUint32(value) { return value >>> 0; }
+
+function isVisible(el) {
+    var style = window.getComputedStyle(el)
+    if (style.display == "none") { return false; }
+    if (style.visibility == "hidden") { return false; }
+    return true;
+}
+
+function ToggleSelected(el, state = "toggle") {
+    if (state == "on") {
+        el.classList.add('selected');
+    } else if (state == "off") {
+        el.classList.remove('selected');
+    } else if (state == "toggle") {
+        el.classList.toggle('selected');
+    }
+}
+
 function ToggleSpawnFavs(state) {
     var favselement = document.getElementById('button-spawnfavs');
 
@@ -19,6 +38,14 @@ function ToggleSpawnFavs(state) {
 
     SelectedObjectFavs = favselement.classList.contains('selected');
     console.log("SelectedObjectFavs: " + SelectedObjectFavs);
+}
+
+function ResetListGroup(element, display) {
+    var el = document.getElementById(element);
+    el.style.display = display;
+    el.innerHTML = "";
+    el.scrollTop = 0;
+    el.scrollLeft = -1000;
 }
 
 function SelectSpawnType(spawnType) {
@@ -35,17 +62,9 @@ function SelectSpawnType(spawnType) {
     SelectedObjectSpawnType = spawnType;
     document.getElementById('button-spawn' + SelectedObjectSpawnType).classList.add('selected');
 
-    var objSearchResults = document.getElementById('objSearchResults');
-    objSearchResults.style.display = "none";
-    objSearchResults.innerHTML = "";
-    objSearchResults.scrollTop = 0;
-    objSearchResults.scrollLeft = -1000;
+    ResetListGroup("objData", "none");
     document.getElementById('objSearch').innerHTML = "";
     document.getElementById('objSearch').focus();
-}
-
-function ToUint32(value) {
-    return value >>> 0;
 }
 
 function SendClientMessage(endpoint, data) {
@@ -78,8 +97,8 @@ function ClipboardCopy(val) {
 }
 
 function TransitionHUD(to) {
-    if ($('#animHUD').is(':visible')) {
-        ToggleAnimHUD("off");
+    if (isVisible(document.getElementById('animHUD'))) {
+        ToggleUIAnim("off");
         SendClientMessage('transitionControl', {
             from: "animHUD",
             to: to,
@@ -88,21 +107,21 @@ function TransitionHUD(to) {
     }
 }
 
-function ShowHUD(data) {
+function ToggleUI(data) {
     switch(data.value) {
         case "devTreeHUD":
-            ToggleDevTreeHUD(data)
+            ToggleUIDevTree(data)
             break;
         case "animHUD":
-            ToggleAnimHUD("on");
+            ToggleUIAnim("on");
             break;
         case "objectHUD":
-            ToggleObjectHUD(data.mode);
+            ToggleUIObject(data.mode);
             break;
         case "cameraHUD":
-            ToggleCamHUD(data.mode)
+            ToggleUICam(data.mode)
             if (data.mode == "on") {
-                UpdateCamHUD(data.camera)
+                UpdateUICam(data.camera)
             }
             break;
         default:
@@ -114,7 +133,7 @@ window.onload = function() {
     window.addEventListener('message', function(msg) {
         switch(msg.data.type) {
             case "displayHUD":
-                ShowHUD(msg.data);
+                ToggleUI(msg.data);
                 break;
             case "objUpdate":
                 UpdateCrosshair(msg.data.data);
@@ -124,13 +143,13 @@ window.onload = function() {
                 break;
         }
     })
-    ShowHUD({value: "objectHUD"});
-    ShowHUD({value: "cameraHUD"});
+    ToggleUI({value: "objectHUD"});
+    ToggleUI({value: "cameraHUD"});
 }
 
 $(document).ready(function() {
     $(document).mousedown(function(event) {
-        if ($('#animHUD').is(':visible')) {
+        if (isVisible(document.getElementById('animHUD'))) {
             switch(event.button) {
             case 0: // Left Click
                 if (event.target.id == "activeAnimDict" || event.target.id == "activeAnimName") {
@@ -148,7 +167,7 @@ $(document).ready(function() {
     });
 
     $(document).mouseup(function(event) {
-        if ($('#animHUD').is(':visible')) {
+        if (isVisible(document.getElementById('animHUD'))) {
             switch(event.button) {
             case 2: // Right Click
                 ControlPassActive = false;
@@ -162,23 +181,23 @@ $(document).ready(function() {
         if (ControlPassActive) { return; }
         if (event.key != "Escape" && event.target.getAttribute('contenteditable') == "true") { return; }
 
-        if ($('#devTreeHUD').is(':visible')) {
-            HandleDevMenuKey(event);
+        if (isVisible(document.getElementById('devTreeHUD'))) {
+            HandleKeysDevTree(event);
             return;
         }
 
-        if ($('#animHUD').is(':visible')) {
-            HandleAnimHUDKeys(event);
+        if (isVisible(document.getElementById('animHUD'))) {
+            HandleKeysAnim(event);
             return;
         }
 
-        if ($('#objectHUD').is(':visible')) {
-            HandleObjectHUDKeys(event);
+        if (isVisible(document.getElementById('objectHUD'))) {
+            HandleKeysObject(event);
             return;
         }
 
-        if ($('#cameraHUD').is(':visible')) {
-            HandleCamHUDKeys(event);
+        if (isVisible(document.getElementById('cameraHUD'))) {
+            HandleKeysCam(event);
             return;
         }
 
@@ -204,12 +223,8 @@ $(document).ready(function() {
     $("div#objSearch.entryField").keydown(function(e) {
         if (e.code == "Enter") {
             e.preventDefault();
-            var resultList = document.getElementById("objSearchResults");
-            document.getElementById('objSearchResults').style.display = "flex";
-            resultList.innerHTML = "";
-            resultList.scrollTop = 0;
-            resultList.scrollLeft = -1000;
-            SearchBasicRedMList(this.innerHTML, RedMObjects, "objSearchResults");
+            ResetListGroup("objData", "flex");
+            SearchBasicRedMList(this.innerHTML, RedMObjects, "objData");
         }
     });
 
@@ -224,7 +239,6 @@ $(document).ready(function() {
     SendClientMessage('initAnimFlags', {}).then(function(resp) {
         var flagList = document.getElementById('animFlagsOptions');
         var ul = document.createElement('ul');
-        ul.setAttribute('id', 'animFlags');
 
         var flags = JSON.parse(resp.flags);
         flags.forEach(flag => {
@@ -269,7 +283,6 @@ $(document).ready(function() {
     SendClientMessage('initIKAnimFlags', {}).then(function(resp) {
         var flagList = document.getElementById('animIKFlagsOptions');
         var ul = document.createElement('ul');
-        ul.setAttribute('id', 'animIKFlags');
 
         var flags = JSON.parse(resp.flags);
         flags.forEach(flag => {
@@ -320,7 +333,7 @@ var DevKeys = {}
 var HudTree = {}
 var TreeKeys = {}
 
-function ToggleDevTreeHUD(data) {
+function ToggleUIDevTree(data) {
     TransitionHUD(data.value);
     InitializeTree(data.optionTree[0]);
     document.getElementById('devTreeHUD').style.display = "flex";
@@ -371,7 +384,7 @@ function KeyTranslate(key) {
     return map.hasOwnProperty(lowercaseKey) ? map[lowercaseKey] : lowercaseKey;
 }
 
-function HandleDevMenuKey(event) {
+function HandleKeysDevTree(event) {
     let key = event.key
     let translatedKey = KeyTranslate(key)
     if (TreeKeys[translatedKey]) {
@@ -391,9 +404,9 @@ function HandleDevMenuKey(event) {
 }
 
 // Object HUD //
-function ToggleObjectHUD(state) {
+function ToggleUIObject(state) {
     document.getElementById('objSearchField').style.display = "none";
-    document.getElementById('objSearchResults').style.display = "none";
+    document.getElementById('objData').style.display = "none";
 
     if (state == "on") {
         document.getElementById('objectHUD').style.display = "flex";
@@ -402,7 +415,7 @@ function ToggleObjectHUD(state) {
         document.getElementById('objectHUD').style.display = "none";
         document.getElementById('objControlOptions').style.display = "none";
     } else {
-        if ($('#objectHUD').is(':visible')) {
+        if (isVisible(document.getElementById('objectHUD'))) {
             document.getElementById('objectHUD').style.display = "none";
             document.getElementById('objControlOptions').style.display = "none";
         } else {
@@ -423,13 +436,13 @@ function UpdateCrosshair(data) {
     }
 }
 
-function ToggleCamHUD(state) {
+function ToggleUICam(state) {
     if (state == "on") {
         document.getElementById('cameraHUD').style.display = "flex";
     } else if (state == "off") {
         document.getElementById('cameraHUD').style.display = "none";
     } else {
-        if ($('#cameraHUD').is(':visible')) {
+        if (isVisible(document.getElementById('cameraHUD'))) {
             document.getElementById('cameraHUD').style.display = "none";
         } else {
             document.getElementById('cameraHUD').style.display = "flex";
@@ -437,7 +450,7 @@ function ToggleCamHUD(state) {
     }
 }
 
-function UpdateCamHUD(data) {
+function UpdateUICam(data) {
     document.getElementById('cam-speed').innerHTML = data.speed;
     document.getElementById('cam-mode').innerHTML = data.cameraMode;
     document.getElementById('cam-noclip').innerHTML = data.noclip;
@@ -449,7 +462,7 @@ var FlagTotals = 0
 var IKFlagTotals = 0
 var KeyPressRepeat = false
 
-function ToggleAnimHUD(state) {
+function ToggleUIAnim(state) {
     // Toggle all submenus off
     document.getElementById('animDictList').style.display = "none";
     document.getElementById('animList').style.display = "none";
@@ -468,7 +481,7 @@ function ToggleAnimHUD(state) {
         document.getElementById('animControlOptions').style.display = "none";
         document.getElementById('activeAnimDisplay').style.display = "none";
     } else {
-        if ($('#animHUD').is(':visible')) {
+        if (isVisible(document.getElementById('animHUD'))) {
             document.getElementById('animHUD').style.display = "none";
             document.getElementById('animControlOptions').style.display = "none";
             document.getElementById('activeAnimDisplay').style.display = "none";
@@ -481,15 +494,10 @@ function ToggleAnimHUD(state) {
 }
 
 function PlayAnimation() {
-    var entity = document.getElementById("animEntityField").innerHTML;
     var animDict = document.getElementById("activeAnimDict").innerHTML;
     var anim = document.getElementById("activeAnimName").innerHTML;
-    if (anim == "" || animDict == "") {
-        setTimeout(function() {
-            TogglePlay("off");
-        }, 500)
-        return;
-    }
+    if (anim == "" || animDict == "") { return; }
+    var entity = document.getElementById("animEntityField").innerHTML;
     var blendIn = document.getElementById("timingBlendIn").innerHTML;
     var blendOut = document.getElementById("timingBlendOut").innerHTML;
     var playback = document.getElementById("timingPlayback").innerHTML;
@@ -546,13 +554,12 @@ function SearchAnims(animDict) {
 }
 
 function SearchBasicRedMList(searchValue, searchList, elementId) {
-    var objectResults = document.getElementById(elementId);
+    var el = document.getElementById(elementId);
     var maxResults = 10000;
     var results = [];
-    if (!searchValue || searchValue == "") {
-        objectResults.innerHTML = "";
-        return;
-    }
+
+    el.innerHTML = "";
+    if (!searchValue || searchValue == "") { return; }
 
     Object.keys(searchList).forEach(v => {
         if (v.toLowerCase().includes(searchValue.toLowerCase())) {
@@ -572,7 +579,6 @@ function SearchBasicRedMList(searchValue, searchList, elementId) {
         return 0;
     });
 
-    objectResults.innerHTML = "";
     var ul = document.createElement('ul');
     for (var i=0; i < results.length && i < maxResults; ++i) {
         var li = document.createElement('li');
@@ -583,24 +589,23 @@ function SearchBasicRedMList(searchValue, searchList, elementId) {
         li.innerHTML = results[i].value;
         ul.appendChild(li);
     }
-    objectResults.appendChild(ul);
+    el.appendChild(ul);
     if (results.length < 30) {
-        objectResults.style.minHeight = results.length + ".4vh";
+        el.style.minHeight = results.length + ".4vh";
     } else {
-        objectResults.style.minHeight = "30vh";
+        el.style.minHeight = "30vh";
     }
-    objectResults.scrollTop = 0;
-    objectResults.scrollLeft = -1000;
+    el.scrollTop = 0;
+    el.scrollLeft = -1000;
 }
 
 function SearchRedMAnims(searchValue) {
-    var dictResults = document.getElementById("animDictList");
+    var el = document.getElementById("animDictList");
     var maxResults = 10000;
     var results = [];
-    if (!searchValue || searchValue == "") {
-        dictResults.innerHTML = "";
-        return;
-    }
+
+    el.innerHTML = "";
+    if (!searchValue || searchValue == "") { return; }
 
     Object.keys(Animations).forEach(animDict => {
         if (animDict.toLowerCase().includes(searchValue.toLowerCase())) {
@@ -630,7 +635,6 @@ function SearchRedMAnims(searchValue) {
         return 0;
     });
 
-    dictResults.innerHTML = "";
     var ul = document.createElement('ul');
     for (var i=0; i < results.length && i < maxResults; ++i) {
         var li = document.createElement('li');
@@ -642,63 +646,56 @@ function SearchRedMAnims(searchValue) {
         li.innerHTML = results[i].animDict;
         ul.appendChild(li);
     }
-    dictResults.appendChild(ul);
+    el.appendChild(ul);
     if (results.length < 30) {
-        dictResults.style.minHeight = results.length + ".4vh";
+        el.style.minHeight = results.length + ".4vh";
     } else {
-        dictResults.style.minHeight = "30vh";
+        el.style.minHeight = "30vh";
     }
-    dictResults.scrollTop = 0;
-    dictResults.scrollLeft = -1000;
+    el.scrollTop = 0;
+    el.scrollLeft = -1000;
 }
 
-function TogglePlay(state) {
-    var element = document.getElementById('button-play');
-    if (state == "on") {
-        element.classList.add('selected');
-    } else if (state == "off") {
-        element.classList.remove('selected');
-        return;
-    } else {
-        element.classList.remove('selected');
+function TogglePlay(state = "toggle") {
+    var el = document.getElementById('button-play');
+    ToggleSelected(el, state);
+    if (state != "off") {
         setTimeout(function() {
-            element.classList.add('selected');
+            ToggleSelected(el, "off");
         }, 100);
-    }
+    } else { return; }
     PlayAnimation();
 }
 
 function ToggleStop() {
-    element = document.getElementById('button-stop');
-    element.classList.toggle('selected');
-    var playElement = document.getElementById('button-play');
-    playElement.classList.remove('selected');
+    s_el = document.getElementById('button-stop');
+    s_el.classList.toggle('selected');
+    var p_el = document.getElementById('button-play');
+    p_el.classList.remove('selected');
     setTimeout(function() {
-        element.classList.remove('selected');
+        s_el.classList.remove('selected');
     }, 200);
     SendClientMessage('stopAnim', {})
 }
 
-function ToggleLoop() {
-    ToggleFlag(1);
-}
+function ToggleLoop() { ToggleFlag(1); }
 
 function ToggleTorso(state) {
-    var element = document.getElementById('button-torso');
+    var el = document.getElementById('button-torso');
     var flag8 = document.getElementById('flag-8');
     var flag16 = document.getElementById('flag-16');
 
     if (state == "on") {
-        element.classList.add('selected');
+        el.classList.add('selected');
         if (!flag8.classList.contains('selected')) { ToggleFlag(8); }
         if (!flag16.classList.contains('selected')) { ToggleFlag(16); }
     } else if (state == "off") {
-        element.classList.remove('selected');
+        el.classList.remove('selected');
         if (flag8.classList.contains('selected')) { ToggleFlag(8); }
         if (flag16.classList.contains('selected')) { ToggleFlag(16); }
     } else if (state == "toggle") {
-        element.classList.toggle('selected');
-        var enabled = element.classList.contains('selected');
+        el.classList.toggle('selected');
+        var enabled = el.classList.contains('selected');
         if (enabled) {
             if (!flag8.classList.contains('selected')) { ToggleFlag(8); }
             if (!flag16.classList.contains('selected')) { ToggleFlag(16); }
@@ -710,42 +707,28 @@ function ToggleTorso(state) {
 }
 
 function ToggleSettings(state) {
-    var element = document.getElementById('button-settings');
-    var settingsElement = document.getElementById('animSettings');
+    var el = document.getElementById('button-settings');
+    ToggleSelected(el, state);
 
-    if (state == "on") {
-        element.classList.add('selected');
-    } else if (state == "off") {
-        element.classList.remove('selected');
+    var el_s = document.getElementById('animSettings');
+    if (el.classList.contains('selected')) {
+        el_s.style.display = "inline-flex";
     } else {
-        element.classList.toggle('selected');
-    }
-
-    if (element.classList.contains('selected')) {
-        settingsElement.style.display = "inline-flex";
-    } else {
-        settingsElement.style.display = "none";
+        el_s.style.display = "none";
     }
 }
 
 function ToggleSearch(state) {
-    var element = document.getElementById('button-search');
+    var el = document.getElementById('button-search');
+    ToggleSelected(el, state);
 
-    if (state == "on") {
-        element.classList.add('selected');
-    } else if (state == "off") {
-        element.classList.remove('selected');
-    } else if (state == "toggle") {
-        element.classList.toggle('selected');
-    }
-
-    if (element.classList.contains('selected')) {
+    if (el.classList.contains('selected')) {
         ToggleSettings("on");
         ToggleTimings("off");
         ToggleFlags("off");
         ToggleIKFlags("off");
         ToggleEntity("off");
-        ToggleAnimHelp("off");
+        ToggleHelp("animHelp", "off")
         document.getElementById('button-search').focus();
         document.getElementById('animSearchField').style.display = "flex";
         document.getElementById('animDictList').style.display = "flex";
@@ -761,23 +744,16 @@ function ToggleSearch(state) {
 }
 
 function ToggleTimings(state) {
-    var element = document.getElementById('button-timings');
+    var el = document.getElementById('button-timings');
+    ToggleSelected(el, state);
 
-    if (state == "on") {
-        element.classList.add('selected');
-    } else if (state == "off") {
-        element.classList.remove('selected');
-    } else if (state == "toggle") {
-        element.classList.toggle('selected');
-    }
-
-    if (element.classList.contains('selected')) {
+    if (el.classList.contains('selected')) {
         ToggleSettings("on");
         ToggleSearch("off");
         ToggleFlags("off");
         ToggleIKFlags("off");
         ToggleEntity("off");
-        ToggleAnimHelp("off");
+        ToggleHelp("animHelp", "off")
         document.getElementById('button-timings').focus();
         document.getElementById('animTimingsOptions').style.display = "flex";
     } else {
@@ -789,23 +765,16 @@ function ToggleTimings(state) {
 }
 
 function ToggleFlags(state) {
-    var element = document.getElementById('button-flags');
+    var el = document.getElementById('button-flags');
+    ToggleSelected(el, state);
 
-    if (state == "on") {
-        element.classList.add('selected');
-    } else if (state == "off") {
-        element.classList.remove('selected');
-    } else if (state == "toggle") {
-        element.classList.toggle('selected');
-    }
-
-    if (element.classList.contains('selected')) {
+    if (el.classList.contains('selected')) {
         ToggleSettings("on");
         ToggleSearch("off");
         ToggleTimings("off");
         ToggleIKFlags("off");
         ToggleEntity("off");
-        ToggleAnimHelp("off");
+        ToggleHelp("animHelp", "off")
         document.getElementById('button-flags').focus();
         document.getElementById('animFlagsOptions').style.display = "flex";
     } else {
@@ -817,22 +786,21 @@ function ToggleFlags(state) {
 }
 
 function ToggleFlag(flag) {
-    var flagElement = document.getElementById("flag-" + flag);
-    flagElement.classList.toggle("selected");
+    var el = document.getElementById("flag-" + flag);
+    el.classList.toggle("selected");
 
     FlagTotals = 0;
     for (var i=0; i < 32 ; i++) {
-        let value = ToUint32(1 << i);
-        var calcFlagElement = document.getElementById("flag-" + value);
-        if (calcFlagElement.classList.contains("selected")) {
-            FlagTotals += value;
+        let v = ToUint32(1 << i);
+        if (document.getElementById("flag-" + v).classList.contains("selected")) {
+            FlagTotals += v;
         }
     }
     document.getElementById("flagTotals").innerHTML = FlagTotals;
 
     switch(flag) {
         case 1:
-            var selected = flagElement.classList.contains("selected");
+            var selected = el.classList.contains("selected");
             if (selected) {
                 document.getElementById("button-repeat").classList.add("selected");
             } else {
@@ -849,28 +817,20 @@ function ToggleFlag(flag) {
                 document.getElementById("button-torso").classList.remove("selected");
             }
             break;
-            break;
     }
 }
 
 function ToggleIKFlags(state) {
-    var element = document.getElementById('button-ikflags');
+    var el = document.getElementById('button-ikflags');
+    ToggleSelected(el, state);
 
-    if (state == "on") {
-        element.classList.add('selected');
-    } else if (state == "off") {
-        element.classList.remove('selected');
-    } else if (state == "toggle") {
-        element.classList.toggle('selected');
-    }
-
-    if (element.classList.contains('selected')) {
+    if (el.classList.contains('selected')) {
         ToggleSettings("on");
         ToggleSearch("off");
         ToggleTimings("off");
         ToggleFlags("off");
         ToggleEntity("off");
-        ToggleAnimHelp("off");
+        ToggleHelp("animHelp", "off")
         document.getElementById('button-ikflags').focus();
         document.getElementById('animIKFlagsOptions').style.display = "flex";
     } else {
@@ -882,38 +842,30 @@ function ToggleIKFlags(state) {
 }
 
 function ToggleIKFlag(flag) {
-    var flagElement = document.getElementById("ikflag-" + flag);
-    flagElement.classList.toggle("selected");
+    var el = document.getElementById("ikflag-" + flag);
+    el.classList.toggle("selected");
 
     IKFlagTotals = 0;
     for (var i=0; i < 31 ; i++) {
-        let value = ToUint32(1 << i);
-        var calcFlagElement = document.getElementById("ikflag-" + value);
-        if (calcFlagElement.classList.contains("selected")) {
-            IKFlagTotals += value;
+        let v = ToUint32(1 << i);
+        if (document.getElementById("ikflag-" + v).classList.contains("selected")) {
+            IKFlagTotals += v;
         }
     }
     document.getElementById("IKFlagTotals").innerHTML = IKFlagTotals;
 }
 
 function ToggleEntity(state) {
-    var element = document.getElementById('button-entity');
+    var el = document.getElementById('button-entity');
+    ToggleSelected(el, state);
 
-    if (state == "on") {
-        element.classList.add('selected');
-    } else if (state == "off") {
-        element.classList.remove('selected');
-    } else if (state == "toggle") {
-        element.classList.toggle('selected');
-    }
-
-    if (element.classList.contains('selected')) {
+    if (el.classList.contains('selected')) {
         ToggleSettings("on");
         ToggleSearch("off");
         ToggleTimings("off");
         ToggleFlags("off");
         ToggleIKFlags("off");
-        ToggleAnimHelp("off");
+        ToggleHelp("animHelp", "off")
         document.getElementById('button-entity').focus();
         document.getElementById('animEntityOptions').style.display = "flex";
     } else {
@@ -921,46 +873,51 @@ function ToggleEntity(state) {
     }
 }
 
-function ToggleAnimHelp(state) {
-    helpElement = document.getElementById('animHelp');
+function ToggleHelp(elementId, state, disableCursor = false) {
+    el = document.getElementById(elementId);
+    el_x = document.getElementById('crosshair');
     if (state == "on") {
-        helpElement.style.display = "block";
+        el.style.display = "block";
+        if (disableCursor) { el_x.style.display = "none"; }
     } else if (state == "off") {
-        helpElement.style.display = "none";
+        el.style.display = "none";
+        if (disableCursor) { el_x.style.display = "block"; }
     } else if (state == "toggle") {
-        if ($('#animHelp').is(':visible')) {
-            helpElement.style.display = "none";
+        if (isVisible(el)) {
+            el.style.display = "none";
+            if (disableCursor) { el_x.style.display = "block"; }
         } else {
-            helpElement.style.display = "block";
+            el.style.display = "block";
+            if (disableCursor) { el_x.style.display = "none"; }
         }
     }
 }
 
-function HandleAnimHUDKeys(event) {
+function HandleKeysAnim(event) {
     switch(event.key) {
         case "Escape":
             var escaped = false;
-            if ($('#animHelp').is(':visible')) {
-                ToggleAnimHelp("off");
+            if (isVisible(document.getElementById('animHelp'))) {
+                ToggleHelp("animHelp", "off")
                 return;
             }
-            if ($('#animSearchField').is(':visible')) {
+            if (isVisible(document.getElementById('animSearchField'))) {
                 ToggleSearch("off");
                 escaped = true;
             }
-            if ($('#animTimingsOptions').is(':visible')) {
+            if (isVisible(document.getElementById('animTimingsOptions'))) {
                 ToggleTimings("off");
                 escaped = true;
             }
-            if ($('#animFlagsOptions').is(':visible')) {
+            if (isVisible(document.getElementById('animFlagsOptions'))) {
                 ToggleFlags("off");
                 escaped = true;
             }
-            if ($('#animIKFlagsOptions').is(':visible')) {
+            if (isVisible(document.getElementById('animIKFlagsOptions'))) {
                 ToggleIKFlags("off");
                 escaped = true;
             }
-            if ($('#animEntityOptions').is(':visible')) {
+            if (isVisible(document.getElementById('animEntityOptions'))) {
                 ToggleEntity("off");
                 escaped = true;
             }
@@ -968,11 +925,9 @@ function HandleAnimHUDKeys(event) {
 
             SendClientMessage('exit', {});
             document.getElementById('devTreeHUD').style.display = "none";
-            ToggleAnimHUD("off");
+            ToggleUIAnim("off");
 
             return;
-
-        case " ":
             if (typeof event.target.onclick == "function") {
                 event.target.onclick.apply();
             } else {
@@ -981,7 +936,7 @@ function HandleAnimHUDKeys(event) {
             break;
         case "?":
         case "h":
-            ToggleAnimHelp("toggle");
+            ToggleHelp("animHelp", "toggle")
             break;
         case "Backspace":
             ToggleStop();
@@ -1030,37 +985,35 @@ function HandleAnimHUDKeys(event) {
             setTimeout(function() { KeyPressRepeat = false; }, 650);
             break;
         case "x":
-            if ($('#animSearchField').is(':visible')) {
+            if (isVisible(document.getElementById('animSearchField'))) {
                 // Clear search
                 document.getElementById('animDictList').innerHTML = "";
                 document.getElementById('animList').innerHTML = "";
                 document.getElementById('valueAnimSearch').innerHTML = "";
                 document.getElementById('valueAnimSearch').focus();
-            } else if ($('#animTimingsOptions').is(':visible')) {
+            } else if (isVisible(document.getElementById("animTimingsOptions"))) {
                 // Reset timings to defaults
                 document.getElementById("timingBlendIn").innerHTML = "1.0";
                 document.getElementById("timingBlendOut").innerHTML = "1.0";
                 document.getElementById("timingPlayback").innerHTML = "0";
                 document.getElementById("timingDuration").innerHTML = "-1";
-            } else if ($('#animFlagsOptions').is(':visible')) {
+            } else if (isVisible(document.getElementById("animFlagsOptions"))) {
                 // Clear all flags
                 for (var i=0; i < 32 ; i++) {
-                    let value = ToUint32(1 << i);
-                    var flagElement = document.getElementById("flag-" + value);
-                    if (flagElement.classList.contains("selected")) {
-                        ToggleFlag(value);
+                    let v = ToUint32(1 << i);
+                    if (document.getElementById("flag-" + v).classList.contains("selected")) {
+                        ToggleFlag(v);
                     }
                 }
-            } else if ($('#animIKFlagsOptions').is(':visible')) {
+            } else if (isVisible(document.getElementById("animIKFlagsOptions"))) {
                 // Clear all ikflags
                 for (var i=0; i < 32 ; i++) {
-                    let value = ToUint32(1 << i);
-                    var flagElement = document.getElementById("ikflag-" + value);
-                    if (flagElement.classList.contains("selected")) {
-                        ToggleIKFlag(value);
+                    let v = ToUint32(1 << i);
+                    if (document.getElementById("ikflag-" + v).classList.contains("selected")) {
+                        ToggleIKFlag(v);
                     }
                 }
-            } else if ($('#animEntityOptions').is(':visible')) {
+            } else if (isVisible(document.getElementById("animEntityOptions"))) {
                 // Reset entity to player
                 document.getElementById("animEntityField").innerHTML = "";
             } else {
@@ -1078,26 +1031,11 @@ function HandleAnimHUDKeys(event) {
     }
 }
 
-function ToggleCamHelp(state) {
-    helpElement = document.getElementById('camHelp');
-    if (state == "on") {
-        helpElement.style.display = "block";
-    } else if (state == "off") {
-        helpElement.style.display = "none";
-    } else if (state == "toggle") {
-        if ($('#camHelp').is(':visible')) {
-            helpElement.style.display = "none";
-        } else {
-            helpElement.style.display = "block";
-        }
-    }
-}
-
-function HandleCamHUDKeys(event) {
+function HandleKeysCam(event) {
     switch(event.key) {
         case "Escape":
-            if ($('#camHelp').is(':visible')) {
-                ToggleCamHelp("off");
+            if (isVisible(document.getElementById('camHelp'))) {
+                ToggleHelp("camHelp", "off");
                 return;
             }
             SendClientMessage('camera', { mode: "player" });
@@ -1105,147 +1043,220 @@ function HandleCamHUDKeys(event) {
             break;
         case "?":
         case "h":
-            ToggleCamHelp("toggle");
+            ToggleHelp("camHelp", "toggle");
             break;
             }
 }
 
-function ToggleObjectHelp(state) {
-    helpElement = document.getElementById('objHelp');
-    cursorElement = document.getElementById('crosshair');
-    if (state == "on") {
-        helpElement.style.display = "block";
-        cursorElement.style.display = "none";
-    } else if (state == "off") {
-        helpElement.style.display = "none";
-        cursorElement.style.display = "block";
-    } else if (state == "toggle") {
-        if ($('#objHelp').is(':visible')) {
-            helpElement.style.display = "none";
-            cursorElement.style.display = "block";
-        } else {
-            helpElement.style.display = "block";
-            cursorElement.style.display = "none";
-        }
-    }
+function ResetObjData() {
+    document.getElementById('objSpawnOptions').style.display = "none";
+    document.getElementById('objData').style.display = "none";
+    // document.getElementById('objNearbyControl').style.display = "none";
+    document.getElementById('objNearbyRange').style.display = "none";
+    document.getElementById('objNearbyResults').style.display = "none";
 }
 
-function ToggleObjectControlSpawnOptions(state) {
-    var element = document.getElementById('button-objectspawn');
-    var optionsElement = document.getElementById('objControlSpawnOptions');
-
-    if (state == "on") {
-        element.classList.add('selected');
-    } else if (state == "off") {
-        element.classList.remove('selected');
+function ToggleControlObjectSpawn(state) {
+    var el = document.getElementById('button-objectspawn');
+    ToggleSelected(el, state);
+    var el_o = document.getElementById('objControlSpawnOptions');
+    if (el.classList.contains('selected')) {
+        ToggleControlScene("off");
+        el_o.style.display = "inline-flex";
     } else {
-        element.classList.toggle('selected');
-    }
-
-    if (element.classList.contains('selected')) {
-        optionsElement.style.display = "inline-flex";
-    } else {
-        optionsElement.style.display = "none";
+        el_o.style.display = "none";
     }
 }
 
 function ToggleObjectSpawn(state) {
-    var element = document.getElementById('button-spawn');
+    var el = document.getElementById('button-spawn');
+    ToggleSelected(el, state);
 
-    if (state == "on") {
-        element.classList.add('selected');
-    } else if (state == "off") {
-        element.classList.remove('selected');
-    } else if (state == "toggle") {
-        element.classList.toggle('selected');
-    }
-
-    if (element.classList.contains('selected')) {
-        ToggleObjectHelp("off");
-        ToggleSceneControl("off");
-        ToggleObjectControlSpawnOptions("on");
+    if (el.classList.contains('selected')) {
+        ToggleHelp("objHelp", "off", true)
+        ToggleControlObjectSpawn("on");
+        ResetObjData();
+        document.getElementById('button-spawnfavs').classList.remove('selected');
+        document.getElementById('button-trackedobjlist').classList.remove('selected');
         document.getElementById('objSearchField').style.display = "flex";
         document.getElementById('objSearchList').style.display = "flex";
         document.getElementById('objSpawnOptions').style.display = "inline-flex";
+        document.getElementById('objData').style.display = "flex";
+        if (isVisible(document.getElementById('objSearchField'))) {
+            document.getElementById('objSearch').focus();
+        }
     } else {
+        ResetObjData();
         document.getElementById('objSearchField').style.display = "none";
         document.getElementById('objSearchList').style.display = "none";
-        document.getElementById('objSpawnOptions').style.display = "none";
         if (document.activeElement.classList.contains('entryField')) {
             document.activeElement.blur();
         }
     }
 }
 
-function ToggleSceneControl(state) {
-    var element = document.getElementById('button-objectscene');
+function ToggleObjectFavsSpawn(state) {
+    var el = document.getElementById('button-spawnfavs');
+    ToggleSelected(el, state);
 
-    if (state == "on") {
-        element.classList.add('selected');
-    } else if (state == "off") {
-        element.classList.remove('selected');
-    } else if (state == "toggle") {
-        element.classList.toggle('selected');
+    if (el.classList.contains('selected')) {
+    } else {
     }
+}
 
-    if (element.classList.contains('selected')) {
-        ToggleObjectHelp("off");
+function ToggleTrackedList(state) {
+    var el = document.getElementById('button-trackedobjlist');
+    ToggleSelected(el, state);
+
+    if (el.classList.contains('selected')) {
+        ToggleHelp("objHelp", "off", true)
+        ToggleControlScene("off");
+        ToggleControlObjectSpawn("on");
+        ResetObjData();
+        document.getElementById('button-spawn').classList.remove('selected');
+        document.getElementById('button-spawnfavs').classList.remove('selected');
+        document.getElementById('objSearchField').style.display = "none";
+        document.getElementById('objSearchList').style.display = "flex";
+        // document.getElementById('objNearbyControl').style.display = "inline-flex";
+        document.getElementById('objNearbyRange').style.display = "flex";
+        document.getElementById('objNearbyResults').style.display = "flex";
+    } else {
+        document.getElementById('objSearchField').style.display = "none";
+        document.getElementById('objSearchList').style.display = "none";
+        document.getElementById('objSpawnOptions').style.display = "none";
+    }
+}
+
+function ToggleControlScene(state) {
+    var el = document.getElementById('button-objectscene');
+    ToggleSelected(el, state);
+
+    if (el.classList.contains('selected')) {
+        ToggleHelp("objHelp", "off", true)
         ToggleObjectSpawn("off");
-        ToggleObjectControlSpawnOptions("off");
+        ToggleControlObjectSpawn("off");
+        ResetObjData();
         document.getElementById('objSceneOptions').style.display = "inline-flex";
     } else {
         document.getElementById('objSceneOptions').style.display = "none";
     }
 }
 
-function HandleObjectHUDKeys(event) {
+function ToggleSceneMove(state) {
+    var el = document.getElementById('button-scenecontrol');
+    ToggleSelected(el, state);
+
+    if (el.classList.contains('selected')) {
+        ToggleHelp("objHelp", "off", true)
+        ToggleControlObjectSpawn("off");
+        ToggleControlScene("on");
+        document.getElementById('button-scenetags').classList.remove('selected');
+        document.getElementById('button-importexport').classList.remove('selected');
+        document.getElementById('objSpawnOptions').style.display = "none";
+        document.getElementById('objSearchList').style.display = "flex";
+    } else {
+        document.getElementById('objSearchList').style.display = "none";
+    }
+}
+
+function ToggleSceneTag(state) {
+    var el = document.getElementById('button-scenetags');
+    ToggleSelected(el, state);
+
+    if (el.classList.contains('selected')) {
+        ToggleHelp("objHelp", "off", true)
+        ToggleControlObjectSpawn("off");
+        ToggleControlScene("on");
+        document.getElementById('button-scenecontrol').classList.remove('selected');
+        document.getElementById('button-importexport').classList.remove('selected');
+        document.getElementById('objSpawnOptions').style.display = "none";
+        document.getElementById('objSearchList').style.display = "flex";
+    } else {
+        document.getElementById('objSearchList').style.display = "none";
+    }
+}
+
+function ToggleImportExport(state) {
+    var el = document.getElementById('button-importexport');
+    ToggleSelected(el, state);
+
+    if (el.classList.contains('selected')) {
+        ToggleHelp("objHelp", "off", true)
+        ToggleControlObjectSpawn("off");
+        ToggleControlScene("on");
+        document.getElementById('button-scenecontrol').classList.remove('selected');
+        document.getElementById('button-scenetags').classList.remove('selected');
+        document.getElementById('objSpawnOptions').style.display = "none";
+        document.getElementById('objSearchList').style.display = "flex";
+    } else {
+        document.getElementById('objSearchList').style.display = "none";
+    }
+}
+
+function GetTrackedObjects() {
+    var elID = "objNearbyResults";
+    ResetListGroup(elID, "flex");
+    // SendClientMessage('trackedObjects', {});
+    var el = document.getElementById(elID);
+
+    el.innerHTML = "";
+    var ul = document.createElement('ul');
+    for (var i=0; i < 50; ++i) {
+        var li = document.createElement('li');
+        li.innerHTML = "test " + i;
+        ul.appendChild(li);
+    }
+    el.appendChild(ul);
+    el.style.minHeight = "30vh";
+    el.scrollTop = 0;
+    el.scrollLeft = -1000;
+}
+
+function HandleKeysObject(event) {
     switch(event.key) {
         case "Escape":
             if (document.activeElement.classList.contains('entryField')) {
                 document.activeElement.blur();
                 return;
             }
-            if ($('#objHelp').is(':visible')) {
-                ToggleObjectHelp("off");
-                escaped = true;
+            if (isVisible(document.getElementById('objHelp'))) {
+                ToggleHelp("objHelp", "off", true)
             }
-            if ($('#objSearchField').is(':visible')) {
-                ToggleObjectSpawn("off");
-                escaped = true;
-            }
-            if (escaped == true) { return; }
+            ToggleObjectSpawn("off");
+            ToggleTrackedList("off");
+            ToggleSceneMove("off");
+            ToggleSceneTag("off");
+            ToggleImportExport("off");
 
             // Usually would exit object mode, but Gizmo exit also would exit
             // object mode, unless we can detect gizmo exit
             break;
+        case "!":
         case "1":
-            if ($('#objSearchField').is(':visible')) {
-                document.getElementById('objSearch').focus();
-                event.preventDefault();
-                break;
-            }
-            ToggleObjectSpawn("toggle");
-            if ($('#objSearchField').is(':visible')) {
-                document.getElementById('objSearch').focus();
-                event.preventDefault();
-            }
+            ToggleObjectSpawn("on");
+            event.preventDefault();
             break;
         case "2":
-            ToggleSceneControl("toggle");
+            ToggleTrackedList("on");
+            GetTrackedObjects();
             break;
         case "3":
             break;
         case "4":
+            ToggleSceneMove("on");
             break;
         case "5":
-            ToggleObjSelect("toggle");
+            ToggleSceneTag("on");
+            break;
+        case "6":
+            ToggleImportExport("on");
             break;
         case "Backspace":
             SendClientMessage('objectMode', { mode: "off" });
             break;
         case "?":
         case "h":
-            ToggleObjectHelp("toggle");
+            ToggleHelp("objHelp", "toggle", true)
             break;
     }
 }
