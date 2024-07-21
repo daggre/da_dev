@@ -1,4 +1,5 @@
 var RedMObjects = {
+
     "p_campfire02x": "Campfire",
     "p_ik_handshake": 0x4,
 }
@@ -222,9 +223,19 @@ $(document).ready(function() {
 
     $("div#objSearch.entryField").keydown(function(e) {
         if (e.code == "Enter") {
+            console.log("searching for obj", this.innerHTML);
             e.preventDefault();
             ResetListGroup("objData", "flex");
             SearchBasicRedMList(this.innerHTML, RedMObjects, "objData");
+        }
+    });
+
+    $("div#nearbyRange.entryField").keydown(function(e) {
+        if (e.code == "Enter") {
+            console.log("setting nearby object range", this.innerHTML);
+            e.preventDefault();
+            // SendClientMessage('nearbyObjects', { range: this.innerHTML });
+            GetTrackedObjects();
         }
     });
 
@@ -928,6 +939,7 @@ function HandleKeysAnim(event) {
             ToggleUIAnim("off");
 
             return;
+        case " ":
             if (typeof event.target.onclick == "function") {
                 event.target.onclick.apply();
             } else {
@@ -1056,6 +1068,10 @@ function ResetObjData() {
     document.getElementById('objNearbyResults').style.display = "none";
 }
 
+function ResetNearbyData() {
+    document.getElementById('objNearbyResults').innerHTML = "";
+}
+
 function ToggleControlObjectSpawn(state) {
     var el = document.getElementById('button-objectspawn');
     ToggleSelected(el, state);
@@ -1082,9 +1098,6 @@ function ToggleObjectSpawn(state) {
         document.getElementById('objSearchList').style.display = "flex";
         document.getElementById('objSpawnOptions').style.display = "inline-flex";
         document.getElementById('objData').style.display = "flex";
-        if (isVisible(document.getElementById('objSearchField'))) {
-            document.getElementById('objSearch').focus();
-        }
     } else {
         ResetObjData();
         document.getElementById('objSearchField').style.display = "none";
@@ -1113,6 +1126,7 @@ function ToggleTrackedList(state) {
         ToggleControlScene("off");
         ToggleControlObjectSpawn("on");
         ResetObjData();
+        GetTrackedObjects();
         document.getElementById('button-spawn').classList.remove('selected');
         document.getElementById('button-spawnfavs').classList.remove('selected');
         document.getElementById('objSearchField').style.display = "none";
@@ -1227,18 +1241,46 @@ function HandleKeysObject(event) {
             ToggleSceneMove("off");
             ToggleSceneTag("off");
             ToggleImportExport("off");
+            document.getElementById('objControlSpawnOptions').style.display = "none";
+            document.getElementById('objSceneOptions').style.display = "none";
 
             // Usually would exit object mode, but Gizmo exit also would exit
             // object mode, unless we can detect gizmo exit
             break;
+        case " ":
+            if (typeof event.target.onclick == "function") {
+                event.target.onclick.apply();
+                event.preventDefault();
+            }
+            break;
         case "!":
         case "1":
+            var focusButton = false;
+            if (isVisible(document.getElementById('objSearchField'))) {
+                document.getElementById('objSearch').focus();
+                event.preventDefault();
+                break;
+            } else {
+                focusButton = true;
+            }
             ToggleObjectSpawn("on");
-            event.preventDefault();
+            if (focusButton) {
+                document.getElementById('button-spawn').focus();
+            }
             break;
         case "2":
+            var focusButton = false;
+            if (isVisible(document.getElementById('objNearbyRange'))) {
+                document.getElementById('nearbyRange').focus();
+                event.preventDefault();
+                break;
+            } else {
+                focusButton = true;
+            }
             ToggleTrackedList("on");
-            GetTrackedObjects();
+            if (focusButton) {
+                document.getElementById('button-trackedobjlist').focus();
+            }
             break;
         case "3":
             break;
@@ -1257,6 +1299,17 @@ function HandleKeysObject(event) {
         case "?":
         case "h":
             ToggleHelp("objHelp", "toggle", true)
+            break;
+        case "x":
+            if (isVisible(document.getElementById('objSearchField'))) {
+                document.getElementById('objSearch').innerHTML = "";
+                ResetListGroup("objData", "flex");
+
+            }
+            if (isVisible(document.getElementById('objNearbyRange'))) {
+                document.getElementById('objNearbyRange').innerHTML = "50";
+                GetTrackedObjects();
+            }
             break;
     }
 }
