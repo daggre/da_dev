@@ -86,6 +86,15 @@ local SelectModeControlCheck = function()
     end
 end
 
+RegisterNUICallback('objectModeKey', function(data, cb)
+    if data.key == "r" then
+        local obj = HoveredObject ~= nil and HoveredObject or SelectedObject
+        StartGizmo(obj)
+        cb(true)
+        return
+    end
+end)
+
 local SelectModeTick = function()
     local model = nil
     local hit = nil
