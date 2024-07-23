@@ -389,7 +389,7 @@
 body {
     margin: 0px;
     padding: 0px;
-    background: #444;
+    /*background: #444;*/
     font-family: LiterationMonoNerd,Menlo,Consolas,monospace;
     font-size: 1.0vh;
     text-shadow: 0 0 2px;

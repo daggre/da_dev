@@ -142,10 +142,13 @@ window.onload = function() {
             case "clipboard":
                 ClipboardCopy(msg.data.text);
                 break;
+            case "controlPass":
+                ControlPassActive = msg.data.enable;
+                break;
         }
     })
-    ToggleUI({value: "objectHUD"});
-    ToggleUI({value: "cameraHUD"});
+    // ToggleUI({value: "objectHUD"});
+    // ToggleUI({value: "cameraHUD"});
 }
 
 $(document).ready(function() {
@@ -161,7 +164,7 @@ $(document).ready(function() {
                 break;
             case 2: // Right Click
                 ControlPassActive = true;
-                SendClientMessage('controlPass', { enable: true });
+                SendClientMessage('modifyMode', { mode: "anim", passthrough: true, });
                 break;
             }
         }
@@ -172,7 +175,7 @@ $(document).ready(function() {
             switch(event.button) {
             case 2: // Right Click
                 ControlPassActive = false;
-                SendClientMessage('controlPass', { enable: false })
+                SendClientMessage('modifyMode', { mode: "anim", passthrough: false, });
                 break;
             }
         }
@@ -1234,7 +1237,7 @@ function HandleKeysObject(event) {
                 return;
             }
             if (isVisible(document.getElementById('objHelp'))) {
-                ToggleHelp("objHelp", "off", true)
+                ToggleHelp("objHelp", "off", true);
             }
             ToggleObjectSpawn("off");
             ToggleTrackedList("off");
@@ -1253,6 +1256,12 @@ function HandleKeysObject(event) {
                 event.preventDefault();
             }
             break;
+        case "c":
+            if (!document.activeElement.classList.contains('entryField') && !ControlPassActive) {
+                ControlPassActive = true;
+                SendClientMessage('modifyMode', { mode: "object", passthrough: true, });
+                break;
+            }
         case "!":
         case "1":
             var focusButton = false;
@@ -1299,6 +1308,10 @@ function HandleKeysObject(event) {
         case "?":
         case "h":
             ToggleHelp("objHelp", "toggle", true)
+            break;
+        case "r":
+            console.log("Sending object mode key r")
+            SendClientMessage('objectModeKey', { key: "r" });
             break;
         case "x":
             if (isVisible(document.getElementById('objSearchField'))) {
