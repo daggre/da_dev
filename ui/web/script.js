@@ -1,10 +1,11 @@
-var RedMObjects = {
+var Animations = {}
+var FlagTotals = 0
+var IKFlagTotals = 0
+var KeyPressRepeat = false
 
-    "p_campfire02x": "Campfire",
-    "p_ik_handshake": 0x4,
-}
+var SpawnOption = new Map();
 var ControlPassActive = false
-var SelectedObjectSpawnType = "object"
+var SelectedObjectSpawnType = "objects"
 var SelectedObjectFavs = false
 
 function ToUint32(value) { return value >>> 0; }
@@ -51,10 +52,11 @@ function ResetListGroup(element, display) {
 
 function SelectSpawnType(spawnType) {
     if (spawnType == SelectedObjectSpawnType) { return; }
-    if (spawnType != "object" &&
-        spawnType != "ped" &&
-        spawnType != "vehicle" &&
-        spawnType != "propset" &&
+    if (spawnType != "objects" &&
+        spawnType != "peds" &&
+        spawnType != "vehicles" &&
+        spawnType != "propsets" &&
+        spawnType != "pickups" &&
         spawnType != "other") {
         console.log("Invalid spawn type: " + spawnType);
         return;
@@ -168,6 +170,22 @@ $(document).ready(function() {
                 break;
             }
         }
+        if (isVisible(document.getElementById('objectHUD'))) {
+            switch(event.button) {
+            case 0: // Left Click
+                // Modify this for objectHUD
+                if (event.target.id == "activeAnimDict" || event.target.id == "activeAnimName") {
+                    if (event.target.innerHTML != "") {
+                        ClipboardCopy(event.target.innerHTML);
+                    }
+                }
+                break;
+            case 2: // Right Click
+                ControlPassActive = true;
+                SendClientMessage('modifyMode', { mode: "object", passthrough: true, });
+                break;
+            }
+        }
     });
 
     $(document).mouseup(function(event) {
@@ -175,7 +193,25 @@ $(document).ready(function() {
             switch(event.button) {
             case 2: // Right Click
                 ControlPassActive = false;
-                SendClientMessage('modifyMode', { mode: "anim", passthrough: false, });
+                SendClientMessage('modifyMode', {
+                        mode: "anim",
+                        passthrough: false,
+                        focusCursor: true,
+                        keepFocus: false
+                    });
+                break;
+            }
+        }
+        if (isVisible(document.getElementById('objectHUD'))) {
+            switch(event.button) {
+            case 2: // Right Click
+                ControlPassActive = false;
+                SendClientMessage('modifyMode', {
+                        mode: "object",
+                        passthrough: false,
+                        focusCursor: true,
+                        keepFocus: false
+                    });
                 break;
             }
         }
@@ -226,10 +262,10 @@ $(document).ready(function() {
 
     $("div#objSearch.entryField").keydown(function(e) {
         if (e.code == "Enter") {
-            console.log("searching for obj", this.innerHTML);
+            console.log("searching for", SelectedObjectSpawnType, this.innerHTML);
             e.preventDefault();
             ResetListGroup("objData", "flex");
-            SearchBasicRedMList(this.innerHTML, RedMObjects, "objData");
+            SearchBasicRedMList(this.innerHTML, SpawnOption.get(SelectedObjectSpawnType), "objData");
         }
     });
 
@@ -247,7 +283,11 @@ $(document).ready(function() {
     });
 
     SendClientMessage('initObjects', {}).then(function(resp) {
-        RedMObjects = JSON.parse(resp.objects);
+        SpawnOption.set("objects", JSON.parse(resp.objects));
+        SpawnOption.set("peds", JSON.parse(resp.peds));
+        SpawnOption.set("vehicles", JSON.parse(resp.vehicles));
+        SpawnOption.set("propsets", JSON.parse(resp.propsets));
+        SpawnOption.set("pickups", JSON.parse(resp.pickups));
     });
 
     SendClientMessage('initAnimFlags', {}).then(function(resp) {
@@ -425,16 +465,20 @@ function ToggleUIObject(state) {
     if (state == "on") {
         document.getElementById('objectHUD').style.display = "flex";
         document.getElementById('objControlOptions').style.display = "flex";
+        document.getElementById('selectedObjectDisplay').style.display = "flex";
     } else if (state == "off") {
         document.getElementById('objectHUD').style.display = "none";
         document.getElementById('objControlOptions').style.display = "none";
+        document.getElementById('selectedObjectDisplay').style.display = "none";
     } else {
         if (isVisible(document.getElementById('objectHUD'))) {
             document.getElementById('objectHUD').style.display = "none";
             document.getElementById('objControlOptions').style.display = "none";
+            document.getElementById('selectedObjectDisplay').style.display = "none";
         } else {
             document.getElementById('objectHUD').style.display = "flex";
             document.getElementById('objControlOptions').style.display = "flex";
+            document.getElementById('selectedObjectDisplay').style.display = "flex";
         }
     }
 }
@@ -471,11 +515,6 @@ function UpdateUICam(data) {
 }
 
 // Animation HUD //
-var Animations = {}
-var FlagTotals = 0
-var IKFlagTotals = 0
-var KeyPressRepeat = false
-
 function ToggleUIAnim(state) {
     // Toggle all submenus off
     document.getElementById('animDictList').style.display = "none";
@@ -569,30 +608,10 @@ function SearchAnims(animDict) {
 
 function SearchBasicRedMList(searchValue, searchList, elementId) {
     var el = document.getElementById(elementId);
-    var maxResults = 10000;
-    var results = [];
-
     el.innerHTML = "";
-    if (!searchValue || searchValue == "") { return; }
 
-    Object.keys(searchList).forEach(v => {
-        if (v.toLowerCase().includes(searchValue.toLowerCase())) {
-            results.push({
-                value: v
-            });
-        }
-    });
-
-    results.sort(function(a, b) {
-        if (a.value < b.value) {
-            return -1;
-        }
-        if (a.value > b.value) {
-            return 1;
-        }
-        return 0;
-    });
-
+    var maxResults = 10000;
+    var results = searchList.filter(str => str.toLowerCase().includes(searchValue.toLowerCase()));
     var ul = document.createElement('ul');
     for (var i=0; i < results.length && i < maxResults; ++i) {
         var li = document.createElement('li');
@@ -600,7 +619,7 @@ function SearchBasicRedMList(searchValue, searchList, elementId) {
             document.getElementById("activeObject").innerHTML = this.innerHTML;
             // Select Object
         })
-        li.innerHTML = results[i].value;
+        li.innerHTML = results[i];
         ul.appendChild(li);
     }
     el.appendChild(ul);
@@ -1246,9 +1265,11 @@ function HandleKeysObject(event) {
             ToggleImportExport("off");
             document.getElementById('objControlSpawnOptions').style.display = "none";
             document.getElementById('objSceneOptions').style.display = "none";
+            // TODO: Bug when using escape while mouse passthrough is held, cant reenter gizmo unless clearing escape
 
             // Usually would exit object mode, but Gizmo exit also would exit
             // object mode, unless we can detect gizmo exit
+            event.preventDefault();
             break;
         case " ":
             if (typeof event.target.onclick == "function") {
@@ -1314,6 +1335,7 @@ function HandleKeysObject(event) {
             SendClientMessage('objectModeKey', { key: "r" });
             break;
         case "x":
+            document.getElementById('activeObject').innerHTML = "";
             if (isVisible(document.getElementById('objSearchField'))) {
                 document.getElementById('objSearch').innerHTML = "";
                 ResetListGroup("objData", "flex");

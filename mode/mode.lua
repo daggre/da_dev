@@ -40,7 +40,7 @@ local SetMode = function(mode)
 end
 
 local UpdateActiveMode = function()
-    local activeMode = "default"
+    local activeMode = "none"
     local activePriority = 0
     for mode in pairs(AllActiveModes) do
         local modePrio = Mode[mode].priority
@@ -164,6 +164,10 @@ Mode.anim = {
         focusCursor = true,
         keepFocus = false,
         passthrough = false,
+        passthroughFn = function()
+            Mode.anim.modified.focusCursor = false
+            Mode.anim.modified.keepFocus = true
+        end,
     },
 }
 Mode.object = {

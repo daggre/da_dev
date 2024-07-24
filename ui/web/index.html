@@ -97,21 +97,31 @@
                     </li>
                 </ul>
             </div>
+            <div id="selectedObjectDisplay" class="optList dev">
+                <ul id="selectedObject">
+                    <li>
+                        <div class="entryLabel">modelName</div>
+                        <div id="activeObject" class="entryField"></div>
+                    </li>
+                </ul>
+            </div>
             <div id="objSearchList" class="dev listGroup">
                 <div id="objSpawnOptions" class="inlineControlGroup controlGroup dev">
                     <ul class="row">
                         <li>
                             <div id="button-spawnfavs" class="control" tabindex="3" role="button" aria-pressed="false"
                                 onclick="ToggleObjectFavsSpawn('toggle');">󰓎</div>
-                            <div id="button-spawnobject" class="control selected" tabindex="4" role="button" aria-pressed="false"
-                                onclick="SelectSpawnType('object');"></div>
-                            <div id="button-spawnped" class="control" tabindex="5" role="button" aria-pressed="false"
-                                onclick="SelectSpawnType('ped');"></div>
-                            <div id="button-spawnvehicle" class="control" tabindex="6" role="button" aria-pressed="false"
-                                onclick="SelectSpawnType('vehicle');">󱓲</div>
-                            <div id="button-spawnpropset" class="control" tabindex="7" role="button" aria-pressed="false"
-                                onclick="SelectSpawnType('propset');"></div>
-                            <div id="button-spawnother" class="control" tabindex="8" role="button" aria-pressed="false"
+                            <div id="button-spawnobjects" class="control selected" tabindex="4" role="button" aria-pressed="false"
+                                onclick="SelectSpawnType('objects');"></div>
+                            <div id="button-spawnpeds" class="control" tabindex="5" role="button" aria-pressed="false"
+                                onclick="SelectSpawnType('peds');"></div>
+                            <div id="button-spawnvehicles" class="control" tabindex="6" role="button" aria-pressed="false"
+                                onclick="SelectSpawnType('vehicles');">󱓲</div>
+                            <div id="button-spawnpropsets" class="control" tabindex="7" role="button" aria-pressed="false"
+                                onclick="SelectSpawnType('propsets');"></div>
+                            <div id="button-spawnpickups" class="control" tabindex="8" role="button" aria-pressed="false"
+                                onclick="SelectSpawnType('pickups');"></div>
+                            <div id="button-spawnother" class="control" tabindex="9" role="button" aria-pressed="false"
                                 onclick="SelectSpawnType('other');">󱝤</div>
                         </li>
                     </ul>

@@ -124,6 +124,7 @@
 .inlineControlGroup {
     position: static;
     transform: none;
+    flex-shrink: 0;
 }
 
 .searchField {
@@ -238,7 +239,7 @@
     float: right;
 }
 
-#activeAnimDisplay {
+#activeAnimDisplay, #selectedObjectDisplay {
     left: 50vw;
     top: 1vh;
     width: fit-content;
