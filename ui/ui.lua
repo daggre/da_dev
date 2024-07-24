@@ -106,6 +106,16 @@ RegisterNUICallback('initAnims', function(data, cb)
     cb({ animations = json.encode(Animations) })
 end)
 
+RegisterNUICallback('initObjects', function(data, cb)
+    cb({
+        objects = json.encode(Objects),
+        peds = json.encode(Peds),
+        vehicles = json.encode(Vehicles),
+        pickups = json.encode(Pickups),
+        propsets = json.encode(Propsets),
+    })
+end)
+
 RegisterNUICallback('initAnimFlags', function(data, cb)
     cb({ flags = json.encode(AnimFlags) })
 end)
