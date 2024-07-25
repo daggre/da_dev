@@ -63,8 +63,6 @@ function GetNearbyObjects(range)
     local pos = GetFinalRenderedCamCoord()
     local entities = da.Util.GetEntitiesNearPoint(pos, range)
     local entityData = {}
-    da.Log.Debug("Coords:", pos, range)
-    da.Log.Debug("Entities:", entities)
     for i, entity in ipairs(entities) do
         local model = GetEntityModel(entity)
         local coords = GetEntityCoords(entity)
@@ -72,10 +70,25 @@ function GetNearbyObjects(range)
             handle = entity,
             model = model,
             modelName = ObjectsHashLookup[model] or
-                PedsHashLookup[model] or
                 VehiclesHashLookup[model] or
                 PickupsHashLookup[model] or
-                "Unknown",
+                PedsHashLookup[model] or
+                model,
+            distance = #(pos - coords),
+        }
+    end
+    local peds = da.Util.GetPedsNearPoint(pos, range)
+    for i, entity in ipairs(peds) do
+        local model = GetEntityModel(entity)
+        local coords = GetEntityCoords(entity)
+        entityData[i] = {
+            handle = entity,
+            model = model,
+            modelName = PedsHashLookup[model] or
+                VehiclesHashLookup[model] or
+                ObjectsHashLookup[model] or
+                PickupsHashLookup[model] or
+                model,
             distance = #(pos - coords),
         }
     end
