@@ -2,9 +2,10 @@ da.Dev.Mode = {}
 
 ActiveMode = nil
 local AllActiveModes = {}
-local Mode = {}
+Mode = {}
 local Control = {
     C = 0x9959A6F0,
+    Escape = 0x308588E6,
 }
 
 local SetMode = function(mode)
@@ -12,6 +13,15 @@ local SetMode = function(mode)
         da.Log.Error(("Invalid mode '%s'"):format(mode))
         return
     end
+
+    -- When exiting gizmo, wait for escape to be released while client has keyboard control
+    if IsDisabledControlPressed(0, Control.Escape) then
+        while IsDisabledControlPressed(0, Control.Escape) do
+            SetNuiFocus(false, false)
+            Citizen.Wait(0)
+        end
+    end
+
 
     local focusKeyboard = Mode[mode].default.focusKeyboard
     if Mode[mode].modified.focusKeyboard ~= nil then focusKeyboard = Mode[mode].modified.focusKeyboard end
@@ -146,6 +156,15 @@ Mode.gizmo = {
         focusCursor = true,
         keepFocus = true,
         passthrough = false,
+        passthroughHaltKey = Control.C,
+        passthroughFn = function()
+            Mode.gizmo.modified.focusCursor = false
+        end,
+        passthroughCallback = function()
+            Mode.gizmo.modified = {}
+            UpdateActiveMode()
+            SendNUIMessage({ type = "controlPass", enable = false, })
+        end
     },
 }
 Mode.devTree = {

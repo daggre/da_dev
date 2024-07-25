@@ -58,3 +58,30 @@ function StartKinematicsThread()
         IKThread = false
     end)
 end
+
+function GetNearbyObjects(range)
+    local pos = GetFinalRenderedCamCoord()
+    local entities = da.Util.GetEntitiesNearPoint(pos, range)
+    local entityData = {}
+    da.Log.Debug("Coords:", pos, range)
+    da.Log.Debug("Entities:", entities)
+    for i, entity in ipairs(entities) do
+        local model = GetEntityModel(entity)
+        local coords = GetEntityCoords(entity)
+        entityData[i] = {
+            handle = entity,
+            model = model,
+            modelName = ObjectsHashLookup[model] or
+                PedsHashLookup[model] or
+                VehiclesHashLookup[model] or
+                PickupsHashLookup[model] or
+                "Unknown",
+            distance = #(pos - coords),
+        }
+    end
+    return entityData
+end
+
+RegisterNUICallback('nearbyObjects', function(data, cb)
+    cb({ nearbyObjects = GetNearbyObjects(data.range)})
+end)
