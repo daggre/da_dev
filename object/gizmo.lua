@@ -65,11 +65,6 @@ function GizmoThread()
                 da.Obj.Create(model, pos, { rotation = rot, })
             end
 
-            -- TODO: Add Undo for object
-            -- if not IsDisabledControlPressed(0, `INPUT_AIM`, true) then
-            --     DisableControlAction(0, `INPUT_LOOK_LR`, true) -- Look Left/Right
-            --     DisableControlAction(0, `INPUT_LOOK_UD`, true) -- Look Up/Down
-            -- end
             -- DisableControlAction(0, `INPUT_FRONTEND_RRIGHT`, true) -- ESC Menu
             -- DisableControlAction(0, `INPUT_FRONTEND_PAUSE_ALTERNATE`, true) -- ESC Menu
             -- DisableControlAction(0, `INPUT_VEH_LOOK_BEHIND`, true) -- VehicleMouseControlOverride

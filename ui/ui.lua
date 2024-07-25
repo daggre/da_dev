@@ -1,12 +1,14 @@
 CurrentTree = "optionTree"
+local Control = {
+    Z = 0x26E9DC00,
+    LCtrl = 0xD7DE6B1E,
+}
 
 Citizen.CreateThread(function()
     local z = 0x26E9DC00
     while true do
         Citizen.Wait(5)
-        -- if (IsControlJustPressed(0, z) and IsInputDisabled(0)) then
-        -- end
-        if (IsControlJustReleased(0, z) or IsDisabledControlJustReleased(0, z)) and not IsDisabledControlPressed(0, 0xD7DE6B1E) then
+        if (IsControlJustReleased(0, Control.Z) or IsDisabledControlJustReleased(0, Control.Z)) and not IsDisabledControlPressed(0, Control.LCtrl) then
             da.Dev.Mode.Add("devTree")
             SendNUIMessage({
                 type = "displayHUD",

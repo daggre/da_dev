@@ -183,6 +183,7 @@ $(document).ready(function() {
             case 2: // Right Click
                 ControlPassActive = true;
                 SendClientMessage('modifyMode', { mode: "object", passthrough: true, });
+                SendClientMessage('modifyMode', { mode: "gizmo", passthrough: true, });
                 break;
             }
         }
@@ -211,6 +212,11 @@ $(document).ready(function() {
                         passthrough: false,
                         focusCursor: true,
                         keepFocus: false
+                    });
+                SendClientMessage('modifyMode', {
+                        mode: "gizmo",
+                        passthrough: false,
+                        focusCursor: true,
                     });
                 break;
             }
@@ -273,7 +279,6 @@ $(document).ready(function() {
         if (e.code == "Enter") {
             console.log("setting nearby object range", this.innerHTML);
             e.preventDefault();
-            // SendClientMessage('nearbyObjects', { range: this.innerHTML });
             GetTrackedObjects();
         }
     });
@@ -1230,22 +1235,30 @@ function ToggleImportExport(state) {
 }
 
 function GetTrackedObjects() {
-    var elID = "objNearbyResults";
-    ResetListGroup(elID, "flex");
-    // SendClientMessage('trackedObjects', {});
-    var el = document.getElementById(elID);
+    SendClientMessage('nearbyObjects', { range: document.getElementById('nearbyRange').innerHTML, }).then(function(resp) {
+        var objects = resp.nearbyObjects;
+        var elID = "objNearbyResults";
+        ResetListGroup(elID, "flex");
 
-    el.innerHTML = "";
-    var ul = document.createElement('ul');
-    for (var i=0; i < 50; ++i) {
-        var li = document.createElement('li');
-        li.innerHTML = "test " + i;
-        ul.appendChild(li);
-    }
-    el.appendChild(ul);
-    el.style.minHeight = "30vh";
-    el.scrollTop = 0;
-    el.scrollLeft = -1000;
+        objects.sort((a, b) => a.distance - b.distance);
+
+        var el = document.getElementById(elID);
+        el.innerHTML = "";
+        var ul = document.createElement('ul');
+        for (var i = 0; i < objects.length; ++i) {
+            var li = document.createElement('li');
+            li.innerHTML = `${objects[i].distance.toFixed(2)} ${objects[i].handle} ${objects[i].modelName}`;
+            ul.appendChild(li);
+        }
+        el.appendChild(ul);
+        if (objects.length < 15) {
+            el.style.minHeight = objects.length + ".4vh";
+        } else {
+            el.style.minHeight = "15.4vh";
+        }
+        el.scrollTop = 0;
+        el.scrollLeft = -1000;
+    });
 }
 
 function HandleKeysObject(event) {
@@ -1265,7 +1278,9 @@ function HandleKeysObject(event) {
             ToggleImportExport("off");
             document.getElementById('objControlSpawnOptions').style.display = "none";
             document.getElementById('objSceneOptions').style.display = "none";
-            // TODO: Bug when using escape while mouse passthrough is held, cant reenter gizmo unless clearing escape
+
+            // TODO: use message to detect gizmode
+            // SendClientMessage('objectModeKey', { key: "r", alt: event.altKey, });
 
             // Usually would exit object mode, but Gizmo exit also would exit
             // object mode, unless we can detect gizmo exit
@@ -1281,6 +1296,7 @@ function HandleKeysObject(event) {
             if (!document.activeElement.classList.contains('entryField') && !ControlPassActive) {
                 ControlPassActive = true;
                 SendClientMessage('modifyMode', { mode: "object", passthrough: true, });
+                SendClientMessage('modifyMode', { mode: "gizmo", passthrough: true, });
                 break;
             }
         case "!":
@@ -1331,8 +1347,8 @@ function HandleKeysObject(event) {
             ToggleHelp("objHelp", "toggle", true)
             break;
         case "r":
-            console.log("Sending object mode key r")
-            SendClientMessage('objectModeKey', { key: "r" });
+            console.log("Sending object mode key r", event)
+            SendClientMessage('objectModeKey', { key: "r", alt: event.altKey, });
             break;
         case "x":
             document.getElementById('activeObject').innerHTML = "";

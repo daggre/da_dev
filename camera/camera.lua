@@ -32,6 +32,7 @@ Control.E = `INPUT_DYNAMIC_SCENARIO`
 Control.F = `INPUT_CONTEXT_B`
 Control.Spacebar = `INPUT_JUMP`
 Control.LeftAlt = `INPUT_PC_FREE_LOOK`
+Control.LAlt = 0x8AAA0AD4
 Control.LeftShift = `INPUT_SPRINT`
 Control.LeftControl = `INPUT_FRONTEND_RUP`
 Control.MouseLR = `INPUT_LOOK_LR`
@@ -46,6 +47,9 @@ local radian = math.pi / 180
 local CheckControls = function()
     if IsDisabledControlJustPressed(0, Control.F) then
         if Camera.Mode == "free" then
+            if IsDisabledControlPressed(0, Control.LAlt) and HoveredObject then
+                SelectedObject = HoveredObject
+            end
             if not SelectedObject then
                 SelectedObject = HoveredObject
             end
@@ -187,7 +191,7 @@ local ControlTranslation = function(x, y, z, rot_x, rot_z, fov)
     end
 
 
-    if Camera.Mode == "free" and ActiveMode ~= "gizmo" then
+    if Camera.Mode == "free" and (ActiveMode ~= "gizmo" or Mode.gizmo.modified and Mode.gizmo.modified.focusCursor == false) then
         local deltaLR = GetDisabledControlNormal(0, Control.MouseLR)
         local deltaUD = GetDisabledControlNormal(0, Control.MouseUD)
 

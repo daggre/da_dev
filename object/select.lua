@@ -7,10 +7,12 @@ local Control = {
     LeftMouse = `INPUT_ATTACK`,
     RightMouse = `INPUT_AIM`,
     LCtrl = 0xD7DE6B1E, -- FrontendRup
+    LAlt = 0x8AAA0AD4,
     -- Crouch = `INPUT_DUCK`,
     -- D = `INPUT_MOVE_RIGHT_ONLY`,
     G = `INPUT_INTERACT_ANIMAL`,
     R = `INPUT_RELOAD`,
+    T = 0x9720FCEE,
     V = `INPUT_NEXT_CAMERA`,
     X = `INPUT_SWITCH_SHOULDER`,
 }
@@ -40,10 +42,9 @@ local SelectModeControlCheck = function()
         DisableControlAction(0, control, true)
     end
     if HoveredObject or SelectedObject then
-        local obj = HoveredObject ~= nil and HoveredObject or SelectedObject
 
-        -- Select Object (RightClick)
-        if IsDisabledControlJustPressed(0, Control.RightMouse) then
+        -- Select Object (T)
+        if IsDisabledControlJustPressed(0, Control.T) then
             if HoveredObject then
                 if HoveredObject == SelectedObject then
                     SelectedObject = nil
@@ -58,12 +59,20 @@ local SelectModeControlCheck = function()
 
         -- Open Gizmo (R)
         if not IsDisabledControlPressed(0, Control.LCtrl) and IsDisabledControlJustPressed(0, Control.R) then
-            StartGizmo(obj)
+            if not SelectedObject and HoveredObject then
+                SelectedObject = HoveredObject
+            end
+            if IsDisabledControlPressed(0, Control.LAlt) and HoveredObject then
+                SelectedObject = HoveredObject
+            end
+            if SelectedObject then
+                StartGizmo(SelectedObject)
+            end
         end
 
-        if IsDisabledControlJustPressed(0, 0xA5BDCD3C) then -- Right Bracket
-            SetEntityRotation(SelectedObject or HoveredObject, 0, 0, 0)
-        end
+        -- if IsDisabledControlJustPressed(0, 0xA5BDCD3C) then -- Right Bracket
+        --     SetEntityRotation(SelectedObject or HoveredObject, 0, 0, 0)
+        -- end
 
         if HoveredObject and SelectedObject and IsDisabledControlPressed(0, Control.LCtrl) then
             if IsDisabledControlJustPressed(0, Control.R) then
@@ -75,7 +84,7 @@ local SelectModeControlCheck = function()
                 local hPos = GetEntityCoords(HoveredObject)
                 SetEntityCoords(SelectedObject, hPos.x, hPos.y, sPos.z)
             end
-            if IsControlJustPressed(0, 0x26E9DC00) then -- Z
+            if IsDisabledControlJustPressed(0, 0x26E9DC00) then -- Z
                 local sPos = GetEntityCoords(SelectedObject)
                 local hPos = GetEntityCoords(HoveredObject)
                 SetEntityCoords(SelectedObject, sPos.x, sPos.y, hPos.z)
@@ -88,10 +97,16 @@ end
 
 RegisterNUICallback('objectModeKey', function(data, cb)
     if data.key == "r" then
-        local obj = HoveredObject ~= nil and HoveredObject or SelectedObject
-        StartGizmo(obj)
+        if not SelectedObject and HoveredObject then
+            SelectedObject = HoveredObject
+        end
+        if data.alt and HoveredObject then
+            SelectedObject = HoveredObject
+        end
+        if SelectedObject then
+            StartGizmo(SelectedObject)
+        end
         cb(true)
-        return
     end
 end)
 
