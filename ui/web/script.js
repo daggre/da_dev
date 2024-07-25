@@ -5,8 +5,10 @@ var KeyPressRepeat = false
 
 var SpawnOption = new Map();
 var ControlPassActive = false
+var GizmoActive = false
 var SelectedObjectSpawnType = "objects"
 var SelectedObjectFavs = false
+var TrackedObjectsLoopRunning = false
 
 function ToUint32(value) { return value >>> 0; }
 
@@ -147,6 +149,9 @@ window.onload = function() {
             case "controlPass":
                 ControlPassActive = msg.data.enable;
                 break;
+            case "setGizmoState":
+                GizmoActive = msg.data.data.shown
+                break;
         }
     })
     // ToggleUI({value: "objectHUD"});
@@ -226,6 +231,7 @@ $(document).ready(function() {
     $(document).keydown(function(event) {
         if (ControlPassActive) { return; }
         if (event.key != "Escape" && event.target.getAttribute('contenteditable') == "true") { return; }
+        if (event.key == "Escape" && GizmoActive) { return; }
 
         if (isVisible(document.getElementById('devTreeHUD'))) {
             HandleKeysDevTree(event);
@@ -1235,56 +1241,89 @@ function ToggleImportExport(state) {
 }
 
 function GetTrackedObjects() {
-    SendClientMessage('nearbyObjects', { range: document.getElementById('nearbyRange').innerHTML, }).then(function(resp) {
-        var objects = resp.nearbyObjects;
-        var elID = "objNearbyResults";
-        ResetListGroup(elID, "flex");
+    if (TrackedObjectsLoopRunning) { return; }
+    TrackedObjectsLoopRunning = true;
+    var loopEl = document.getElementById('objNearbyResults');
 
-        objects.sort((a, b) => a.distance - b.distance);
+    const loopId = setInterval(function() {
+        if (isVisible(loopEl)) {
+            SendClientMessage('nearbyObjects', { range: document.getElementById('nearbyRange').innerHTML, }).then(function(resp) {
+                var objects = resp.nearbyObjects;
+                var elID = "objNearbyResults";
+                ResetListGroup(elID, "flex");
 
-        var el = document.getElementById(elID);
-        el.innerHTML = "";
-        var ul = document.createElement('ul');
-        for (var i = 0; i < objects.length; ++i) {
-            var li = document.createElement('li');
-            li.innerHTML = `${objects[i].distance.toFixed(2)} ${objects[i].handle} ${objects[i].modelName}`;
-            ul.appendChild(li);
-        }
-        el.appendChild(ul);
-        if (objects.length < 15) {
-            el.style.minHeight = objects.length + ".4vh";
+                objects.sort((a, b) => a.distance - b.distance);
+
+                var el = document.getElementById(elID);
+                el.innerHTML = "";
+                var ul = document.createElement('ul');
+                for (var i = 0; i < objects.length; ++i) {
+                    var li = document.createElement('li');
+                    li.innerHTML = `${objects[i].distance.toFixed(2)} ${objects[i].handle} ${objects[i].modelName}`;
+                    ul.appendChild(li);
+                }
+                el.appendChild(ul);
+                if (objects.length < 15) {
+                    el.style.minHeight = objects.length + ".4vh";
+                } else {
+                    el.style.minHeight = "15.4vh";
+                }
+                el.scrollTop = 0;
+                el.scrollLeft = -1000;
+            });
         } else {
-            el.style.minHeight = "15.4vh";
+            clearInterval(loopId);
+            TrackedObjectsLoopRunning = false;
         }
-        el.scrollTop = 0;
-        el.scrollLeft = -1000;
-    });
+    }, 250);
 }
 
 function HandleKeysObject(event) {
     switch(event.key) {
         case "Escape":
+            var escaped = false;
+            event.preventDefault();
             if (document.activeElement.classList.contains('entryField')) {
                 document.activeElement.blur();
-                return;
+                break;
             }
             if (isVisible(document.getElementById('objHelp'))) {
                 ToggleHelp("objHelp", "off", true);
+                escaped = true;
+                break;
             }
-            ToggleObjectSpawn("off");
-            ToggleTrackedList("off");
-            ToggleSceneMove("off");
-            ToggleSceneTag("off");
-            ToggleImportExport("off");
-            document.getElementById('objControlSpawnOptions').style.display = "none";
-            document.getElementById('objSceneOptions').style.display = "none";
+            if (isVisible(document.getElementById('objSpawnOptions'))) {
+                ToggleObjectSpawn("off");
+                escaped = true;
+                break;
+            }
+            if (isVisible(document.getElementById('objSearchList'))) {
+                ToggleTrackedList("off");
+                escaped = true;
+                break;
+            }
+            if (isVisible(document.getElementById('objControlSpawnOptions'))) {
+                document.getElementById('objControlSpawnOptions').style.display = "none";
+                escaped = true;
+                break;
+            }
+            if (isVisible(document.getElementById('objSceneOptions'))) {
+                document.getElementById('objSceneOptions').style.display = "none";
+                escaped = true;
+            }
+            if (escaped) { break; }
+
+            console.log("Sending object mode off")
+            SendClientMessage('objectMode', { mode: "off" });
+            // ToggleSceneMove("off");
+            // ToggleSceneTag("off");
+            // ToggleImportExport("off");
 
             // TODO: use message to detect gizmode
             // SendClientMessage('objectModeKey', { key: "r", alt: event.altKey, });
 
             // Usually would exit object mode, but Gizmo exit also would exit
             // object mode, unless we can detect gizmo exit
-            event.preventDefault();
             break;
         case " ":
             if (typeof event.target.onclick == "function") {
@@ -1358,7 +1397,7 @@ function HandleKeysObject(event) {
 
             }
             if (isVisible(document.getElementById('objNearbyRange'))) {
-                document.getElementById('objNearbyRange').innerHTML = "50";
+                document.getElementById('objNearbyRange').innerHTML = "25";
                 GetTrackedObjects();
             }
             break;

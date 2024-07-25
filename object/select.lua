@@ -151,7 +151,7 @@ local StartSelectModeThread = function(id)
     end)
 end
 
-local ObjectModeToggle = function(state)
+ObjectModeToggle = function(state)
     if state ~= nil and EnableSelectMode == state then return; end
     EnableSelectMode = not EnableSelectMode
     da.Log.Info(("Entity select mode: %s"):format(EnableSelectMode and "^2ON^7" or "^1OFF^7"))
