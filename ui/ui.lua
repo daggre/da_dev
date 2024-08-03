@@ -1,14 +1,12 @@
 CurrentTree = "optionTree"
-local Control = {
-    Z = 0x26E9DC00,
-    LCtrl = 0xD7DE6B1E,
-}
 
 Citizen.CreateThread(function()
     local z = 0x26E9DC00
     while true do
         Citizen.Wait(5)
-        if (IsControlJustReleased(0, Control.Z) or IsDisabledControlJustReleased(0, Control.Z)) and not IsDisabledControlPressed(0, Control.LCtrl) then
+        -- if (IsControlJustPressed(0, z) and IsInputDisabled(0)) then
+        -- end
+        if (IsControlJustReleased(0, z) or IsDisabledControlJustReleased(0, z)) and not IsDisabledControlPressed(0, 0xD7DE6B1E) then
             da.Dev.Mode.Add("devTree")
             SendNUIMessage({
                 type = "displayHUD",
@@ -64,6 +62,7 @@ RegisterNUICallback('playAnim', function(data, cb)
             data.animName
         )
     elseif data.type == "advanced" then
+        local p14, p15, p16 = nil, nil, nil
         da.Anim.Adv(
             entity or PlayerPedId(),
             data.animDict,
@@ -106,16 +105,6 @@ end)
 
 RegisterNUICallback('initAnims', function(data, cb)
     cb({ animations = json.encode(Animations) })
-end)
-
-RegisterNUICallback('initObjects', function(data, cb)
-    cb({
-        objects = json.encode(Objects),
-        peds = json.encode(Peds),
-        vehicles = json.encode(Vehicles),
-        pickups = json.encode(Pickups),
-        propsets = json.encode(Propsets),
-    })
 end)
 
 RegisterNUICallback('initAnimFlags', function(data, cb)

@@ -81,7 +81,7 @@ local _GetBoundingBox = function(obj)
         vec3(min.x, max.y, max.z),
     }
 
-    -- XXX: Swapped fVec and rVec according to API documentation
+    -- INFO: Swapped fVec and rVec according to API documentation
     local fVec, rVec, uVec, pos = GetEntityMatrix(obj)
     local matrix = GetRotationMatrix(fVec, rVec, uVec)
     vertices = ApplyRotationMatrix(vertices, matrix)

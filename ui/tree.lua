@@ -6,7 +6,7 @@ local MenuLookup = {}
 ---@param optionName string The name of the option
 ---@param key string The key to press to trigger the option
 ---@param fn function the function to call when the option is triggered
----@param condition function The condition to check before displaying the option
+---@param condition function|nil The condition to check before displaying the option
 da.Dev.Menu.RegisterOption = function(menuName, optionName, key, fn, condition)
     if not OptionLookup[menuName] then
         OptionLookup[menuName] = {}

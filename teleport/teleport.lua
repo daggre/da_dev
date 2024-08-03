@@ -21,6 +21,7 @@ local TeleportLocations = {
     ["Graverobbing"] = { key = "g", location = vector4(2413.753, 1772.332, 89.543, 300.794), category = "npc", },
     ["Coal Chute"] = { key = "c", location = vector4(2945.651, 1378.808, 51.357, 79.818), category = "npc", },
     ["Mining Fence"] = { key = "f", location = vector4(2731.39, 1368.416, 68.47, 107.077), category = "npc" },
+    ["Music Vendor"] = { key = "m", location = vector4(2655.914, -1379.673, 48.532, 225.987), category = "npc" },
 }
 
 da.Dev.Teleport = function(coords) TriggerEvent('TMC:Command:TeleportToCoords', coords) end
@@ -39,8 +40,8 @@ end
 
 for i=1,5 do
     da.Dev.Menu.RegisterOption("custom", "sav "..tostring(i), tostring(i), function()
-        position = GetEntityCoords(PlayerPedId())
-        heading = GetEntityHeading(PlayerPedId())
+        local position = GetEntityCoords(PlayerPedId())
+        local heading = GetEntityHeading(PlayerPedId())
         SavedLocations[i] = vec4(position.x, position.y, position.z, heading)
     end, function()
         return SavedLocations[i] == nil
@@ -71,4 +72,5 @@ da.Dev.Menu.RegisterOption("teleport", "disappear", "0", function()
         coords = coords,
         networked = true,
     })
+
 end)

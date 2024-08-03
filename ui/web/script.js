@@ -1,75 +1,7 @@
-var Animations = {}
-var FlagTotals = 0
-var IKFlagTotals = 0
-var KeyPressRepeat = false
-
-var SpawnOption = new Map();
 var ControlPassActive = false
-var GizmoActive = false
-var SelectedObjectSpawnType = "objects"
-var SelectedObjectFavs = false
-var TrackedObjectsLoopRunning = false
 
-function ToUint32(value) { return value >>> 0; }
-
-function isVisible(el) {
-    var style = window.getComputedStyle(el)
-    if (style.display == "none") { return false; }
-    if (style.visibility == "hidden") { return false; }
-    return true;
-}
-
-function ToggleSelected(el, state = "toggle") {
-    if (state == "on") {
-        el.classList.add('selected');
-    } else if (state == "off") {
-        el.classList.remove('selected');
-    } else if (state == "toggle") {
-        el.classList.toggle('selected');
-    }
-}
-
-function ToggleSpawnFavs(state) {
-    var favselement = document.getElementById('button-spawnfavs');
-
-    if (state == "on") {
-        favselement.classList.add('selected');
-    } else if (state == "off") {
-        favselement.classList.remove('selected');
-    } else if (state == "toggle") {
-        favselement.classList.toggle('selected');
-    }
-
-    SelectedObjectFavs = favselement.classList.contains('selected');
-    console.log("SelectedObjectFavs: " + SelectedObjectFavs);
-}
-
-function ResetListGroup(element, display) {
-    var el = document.getElementById(element);
-    el.style.display = display;
-    el.innerHTML = "";
-    el.scrollTop = 0;
-    el.scrollLeft = -1000;
-}
-
-function SelectSpawnType(spawnType) {
-    if (spawnType == SelectedObjectSpawnType) { return; }
-    if (spawnType != "objects" &&
-        spawnType != "peds" &&
-        spawnType != "vehicles" &&
-        spawnType != "propsets" &&
-        spawnType != "pickups" &&
-        spawnType != "other") {
-        console.log("Invalid spawn type: " + spawnType);
-        return;
-    }
-    document.getElementById('button-spawn' + SelectedObjectSpawnType).classList.remove('selected');
-    SelectedObjectSpawnType = spawnType;
-    document.getElementById('button-spawn' + SelectedObjectSpawnType).classList.add('selected');
-
-    ResetListGroup("objData", "none");
-    document.getElementById('objSearch').innerHTML = "";
-    document.getElementById('objSearch').focus();
+function ToUint32(value) {
+    return value >>> 0;
 }
 
 function SendClientMessage(endpoint, data) {
@@ -102,8 +34,8 @@ function ClipboardCopy(val) {
 }
 
 function TransitionHUD(to) {
-    if (isVisible(document.getElementById('animHUD'))) {
-        ToggleUIAnim("off");
+    if ($('#animHUD').is(':visible')) {
+        ToggleAnimHUD("off");
         SendClientMessage('transitionControl', {
             from: "animHUD",
             to: to,
@@ -112,21 +44,21 @@ function TransitionHUD(to) {
     }
 }
 
-function ToggleUI(data) {
+function ShowHUD(data) {
     switch(data.value) {
         case "devTreeHUD":
-            ToggleUIDevTree(data)
+            ToggleDevTreeHUD(data)
             break;
         case "animHUD":
-            ToggleUIAnim("on");
+            ToggleAnimHUD("on");
             break;
         case "objectHUD":
-            ToggleUIObject(data.mode);
+            ToggleObjectHUD(data.mode);
             break;
         case "cameraHUD":
-            ToggleUICam(data.mode)
+            ToggleCamHUD(data.mode)
             if (data.mode == "on") {
-                UpdateUICam(data.camera)
+                UpdateCamHUD(data.camera)
             }
             break;
         default:
@@ -138,7 +70,7 @@ window.onload = function() {
     window.addEventListener('message', function(msg) {
         switch(msg.data.type) {
             case "displayHUD":
-                ToggleUI(msg.data);
+                ShowHUD(msg.data);
                 break;
             case "objUpdate":
                 UpdateCrosshair(msg.data.data);
@@ -146,21 +78,13 @@ window.onload = function() {
             case "clipboard":
                 ClipboardCopy(msg.data.text);
                 break;
-            case "controlPass":
-                ControlPassActive = msg.data.enable;
-                break;
-            case "setGizmoState":
-                GizmoActive = msg.data.data.shown
-                break;
         }
     })
-    // ToggleUI({value: "objectHUD"});
-    // ToggleUI({value: "cameraHUD"});
 }
 
 $(document).ready(function() {
     $(document).mousedown(function(event) {
-        if (isVisible(document.getElementById('animHUD'))) {
+        if ($('#animHUD').is(':visible')) {
             switch(event.button) {
             case 0: // Left Click
                 if (event.target.id == "activeAnimDict" || event.target.id == "activeAnimName") {
@@ -171,58 +95,18 @@ $(document).ready(function() {
                 break;
             case 2: // Right Click
                 ControlPassActive = true;
-                SendClientMessage('modifyMode', { mode: "anim", passthrough: true, });
-                break;
-            }
-        }
-        if (isVisible(document.getElementById('objectHUD'))) {
-            switch(event.button) {
-            case 0: // Left Click
-                // Modify this for objectHUD
-                if (event.target.id == "activeAnimDict" || event.target.id == "activeAnimName") {
-                    if (event.target.innerHTML != "") {
-                        ClipboardCopy(event.target.innerHTML);
-                    }
-                }
-                break;
-            case 2: // Right Click
-                ControlPassActive = true;
-                SendClientMessage('modifyMode', { mode: "object", passthrough: true, });
-                SendClientMessage('modifyMode', { mode: "gizmo", passthrough: true, });
+                SendClientMessage('controlPass', { enable: true });
                 break;
             }
         }
     });
 
     $(document).mouseup(function(event) {
-        if (isVisible(document.getElementById('animHUD'))) {
+        if ($('#animHUD').is(':visible')) {
             switch(event.button) {
             case 2: // Right Click
                 ControlPassActive = false;
-                SendClientMessage('modifyMode', {
-                        mode: "anim",
-                        passthrough: false,
-                        focusCursor: true,
-                        keepFocus: false
-                    });
-                break;
-            }
-        }
-        if (isVisible(document.getElementById('objectHUD'))) {
-            switch(event.button) {
-            case 2: // Right Click
-                ControlPassActive = false;
-                SendClientMessage('modifyMode', {
-                        mode: "object",
-                        passthrough: false,
-                        focusCursor: true,
-                        keepFocus: false
-                    });
-                SendClientMessage('modifyMode', {
-                        mode: "gizmo",
-                        passthrough: false,
-                        focusCursor: true,
-                    });
+                SendClientMessage('controlPass', { enable: false })
                 break;
             }
         }
@@ -231,25 +115,24 @@ $(document).ready(function() {
     $(document).keydown(function(event) {
         if (ControlPassActive) { return; }
         if (event.key != "Escape" && event.target.getAttribute('contenteditable') == "true") { return; }
-        if (event.key == "Escape" && GizmoActive) { return; }
 
-        if (isVisible(document.getElementById('devTreeHUD'))) {
-            HandleKeysDevTree(event);
+        if ($('#devTreeHUD').is(':visible')) {
+            HandleDevMenuKey(event);
             return;
         }
 
-        if (isVisible(document.getElementById('animHUD'))) {
-            HandleKeysAnim(event);
+        if ($('#animHUD').is(':visible')) {
+            HandleAnimHUDKeys(event);
             return;
         }
 
-        if (isVisible(document.getElementById('objectHUD'))) {
-            HandleKeysObject(event);
+        if ($('#objectHUD').is(':visible')) {
+            HandleObjectHUDKeys(event);
             return;
         }
 
-        if (isVisible(document.getElementById('cameraHUD'))) {
-            HandleKeysCam(event);
+        if ($('#cameraHUD').is(':visible')) {
+            HandleCamHUDKeys(event);
             return;
         }
 
@@ -272,38 +155,14 @@ $(document).ready(function() {
         }
     });
 
-    $("div#objSearch.entryField").keydown(function(e) {
-        if (e.code == "Enter") {
-            console.log("searching for", SelectedObjectSpawnType, this.innerHTML);
-            e.preventDefault();
-            ResetListGroup("objData", "flex");
-            SearchBasicRedMList(this.innerHTML, SpawnOption.get(SelectedObjectSpawnType), "objData");
-        }
-    });
-
-    $("div#nearbyRange.entryField").keydown(function(e) {
-        if (e.code == "Enter") {
-            console.log("setting nearby object range", this.innerHTML);
-            e.preventDefault();
-            GetTrackedObjects();
-        }
-    });
-
     SendClientMessage('initAnims', {}).then(function(resp) {
         Animations = JSON.parse(resp.animations);
-    });
-
-    SendClientMessage('initObjects', {}).then(function(resp) {
-        SpawnOption.set("objects", JSON.parse(resp.objects));
-        SpawnOption.set("peds", JSON.parse(resp.peds));
-        SpawnOption.set("vehicles", JSON.parse(resp.vehicles));
-        SpawnOption.set("propsets", JSON.parse(resp.propsets));
-        SpawnOption.set("pickups", JSON.parse(resp.pickups));
     });
 
     SendClientMessage('initAnimFlags', {}).then(function(resp) {
         var flagList = document.getElementById('animFlagsOptions');
         var ul = document.createElement('ul');
+        ul.setAttribute('id', 'animFlags');
 
         var flags = JSON.parse(resp.flags);
         flags.forEach(flag => {
@@ -348,6 +207,7 @@ $(document).ready(function() {
     SendClientMessage('initIKAnimFlags', {}).then(function(resp) {
         var flagList = document.getElementById('animIKFlagsOptions');
         var ul = document.createElement('ul');
+        ul.setAttribute('id', 'animIKFlags');
 
         var flags = JSON.parse(resp.flags);
         flags.forEach(flag => {
@@ -398,7 +258,7 @@ var DevKeys = {}
 var HudTree = {}
 var TreeKeys = {}
 
-function ToggleUIDevTree(data) {
+function ToggleDevTreeHUD(data) {
     TransitionHUD(data.value);
     InitializeTree(data.optionTree[0]);
     document.getElementById('devTreeHUD').style.display = "flex";
@@ -449,7 +309,7 @@ function KeyTranslate(key) {
     return map.hasOwnProperty(lowercaseKey) ? map[lowercaseKey] : lowercaseKey;
 }
 
-function HandleKeysDevTree(event) {
+function HandleDevMenuKey(event) {
     let key = event.key
     let translatedKey = KeyTranslate(key)
     if (TreeKeys[translatedKey]) {
@@ -469,27 +329,16 @@ function HandleKeysDevTree(event) {
 }
 
 // Object HUD //
-function ToggleUIObject(state) {
-    document.getElementById('objSearchField').style.display = "none";
-    document.getElementById('objData').style.display = "none";
-
+function ToggleObjectHUD(state) {
     if (state == "on") {
         document.getElementById('objectHUD').style.display = "flex";
-        document.getElementById('objControlOptions').style.display = "flex";
-        document.getElementById('selectedObjectDisplay').style.display = "flex";
     } else if (state == "off") {
         document.getElementById('objectHUD').style.display = "none";
-        document.getElementById('objControlOptions').style.display = "none";
-        document.getElementById('selectedObjectDisplay').style.display = "none";
     } else {
-        if (isVisible(document.getElementById('objectHUD'))) {
+        if ($('#objectHUD').is(':visible')) {
             document.getElementById('objectHUD').style.display = "none";
-            document.getElementById('objControlOptions').style.display = "none";
-            document.getElementById('selectedObjectDisplay').style.display = "none";
         } else {
             document.getElementById('objectHUD').style.display = "flex";
-            document.getElementById('objControlOptions').style.display = "flex";
-            document.getElementById('selectedObjectDisplay').style.display = "flex";
         }
     }
 }
@@ -505,13 +354,13 @@ function UpdateCrosshair(data) {
     }
 }
 
-function ToggleUICam(state) {
+function ToggleCamHUD(state) {
     if (state == "on") {
         document.getElementById('cameraHUD').style.display = "flex";
     } else if (state == "off") {
         document.getElementById('cameraHUD').style.display = "none";
     } else {
-        if (isVisible(document.getElementById('cameraHUD'))) {
+        if ($('#cameraHUD').is(':visible')) {
             document.getElementById('cameraHUD').style.display = "none";
         } else {
             document.getElementById('cameraHUD').style.display = "flex";
@@ -519,14 +368,19 @@ function ToggleUICam(state) {
     }
 }
 
-function UpdateUICam(data) {
+function UpdateCamHUD(data) {
     document.getElementById('cam-speed').innerHTML = data.speed;
     document.getElementById('cam-mode').innerHTML = data.cameraMode;
     document.getElementById('cam-noclip').innerHTML = data.noclip;
 }
 
 // Animation HUD //
-function ToggleUIAnim(state) {
+var Animations = {}
+var FlagTotals = 0
+var IKFlagTotals = 0
+var KeyPressRepeat = false
+
+function ToggleAnimHUD(state) {
     // Toggle all submenus off
     document.getElementById('animDictList').style.display = "none";
     document.getElementById('animList').style.display = "none";
@@ -545,7 +399,7 @@ function ToggleUIAnim(state) {
         document.getElementById('animControlOptions').style.display = "none";
         document.getElementById('activeAnimDisplay').style.display = "none";
     } else {
-        if (isVisible(document.getElementById('animHUD'))) {
+        if ($('#animHUD').is(':visible')) {
             document.getElementById('animHUD').style.display = "none";
             document.getElementById('animControlOptions').style.display = "none";
             document.getElementById('activeAnimDisplay').style.display = "none";
@@ -558,10 +412,15 @@ function ToggleUIAnim(state) {
 }
 
 function PlayAnimation() {
+    var entity = document.getElementById("animEntityField").innerHTML;
     var animDict = document.getElementById("activeAnimDict").innerHTML;
     var anim = document.getElementById("activeAnimName").innerHTML;
-    if (anim == "" || animDict == "") { return; }
-    var entity = document.getElementById("animEntityField").innerHTML;
+    if (anim == "" || animDict == "") {
+        setTimeout(function() {
+            TogglePlay("off");
+        }, 500)
+        return;
+    }
     var blendIn = document.getElementById("timingBlendIn").innerHTML;
     var blendOut = document.getElementById("timingBlendOut").innerHTML;
     var playback = document.getElementById("timingPlayback").innerHTML;
@@ -617,39 +476,14 @@ function SearchAnims(animDict) {
 
 }
 
-function SearchBasicRedMList(searchValue, searchList, elementId) {
-    var el = document.getElementById(elementId);
-    el.innerHTML = "";
-
-    var maxResults = 10000;
-    var results = searchList.filter(str => str.toLowerCase().includes(searchValue.toLowerCase()));
-    var ul = document.createElement('ul');
-    for (var i=0; i < results.length && i < maxResults; ++i) {
-        var li = document.createElement('li');
-        li.addEventListener('click', function() {
-            document.getElementById("activeObject").innerHTML = this.innerHTML;
-            // Select Object
-        })
-        li.innerHTML = results[i];
-        ul.appendChild(li);
-    }
-    el.appendChild(ul);
-    if (results.length < 30) {
-        el.style.minHeight = results.length + ".4vh";
-    } else {
-        el.style.minHeight = "30vh";
-    }
-    el.scrollTop = 0;
-    el.scrollLeft = -1000;
-}
-
 function SearchRedMAnims(searchValue) {
-    var el = document.getElementById("animDictList");
+    var dictResults = document.getElementById("animDictList");
     var maxResults = 10000;
     var results = [];
-
-    el.innerHTML = "";
-    if (!searchValue || searchValue == "") { return; }
+    if (!searchValue || searchValue == "") {
+        dictResults.innerHTML = "";
+        return;
+    }
 
     Object.keys(Animations).forEach(animDict => {
         if (animDict.toLowerCase().includes(searchValue.toLowerCase())) {
@@ -679,6 +513,7 @@ function SearchRedMAnims(searchValue) {
         return 0;
     });
 
+    dictResults.innerHTML = "";
     var ul = document.createElement('ul');
     for (var i=0; i < results.length && i < maxResults; ++i) {
         var li = document.createElement('li');
@@ -690,56 +525,63 @@ function SearchRedMAnims(searchValue) {
         li.innerHTML = results[i].animDict;
         ul.appendChild(li);
     }
-    el.appendChild(ul);
+    dictResults.appendChild(ul);
     if (results.length < 30) {
-        el.style.minHeight = results.length + ".4vh";
+        dictResults.style.minHeight = results.length + ".4vh";
     } else {
-        el.style.minHeight = "30vh";
+        dictResults.style.minHeight = "30vh";
     }
-    el.scrollTop = 0;
-    el.scrollLeft = -1000;
+    dictResults.scrollTop = 0;
+    dictResults.scrollLeft = -1000;
 }
 
-function TogglePlay(state = "toggle") {
-    var el = document.getElementById('button-play');
-    ToggleSelected(el, state);
-    if (state != "off") {
+function TogglePlay(state) {
+    var element = document.getElementById('button-play');
+    if (state == "on") {
+        element.classList.add('selected');
+    } else if (state == "off") {
+        element.classList.remove('selected');
+        return;
+    } else {
+        element.classList.remove('selected');
         setTimeout(function() {
-            ToggleSelected(el, "off");
+            element.classList.add('selected');
         }, 100);
-    } else { return; }
+    }
     PlayAnimation();
 }
 
 function ToggleStop() {
-    s_el = document.getElementById('button-stop');
-    s_el.classList.toggle('selected');
-    var p_el = document.getElementById('button-play');
-    p_el.classList.remove('selected');
+    element = document.getElementById('button-stop');
+    element.classList.toggle('selected');
+    var playElement = document.getElementById('button-play');
+    playElement.classList.remove('selected');
     setTimeout(function() {
-        s_el.classList.remove('selected');
+        element.classList.remove('selected');
     }, 200);
     SendClientMessage('stopAnim', {})
 }
 
-function ToggleLoop() { ToggleFlag(1); }
+function ToggleLoop() {
+    ToggleFlag(1);
+}
 
 function ToggleTorso(state) {
-    var el = document.getElementById('button-torso');
+    var element = document.getElementById('button-torso');
     var flag8 = document.getElementById('flag-8');
     var flag16 = document.getElementById('flag-16');
 
     if (state == "on") {
-        el.classList.add('selected');
+        element.classList.add('selected');
         if (!flag8.classList.contains('selected')) { ToggleFlag(8); }
         if (!flag16.classList.contains('selected')) { ToggleFlag(16); }
     } else if (state == "off") {
-        el.classList.remove('selected');
+        element.classList.remove('selected');
         if (flag8.classList.contains('selected')) { ToggleFlag(8); }
         if (flag16.classList.contains('selected')) { ToggleFlag(16); }
     } else if (state == "toggle") {
-        el.classList.toggle('selected');
-        var enabled = el.classList.contains('selected');
+        element.classList.toggle('selected');
+        var enabled = element.classList.contains('selected');
         if (enabled) {
             if (!flag8.classList.contains('selected')) { ToggleFlag(8); }
             if (!flag16.classList.contains('selected')) { ToggleFlag(16); }
@@ -751,28 +593,42 @@ function ToggleTorso(state) {
 }
 
 function ToggleSettings(state) {
-    var el = document.getElementById('button-settings');
-    ToggleSelected(el, state);
+    var element = document.getElementById('button-settings');
+    var settingsElement = document.getElementById('animSettings');
 
-    var el_s = document.getElementById('animSettings');
-    if (el.classList.contains('selected')) {
-        el_s.style.display = "inline-flex";
+    if (state == "on") {
+        element.classList.add('selected');
+    } else if (state == "off") {
+        element.classList.remove('selected');
     } else {
-        el_s.style.display = "none";
+        element.classList.toggle('selected');
+    }
+
+    if (element.classList.contains('selected')) {
+        settingsElement.style.display = "inline-flex";
+    } else {
+        settingsElement.style.display = "none";
     }
 }
 
 function ToggleSearch(state) {
-    var el = document.getElementById('button-search');
-    ToggleSelected(el, state);
+    var element = document.getElementById('button-search');
 
-    if (el.classList.contains('selected')) {
+    if (state == "on") {
+        element.classList.add('selected');
+    } else if (state == "off") {
+        element.classList.remove('selected');
+    } else if (state == "toggle") {
+        element.classList.toggle('selected');
+    }
+
+    if (element.classList.contains('selected')) {
         ToggleSettings("on");
         ToggleTimings("off");
         ToggleFlags("off");
         ToggleIKFlags("off");
         ToggleEntity("off");
-        ToggleHelp("animHelp", "off")
+        ToggleAnimHelp("off");
         document.getElementById('button-search').focus();
         document.getElementById('animSearchField').style.display = "flex";
         document.getElementById('animDictList').style.display = "flex";
@@ -788,16 +644,23 @@ function ToggleSearch(state) {
 }
 
 function ToggleTimings(state) {
-    var el = document.getElementById('button-timings');
-    ToggleSelected(el, state);
+    var element = document.getElementById('button-timings');
 
-    if (el.classList.contains('selected')) {
+    if (state == "on") {
+        element.classList.add('selected');
+    } else if (state == "off") {
+        element.classList.remove('selected');
+    } else if (state == "toggle") {
+        element.classList.toggle('selected');
+    }
+
+    if (element.classList.contains('selected')) {
         ToggleSettings("on");
         ToggleSearch("off");
         ToggleFlags("off");
         ToggleIKFlags("off");
         ToggleEntity("off");
-        ToggleHelp("animHelp", "off")
+        ToggleAnimHelp("off");
         document.getElementById('button-timings').focus();
         document.getElementById('animTimingsOptions').style.display = "flex";
     } else {
@@ -809,16 +672,23 @@ function ToggleTimings(state) {
 }
 
 function ToggleFlags(state) {
-    var el = document.getElementById('button-flags');
-    ToggleSelected(el, state);
+    var element = document.getElementById('button-flags');
 
-    if (el.classList.contains('selected')) {
+    if (state == "on") {
+        element.classList.add('selected');
+    } else if (state == "off") {
+        element.classList.remove('selected');
+    } else if (state == "toggle") {
+        element.classList.toggle('selected');
+    }
+
+    if (element.classList.contains('selected')) {
         ToggleSettings("on");
         ToggleSearch("off");
         ToggleTimings("off");
         ToggleIKFlags("off");
         ToggleEntity("off");
-        ToggleHelp("animHelp", "off")
+        ToggleAnimHelp("off");
         document.getElementById('button-flags').focus();
         document.getElementById('animFlagsOptions').style.display = "flex";
     } else {
@@ -830,21 +700,22 @@ function ToggleFlags(state) {
 }
 
 function ToggleFlag(flag) {
-    var el = document.getElementById("flag-" + flag);
-    el.classList.toggle("selected");
+    var flagElement = document.getElementById("flag-" + flag);
+    flagElement.classList.toggle("selected");
 
     FlagTotals = 0;
     for (var i=0; i < 32 ; i++) {
-        let v = ToUint32(1 << i);
-        if (document.getElementById("flag-" + v).classList.contains("selected")) {
-            FlagTotals += v;
+        let value = ToUint32(1 << i);
+        var calcFlagElement = document.getElementById("flag-" + value);
+        if (calcFlagElement.classList.contains("selected")) {
+            FlagTotals += value;
         }
     }
     document.getElementById("flagTotals").innerHTML = FlagTotals;
 
     switch(flag) {
         case 1:
-            var selected = el.classList.contains("selected");
+            var selected = flagElement.classList.contains("selected");
             if (selected) {
                 document.getElementById("button-repeat").classList.add("selected");
             } else {
@@ -861,20 +732,28 @@ function ToggleFlag(flag) {
                 document.getElementById("button-torso").classList.remove("selected");
             }
             break;
+            break;
     }
 }
 
 function ToggleIKFlags(state) {
-    var el = document.getElementById('button-ikflags');
-    ToggleSelected(el, state);
+    var element = document.getElementById('button-ikflags');
 
-    if (el.classList.contains('selected')) {
+    if (state == "on") {
+        element.classList.add('selected');
+    } else if (state == "off") {
+        element.classList.remove('selected');
+    } else if (state == "toggle") {
+        element.classList.toggle('selected');
+    }
+
+    if (element.classList.contains('selected')) {
         ToggleSettings("on");
         ToggleSearch("off");
         ToggleTimings("off");
         ToggleFlags("off");
         ToggleEntity("off");
-        ToggleHelp("animHelp", "off")
+        ToggleAnimHelp("off");
         document.getElementById('button-ikflags').focus();
         document.getElementById('animIKFlagsOptions').style.display = "flex";
     } else {
@@ -886,30 +765,38 @@ function ToggleIKFlags(state) {
 }
 
 function ToggleIKFlag(flag) {
-    var el = document.getElementById("ikflag-" + flag);
-    el.classList.toggle("selected");
+    var flagElement = document.getElementById("ikflag-" + flag);
+    flagElement.classList.toggle("selected");
 
     IKFlagTotals = 0;
     for (var i=0; i < 31 ; i++) {
-        let v = ToUint32(1 << i);
-        if (document.getElementById("ikflag-" + v).classList.contains("selected")) {
-            IKFlagTotals += v;
+        let value = ToUint32(1 << i);
+        var calcFlagElement = document.getElementById("ikflag-" + value);
+        if (calcFlagElement.classList.contains("selected")) {
+            IKFlagTotals += value;
         }
     }
     document.getElementById("IKFlagTotals").innerHTML = IKFlagTotals;
 }
 
 function ToggleEntity(state) {
-    var el = document.getElementById('button-entity');
-    ToggleSelected(el, state);
+    var element = document.getElementById('button-entity');
 
-    if (el.classList.contains('selected')) {
+    if (state == "on") {
+        element.classList.add('selected');
+    } else if (state == "off") {
+        element.classList.remove('selected');
+    } else if (state == "toggle") {
+        element.classList.toggle('selected');
+    }
+
+    if (element.classList.contains('selected')) {
         ToggleSettings("on");
         ToggleSearch("off");
         ToggleTimings("off");
         ToggleFlags("off");
         ToggleIKFlags("off");
-        ToggleHelp("animHelp", "off")
+        ToggleAnimHelp("off");
         document.getElementById('button-entity').focus();
         document.getElementById('animEntityOptions').style.display = "flex";
     } else {
@@ -917,51 +804,46 @@ function ToggleEntity(state) {
     }
 }
 
-function ToggleHelp(elementId, state, disableCursor = false) {
-    el = document.getElementById(elementId);
-    el_x = document.getElementById('crosshair');
+function ToggleAnimHelp(state) {
+    helpElement = document.getElementById('animHelp');
     if (state == "on") {
-        el.style.display = "block";
-        if (disableCursor) { el_x.style.display = "none"; }
+        helpElement.style.display = "block";
     } else if (state == "off") {
-        el.style.display = "none";
-        if (disableCursor) { el_x.style.display = "block"; }
+        helpElement.style.display = "none";
     } else if (state == "toggle") {
-        if (isVisible(el)) {
-            el.style.display = "none";
-            if (disableCursor) { el_x.style.display = "block"; }
+        if ($('#animHelp').is(':visible')) {
+            helpElement.style.display = "none";
         } else {
-            el.style.display = "block";
-            if (disableCursor) { el_x.style.display = "none"; }
+            helpElement.style.display = "block";
         }
     }
 }
 
-function HandleKeysAnim(event) {
+function HandleAnimHUDKeys(event) {
     switch(event.key) {
         case "Escape":
             var escaped = false;
-            if (isVisible(document.getElementById('animHelp'))) {
-                ToggleHelp("animHelp", "off")
+            if ($('#animHelp').is(':visible')) {
+                ToggleAnimHelp("off");
                 return;
             }
-            if (isVisible(document.getElementById('animSearchField'))) {
+            if ($('#animSearchField').is(':visible')) {
                 ToggleSearch("off");
                 escaped = true;
             }
-            if (isVisible(document.getElementById('animTimingsOptions'))) {
+            if ($('#animTimingsOptions').is(':visible')) {
                 ToggleTimings("off");
                 escaped = true;
             }
-            if (isVisible(document.getElementById('animFlagsOptions'))) {
+            if ($('#animFlagsOptions').is(':visible')) {
                 ToggleFlags("off");
                 escaped = true;
             }
-            if (isVisible(document.getElementById('animIKFlagsOptions'))) {
+            if ($('#animIKFlagsOptions').is(':visible')) {
                 ToggleIKFlags("off");
                 escaped = true;
             }
-            if (isVisible(document.getElementById('animEntityOptions'))) {
+            if ($('#animEntityOptions').is(':visible')) {
                 ToggleEntity("off");
                 escaped = true;
             }
@@ -969,9 +851,10 @@ function HandleKeysAnim(event) {
 
             SendClientMessage('exit', {});
             document.getElementById('devTreeHUD').style.display = "none";
-            ToggleUIAnim("off");
+            ToggleAnimHUD("off");
 
             return;
+
         case " ":
             if (typeof event.target.onclick == "function") {
                 event.target.onclick.apply();
@@ -981,7 +864,7 @@ function HandleKeysAnim(event) {
             break;
         case "?":
         case "h":
-            ToggleHelp("animHelp", "toggle")
+            ToggleAnimHelp("toggle");
             break;
         case "Backspace":
             ToggleStop();
@@ -1030,35 +913,37 @@ function HandleKeysAnim(event) {
             setTimeout(function() { KeyPressRepeat = false; }, 650);
             break;
         case "x":
-            if (isVisible(document.getElementById('animSearchField'))) {
+            if ($('#animSearchField').is(':visible')) {
                 // Clear search
                 document.getElementById('animDictList').innerHTML = "";
                 document.getElementById('animList').innerHTML = "";
                 document.getElementById('valueAnimSearch').innerHTML = "";
                 document.getElementById('valueAnimSearch').focus();
-            } else if (isVisible(document.getElementById("animTimingsOptions"))) {
+            } else if ($('#animTimingsOptions').is(':visible')) {
                 // Reset timings to defaults
                 document.getElementById("timingBlendIn").innerHTML = "1.0";
                 document.getElementById("timingBlendOut").innerHTML = "1.0";
                 document.getElementById("timingPlayback").innerHTML = "0";
                 document.getElementById("timingDuration").innerHTML = "-1";
-            } else if (isVisible(document.getElementById("animFlagsOptions"))) {
+            } else if ($('#animFlagsOptions').is(':visible')) {
                 // Clear all flags
                 for (var i=0; i < 32 ; i++) {
-                    let v = ToUint32(1 << i);
-                    if (document.getElementById("flag-" + v).classList.contains("selected")) {
-                        ToggleFlag(v);
+                    let value = ToUint32(1 << i);
+                    var flagElement = document.getElementById("flag-" + value);
+                    if (flagElement.classList.contains("selected")) {
+                        ToggleFlag(value);
                     }
                 }
-            } else if (isVisible(document.getElementById("animIKFlagsOptions"))) {
+            } else if ($('#animIKFlagsOptions').is(':visible')) {
                 // Clear all ikflags
                 for (var i=0; i < 32 ; i++) {
-                    let v = ToUint32(1 << i);
-                    if (document.getElementById("ikflag-" + v).classList.contains("selected")) {
-                        ToggleIKFlag(v);
+                    let value = ToUint32(1 << i);
+                    var flagElement = document.getElementById("ikflag-" + value);
+                    if (flagElement.classList.contains("selected")) {
+                        ToggleIKFlag(value);
                     }
                 }
-            } else if (isVisible(document.getElementById("animEntityOptions"))) {
+            } else if ($('#animEntityOptions').is(':visible')) {
                 // Reset entity to player
                 document.getElementById("animEntityField").innerHTML = "";
             } else {
@@ -1076,11 +961,26 @@ function HandleKeysAnim(event) {
     }
 }
 
-function HandleKeysCam(event) {
+function ToggleCamHelp(state) {
+    helpElement = document.getElementById('camHelp');
+    if (state == "on") {
+        helpElement.style.display = "block";
+    } else if (state == "off") {
+        helpElement.style.display = "none";
+    } else if (state == "toggle") {
+        if ($('#camHelp').is(':visible')) {
+            helpElement.style.display = "none";
+        } else {
+            helpElement.style.display = "block";
+        }
+    }
+}
+
+function HandleCamHUDKeys(event) {
     switch(event.key) {
         case "Escape":
-            if (isVisible(document.getElementById('camHelp'))) {
-                ToggleHelp("camHelp", "off");
+            if ($('#camHelp').is(':visible')) {
+                ToggleCamHelp("off");
                 return;
             }
             SendClientMessage('camera', { mode: "player" });
@@ -1088,318 +988,41 @@ function HandleKeysCam(event) {
             break;
         case "?":
         case "h":
-            ToggleHelp("camHelp", "toggle");
+            ToggleCamHelp("toggle");
             break;
             }
 }
 
-function ResetObjData() {
-    document.getElementById('objSpawnOptions').style.display = "none";
-    document.getElementById('objData').style.display = "none";
-    // document.getElementById('objNearbyControl').style.display = "none";
-    document.getElementById('objNearbyRange').style.display = "none";
-    document.getElementById('objNearbyResults').style.display = "none";
-}
-
-function ResetNearbyData() {
-    document.getElementById('objNearbyResults').innerHTML = "";
-}
-
-function ToggleControlObjectSpawn(state) {
-    var el = document.getElementById('button-objectspawn');
-    ToggleSelected(el, state);
-    var el_o = document.getElementById('objControlSpawnOptions');
-    if (el.classList.contains('selected')) {
-        ToggleControlScene("off");
-        el_o.style.display = "inline-flex";
-    } else {
-        el_o.style.display = "none";
-    }
-}
-
-function ToggleObjectSpawn(state) {
-    var el = document.getElementById('button-spawn');
-    ToggleSelected(el, state);
-
-    if (el.classList.contains('selected')) {
-        ToggleHelp("objHelp", "off", true)
-        ToggleControlObjectSpawn("on");
-        ResetObjData();
-        document.getElementById('button-spawnfavs').classList.remove('selected');
-        document.getElementById('button-trackedobjlist').classList.remove('selected');
-        document.getElementById('objSearchField').style.display = "flex";
-        document.getElementById('objSearchList').style.display = "flex";
-        document.getElementById('objSpawnOptions').style.display = "inline-flex";
-        document.getElementById('objData').style.display = "flex";
-    } else {
-        ResetObjData();
-        document.getElementById('objSearchField').style.display = "none";
-        document.getElementById('objSearchList').style.display = "none";
-        if (document.activeElement.classList.contains('entryField')) {
-            document.activeElement.blur();
-        }
-    }
-}
-
-function ToggleObjectFavsSpawn(state) {
-    var el = document.getElementById('button-spawnfavs');
-    ToggleSelected(el, state);
-
-    if (el.classList.contains('selected')) {
-    } else {
-    }
-}
-
-function ToggleTrackedList(state) {
-    var el = document.getElementById('button-trackedobjlist');
-    ToggleSelected(el, state);
-
-    if (el.classList.contains('selected')) {
-        ToggleHelp("objHelp", "off", true)
-        ToggleControlScene("off");
-        ToggleControlObjectSpawn("on");
-        ResetObjData();
-        GetTrackedObjects();
-        document.getElementById('button-spawn').classList.remove('selected');
-        document.getElementById('button-spawnfavs').classList.remove('selected');
-        document.getElementById('objSearchField').style.display = "none";
-        document.getElementById('objSearchList').style.display = "flex";
-        // document.getElementById('objNearbyControl').style.display = "inline-flex";
-        document.getElementById('objNearbyRange').style.display = "flex";
-        document.getElementById('objNearbyResults').style.display = "flex";
-    } else {
-        document.getElementById('objSearchField').style.display = "none";
-        document.getElementById('objSearchList').style.display = "none";
-        document.getElementById('objSpawnOptions').style.display = "none";
-    }
-}
-
-function ToggleControlScene(state) {
-    var el = document.getElementById('button-objectscene');
-    ToggleSelected(el, state);
-
-    if (el.classList.contains('selected')) {
-        ToggleHelp("objHelp", "off", true)
-        ToggleObjectSpawn("off");
-        ToggleControlObjectSpawn("off");
-        ResetObjData();
-        document.getElementById('objSceneOptions').style.display = "inline-flex";
-    } else {
-        document.getElementById('objSceneOptions').style.display = "none";
-    }
-}
-
-function ToggleSceneMove(state) {
-    var el = document.getElementById('button-scenecontrol');
-    ToggleSelected(el, state);
-
-    if (el.classList.contains('selected')) {
-        ToggleHelp("objHelp", "off", true)
-        ToggleControlObjectSpawn("off");
-        ToggleControlScene("on");
-        document.getElementById('button-scenetags').classList.remove('selected');
-        document.getElementById('button-importexport').classList.remove('selected');
-        document.getElementById('objSpawnOptions').style.display = "none";
-        document.getElementById('objSearchList').style.display = "flex";
-    } else {
-        document.getElementById('objSearchList').style.display = "none";
-    }
-}
-
-function ToggleSceneTag(state) {
-    var el = document.getElementById('button-scenetags');
-    ToggleSelected(el, state);
-
-    if (el.classList.contains('selected')) {
-        ToggleHelp("objHelp", "off", true)
-        ToggleControlObjectSpawn("off");
-        ToggleControlScene("on");
-        document.getElementById('button-scenecontrol').classList.remove('selected');
-        document.getElementById('button-importexport').classList.remove('selected');
-        document.getElementById('objSpawnOptions').style.display = "none";
-        document.getElementById('objSearchList').style.display = "flex";
-    } else {
-        document.getElementById('objSearchList').style.display = "none";
-    }
-}
-
-function ToggleImportExport(state) {
-    var el = document.getElementById('button-importexport');
-    ToggleSelected(el, state);
-
-    if (el.classList.contains('selected')) {
-        ToggleHelp("objHelp", "off", true)
-        ToggleControlObjectSpawn("off");
-        ToggleControlScene("on");
-        document.getElementById('button-scenecontrol').classList.remove('selected');
-        document.getElementById('button-scenetags').classList.remove('selected');
-        document.getElementById('objSpawnOptions').style.display = "none";
-        document.getElementById('objSearchList').style.display = "flex";
-    } else {
-        document.getElementById('objSearchList').style.display = "none";
-    }
-}
-
-function GetTrackedObjects() {
-    if (TrackedObjectsLoopRunning) { return; }
-    TrackedObjectsLoopRunning = true;
-    var loopEl = document.getElementById('objNearbyResults');
-
-    const loopId = setInterval(function() {
-        if (isVisible(loopEl)) {
-            SendClientMessage('nearbyObjects', { range: document.getElementById('nearbyRange').innerHTML, }).then(function(resp) {
-                var objects = resp.nearbyObjects;
-                var elID = "objNearbyResults";
-                ResetListGroup(elID, "flex");
-
-                objects.sort((a, b) => a.distance - b.distance);
-
-                var el = document.getElementById(elID);
-                el.innerHTML = "";
-                var ul = document.createElement('ul');
-                for (var i = 0; i < objects.length; ++i) {
-                    var li = document.createElement('li');
-                    li.innerHTML = `${objects[i].distance.toFixed(2)} ${objects[i].handle} ${objects[i].modelName}`;
-                    ul.appendChild(li);
-                }
-                el.appendChild(ul);
-                if (objects.length < 15) {
-                    el.style.minHeight = objects.length + ".4vh";
-                } else {
-                    el.style.minHeight = "15.4vh";
-                }
-                el.scrollTop = 0;
-                el.scrollLeft = -1000;
-            });
+function ToggleObjectHelp(state) {
+    helpElement = document.getElementById('objHelp');
+    if (state == "on") {
+        helpElement.style.display = "block";
+    } else if (state == "off") {
+        helpElement.style.display = "none";
+    } else if (state == "toggle") {
+        if ($('#objHelp').is(':visible')) {
+            helpElement.style.display = "none";
         } else {
-            clearInterval(loopId);
-            TrackedObjectsLoopRunning = false;
+            helpElement.style.display = "block";
         }
-    }, 250);
+    }
 }
 
-function HandleKeysObject(event) {
+function HandleObjectHUDKeys(event) {
     switch(event.key) {
         case "Escape":
-            var escaped = false;
-            event.preventDefault();
-            if (document.activeElement.classList.contains('entryField')) {
-                document.activeElement.blur();
-                break;
+            if ($('#objHelp').is(':visible')) {
+                ToggleObjectHelp("off");
+                return;
             }
-            if (isVisible(document.getElementById('objHelp'))) {
-                ToggleHelp("objHelp", "off", true);
-                escaped = true;
-                break;
-            }
-            if (isVisible(document.getElementById('objSpawnOptions'))) {
-                ToggleObjectSpawn("off");
-                escaped = true;
-                break;
-            }
-            if (isVisible(document.getElementById('objSearchList'))) {
-                ToggleTrackedList("off");
-                escaped = true;
-                break;
-            }
-            if (isVisible(document.getElementById('objControlSpawnOptions'))) {
-                document.getElementById('objControlSpawnOptions').style.display = "none";
-                escaped = true;
-                break;
-            }
-            if (isVisible(document.getElementById('objSceneOptions'))) {
-                document.getElementById('objSceneOptions').style.display = "none";
-                escaped = true;
-            }
-            if (escaped) { break; }
-
-            console.log("Sending object mode off")
-            SendClientMessage('objectMode', { mode: "off" });
-            // ToggleSceneMove("off");
-            // ToggleSceneTag("off");
-            // ToggleImportExport("off");
-
-            // TODO: use message to detect gizmode
-            // SendClientMessage('objectModeKey', { key: "r", alt: event.altKey, });
-
-            // Usually would exit object mode, but Gizmo exit also would exit
-            // object mode, unless we can detect gizmo exit
-            break;
-        case " ":
-            if (typeof event.target.onclick == "function") {
-                event.target.onclick.apply();
-                event.preventDefault();
-            }
-            break;
-        case "c":
-            if (!document.activeElement.classList.contains('entryField') && !ControlPassActive) {
-                ControlPassActive = true;
-                SendClientMessage('modifyMode', { mode: "object", passthrough: true, });
-                SendClientMessage('modifyMode', { mode: "gizmo", passthrough: true, });
-                break;
-            }
-        case "!":
-        case "1":
-            var focusButton = false;
-            if (isVisible(document.getElementById('objSearchField'))) {
-                document.getElementById('objSearch').focus();
-                event.preventDefault();
-                break;
-            } else {
-                focusButton = true;
-            }
-            ToggleObjectSpawn("on");
-            if (focusButton) {
-                document.getElementById('button-spawn').focus();
-            }
-            break;
-        case "2":
-            var focusButton = false;
-            if (isVisible(document.getElementById('objNearbyRange'))) {
-                document.getElementById('nearbyRange').focus();
-                event.preventDefault();
-                break;
-            } else {
-                focusButton = true;
-            }
-            ToggleTrackedList("on");
-            if (focusButton) {
-                document.getElementById('button-trackedobjlist').focus();
-            }
-            break;
-        case "3":
-            break;
-        case "4":
-            ToggleSceneMove("on");
-            break;
-        case "5":
-            ToggleSceneTag("on");
-            break;
-        case "6":
-            ToggleImportExport("on");
+            // Gizmo exit also would exit object mode which we dont want
             break;
         case "Backspace":
             SendClientMessage('objectMode', { mode: "off" });
             break;
         case "?":
         case "h":
-            ToggleHelp("objHelp", "toggle", true)
-            break;
-        case "r":
-            console.log("Sending object mode key r", event)
-            SendClientMessage('objectModeKey', { key: "r", alt: event.altKey, });
-            break;
-        case "x":
-            document.getElementById('activeObject').innerHTML = "";
-            if (isVisible(document.getElementById('objSearchField'))) {
-                document.getElementById('objSearch').innerHTML = "";
-                ResetListGroup("objData", "flex");
-
-            }
-            if (isVisible(document.getElementById('objNearbyRange'))) {
-                document.getElementById('objNearbyRange').innerHTML = "25";
-                GetTrackedObjects();
-            }
+            ToggleObjectHelp("toggle");
             break;
     }
 }
