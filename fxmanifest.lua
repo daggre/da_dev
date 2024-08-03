@@ -16,6 +16,7 @@ shared_scripts {
 
 server_scripts {
     -- "db/convert.lua",
+    "cmd/server.lua",
 }
 
 client_scripts {
@@ -33,14 +34,11 @@ client_scripts {
     "object/select.lua",
     "ui/ui.lua",
     "ui/map.lua",
+    "dat/setup.lua", -- Load globals into namespace
     "dat/animations.lua",
-    "dat/objects.lua",
-    "dat/peds.lua",
-    "dat/pickups.lua",
-    "dat/propsets.lua",
-    "dat/vehicles.lua",
     "dat/af_flags.lua",
     "dat/aik_flags.lua",
+    "cmd/client.lua",
 }
 
 files {

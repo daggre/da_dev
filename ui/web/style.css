@@ -21,6 +21,24 @@
         0 0 14px var(--style-aux);
 }
 
+#header {
+    padding-left: 12%;
+    padding-top: 1px;
+    margin-bottom: 6px;
+    border: 0px;
+    color: #04101d;
+    letter-spacing: 10px;
+    text-align: center;
+    border-bottom: 1px solid var(--style-color);
+    background: var(--style-color);
+    text-shadow:
+        0 0 2px #04101d;
+        /*0 0 3px #224974;*/
+        /* 0 0 4px; */
+        /* 0 0 10px, */
+        /* 0 0 12px; */
+}
+
 .dev {
     position: absolute;
     height: relative;
@@ -40,7 +58,7 @@
     display: none;
 }
 
-.help {
+#animHelp, #camHelp, #objHelp {
     top: 50vh;
     left: 50vw;
     width: fit-content;
@@ -50,12 +68,12 @@
     /*display: block;*/
 }
 
-.helpTitle {
+#animHelpTitle, #camHelpTitle, #objHelpTitle {
     text-align: center;
     margin-bottom: 1vh;
 }
 
-.help > ul > li {
+#animHelp li, #camHelp li, #objHelp li {
     margin-top: 2px;
 }
 
@@ -83,7 +101,7 @@
 #camStatusSpeed {
     display: flex;
     overflow: hidden;
-    margin-bottom: 1vh;
+    margin-bottom: 4px;
 }
 
 #camStatus ul {
@@ -98,7 +116,7 @@
     padding: 0px;
 }
 
-.controlGroup {
+#animControlOptions {
     color: var(--style-color);
     padding: 0px;
     width: auto;
@@ -108,8 +126,7 @@
     transform: translate(50%);
 }
 
-.controlGroup > ul {
-    position: relative;
+#animControl ul {
     flex-direction: column;
     list-style-type: none;
     display: flex;
@@ -117,17 +134,12 @@
     padding-inline-end: 0px;
 }
 
-.controlGroup > ul > li {
+#animControl li {
     padding: 0px;
 }
 
-.inlineControlGroup {
-    position: static;
-    transform: none;
-    flex-shrink: 0;
-}
 
-.searchField {
+#animSearchField {
     color: var(--aux);
     bottom: 8vh;
     right: 50vw;
@@ -148,10 +160,10 @@
     content: " ";
 }
 
-.listGroup {
+#animSearchLists {
     color: var(--aux);
     left: 2vh;
-    top: 1vh;
+    top: 2vh;
     width: 34vw;
     max-height: 70vh;
     padding: 0px;
@@ -160,45 +172,54 @@
     background: none;
 }
 
-.listGroup > div {
-    width: fit-content;
-    max-width: 100%;
-    margin-top: 1vh;
-    direction: rtl;
-    overflow-y: auto;
-    /*overflow-x: hidden;*/
-    display: none;
-    border-radius: 8px;
-    background: var(--style-bg);
-}
-
-.listTop {
+#animDictList {
     flex: 1 1.2 auto;
     min-height: 30vh;
+    width: fit-content;
+    max-width: 100%;
+    display: none;
+    direction: rtl;
+    /*overflow-x: hidden;*/
+    overflow-y: auto;
+    background: var(--style-bg);
+    border-radius: 8px;
 }
 
-.listTwo {
+#animList {
     flex: 1 1.5 auto;
+    margin-top: 2vh;
+    width: fit-content;
+    display: none;
+    direction: rtl;
+    overflow-y: auto;
+    background: var(--style-bg);
+    border-radius: 8px;
 }
 
-.listGroup li {
+#animList li, #animDictList li {
     color: var(--style-color);
     text-shadow: none;
     /*overflow-y: hidden;*/
-    /* overflow: hidden; */
-    /* white-space: nowrap; */
-    /* text-overflow: ellipsis; */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.listGroup li:hover {
+/*@keyframes marquee {*/
+/*    0% { transform: translateX(0%); }*/
+/*    100% { transform: translateX(-50%); }*/
+/*}*/
+
+#animList li:hover, #animDictList li:hover {
     color: var(--aux);
+    /*animation: marquee 5s both infinite;*/
     text-shadow:
         0 0 8px #444,
         0 0 10px #777,
         0 0 14px;
 }
 
-.entryList {
+#animTimingsOptions {
     left: 2vh;
     top: 2vh;
     width: 10vw;
@@ -209,22 +230,24 @@
     /*display: flex;*/
 }
 
-.optList li {
+#animTimingsOptions li,
+#animFlagsOptions li,
+#animIKFlagsOptions li,
+#animEntityOptions li,
+#activeAnimDisplay li {
     margin-bottom: 3px;
-    /* overflow: hidden; */
+    overflow: hidden;
 }
 
-/* .#animTimings .entryField { */
-.entryList .entryField {
+#animTimings .entryField {
     min-width: fit-content;
 }
 
-/* #animTimings li { */
-.entryList li {
+#animTimings li {
     float: left;
 }
 
-.flagList {
+#animFlagsOptions, #animIKFlagsOptions {
     left: 2vh;
     top: 2vh;
     width: 20vw;
@@ -235,11 +258,22 @@
     /*display: flex;*/
 }
 
-.flagList > ul > li {
+#animFlags li, #animIKFlags li {
     float: right;
 }
 
-#activeAnimDisplay, #selectedObjectDisplay {
+#animEntityOptions {
+    left: 2vh;
+    top: 2vh;
+    width: 10vw;
+    max-height: 70vh;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    background: none;
+    /*display: flex;*/
+}
+
+#activeAnimDisplay {
     left: 50vw;
     top: 1vh;
     width: fit-content;
@@ -256,7 +290,7 @@
     justify-content: center;
 }
 
-#activeAnimDict {
+div#activeAnimDict {
     margin-right: 1vh;
 }
 
@@ -327,6 +361,10 @@
     /*display: flex;*/
 }
 
+#devOptions,#menuOptions,#animControl #animTimings {
+    position: relative;
+}
+
 .key {
     float: right;
     color: var(--style-bg);
@@ -367,13 +405,6 @@
         0 0 10px;
 }
 
-.controlGroup li, .controlGroup li:hover {
-    color: var(--style-color);
-    text-shadow:
-        0 0 0px var(--style-color),
-        0 0 14px var(--style-color);
-}
-
 .control:hover {
     color: var(--aux);
     text-shadow:
@@ -383,8 +414,8 @@
         0 0 10px;
 }
 
-#button-spawnfavs.selected {
-    color: gold;
+.row {
+    margin-top: 1px;
 }
 
 body {
@@ -399,10 +430,8 @@ body {
 
 ul {
     margin: 0px;
-    margin-top: 1px;
     padding-inline-start: 0px;
     padding-inline-end: 0px;
-    direction: ltr;
 }
 
 li {
@@ -410,9 +439,6 @@ li {
     margin-right: 0.3vw;
     margin-left: 0.3vw;
     display: flex;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
     clear: both;
 }
 
@@ -420,6 +446,10 @@ li {
     display: none;
     width: 3px;
     height: 1px;
+}
+
+ul {
+    direction: ltr;
 }
 
 #crosshair {
@@ -442,9 +472,4 @@ li {
 
 #crosshair.selected {
 	color: var(--style-aux);
-}
-
-#objNearbyRange {
-    position: relative;
-    direction: ltr;
 }
