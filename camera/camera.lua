@@ -18,9 +18,9 @@ Speed.RateChange = 6
 Speed.Mouse = 6.0
 
 local Fov = {}
-Fov.RateChange = 6
-Fov.Max = 90
 Fov.Min = 10
+Fov.Max = 90
+Fov.RateChange = 6
 
 local radian = math.pi / 180
 
@@ -34,6 +34,12 @@ local clamp = function(val, min, max)
 end
 
 local CheckControls = function()
+    if IsDisabledControlJustPressed(0, Control.MouseLeft) then
+        if HoveredObject then
+            SelectedObject = HoveredObject
+        end
+    end
+
     if IsDisabledControlJustPressed(0, Control.F) then
         if Camera.Mode == "free" then
             if not SelectedObject then
@@ -161,6 +167,9 @@ local ControlTranslation = function(x, y, z, rot_x, rot_z, fov)
         if deltaUD ~= 0.0 then
             fov = clamp(fov + (deltaUD * Fov.RateChange), Fov.Min, Fov.Max)
         end
+        -- if deltaLR ~= 0.0 then
+        --     rot_z = rot_z + deltaLR * -1.0 * (Speed.Mouse * (math.min(fov,50)/50))
+        -- end
     elseif pressed.LShift and not (pressed.W or pressed.S or pressed.A or pressed.D) then
         -- Press LShift move camera on X/Y coordinate plane
         if deltaLR ~= 0.0 then
@@ -210,13 +219,16 @@ local ControlTranslation = function(x, y, z, rot_x, rot_z, fov)
     return x, y, z, rot_x, rot_z, fov
 end
 
+local camControlThread = false
 ---Begin noclip movement and control thread
 InitCamControl = function()
     local playerPedId = PlayerPedId()
     local x, y, z = GetCoords(playerPedId)
     local rot_x, rot_y, rot_z = table.unpack(GetFinalRenderedCamRot())
 	local fov = GetGameplayCamFov()
+    if camControlThread then return; end
     Citizen.CreateThread(function()
+        camControlThread = true
         while Camera.Mode == "free" or Camera.Mode == "focus" or NoClip.Enabled do
             -- Send NUI message with camera info for display
             if da.Cache.Lazy.Delay("dadev","camUpdate",100) then
@@ -248,6 +260,7 @@ InitCamControl = function()
             value = "cameraHUD",
             mode = "off",
         })
+        camControlThread = false
     end)
 end
 
