@@ -134,14 +134,13 @@ da.Dev.Mode.Remove = function(mode)
     end
 end
 
-da.Dev.Mode.Clear = function(mode)
+da.Dev.Mode.Clear = function()
     AllActiveModes = {}
     ActiveMode = nil
     SetMode(false, false, false, false)
 end
 
 RegisterNUICallback('controlPass', function(data, cb)
-    local enable = data.enable
     SetNuiFocusKeepInput(data.enable)
     da.Control.Passthrough(data.enable)
     cb(true)
