@@ -3,6 +3,10 @@ local EnableSelectMode = false
 local SelectModeThread = {}
 local LightBlue = {r=80, g=193, b=238, a=255}
 local Green = {r=0, g=218, b=175, a=255}
+local NearbyObjects = {
+    Selected = nil,
+    Hovered = nil,
+}
 
 local _GetSelectModeThreadId = function()
     local threadId = math.random(1, 1000)
@@ -93,28 +97,55 @@ RegisterNUICallback('objectModeKey', function(data, cb)
     end
 end)
 
+RegisterNUICallback('selectObject', function(data, cb)
+    if data.handle then
+        SelectedObject = tonumber(data.handle)
+    end
+    cb(true)
+end)
+
+RegisterNUICallback('hoverObject', function(data, cb)
+    if data.remove then
+        if NearbyObjects.Hovered == tonumber(data.handle) then
+            NearbyObjects.Hovered = nil
+        end
+    elseif data.handle then
+        NearbyObjects.Hovered = tonumber(data.handle)
+    else
+        NearbyObjects.Hovered = nil
+    end
+    cb(true)
+end)
+
 local SelectModeTick = function()
     local model = nil
     local hit = nil
     local obj = nil
     local hover = nil
-    if SelectedObject then
-        DrawBoundingBox(SelectedObject, Green)
-    end
     hit, obj = RayCastCamera(playerPedId, 500.0)
     if hit then
         if SelectedObject ~= obj then
             model = GetEntityModel(obj)
             if model and model ~= 0 then
                 hover = true
-                HoveredObject = obj
-                DrawBoundingBox(obj, LightBlue)
+                if obj ~= HoveredObject then
+                    HoveredObject = obj
+                end
             else
                 obj = 0
             end
         end
     end
     if not hover then HoveredObject = nil; end
+    if SelectedObject then
+        DrawBoundingBox(SelectedObject, Green)
+    end
+    if HoveredObject and HoveredObject ~= SelectedObject then
+        DrawBoundingBox(HoveredObject, LightBlue)
+    end
+    if NearbyObjects.Hovered and NearbyObjects.Hovered ~= SelectedObject then
+        DrawBoundingBox(NearbyObjects.Hovered, LightBlue)
+    end
     SelectModeControlCheck()
     _SendNUIUpdate(obj)
 end
