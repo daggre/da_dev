@@ -10,38 +10,28 @@ local NoClip = {}
 NoClip.Enabled = false
 
 local Speed = {}
-Speed.Fast = 5
-Speed.Default = 0.1
-Speed.Fine = 0.45
+Speed.Fast = 3
+Speed.Default = 0.2
+Speed.Fine = 0.33
 Speed.Current = Speed.Default
 Speed.RateChange = 6
+Speed.Mouse = 6.0
 
 local Fov = {}
-Fov.RateChange = 18
+Fov.RateChange = 6
 Fov.Max = 90
 Fov.Min = 10
 
-local Control = {}
-Control.W = `INPUT_MOVE_UP_ONLY`
-Control.A = `INPUT_MOVE_LEFT_ONLY`
-Control.S = `INPUT_MOVE_DOWN_ONLY`
-Control.D = `INPUT_MOVE_RIGHT_ONLY`
-Control.Q = `INPUT_FRONTEND_LB`
-Control.Crouch = `INPUT_DUCK`
-Control.E = `INPUT_DYNAMIC_SCENARIO`
-Control.F = `INPUT_CONTEXT_B`
-Control.Spacebar = `INPUT_JUMP`
-Control.LeftAlt = `INPUT_PC_FREE_LOOK`
-Control.LeftShift = `INPUT_SPRINT`
-Control.LeftControl = `INPUT_FRONTEND_RUP`
-Control.MouseLR = `INPUT_LOOK_LR`
-Control.MouseUD = `INPUT_LOOK_UD`
-Control.MouseLeft = `SKIPCUTSCENE`
-Control.MouseSpeed = 6.0
-Control.WheelUp = `INPUT_PREV_WEAPON`
-Control.WheelDown = `INPUT_NEXT_WEAPON`
-
 local radian = math.pi / 180
+
+local clamp = function(val, min, max)
+    if val < min then
+        return min
+    elseif val > max then
+        return max
+    end
+    return val
+end
 
 local CheckControls = function()
     if IsDisabledControlJustPressed(0, Control.F) then
@@ -144,63 +134,77 @@ end
 ---@return number rot_y Translated Y Rotation
 ---@return number rot_z Translated Z Rotation
 local ControlTranslation = function(x, y, z, rot_x, rot_z, fov)
-    if IsDisabledControlPressed(0, Control.WheelUp) then
-        if IsDisabledControlPressed(0, Control.LeftControl) then
-            local fovDelta = fov / Fov.RateChange
-            fov = math.max(fov - fovDelta, Fov.Min)
-        else
-            Speed.Current = Speed.Current + (Speed.Current / Speed.RateChange)
-        end
-    elseif IsDisabledControlPressed(0, Control.WheelDown) then
-        if IsDisabledControlPressed(0, Control.LeftControl) then
-            local fovDelta = fov / Fov.RateChange
-            fov = math.min(fov + fovDelta, Fov.Max)
-        else
-            Speed.Current = Speed.Current - (Speed.Current / Speed.RateChange)
-        end
-    end
+
+    local deltaLR = GetDisabledControlNormal(0, Control.MouseLR)
+    local deltaUD = GetDisabledControlNormal(0, Control.MouseUD)
+    local pressed = {
+        W = IsDisabledControlPressed(0, Control.W),
+        S = IsDisabledControlPressed(0, Control.S),
+        A = IsDisabledControlPressed(0, Control.A),
+        D = IsDisabledControlPressed(0, Control.D),
+        Q = IsDisabledControlPressed(0, Control.Q),
+        E = IsDisabledControlPressed(0, Control.E),
+        LAlt = IsDisabledControlPressed(0, Control.LeftAlt),
+        LCtrl = IsDisabledControlPressed(0, Control.LeftControl),
+        LShift = IsDisabledControlPressed(0, Control.LeftShift),
+        WheelUp = IsDisabledControlPressed(0, Control.WheelUp),
+        WheelDown = IsDisabledControlPressed(0, Control.WheelDown),
+        Spacebar = IsDisabledControlPressed(0, Control.Spacebar),
+        MouseRight = IsDisabledControlPressed(0, Control.MouseRight),
+    }
 
     local modifier = Speed.Current
 
+    -- Mouse Controls
+    if pressed.LCtrl then
+        -- Press LCtrl adjust FOV on Mouse Up/Down
+        if deltaUD ~= 0.0 then
+            fov = clamp(fov + (deltaUD * Fov.RateChange), Fov.Min, Fov.Max)
+        end
+    elseif pressed.LShift and not (pressed.W or pressed.S or pressed.A or pressed.D) then
+        -- Press LShift move camera on X/Y coordinate plane
+        if deltaLR ~= 0.0 then
+            x, y, _ = Translate(x, y, z, rot_x, rot_z, 0-(deltaLR*modifier*2), true)
+        end
+        if deltaUD ~= 0.0 then
+            x, y, _ = Translate(x, y, z, rot_x, rot_z, 0-(deltaUD*modifier*2))
+        end
+    elseif pressed.LAlt and not (pressed.W or pressed.S or pressed.A or pressed.D) then
+        -- Press LAlt move camera on X/Z coordinate plane
+        if deltaLR ~= 0.0 then
+            x, y, _ = Translate(x, y, z, rot_x, rot_z, 0-(deltaLR*modifier*2), true)
+        end
+        if deltaUD ~= 0.0 then
+            z = z - deltaUD*modifier*2
+        end
+    elseif Camera.Mode ~= "focus" and (ActiveMode ~= "gizmo" or pressed.MouseRight) then
+        -- Otherwise Mouse aims camera
+        if deltaLR ~= 0.0 then
+            rot_z = rot_z + deltaLR * -1.0 * (Speed.Mouse * (math.min(fov,50)/50))
+        end
+        if deltaUD ~= 0.0 then
+            rot_x = clamp(rot_x + deltaUD * -1.0 * (Speed.Mouse * (math.min(fov,50)/50)), -89.9, 89.9)
+        end
+    end
+
     -- Speed Modifier
-    if IsDisabledControlPressed(0, Control.LeftShift) then
-        modifier = Speed.Fast
-    elseif IsDisabledControlPressed(0, Control.Spacebar) then
-        modifier = (modifier * Speed.Fine)
+    if pressed.LShift then modifier = (modifier * Speed.Fast)
+    elseif pressed.Spacebar then modifier = (modifier * Speed.Fine)
+    end
+
+    if pressed.WheelUp then
+        Speed.Current = Speed.Current + (Speed.Current / Speed.RateChange)
+    elseif pressed.WheelDown then
+        Speed.Current = Speed.Current - (Speed.Current / Speed.RateChange)
     end
 
     -- Translate Coordinates
-    if IsDisabledControlPressed(0, Control.W) then
-        x, y, z = Translate(x, y, z, rot_x, rot_z, modifier)
-    end
-    if IsDisabledControlPressed(0, Control.S) then
-        x, y, z = Translate(x, y, z, rot_x, rot_z, 0 - modifier)
-    end
-    if IsDisabledControlPressed(0, Control.A) then
-        x, y, z = Translate(x, y, z, rot_x, rot_z, modifier, true)
-    end
-    if IsDisabledControlPressed(0, Control.D) then
-        x, y, z = Translate(x, y, z, rot_x, rot_z, 0 - modifier, true)
-    end
-    if IsDisabledControlPressed(0, Control.Q) then
-        z = z + (modifier/2)
-    end
-    if IsDisabledControlPressed(0, Control.E) then
-        z = z - (modifier/2)
-    end
-
-
-    if Camera.Mode == "free" and ActiveMode ~= "gizmo" then
-        local deltaLR = GetDisabledControlNormal(0, Control.MouseLR)
-        local deltaUD = GetDisabledControlNormal(0, Control.MouseUD)
-
-        if deltaLR ~= 0.0 then
-            rot_z = rot_z + deltaLR * -1.0 * (Control.MouseSpeed * (math.min(fov,50)/50))
-        end
-        if deltaUD ~= 0.0 then
-            rot_x = math.max(math.min(89.9, rot_x + deltaUD * -1.0 * (Control.MouseSpeed * (math.min(fov,50)/50))), -89.9)
-        end
-    end
+    if pressed.W then x, y, z = Translate(x, y, z, rot_x, rot_z, modifier) end
+    if pressed.S then x, y, z = Translate(x, y, z, rot_x, rot_z, 0 - modifier) end
+    if pressed.A then x, y, z = Translate(x, y, z, rot_x, rot_z, modifier, true) end
+    if pressed.D then x, y, z = Translate(x, y, z, rot_x, rot_z, 0 - modifier, true) end
+    if pressed.Q then z = z + (modifier/2) end
+    if pressed.E then z = z - (modifier/2) end
 
     -- Set Coords
     return x, y, z, rot_x, rot_z, fov

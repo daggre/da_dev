@@ -3,17 +3,6 @@ local EnableSelectMode = false
 local SelectModeThread = {}
 local LightBlue = {r=80, g=193, b=238, a=255}
 local Green = {r=0, g=218, b=175, a=255}
-local Control = {
-    LeftMouse = `INPUT_ATTACK`,
-    RightMouse = `INPUT_AIM`,
-    LCtrl = 0xD7DE6B1E, -- FrontendRup
-    -- Crouch = `INPUT_DUCK`,
-    -- D = `INPUT_MOVE_RIGHT_ONLY`,
-    G = `INPUT_INTERACT_ANIMAL`,
-    R = `INPUT_RELOAD`,
-    V = `INPUT_NEXT_CAMERA`,
-    X = `INPUT_SWITCH_SHOULDER`,
-}
 
 local _GetSelectModeThreadId = function()
     local threadId = math.random(1, 1000)
@@ -42,30 +31,16 @@ local SelectModeControlCheck = function()
     if HoveredObject or SelectedObject then
         local obj = HoveredObject ~= nil and HoveredObject or SelectedObject
 
-        -- Select Object (RightClick)
-        if IsDisabledControlJustPressed(0, Control.RightMouse) then
-            if HoveredObject then
-                if HoveredObject == SelectedObject then
-                    SelectedObject = nil
-                else
-                    SelectedObject = HoveredObject
-                    SendNUIMessage({type = "clipboard", text = SelectedObject})
-                end
-            else
-                SelectedObject = nil
-            end
-        end
-
         -- Open Gizmo (R)
-        if not IsDisabledControlPressed(0, Control.LCtrl) and IsDisabledControlJustPressed(0, Control.R) then
+        if not IsDisabledControlPressed(0, Control.LeftCtrl) and IsDisabledControlJustPressed(0, Control.R) then
             StartGizmo(obj)
         end
 
-        if IsDisabledControlJustPressed(0, 0xA5BDCD3C) then -- Right Bracket
-            SetEntityRotation(SelectedObject or HoveredObject, 0, 0, 0)
-        end
+        -- if IsDisabledControlJustPressed(0, Control.RightBracket) then
+        --     SetEntityRotation(SelectedObject or HoveredObject, 0, 0, 0)
+        -- end
 
-        if HoveredObject and SelectedObject and IsDisabledControlPressed(0, Control.LCtrl) then
+        if HoveredObject and SelectedObject and IsDisabledControlPressed(0, Control.LeftCtrl) then
             if IsDisabledControlJustPressed(0, Control.R) then
                 local hPos = GetEntityRotation(HoveredObject)
                 SetEntityRotation(SelectedObject, hPos.x, hPos.y, hPos.z)
@@ -75,7 +50,7 @@ local SelectModeControlCheck = function()
                 local hPos = GetEntityCoords(HoveredObject)
                 SetEntityCoords(SelectedObject, hPos.x, hPos.y, sPos.z)
             end
-            if IsControlJustPressed(0, 0x26E9DC00) then -- Z
+            if IsControlJustPressed(0, Control.Z) then
                 local sPos = GetEntityCoords(SelectedObject)
                 local hPos = GetEntityCoords(HoveredObject)
                 SetEntityCoords(SelectedObject, sPos.x, sPos.y, hPos.z)

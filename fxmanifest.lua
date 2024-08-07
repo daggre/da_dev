@@ -20,6 +20,7 @@ server_scripts {
 }
 
 client_scripts {
+    "control/controls.lua",
     "ui/tree.lua",
     "root.lua",
     "mode/mode.lua",
