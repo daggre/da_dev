@@ -1,5 +1,6 @@
 Control = {}
 Control.A = `INPUT_MOVE_LEFT_ONLY`
+Control.C = 0x9959A6F0
 Control.D = `INPUT_MOVE_RIGHT_ONLY`
 Control.E = `INPUT_DYNAMIC_SCENARIO`
 Control.F = `INPUT_CONTEXT_B`
@@ -24,3 +25,9 @@ Control.MouseRight = `INPUT_AIM`
 Control.WheelUp = `INPUT_PREV_WEAPON`
 Control.WheelDown = `INPUT_NEXT_WEAPON`
 Control.RightBracket = 0xA5BDCD3C
+Control.Escape = 0x308588E6
+
+AllControls = {}
+for k, v in pairs(Control) do
+    table.insert(AllControls, v)
+end

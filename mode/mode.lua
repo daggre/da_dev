@@ -3,10 +3,6 @@ da.Dev.Mode = {}
 ActiveMode = nil
 local AllActiveModes = {}
 Mode = {}
-local Control = {
-    C = 0x9959A6F0,
-    Escape = 0x308588E6,
-}
 
 local SetMode = function(mode)
     if mode and not Mode[mode] then
@@ -91,11 +87,15 @@ RegisterNUICallback('controlPass', function(data, cb)
     cb(true)
 end)
 
--- I think this needs to get removed
 RegisterNUICallback('modifyMode', function(data, cb)
     if not Mode[data.mode] then
         da.Log.Error(("Invalid mode '%s'"):format(data.mode))
         cb(false)
+        return
+    end
+
+    if data.active and not AllActiveModes[data.mode] then
+        cb(true)
         return
     end
 
@@ -138,15 +138,10 @@ RegisterNUICallback('modifyMode', function(data, cb)
     cb(true)
 end)
 
--- RegisterNUICallback('mode', function(data, cb)
---     local enable = data.mode == "on"
---     if enable then
---         da.Dev.Mode.Add(data.modeName)
---     else
---         da.Dev.Mode.Remove(data.modeName)
---     end
---     cb(true)
--- end)
+RegisterNUICallback('endPassthrough', function(data, cb)
+    da.Control.Passthrough(false)
+    cb(true)
+end)
 
 AddEventHandler('onResourceStop', function(resourceName)
     if resourceName == GetCurrentResourceName() then
@@ -168,6 +163,7 @@ Mode.gizmo = {
             Mode.gizmo.modified.focusCursor = false
         end,
         passthroughCallback = function()
+            da.Control.WaitForKeyRelease(AllControls)
             Mode.gizmo.modified = {}
             UpdateActiveMode()
             SendNUIMessage({ type = "controlPass", enable = false, })
@@ -194,6 +190,12 @@ Mode.anim = {
             Mode.anim.modified.focusCursor = false
             Mode.anim.modified.keepFocus = true
         end,
+        passthroughCallback = function()
+            da.Control.WaitForKeyRelease(AllControls)
+            Mode.anim.modified = {}
+            UpdateActiveMode()
+            SendNUIMessage({ type = "controlPass", enable = false, })
+        end,
     },
 }
 Mode.object = {
@@ -209,6 +211,7 @@ Mode.object = {
             Mode.object.modified.keepFocus = true
         end,
         passthroughCallback = function()
+            da.Control.WaitForKeyRelease(AllControls)
             Mode.object.modified = {}
             UpdateActiveMode()
             SendNUIMessage({ type = "controlPass", enable = false, })

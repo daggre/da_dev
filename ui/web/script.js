@@ -9,6 +9,7 @@ var GizmoActive = false
 var SelectedObjectSpawnType = "objects"
 var SelectedObjectFavs = false
 var TrackedObjectsLoopRunning = false
+var MouseDown = false
 
 function ToUint32(value) { return value >>> 0; }
 
@@ -154,12 +155,11 @@ window.onload = function() {
                 break;
         }
     })
-    // ToggleUI({value: "objectHUD"});
-    // ToggleUI({value: "cameraHUD"});
 }
 
 $(document).ready(function() {
     $(document).mousedown(function(event) {
+        MouseDown = true;
         if (isVisible(document.getElementById('animHUD'))) {
             switch(event.button) {
             case 0: // Left Click
@@ -170,8 +170,13 @@ $(document).ready(function() {
                 }
                 break;
             case 2: // Right Click
-                ControlPassActive = true;
-                SendClientMessage('modifyMode', { mode: "anim", passthrough: true, });
+                // ControlPassActive = true;
+                SendClientMessage('modifyMode', {
+                        mode: "anim",
+                        focusCursor: false,
+                        keepFocus: true,
+                        passthrough: true,
+                    });
                 break;
             }
         }
@@ -186,7 +191,7 @@ $(document).ready(function() {
                 }
                 break;
             case 2: // Right Click
-                ControlPassActive = true;
+                // ControlPassActive = true;
                 SendClientMessage('modifyMode', { mode: "object", passthrough: true, });
                 SendClientMessage('modifyMode', { mode: "gizmo", passthrough: true, });
                 break;
@@ -195,34 +200,18 @@ $(document).ready(function() {
     });
 
     $(document).mouseup(function(event) {
+        MouseDown = false;
         if (isVisible(document.getElementById('animHUD'))) {
             switch(event.button) {
             case 2: // Right Click
-                ControlPassActive = false;
-                SendClientMessage('modifyMode', {
-                        mode: "anim",
-                        passthrough: false,
-                        focusCursor: true,
-                        keepFocus: false
-                    });
+                SendClientMessage('endPassthrough', {})
                 break;
             }
         }
         if (isVisible(document.getElementById('objectHUD'))) {
             switch(event.button) {
             case 2: // Right Click
-                ControlPassActive = false;
-                SendClientMessage('modifyMode', {
-                        mode: "object",
-                        passthrough: false,
-                        focusCursor: true,
-                        keepFocus: false
-                    });
-                SendClientMessage('modifyMode', {
-                        mode: "gizmo",
-                        passthrough: false,
-                        focusCursor: true,
-                    });
+                SendClientMessage('endPassthrough', {})
                 break;
             }
         }
@@ -1096,7 +1085,6 @@ function HandleKeysCam(event) {
 function ResetObjData() {
     document.getElementById('objSpawnOptions').style.display = "none";
     document.getElementById('objData').style.display = "none";
-    // document.getElementById('objNearbyControl').style.display = "none";
     document.getElementById('objNearbyRange').style.display = "none";
     document.getElementById('objNearbyResults').style.display = "none";
 }
@@ -1120,11 +1108,11 @@ function ToggleControlObjectSpawn(state) {
 function ToggleObjectSpawn(state) {
     var el = document.getElementById('button-spawn');
     ToggleSelected(el, state);
+    ResetObjData();
 
     if (el.classList.contains('selected')) {
         ToggleHelp("objHelp", "off", true)
         ToggleControlObjectSpawn("on");
-        ResetObjData();
         document.getElementById('button-spawnfavs').classList.remove('selected');
         document.getElementById('button-trackedobjlist').classList.remove('selected');
         document.getElementById('objSearchField').style.display = "flex";
@@ -1132,7 +1120,6 @@ function ToggleObjectSpawn(state) {
         document.getElementById('objSpawnOptions').style.display = "inline-flex";
         document.getElementById('objData').style.display = "flex";
     } else {
-        ResetObjData();
         document.getElementById('objSearchField').style.display = "none";
         document.getElementById('objSearchList').style.display = "none";
         if (document.activeElement.classList.contains('entryField')) {
@@ -1153,18 +1140,17 @@ function ToggleObjectFavsSpawn(state) {
 function ToggleTrackedList(state) {
     var el = document.getElementById('button-trackedobjlist');
     ToggleSelected(el, state);
+    ResetObjData();
 
     if (el.classList.contains('selected')) {
         ToggleHelp("objHelp", "off", true)
         ToggleControlScene("off");
         ToggleControlObjectSpawn("on");
-        ResetObjData();
         GetTrackedObjects();
         document.getElementById('button-spawn').classList.remove('selected');
         document.getElementById('button-spawnfavs').classList.remove('selected');
         document.getElementById('objSearchField').style.display = "none";
         document.getElementById('objSearchList').style.display = "flex";
-        // document.getElementById('objNearbyControl').style.display = "inline-flex";
         document.getElementById('objNearbyRange').style.display = "flex";
         document.getElementById('objNearbyResults').style.display = "flex";
     } else {
@@ -1243,34 +1229,41 @@ function ToggleImportExport(state) {
 function GetTrackedObjects() {
     if (TrackedObjectsLoopRunning) { return; }
     TrackedObjectsLoopRunning = true;
-    var loopEl = document.getElementById('objNearbyResults');
-
+    var elID = "objNearbyResults";
+    var el = document.getElementById(elID);
+    ResetListGroup(elID, "flex");
     const loopId = setInterval(function() {
-        if (isVisible(loopEl)) {
-            SendClientMessage('nearbyObjects', { range: document.getElementById('nearbyRange').innerHTML, }).then(function(resp) {
-                var objects = resp.nearbyObjects;
-                var elID = "objNearbyResults";
-                ResetListGroup(elID, "flex");
+        if (isVisible(el)) {
+            if (!MouseDown) {
+                SendClientMessage('nearbyObjects', { range: document.getElementById('nearbyRange').innerHTML, }).then(function(resp) {
+                    //TODO: isnt clearing on Escape if nearby is last selected HUD
+                    var objects = resp.nearbyObjects;
+                    objects.sort((a, b) => a.distance - b.distance);
 
-                objects.sort((a, b) => a.distance - b.distance);
-
-                var el = document.getElementById(elID);
-                el.innerHTML = "";
-                var ul = document.createElement('ul');
-                for (var i = 0; i < objects.length; ++i) {
-                    var li = document.createElement('li');
-                    li.innerHTML = `${objects[i].distance.toFixed(2)} ${objects[i].handle} ${objects[i].modelName}`;
-                    ul.appendChild(li);
-                }
-                el.appendChild(ul);
-                if (objects.length < 15) {
-                    el.style.minHeight = objects.length + ".4vh";
-                } else {
-                    el.style.minHeight = "15.4vh";
-                }
-                el.scrollTop = 0;
-                el.scrollLeft = -1000;
-            });
+                    el.innerHTML = "";
+                    var ul = document.createElement('ul');
+                    for (var i = 0; i < objects.length; ++i) {
+                        var li = document.createElement('li');
+                        li.innerHTML = `${objects[i].distance.toFixed(2)} ${objects[i].handle} ${objects[i].modelName}`;
+                        li.addEventListener('mouseenter', function() {
+                            SendClientMessage('hoverObject', { handle: this.innerHTML.split(" ")[1] });
+                        })
+                        li.addEventListener('mouseleave', function() {
+                            SendClientMessage('hoverObject', { handle: this.innerHTML.split(" ")[1], remove: true });
+                        })
+                        li.addEventListener('click', function() {
+                            SendClientMessage('selectObject', { handle: this.innerHTML.split(" ")[1] });
+                        })
+                        ul.appendChild(li);
+                    }
+                    el.appendChild(ul);
+                    if (objects.length < 15) {
+                        el.style.minHeight = objects.length + ".4vh";
+                    } else {
+                        el.style.minHeight = "15.4vh";
+                    }
+                });
+            }
         } else {
             clearInterval(loopId);
             TrackedObjectsLoopRunning = false;
@@ -1315,15 +1308,6 @@ function HandleKeysObject(event) {
 
             console.log("Sending object mode off")
             SendClientMessage('objectMode', { mode: "off" });
-            // ToggleSceneMove("off");
-            // ToggleSceneTag("off");
-            // ToggleImportExport("off");
-
-            // TODO: use message to detect gizmode
-            // SendClientMessage('objectModeKey', { key: "r", alt: event.altKey, });
-
-            // Usually would exit object mode, but Gizmo exit also would exit
-            // object mode, unless we can detect gizmo exit
             break;
         case " ":
             if (typeof event.target.onclick == "function") {
@@ -1333,9 +1317,8 @@ function HandleKeysObject(event) {
             break;
         case "c":
             if (!document.activeElement.classList.contains('entryField') && !ControlPassActive) {
-                ControlPassActive = true;
                 SendClientMessage('modifyMode', { mode: "object", passthrough: true, });
-                SendClientMessage('modifyMode', { mode: "gizmo", passthrough: true, });
+                SendClientMessage('modifyMode', { mode: "gizmo", active: true, passthrough: true, });
                 break;
             }
         case "!":
