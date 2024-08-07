@@ -42,6 +42,9 @@ local CheckControls = function()
 
     if IsDisabledControlJustPressed(0, Control.F) then
         if Camera.Mode == "free" then
+            if IsDisabledControlPressed(0, Control.LAlt) and HoveredObject then
+                SelectedObject = HoveredObject
+            end
             if not SelectedObject then
                 SelectedObject = HoveredObject
             end
@@ -136,9 +139,6 @@ end
 ---@return number x Translated X Coordinate
 ---@return number y Translated Y Coordinate
 ---@return number z Translated Z Coordinate
----@return number rot_x Translated X Rotation
----@return number rot_y Translated Y Rotation
----@return number rot_z Translated Z Rotation
 local ControlTranslation = function(x, y, z, rot_x, rot_z, fov)
 
     local deltaLR = GetDisabledControlNormal(0, Control.MouseLR)
@@ -359,6 +359,7 @@ da.Dev.NoClip = function(state)
 end
 
 AddEventHandler('onResourceStop', function(resourceName)
+    gizmoThreadStarted = false
     if resourceName == GetCurrentResourceName() then
         DisableFreeCam()
     end

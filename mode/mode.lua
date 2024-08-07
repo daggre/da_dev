@@ -2,95 +2,55 @@ da.Dev.Mode = {}
 
 ActiveMode = nil
 local AllActiveModes = {}
-
-local Mode = {
-    gizmo = {
-        priority = 7,
-        getFocus = function()
-            local focusKeyboard = true
-            local focusCursor = true
-            local keepFocus = true
-            local passthrough = false
-            return focusKeyboard, focusCursor, keepFocus, passthrough
-        end,
-    },
-    devTree = {
-        priority = 6,
-        getFocus = function()
-            local focusKeyboard = true
-            local focusCursor = false
-            local keepFocus = false
-            local passthrough = false
-            return focusKeyboard, focusCursor, keepFocus, passthrough
-        end
-    },
-    anim = {
-        priority = 5,
-        getFocus = function()
-            local focusKeyboard = true
-            local focusCursor = true
-            local keepFocus = false
-            local passthrough = false
-            return focusKeyboard, focusCursor, keepFocus, passthrough
-        end,
-    },
-    object = {
-        priority = 4,
-        getFocus = function()
-            local focusKeyboard = true
-            local focusCursor = false
-            local keepFocus = true
-            local passthrough = false
-            return focusKeyboard, focusCursor, keepFocus, passthrough
-        end,
-    },
-    focus = {
-        priority = 3,
-        getFocus = function()
-            local focusKeyboard = true
-            local focusCursor = false
-            local keepFocus = true
-            local passthrough = false
-            return focusKeyboard, focusCursor, keepFocus, passthrough
-        end,
-    },
-    freecam = {
-        priority = 2,
-        getFocus = function()
-            local focusKeyboard = true
-            local focusCursor = false
-            local keepFocus = true
-            local passthrough = false
-            return focusKeyboard, focusCursor, keepFocus, passthrough
-        end,
-    },
-    noclip = {
-        priority = 1,
-        getFocus = function()
-            local focusKeyboard = true
-            local focusCursor = false
-            local keepFocus = true
-            local passthrough = false
-            return focusKeyboard, focusCursor, keepFocus, passthrough
-        end,
-    },
+Mode = {}
+local Control = {
+    C = 0x9959A6F0,
+    Escape = 0x308588E6,
 }
 
-local SetMode = function(hasFocus, hasCursor, keepInput, passthrough)
-    SetNuiFocus(hasFocus, hasCursor)
-    SetNuiFocusKeepInput(keepInput)
-    da.Control.Passthrough(passthrough)
+local SetMode = function(mode)
+    if mode and not Mode[mode] then
+        da.Log.Error(("Invalid mode '%s'"):format(mode))
+        return
+    end
+
+    -- When exiting gizmo, wait for escape to be released while client has keyboard control
+    if IsDisabledControlPressed(0, Control.Escape) then
+        while IsDisabledControlPressed(0, Control.Escape) do
+            SetNuiFocus(false, false)
+            Citizen.Wait(0)
+        end
+    end
+
+
+    local focusKeyboard = Mode[mode].default.focusKeyboard
+    if Mode[mode].modified.focusKeyboard ~= nil then focusKeyboard = Mode[mode].modified.focusKeyboard end
+    local focusCursor = Mode[mode].default.focusCursor
+    if Mode[mode].modified.focusCursor ~= nil then focusCursor = Mode[mode].modified.focusCursor end
+    local keepFocus = Mode[mode].default.keepFocus
+    if Mode[mode].modified.keepFocus ~= nil then keepFocus = Mode[mode].modified.keepFocus end
+    local passthrough = Mode[mode].default.passthrough
+    if Mode[mode].modified.passthrough ~= nil then passthrough = Mode[mode].modified.passthrough end
+    local passthroughHaltKey = Mode[mode].default.passthroughHaltKey
+    local passthroughCallback = Mode[mode].default.passthroughCallback
+
+
+    SetNuiFocus(focusKeyboard, focusCursor)
+    SetNuiFocusKeepInput(keepFocus)
+    da.Control.Passthrough(passthrough, passthroughHaltKey, passthroughCallback)
+
+    SendNUIMessage({ type = "controlPass", enable = passthrough, })
     da.Log.Debug(("Setting mode '%s' key=%s mouse=%s keep=%s passthrough=%s"):format(
-        ActiveMode ~= nil and ActiveMode or "none",
-        hasFocus,
-        hasCursor,
-        keepInput,
+        mode,
+        focusKeyboard,
+        focusCursor,
+        keepFocus,
         passthrough
     ))
 end
 
 local UpdateActiveMode = function()
-    local activeMode = nil
+    local activeMode = "none"
     local activePriority = 0
     for mode in pairs(AllActiveModes) do
         local modePrio = Mode[mode].priority
@@ -100,6 +60,7 @@ local UpdateActiveMode = function()
         end
     end
     ActiveMode = activeMode
+    SetMode(activeMode)
 end
 
 da.Dev.Mode.Add = function(mode)
@@ -109,40 +70,71 @@ da.Dev.Mode.Add = function(mode)
         return
     end
     AllActiveModes[mode] = true
-    local previousMode = ActiveMode
     UpdateActiveMode()
-    if ActiveMode ~= previousMode then
-        if ActiveMode == nil then
-            SetMode(false, false, false, false)
-        else
-            SetMode(Mode[ActiveMode].getFocus())
-        end
-    end
 end
 
 da.Dev.Mode.Remove = function(mode)
     da.Log.Debug(("Removing mode %s"):format(mode))
     AllActiveModes[mode] = nil
-    local previousMode = ActiveMode
     UpdateActiveMode()
-    if ActiveMode ~= previousMode then
-        if ActiveMode == nil then
-            SetMode(false, false, false, false)
-        else
-            SetMode(Mode[ActiveMode].getFocus())
-        end
-    end
 end
 
 da.Dev.Mode.Clear = function()
     AllActiveModes = {}
     ActiveMode = nil
-    SetMode(false, false, false, false)
+    SetMode("none")
 end
 
 RegisterNUICallback('controlPass', function(data, cb)
     SetNuiFocusKeepInput(data.enable)
     da.Control.Passthrough(data.enable)
+    cb(true)
+end)
+
+-- I think this needs to get removed
+RegisterNUICallback('modifyMode', function(data, cb)
+    if not Mode[data.mode] then
+        da.Log.Error(("Invalid mode '%s'"):format(data.mode))
+        cb(false)
+        return
+    end
+
+    if data.focusKeyboard ~= nil then
+        if Mode[data.mode].default.focusKeyboard ~= data.focusKeyboard then
+            Mode[data.mode].modified.focusKeyboard = data.focusKeyboard
+        else
+            Mode[data.mode].modified.focusKeyboard = nil
+        end
+    end
+
+    if data.focusCursor ~= nil then
+        if Mode[data.mode].default.focusCursor ~= data.focusCursor then
+            Mode[data.mode].modified.focusCursor = data.focusCursor
+        else
+            Mode[data.mode].modified.focusCursor = nil
+        end
+    end
+
+    if data.keepFocus ~= nil then
+        if Mode[data.mode].default.keepFocus ~= data.keepFocus then
+            Mode[data.mode].modified.keepFocus = data.keepFocus
+        else
+            Mode[data.mode].modified.keepFocus = nil
+        end
+    end
+
+    if data.passthrough ~= nil then
+        if Mode[data.mode].default.passthrough ~= data.passthrough then
+            Mode[data.mode].modified.passthrough = data.passthrough
+            if Mode[data.mode].default.passthroughFn ~= nil then
+                Mode[data.mode].default.passthroughFn()
+            end
+        else
+            Mode[data.mode].modified.passthrough = nil
+        end
+    end
+
+    UpdateActiveMode()
     cb(true)
 end)
 
@@ -163,3 +155,104 @@ AddEventHandler('onResourceStop', function(resourceName)
         da.Control.Passthrough(false)
     end
 end)
+
+Mode.gizmo = {
+    priority = 7,
+    default = {
+        focusKeyboard = true,
+        focusCursor = true,
+        keepFocus = true,
+        passthrough = false,
+        passthroughHaltKey = Control.C,
+        passthroughFn = function()
+            Mode.gizmo.modified.focusCursor = false
+        end,
+        passthroughCallback = function()
+            Mode.gizmo.modified = {}
+            UpdateActiveMode()
+            SendNUIMessage({ type = "controlPass", enable = false, })
+        end
+    },
+}
+Mode.devTree = {
+    priority = 6,
+    default = {
+        focusKeyboard = true,
+        focusCursor = false,
+        keepFocus = false,
+        passthrough = false,
+    },
+}
+Mode.anim = {
+    priority = 5,
+    default = {
+        focusKeyboard = true,
+        focusCursor = true,
+        keepFocus = false,
+        passthrough = false,
+        passthroughFn = function()
+            Mode.anim.modified.focusCursor = false
+            Mode.anim.modified.keepFocus = true
+        end,
+    },
+}
+Mode.object = {
+    priority = 4,
+    default = {
+        focusKeyboard = true,
+        focusCursor = true,
+        keepFocus = false,
+        passthrough = false,
+        passthroughHaltKey = Control.C,
+        passthroughFn = function()
+            Mode.object.modified.focusCursor = false
+            Mode.object.modified.keepFocus = true
+        end,
+        passthroughCallback = function()
+            Mode.object.modified = {}
+            UpdateActiveMode()
+            SendNUIMessage({ type = "controlPass", enable = false, })
+        end
+
+    },
+}
+Mode.focus = {
+    priority = 3,
+    default = {
+        focusKeyboard = true,
+        focusCursor = false,
+        keepFocus = true,
+        passthrough = false,
+    },
+}
+Mode.freecam = {
+    priority = 2,
+    default = {
+        focusKeyboard = true,
+        focusCursor = false,
+        keepFocus = true,
+        passthrough = false,
+    },
+}
+Mode.noclip = {
+    priority = 1,
+    default = {
+        focusKeyboard = true,
+        focusCursor = false,
+        keepFocus = true,
+        passthrough = false,
+    },
+}
+Mode.none = {
+    default = {
+        focusKeyboard = false,
+        focusCursor = false,
+        keepFocus = false,
+        passthrough = false,
+    }
+}
+
+for mode in pairs(Mode) do
+    Mode[mode].modified = {}
+end
+

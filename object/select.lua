@@ -29,16 +29,33 @@ local SelectModeControlCheck = function()
         DisableControlAction(0, control, true)
     end
     if HoveredObject or SelectedObject then
-        local obj = HoveredObject ~= nil and HoveredObject or SelectedObject
 
-        -- Open Gizmo (R)
-        if not IsDisabledControlPressed(0, Control.LeftCtrl) and IsDisabledControlJustPressed(0, Control.R) then
-            StartGizmo(obj)
+        -- Select Object (T)
+        if IsDisabledControlJustPressed(0, Control.T) then
+            if HoveredObject then
+                if HoveredObject == SelectedObject then
+                    SelectedObject = nil
+                else
+                    SelectedObject = HoveredObject
+                    SendNUIMessage({type = "clipboard", text = SelectedObject})
+                end
+            else
+                SelectedObject = nil
+            end
         end
 
-        -- if IsDisabledControlJustPressed(0, Control.RightBracket) then
-        --     SetEntityRotation(SelectedObject or HoveredObject, 0, 0, 0)
-        -- end
+        -- Open Gizmo (R)
+        if not IsDisabledControlPressed(0, Control.LCtrl) and IsDisabledControlJustPressed(0, Control.R) then
+            if not SelectedObject and HoveredObject then
+                SelectedObject = HoveredObject
+            end
+            if IsDisabledControlPressed(0, Control.LAlt) and HoveredObject then
+                SelectedObject = HoveredObject
+            end
+            if SelectedObject then
+                StartGizmo(SelectedObject)
+            end
+        end
 
         if HoveredObject and SelectedObject and IsDisabledControlPressed(0, Control.LeftCtrl) then
             if IsDisabledControlJustPressed(0, Control.R) then
@@ -60,6 +77,21 @@ local SelectModeControlCheck = function()
 
     end
 end
+
+RegisterNUICallback('objectModeKey', function(data, cb)
+    if data.key == "r" then
+        if not SelectedObject and HoveredObject then
+            SelectedObject = HoveredObject
+        end
+        if data.alt and HoveredObject then
+            SelectedObject = HoveredObject
+        end
+        if SelectedObject then
+            StartGizmo(SelectedObject)
+        end
+        cb(true)
+    end
+end)
 
 local SelectModeTick = function()
     local model = nil
@@ -102,7 +134,7 @@ local StartSelectModeThread = function(id)
     end)
 end
 
-local ObjectModeToggle = function(state)
+ObjectModeToggle = function(state)
     if state ~= nil and EnableSelectMode == state then return; end
     EnableSelectMode = not EnableSelectMode
     da.Log.Info(("Entity select mode: %s"):format(EnableSelectMode and "^2ON^7" or "^1OFF^7"))

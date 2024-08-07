@@ -21,24 +21,6 @@
         0 0 14px var(--style-aux);
 }
 
-#header {
-    padding-left: 12%;
-    padding-top: 1px;
-    margin-bottom: 6px;
-    border: 0px;
-    color: #04101d;
-    letter-spacing: 10px;
-    text-align: center;
-    border-bottom: 1px solid var(--style-color);
-    background: var(--style-color);
-    text-shadow:
-        0 0 2px #04101d;
-        /*0 0 3px #224974;*/
-        /* 0 0 4px; */
-        /* 0 0 10px, */
-        /* 0 0 12px; */
-}
-
 .dev {
     position: absolute;
     height: relative;
@@ -58,7 +40,7 @@
     display: none;
 }
 
-#animHelp, #camHelp, #objHelp {
+.help {
     top: 50vh;
     left: 50vw;
     width: fit-content;
@@ -68,12 +50,12 @@
     /*display: block;*/
 }
 
-#animHelpTitle, #camHelpTitle, #objHelpTitle {
+.helpTitle {
     text-align: center;
     margin-bottom: 1vh;
 }
 
-#animHelp li, #camHelp li, #objHelp li {
+.help > ul > li {
     margin-top: 2px;
 }
 
@@ -101,7 +83,7 @@
 #camStatusSpeed {
     display: flex;
     overflow: hidden;
-    margin-bottom: 4px;
+    margin-bottom: 1vh;
 }
 
 #camStatus ul {
@@ -116,7 +98,7 @@
     padding: 0px;
 }
 
-#animControlOptions {
+.controlGroup {
     color: var(--style-color);
     padding: 0px;
     width: auto;
@@ -126,7 +108,8 @@
     transform: translate(50%);
 }
 
-#animControl ul {
+.controlGroup > ul {
+    position: relative;
     flex-direction: column;
     list-style-type: none;
     display: flex;
@@ -134,12 +117,17 @@
     padding-inline-end: 0px;
 }
 
-#animControl li {
+.controlGroup > ul > li {
     padding: 0px;
 }
 
+.inlineControlGroup {
+    position: static;
+    transform: none;
+    flex-shrink: 0;
+}
 
-#animSearchField {
+.searchField {
     color: var(--aux);
     bottom: 8vh;
     right: 50vw;
@@ -160,10 +148,10 @@
     content: " ";
 }
 
-#animSearchLists {
+.listGroup {
     color: var(--aux);
     left: 2vh;
-    top: 2vh;
+    top: 1vh;
     width: 34vw;
     max-height: 70vh;
     padding: 0px;
@@ -172,54 +160,45 @@
     background: none;
 }
 
-#animDictList {
-    flex: 1 1.2 auto;
-    min-height: 30vh;
+.listGroup > div {
     width: fit-content;
     max-width: 100%;
-    display: none;
+    margin-top: 1vh;
     direction: rtl;
+    overflow-y: auto;
     /*overflow-x: hidden;*/
-    overflow-y: auto;
-    background: var(--style-bg);
-    border-radius: 8px;
-}
-
-#animList {
-    flex: 1 1.5 auto;
-    margin-top: 2vh;
-    width: fit-content;
     display: none;
-    direction: rtl;
-    overflow-y: auto;
-    background: var(--style-bg);
     border-radius: 8px;
+    background: var(--style-bg);
 }
 
-#animList li, #animDictList li {
+.listTop {
+    flex: 1 1.2 auto;
+    min-height: 30vh;
+}
+
+.listTwo {
+    flex: 1 1.5 auto;
+}
+
+.listGroup li {
     color: var(--style-color);
     text-shadow: none;
     /*overflow-y: hidden;*/
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    /* overflow: hidden; */
+    /* white-space: nowrap; */
+    /* text-overflow: ellipsis; */
 }
 
-/*@keyframes marquee {*/
-/*    0% { transform: translateX(0%); }*/
-/*    100% { transform: translateX(-50%); }*/
-/*}*/
-
-#animList li:hover, #animDictList li:hover {
+.listGroup li:hover {
     color: var(--aux);
-    /*animation: marquee 5s both infinite;*/
     text-shadow:
         0 0 8px #444,
         0 0 10px #777,
         0 0 14px;
 }
 
-#animTimingsOptions {
+.entryList {
     left: 2vh;
     top: 2vh;
     width: 10vw;
@@ -230,24 +209,22 @@
     /*display: flex;*/
 }
 
-#animTimingsOptions li,
-#animFlagsOptions li,
-#animIKFlagsOptions li,
-#animEntityOptions li,
-#activeAnimDisplay li {
+.optList li {
     margin-bottom: 3px;
-    overflow: hidden;
+    /* overflow: hidden; */
 }
 
-#animTimings .entryField {
+/* .#animTimings .entryField { */
+.entryList .entryField {
     min-width: fit-content;
 }
 
-#animTimings li {
+/* #animTimings li { */
+.entryList li {
     float: left;
 }
 
-#animFlagsOptions, #animIKFlagsOptions {
+.flagList {
     left: 2vh;
     top: 2vh;
     width: 20vw;
@@ -258,22 +235,11 @@
     /*display: flex;*/
 }
 
-#animFlags li, #animIKFlags li {
+.flagList > ul > li {
     float: right;
 }
 
-#animEntityOptions {
-    left: 2vh;
-    top: 2vh;
-    width: 10vw;
-    max-height: 70vh;
-    padding-top: 2px;
-    padding-bottom: 2px;
-    background: none;
-    /*display: flex;*/
-}
-
-#activeAnimDisplay {
+#activeAnimDisplay, #selectedObjectDisplay {
     left: 50vw;
     top: 1vh;
     width: fit-content;
@@ -290,7 +256,7 @@
     justify-content: center;
 }
 
-div#activeAnimDict {
+#activeAnimDict {
     margin-right: 1vh;
 }
 
@@ -361,10 +327,6 @@ div#activeAnimDict {
     /*display: flex;*/
 }
 
-#devOptions,#menuOptions,#animControl #animTimings {
-    position: relative;
-}
-
 .key {
     float: right;
     color: var(--style-bg);
@@ -405,6 +367,13 @@ div#activeAnimDict {
         0 0 10px;
 }
 
+.controlGroup li, .controlGroup li:hover {
+    color: var(--style-color);
+    text-shadow:
+        0 0 0px var(--style-color),
+        0 0 14px var(--style-color);
+}
+
 .control:hover {
     color: var(--aux);
     text-shadow:
@@ -414,8 +383,8 @@ div#activeAnimDict {
         0 0 10px;
 }
 
-.row {
-    margin-top: 1px;
+#button-spawnfavs.selected {
+    color: gold;
 }
 
 body {
@@ -430,8 +399,10 @@ body {
 
 ul {
     margin: 0px;
+    margin-top: 1px;
     padding-inline-start: 0px;
     padding-inline-end: 0px;
+    direction: ltr;
 }
 
 li {
@@ -439,6 +410,9 @@ li {
     margin-right: 0.3vw;
     margin-left: 0.3vw;
     display: flex;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
     clear: both;
 }
 
@@ -446,10 +420,6 @@ li {
     display: none;
     width: 3px;
     height: 1px;
-}
-
-ul {
-    direction: ltr;
 }
 
 #crosshair {
@@ -472,4 +442,9 @@ ul {
 
 #crosshair.selected {
 	color: var(--style-aux);
+}
+
+#objNearbyRange {
+    position: relative;
+    direction: ltr;
 }
