@@ -37,6 +37,11 @@ client_scripts {
     "ui/map.lua",
     "dat/setup.lua", -- Load globals into namespace
     "dat/animations.lua",
+    "dat/objects.lua",
+    "dat/peds.lua",
+    "dat/pickups.lua",
+    "dat/propsets.lua",
+    "dat/vehicles.lua",
     "dat/af_flags.lua",
     "dat/aik_flags.lua",
     "cmd/client.lua",

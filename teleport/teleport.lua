@@ -72,5 +72,5 @@ da.Dev.Menu.RegisterOption("teleport", "disappear", "0", function()
         coords = coords,
         networked = true,
     })
-
 end)
+
