@@ -10,6 +10,7 @@ var SelectedObjectSpawnType = "objects"
 var SelectedObjectFavs = false
 var TrackedObjectsLoopRunning = false
 var MouseDown = false
+var QuickPress = { Timeout: 400, MiddleMouse: { active: false, }, }
 
 function ToUint32(value) { return value >>> 0; }
 
@@ -169,14 +170,19 @@ $(document).ready(function() {
                     }
                 }
                 break;
-            case 2: // Right Click
-                // ControlPassActive = true;
+            case 1: // Middle Click
+                if (ControlPassActive) {
+                    SendClientMessage('endPassthrough', {})
+                    break;
+                }
                 SendClientMessage('modifyMode', {
                         mode: "anim",
                         focusCursor: false,
                         keepFocus: true,
                         passthrough: true,
                     });
+                QuickPress.MiddleMouse.active = true;
+                setTimeout(function() { QuickPress.MiddleMouse.active = false; }, QuickPress.Timeout);
                 break;
             }
         }
@@ -190,10 +196,15 @@ $(document).ready(function() {
                     }
                 }
                 break;
-            case 2: // Right Click
-                // ControlPassActive = true;
+            case 1: // Middle Click
+                if (ControlPassActive) {
+                    SendClientMessage('endPassthrough', {})
+                    break;
+                }
                 SendClientMessage('modifyMode', { mode: "object", passthrough: true, });
-                SendClientMessage('modifyMode', { mode: "gizmo", passthrough: true, });
+                SendClientMessage('modifyMode', { mode: "gizmo", active: true, passthrough: true, });
+                QuickPress.MiddleMouse.active = true;
+                setTimeout(function() { QuickPress.MiddleMouse.active = false; }, QuickPress.Timeout);
                 break;
             }
         }
@@ -203,15 +214,19 @@ $(document).ready(function() {
         MouseDown = false;
         if (isVisible(document.getElementById('animHUD'))) {
             switch(event.button) {
-            case 2: // Right Click
-                SendClientMessage('endPassthrough', {})
+            case 1: // Middle Click
+                if (!QuickPress.MiddleMouse.active) {
+                    SendClientMessage('endPassthrough', {})
+                }
                 break;
             }
         }
         if (isVisible(document.getElementById('objectHUD'))) {
             switch(event.button) {
-            case 2: // Right Click
-                SendClientMessage('endPassthrough', {})
+            case 1: // Middle Click
+                if (!QuickPress.MiddleMouse.active) {
+                    SendClientMessage('endPassthrough', {})
+                }
                 break;
             }
         }
@@ -693,9 +708,7 @@ function TogglePlay(state = "toggle") {
     var el = document.getElementById('button-play');
     ToggleSelected(el, state);
     if (state != "off") {
-        setTimeout(function() {
-            ToggleSelected(el, "off");
-        }, 100);
+        setTimeout(function() { ToggleSelected(el, "off"); }, 100);
     } else { return; }
     PlayAnimation();
 }
@@ -705,9 +718,7 @@ function ToggleStop() {
     s_el.classList.toggle('selected');
     var p_el = document.getElementById('button-play');
     p_el.classList.remove('selected');
-    setTimeout(function() {
-        s_el.classList.remove('selected');
-    }, 200);
+    setTimeout(function() { s_el.classList.remove('selected'); }, 200);
     SendClientMessage('stopAnim', {})
 }
 
@@ -1319,8 +1330,13 @@ function HandleKeysObject(event) {
             if (!document.activeElement.classList.contains('entryField') && !ControlPassActive) {
                 SendClientMessage('modifyMode', { mode: "object", passthrough: true, });
                 SendClientMessage('modifyMode', { mode: "gizmo", active: true, passthrough: true, });
-                break;
             }
+            break;
+        case "f":
+            if (!document.activeElement.classList.contains('entryField') && !ControlPassActive) {
+                SendClientMessage('focus', {});
+            }
+            break;
         case "!":
         case "1":
             var focusButton = false;

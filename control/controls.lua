@@ -26,6 +26,8 @@ Control.WheelUp = `INPUT_PREV_WEAPON`
 Control.WheelDown = `INPUT_NEXT_WEAPON`
 Control.RightBracket = 0xA5BDCD3C
 Control.Escape = 0x308588E6
+Control.Escape2 = `INPUT_FRONTEND_RRIGHT`
+Control.Escape3 = `INPUT_FRONTEND_PAUSE_ALTERNATE`
 
 AllControls = {}
 for k, v in pairs(Control) do

@@ -1,11 +1,6 @@
 CurrentTree = "optionTree"
-local Control = {
-    Z = 0x26E9DC00,
-    LCtrl = 0xD7DE6B1E,
-}
 
 Citizen.CreateThread(function()
-    local z = 0x26E9DC00
     while true do
         Citizen.Wait(5)
         if (IsControlJustReleased(0, Control.Z) or IsDisabledControlJustReleased(0, Control.Z)) and not IsDisabledControlPressed(0, Control.LCtrl) then
@@ -64,6 +59,9 @@ RegisterNUICallback('playAnim', function(data, cb)
             data.animName
         )
     elseif data.type == "advanced" then
+        local p14 = nil
+        local p15 = nil
+        local p16 = nil
         da.Anim.Adv(
             entity or PlayerPedId(),
             data.animDict,
