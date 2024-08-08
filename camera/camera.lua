@@ -61,7 +61,7 @@ end)
 
 local CheckControls = function()
     if IsDisabledControlJustPressed(0, Control.MouseLeft) then
-        if HoveredObject then
+        if ActiveMode ~= "gizmo" and HoveredObject then
             SelectedObject = HoveredObject
         end
     end
