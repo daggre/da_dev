@@ -24,7 +24,7 @@ Fov.RateChange = 6
 
 local radian = math.pi / 180
 
-local clamp = function(val, min, max)
+local Clamp = function(val, min, max)
     if val < min then
         return min
     elseif val > max then
@@ -32,6 +32,32 @@ local clamp = function(val, min, max)
     end
     return val
 end
+
+local Focus = function()
+    if Camera.Mode == "free" then
+        if IsDisabledControlPressed(0, Control.LAlt) and HoveredObject then
+            SelectedObject = HoveredObject
+        end
+        if not SelectedObject then
+            SelectedObject = HoveredObject
+        end
+        local obj = SelectedObject
+        if obj then
+            da.Dev.Mode.Add("focus")
+            Camera.Mode = "focus"
+            PointCamAtEntity(Camera.Handle, obj)
+        end
+    elseif Camera.Mode == "focus" then
+        da.Dev.Mode.Remove("focus")
+        Camera.Mode = "free"
+        StopCamPointing(Camera.Handle)
+    end
+end
+
+RegisterNUICallback("focus", function(data, cb)
+    Focus()
+    cb(true)
+end)
 
 local CheckControls = function()
     if IsDisabledControlJustPressed(0, Control.MouseLeft) then
@@ -41,24 +67,7 @@ local CheckControls = function()
     end
 
     if IsDisabledControlJustPressed(0, Control.F) then
-        if Camera.Mode == "free" then
-            if IsDisabledControlPressed(0, Control.LAlt) and HoveredObject then
-                SelectedObject = HoveredObject
-            end
-            if not SelectedObject then
-                SelectedObject = HoveredObject
-            end
-            local obj = SelectedObject
-            if obj then
-                da.Dev.Mode.Add("focus")
-                Camera.Mode = "focus"
-                PointCamAtEntity(Camera.Handle, obj)
-            end
-        elseif Camera.Mode == "focus" then
-            da.Dev.Mode.Remove("focus")
-            Camera.Mode = "free"
-            StopCamPointing(Camera.Handle)
-        end
+        Focus()
     elseif Camera.Mode == "focus" and not SelectedObject then
         da.Dev.Mode.Remove("focus")
         Camera.Mode = "free"
@@ -104,7 +113,7 @@ end
 ---@param z number Origin Z Coordinate
 ---@param rot_x number Rotation X
 ---@param rot_z number Rotation Z
----@param dist number Distance to translate coordinates - Positive(Forward/Left) / Negative(Backward/Right)
+---@param dist number Distance to translate coordinates - Forward/Left(+)/Backward/Right(-)
 ---@param strafe boolean? Translate Left(+)/Right(-)
 ---@return number x Translated X Coordinate
 ---@return number y Translated Y Coordinate
@@ -139,8 +148,10 @@ end
 ---@return number x Translated X Coordinate
 ---@return number y Translated Y Coordinate
 ---@return number z Translated Z Coordinate
+---@return number rot_x Translated Rotation X
+---@return number rot_z Translated Rotation Z
+---@return number fov Translated Field of View
 local ControlTranslation = function(x, y, z, rot_x, rot_z, fov)
-
     local deltaLR = GetDisabledControlNormal(0, Control.MouseLR)
     local deltaUD = GetDisabledControlNormal(0, Control.MouseUD)
     local pressed = {
@@ -165,21 +176,21 @@ local ControlTranslation = function(x, y, z, rot_x, rot_z, fov)
     if pressed.LCtrl then
         -- Press LCtrl adjust FOV on Mouse Up/Down
         if deltaUD ~= 0.0 then
-            fov = clamp(fov + (deltaUD * Fov.RateChange), Fov.Min, Fov.Max)
+            fov = Clamp(fov + (deltaUD * Fov.RateChange), Fov.Min, Fov.Max)
         end
         -- if deltaLR ~= 0.0 then
         --     rot_z = rot_z + deltaLR * -1.0 * (Speed.Mouse * (math.min(fov,50)/50))
         -- end
-    elseif pressed.LShift and not (pressed.W or pressed.S or pressed.A or pressed.D) then
-        -- Press LShift move camera on X/Y coordinate plane
+    elseif pressed.LAlt and not (pressed.W or pressed.S or pressed.A or pressed.D) then
+        -- Press LAlt move camera on X/Y coordinate plane
         if deltaLR ~= 0.0 then
             x, y, _ = Translate(x, y, z, rot_x, rot_z, 0-(deltaLR*modifier*2), true)
         end
         if deltaUD ~= 0.0 then
             x, y, _ = Translate(x, y, z, rot_x, rot_z, 0-(deltaUD*modifier*2))
         end
-    elseif pressed.LAlt and not (pressed.W or pressed.S or pressed.A or pressed.D) then
-        -- Press LAlt move camera on X/Z coordinate plane
+    elseif pressed.LShift and not (pressed.W or pressed.S or pressed.A or pressed.D) then
+        -- Press LShift move camera on X/Z coordinate plane
         if deltaLR ~= 0.0 then
             x, y, _ = Translate(x, y, z, rot_x, rot_z, 0-(deltaLR*modifier*2), true)
         end
@@ -192,7 +203,7 @@ local ControlTranslation = function(x, y, z, rot_x, rot_z, fov)
             rot_z = rot_z + deltaLR * -1.0 * (Speed.Mouse * (math.min(fov,50)/50))
         end
         if deltaUD ~= 0.0 then
-            rot_x = clamp(rot_x + deltaUD * -1.0 * (Speed.Mouse * (math.min(fov,50)/50)), -89.9, 89.9)
+            rot_x = Clamp(rot_x + deltaUD * -1.0 * (Speed.Mouse * (math.min(fov,50)/50)), -89.9, 89.9)
         end
     end
 
@@ -212,23 +223,23 @@ local ControlTranslation = function(x, y, z, rot_x, rot_z, fov)
     if pressed.S then x, y, z = Translate(x, y, z, rot_x, rot_z, 0 - modifier) end
     if pressed.A then x, y, z = Translate(x, y, z, rot_x, rot_z, modifier, true) end
     if pressed.D then x, y, z = Translate(x, y, z, rot_x, rot_z, 0 - modifier, true) end
-    if pressed.Q then z = z + (modifier/2) end
-    if pressed.E then z = z - (modifier/2) end
+    if pressed.E then z = z + (modifier/2) end
+    if pressed.Q then z = z - (modifier/2) end
 
     -- Set Coords
     return x, y, z, rot_x, rot_z, fov
 end
 
-local camControlThread = false
+local CamControlThread = false
 ---Begin noclip movement and control thread
 InitCamControl = function()
     local playerPedId = PlayerPedId()
     local x, y, z = GetCoords(playerPedId)
     local rot_x, rot_y, rot_z = table.unpack(GetFinalRenderedCamRot())
 	local fov = GetGameplayCamFov()
-    if camControlThread then return; end
+    if CamControlThread then return; end
     Citizen.CreateThread(function()
-        camControlThread = true
+        CamControlThread = true
         while Camera.Mode == "free" or Camera.Mode == "focus" or NoClip.Enabled do
             -- Send NUI message with camera info for display
             if da.Cache.Lazy.Delay("dadev","camUpdate",100) then
@@ -260,7 +271,7 @@ InitCamControl = function()
             value = "cameraHUD",
             mode = "off",
         })
-        camControlThread = false
+        CamControlThread = false
     end)
 end
 
@@ -359,7 +370,7 @@ da.Dev.NoClip = function(state)
 end
 
 AddEventHandler('onResourceStop', function(resourceName)
-    gizmoThreadStarted = false
+    GizmoThreadStarted = false
     if resourceName == GetCurrentResourceName() then
         DisableFreeCam()
     end

@@ -122,7 +122,7 @@ local SelectModeTick = function()
     local hit = nil
     local obj = nil
     local hover = nil
-    hit, obj = RayCastCamera(playerPedId, 500.0)
+    hit, obj = RayCastCamera(playerPedId, 1000.0)
     if hit then
         if SelectedObject ~= obj then
             model = GetEntityModel(obj)

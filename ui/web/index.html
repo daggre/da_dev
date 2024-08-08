@@ -22,21 +22,21 @@
                     <li><div class="entryLabel">a</div><div class="entryField">Move Left</div></li>
                     <li><div class="entryLabel">s</div><div class="entryField">Move Back</div></li>
                     <li><div class="entryLabel">d</div><div class="entryField">Move Right</div></li>
-                    <li><div class="entryLabel">q</div><div class="entryField">Move Up</div></li>
-                    <li><div class="entryLabel">e</div><div class="entryField">Move Down</div></li>
+                    <li><div class="entryLabel">e</div><div class="entryField">Move Up</div></li>
+                    <li><div class="entryLabel">q</div><div class="entryField">Move Down</div></li>
                     <li> </li>
                     <li><div class="entryLabel">Wheel Up</div><div class="entryField">Increase Camera Speed</div></li>
                     <li><div class="entryLabel">Wheel Down</div><div class="entryField">Decrease Camera Speed</div></li>
                     <li><div class="entryLabel">Spacebar (HOLD)</div><div class="entryField">Fine Adjustment Speed ( 0.33x )</div></li>
                     <li><div class="entryLabel">LSHIFT (HOLD)</div><div class="entryField">Quick Adjustment Speed ( 3x )</div></li>
                     <li> </li>
-                    <li><div class="entryLabel">LSHIFT + Mouse Up</div><div class="entryField">Move Camera Forward</div></li>
-                    <li><div class="entryLabel">LSHIFT + Mouse Down</div><div class="entryField">Move Camera Backward</div></li>
+                    <li><div class="entryLabel">LSHIFT + Mouse Forward</div><div class="entryField">Move Camera Up</div></li>
+                    <li><div class="entryLabel">LSHIFT + Mouse Back</div><div class="entryField">Move Camera Down</div></li>
                     <li><div class="entryLabel">LSHIFT + Mouse Left</div><div class="entryField">Move Camera Left</div></li>
                     <li><div class="entryLabel">LSHIFT + Mouse Right</div><div class="entryField">Move Camera Right</div></li>
                     <li> </li>
-                    <li><div class="entryLabel">LALT + Mouse Up</div><div class="entryField">Move Camera Up</div></li>
-                    <li><div class="entryLabel">LALT + Mouse Down</div><div class="entryField">Move Camera Down</div></li>
+                    <li><div class="entryLabel">LALT + Mouse Forward</div><div class="entryField">Move Camera Forward</div></li>
+                    <li><div class="entryLabel">LALT + Mouse Back</div><div class="entryField">Move Camera Backward</div></li>
                     <li><div class="entryLabel">LALT + Mouse Left</div><div class="entryField">Move Camera Left</div></li>
                     <li><div class="entryLabel">LALT + Mouse Right</div><div class="entryField">Move Camera Right</div></li>
                     <li> </li>
@@ -68,15 +68,25 @@
                 <div class="helpTitle">Object Mode by daggre_actual</div>
                 <div class="helpTitle" style="font-size:3vh;"></div>
                 <ul>
+                    <li><div class="entryLabel">1</div><div class="entryField">Search/Select Spawn Objects</div></li>
+                    <li><div class="entryLabel">2</div><div class="entryField">View Nearby Objects</div></li>
+                    <li><div class="entryLabel">3</div><div class="entryField">View/Edit Selected Object Details</div></li>
+                    <li> </li>
+                    <li><div class="entryLabel">c</div><div class="entryField">Toggle Control Passthrough</div></li>
+                    <li><div class="entryLabel">Middle Mouse (Click)</div><div class="entryField">Toggle Control Passthrough</div></li>
+                    <li><div class="entryLabel">Middle Mouse (Hold)</div><div class="entryField">Enable Control Passthrough</div></li>
+                    <li> </li>
+                    <li><div class="entryLabel">f</div><div class="entryField">(No Selection) Select Object Under Cursor</div></li>
                     <li><div class="entryLabel">f</div><div class="entryField">Focus Selected/Hovered Object</div></li>
                     <li><div class="entryLabel">r</div><div class="entryField">Move/Rotate Hovered/Selected Object</div></li>
-                    <!-- <li><div class="entryLabel">Mouse1</div><div class="entryField">Move Selected Object To Cursor</div></li> -->
-                    <!-- <li><div class="entryLabel">Mouse2</div><div class="entryField">Select Object Under Cursor</div></li> -->
+                    <li><div class="entryLabel">t</div><div class="entryField">Select Object Under Cursor</div></li>
+                    <li><div class="entryLabel">Left Mouse</div><div class="entryField">Select Object Under Cursor</div></li>
                     <li> </li>
+                    <li><div class="entryLabel">x</div><div class="entryField">Reset Active Menu To Default Values</div></li>
                     <li><div class="entryLabel">z</div><div class="entryField">Open Dev Tree Menu</div></li>
                     <li><div class="entryLabel">?</div><div class="entryField">Toggle Help Panel</div></li>
                     <li><div class="entryLabel">h</div><div class="entryField">Toggle Help Panel</div></li>
-                    <li><div class="entryLabel">Esc</div><div class="entryField">Exit Move/Rotate Mode</div></li>
+                    <li><div class="entryLabel">Esc</div><div class="entryField">Exit Active Mode/Selection</div></li>
                     <li><div class="entryLabel">Backspace</div><div class="entryField">Exit Object Mode</div></li>
                 </ul>
             </div>
@@ -140,7 +150,7 @@
                 </div>
                 <div id="objNearbyRange" class="dev" style="flex-shrink: 0;">
                     <div class="entryLabel">range</div>
-                    <div id="nearbyRange" class="entryField" tabindex="12" contenteditable="true">50</div>
+                    <div id="nearbyRange" class="entryField" tabindex="12" contenteditable="true">20</div>
                 </div>
                 <!-- <div id="objNearbyControl" class="inlineControlGroup controlGroup dev"> -->
                 <!--     <ul class="row"> -->

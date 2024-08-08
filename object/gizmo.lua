@@ -25,15 +25,15 @@ function StartGizmo(entity)
     GizmoThread()
 end
 
-local gizmoThreadStarted = false
+local GizmoThreadStarted = false
 function GizmoThread()
-    if gizmoThreadStarted then
+    if GizmoThreadStarted then
         return
     end
-    gizmoThreadStarted = true
+    GizmoThreadStarted = true
     Citizen.CreateThread(function()
         local playerPedId = PlayerPedId()
-        while gizmoThreadStarted do
+        while GizmoThreadStarted do
             SendNUIMessage({
                 type = 'setCameraPosition',
                 data = {
@@ -50,16 +50,17 @@ function GizmoThread()
             -- DisableControlAction(0, `INPUT_MOVE_LEFT_ONLY`, true)
             -- DisableControlAction(0, `INPUT_MOVE_RIGHT_ONLY`, true)
 
+            -- TODO: Move gizmo control passthrough to mode passthrough
             DisablePlayerFiring(playerPedId, true)
-            if not IsDisabledControlPressed(0, `INPUT_AIM`, true) then
+            if not IsDisabledControlPressed(0, Control.MouseRight, true) then
                 -- EnableControlAction(0, `SKIPCUTSCENE`, true)
                 DisableAllControlActions(0)
-                if IsDisabledControlPressed(0, `INPUT_FRONTEND_RRIGHT`, true) then
+                if IsDisabledControlPressed(0, Control.Escape2, true) then
                     break
                 end
             end
 
-            if IsDisabledControlPressed(0, 0x8FFC75D6) and IsDisabledControlJustPressed(0, `INPUT_MOVE_RIGHT_ONLY`) then -- Shift D (Duplicate)
+            if IsDisabledControlPressed(0, Control.LeftShift) and IsDisabledControlJustPressed(0, Control.D) then -- Shift D (Duplicate)
                 local model = GetEntityModel(gizmoEntity)
                 local pos = GetEntityCoords(gizmoEntity)
                 local rot = GetEntityRotation(gizmoEntity)
@@ -89,7 +90,7 @@ function GizmoThread()
             }
         })
         da.Dev.Mode.Remove("gizmo")
-        gizmoThreadStarted = false
+        GizmoThreadStarted = false
     end)
 end
 
@@ -119,7 +120,7 @@ RegisterNUICallback('moveGizmoEntity', function(data, cb)
 end)
 
 RegisterNUICallback('gizmoStop', function()
-    gizmoThreadStarted = false
+    GizmoThreadStarted = false
 end)
 
 AddEventHandler("stopGizmo", function()
@@ -132,7 +133,7 @@ AddEventHandler("stopGizmo", function()
 end)
 
 AddEventHandler('onResourceStop', function(resourceName)
-    gizmoThreadStarted = false
+    GizmoThreadStarted = false
     if resourceName == GetCurrentResourceName() then
         SendNUIMessage({
             type = 'setGizmoState',
@@ -152,5 +153,5 @@ RegisterCommand("startGizmo", function(source, args, rawCommand)
 end, false)
 
 RegisterCommand("stopGizmo", function(source, args, rawCommand)
-    gizmoThreadStarted = false
+    GizmoThreadStarted = false
 end, false)
