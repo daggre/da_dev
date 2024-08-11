@@ -20,6 +20,17 @@ server_scripts {
 }
 
 client_scripts {
+    "util/bounding_box.lua",
+    "util/raycast.lua",
+    "dat/setup.lua", -- Load globals into namespace
+    "dat/animations.lua",
+    "dat/objects.lua",
+    "dat/peds.lua",
+    "dat/pickups.lua",
+    "dat/propsets.lua",
+    "dat/vehicles.lua",
+    "dat/af_flags.lua",
+    "dat/aik_flags.lua",
     "control/controls.lua",
     "ui/tree.lua",
     "root.lua",
@@ -30,21 +41,10 @@ client_scripts {
     "env.lua",
     "entity/entity.lua",
     -- "entity/fx.lua",
-    "object/gizmo.lua",
-    "object/gfx_util.lua",
-    "object/select.lua",
     "ui/ui.lua",
     "ui/map.lua",
-    "dat/setup.lua", -- Load globals into namespace
-    "dat/animations.lua",
-    "dat/objects.lua",
-    "dat/peds.lua",
-    "dat/pickups.lua",
-    "dat/propsets.lua",
-    "dat/vehicles.lua",
-    "dat/af_flags.lua",
-    "dat/aik_flags.lua",
-    "cmd/client.lua",
+    "mode/gizmo.lua",
+    "mode/object.lua",
 }
 
 files {

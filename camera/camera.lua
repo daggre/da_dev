@@ -20,6 +20,7 @@ Speed.Mouse = 6.0
 local Fov = {}
 Fov.Min = 10
 Fov.Max = 90
+Fov.Default = 48.84
 Fov.RateChange = 6
 
 local radian = math.pi / 180
@@ -161,6 +162,7 @@ local ControlTranslation = function(x, y, z, rot_x, rot_z, fov)
         D = IsDisabledControlPressed(0, Control.D),
         Q = IsDisabledControlPressed(0, Control.Q),
         E = IsDisabledControlPressed(0, Control.E),
+        X = IsDisabledControlPressed(0, Control.X),
         LAlt = IsDisabledControlPressed(0, Control.LeftAlt),
         LCtrl = IsDisabledControlPressed(0, Control.LeftControl),
         LShift = IsDisabledControlPressed(0, Control.LeftShift),
@@ -169,12 +171,19 @@ local ControlTranslation = function(x, y, z, rot_x, rot_z, fov)
         Spacebar = IsDisabledControlPressed(0, Control.Spacebar),
         MouseRight = IsDisabledControlPressed(0, Control.MouseRight),
     }
+    local justPressed = {
+        X = IsDisabledControlJustPressed(0, Control.X),
+    }
 
     local modifier = Speed.Current
 
     -- Mouse Controls
     if pressed.LCtrl then
         -- Press LCtrl adjust FOV on Mouse Up/Down
+
+        if justPressed.X then
+            fov = Fov.Default
+        end
         if deltaUD ~= 0.0 then
             fov = Clamp(fov + (deltaUD * Fov.RateChange), Fov.Min, Fov.Max)
         end
@@ -231,7 +240,6 @@ local ControlTranslation = function(x, y, z, rot_x, rot_z, fov)
 end
 
 local CamControlThread = false
----Begin noclip movement and control thread
 InitCamControl = function()
     local playerPedId = PlayerPedId()
     local x, y, z = GetCoords(playerPedId)
@@ -240,17 +248,17 @@ InitCamControl = function()
     if CamControlThread then return; end
     Citizen.CreateThread(function()
         CamControlThread = true
-        while Camera.Mode == "free" or Camera.Mode == "focus" or NoClip.Enabled do
+        while da.Dev.Mode.IsActive("freecam") or da.Dev.Mode.IsActive("noclip") do
             -- Send NUI message with camera info for display
             if da.Cache.Lazy.Delay("dadev","camUpdate",100) then
                 SendNUIMessage({
                     type = "displayHUD",
-                    value = "cameraHUD",
+                    value = "camera",
                     mode = "on",
                     camera = {
                         speed = ("%.2f"):format(Speed.Current),
                         cameraMode = Camera.Mode == "focus" and "" or "",
-                        noclip = Camera.Mode ~= "player" and "" or NoClip.Enabled and "" or "",
+                        noclip = Camera.Mode ~= "player" and "" or da.Dev.Mode.IsActive("noclip") and "" or "",
                     },
                 })
             end
@@ -266,11 +274,6 @@ InitCamControl = function()
             SetCoords(playerPedId, x, y, z, rot_x, rot_y, rot_z, fov)
             CheckControls()
         end
-        SendNUIMessage({
-            type = "displayHUD",
-            value = "cameraHUD",
-            mode = "off",
-        })
         CamControlThread = false
     end)
 end
@@ -284,35 +287,16 @@ function EnableFreeCam()
 	SetCamRot(Camera.Handle, pitch, roll, yaw, 2)
 	SetCamFov(Camera.Handle, fov+0.0)
 	RenderScriptCams(true, true, 500, true, true)
-    da.Dev.Mode.Add("freecam")
 end
 
 function DisableFreeCam()
-    da.Dev.Mode.Remove("freecam")
+    CamControlThread = false
     RenderScriptCams(false, true, 500, true, true)
     SetCamActive(Camera.Handle, false)
     DetachCam(Camera.Handle)
     DestroyCam(Camera.Handle, true)
     Camera.Handle = nil
 end
-
--- da.Dev.Menu.RegisterMenu("root", "camera", "c")
--- da.Dev.Menu.RegisterMenu("objectRoot", "camera", "c")
-
--- da.Dev.Menu.RegisterOption("camera", "free", "f", function()
---     if Camera.Mode ~= "free" then
---         Camera.Mode = "free"
---         EnableFreeCam()
---         InitCamControl()
---     end
--- end, function() return Camera.Mode == "player" end)
-
--- da.Dev.Menu.RegisterOption("camera", "player", "g", function()
---     if Camera.Mode ~= "player" then
---         Camera.Mode = "player"
---         DisableFreeCam()
---     end
--- end, function() return Camera.Mode == "free" end)
 
 RegisterNUICallback("camera", function(data, cb)
     if data.mode == "free" then
@@ -330,42 +314,19 @@ RegisterNUICallback("camera", function(data, cb)
     cb({})
 end)
 
-RegisterNUICallback("noclip", function(data, cb)
-    da.Dev.NoClip(data.mode == "on")
-    cb(true)
-end)
-
 da.Dev.Menu.RegisterOption("root", "toggle cam", "c", function()
     if Camera.Mode == "free" then
-        Camera.Mode = "player"
-        DisableFreeCam()
+        da.Dev.Mode.Remove("freecam")
     elseif Camera.Mode == "player" then
-        Camera.Mode = "free"
-        EnableFreeCam()
-        InitCamControl()
+        da.Dev.Mode.Add("freecam")
     end
 end)
 
 da.Dev.NoClip = function(state)
-    local playerPedId = PlayerPedId()
     if state == nil then
         NoClip.Enabled = not NoClip.Enabled
     else
         NoClip.Enabled = state
-    end
-    if NoClip.Enabled then
-        FreezeEntityPosition(playerPedId, true)
-        SetEntityInvincible(playerPedId, true)
-        SetEntityVisible(playerPedId, false)
-        NetworkSetEntityInvisibleToNetwork(playerPedId, true)
-        da.Dev.Mode.Add("noclip")
-        InitCamControl()
-    else
-        da.Dev.Mode.Remove("noclip")
-        FreezeEntityPosition(playerPedId, false)
-        SetEntityVisible(playerPedId, true)
-        NetworkSetEntityInvisibleToNetwork(playerPedId, false)
-        Citizen.SetTimeout(5000, function() SetEntityInvincible(playerPedId, false) end)
     end
 end
 

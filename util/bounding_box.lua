@@ -1,28 +1,3 @@
-local Deg2Rad = math.pi / 180
-
-function RayCastCamera(ped, distance)
-    local pos = GetFinalRenderedCamCoord()
-    local rot = GetFinalRenderedCamRot()
-    local yaw = rot.z * Deg2Rad
-    local pitch = rot.x * Deg2Rad
-    local hdg = {
-        x = -math.sin(yaw) * math.abs(math.cos(pitch)),
-        y = math.cos(yaw) * math.abs(math.cos(pitch)),
-        z = math.sin(pitch),
-    }
-    local _, hit, endPos, _, obj = GetShapeTestResult(
-        StartShapeTestRay(
-            pos.x, pos.y, pos.z,
-            pos.x + hdg.x * distance,
-            pos.y + hdg.y * distance,
-            pos.z + hdg.z * distance,
-            -1, ped, 0
-        )
-    )
-    return hit, obj, endPos
-end
-
--- Bounding Box
 local GetExtents = function(minDim, maxDim)
     local offset = vec3(
         (maxDim.x + minDim.x) / 2,
@@ -60,13 +35,7 @@ local ApplyRotationMatrix = function(pIn, m)
     return pOut
 end
 
-local CubeEdges = {
-    {1, 2}, {2, 3}, {3, 4}, {4, 1},
-    {5, 6}, {6, 7}, {7, 8}, {8, 5},
-    {1, 5}, {2, 6}, {3, 7}, {4, 8},
-}
-
-local _GetBoundingBox = function(obj)
+local GetBoundingBox = function(obj)
     local model = GetEntityModel(obj)
     local dMin, dMax = GetModelDimensions(model)
     local min, max = GetExtents(dMin, dMax)
@@ -93,8 +62,15 @@ local DrawLine = function(a, b, c)
     Citizen.InvokeNative(0xB3426BCC, a, b, c.r, c.g, c.b, c.a)
 end
 
+local CubeEdges = {
+    {1, 2}, {2, 3}, {3, 4}, {4, 1},
+    {5, 6}, {6, 7}, {7, 8}, {8, 5},
+    {1, 5}, {2, 6}, {3, 7}, {4, 8},
+}
+
 function DrawBoundingBox(obj, color)
-    local vertices, pos = _GetBoundingBox(obj)
+    if not obj or not color then return; end
+    local vertices, pos = GetBoundingBox(obj)
     for _, edge in ipairs(CubeEdges) do
         DrawLine(vertices[edge[1]] + pos, vertices[edge[2]] + pos, color)
     end

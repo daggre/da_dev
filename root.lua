@@ -1,6 +1,8 @@
-da.Dev.Menu.RegisterOption("root", "noclip", "z", function() da.Dev.NoClip() end)
+da.Dev.Menu.RegisterOption("root", "noclip", "z", function() da.Dev.Mode.Toggle("noclip") end)
 da.Dev.Menu.RegisterOption("root", "revive", "r", function() TriggerEvent('TMC:Command:Revive') end, function() return LocalPlayer.state.metadata.isdead end)
-da.Dev.Menu.RegisterOption("objectRoot", "noclip", "z", function() da.Dev.NoClip() end)
+da.Dev.Menu.RegisterOption("objectRoot", "noclip", "z", function()
+    da.Dev.Mode.Toggle("noclip")
+end)
 da.Dev.Menu.RegisterOption("objectRoot", "revive", "r", function() TriggerEvent('TMC:Command:Revive') end, function() return LocalPlayer.state.metadata.isdead end)
 
 da.Dev.Menu.RegisterOption("root", "max cores", "9", function()
@@ -39,8 +41,7 @@ da.Dev.Menu.RegisterOption("menu", "horsetack", "h", function()
     local horseId = Entity(horseEntity).state and Entity(horseEntity).state.horseId
     TriggerServerEvent('stables:server:getTack', horseId, horseEntity)
 end)
--- da.Dev.Menu.RegisterMenu("root", "anim mode", "a")
+
 da.Dev.Menu.RegisterOption("root", "anim mode", "a", function()
     da.Dev.Mode.Add("anim")
-    SendNUIMessage({ type = "displayHUD", value = "animHUD"})
 end)
