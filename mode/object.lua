@@ -1,18 +1,20 @@
+SelectMode = false
+
+local MouseX = 0.5
+local MouseY = 0.5
 local PPID = nil
-local EnableSelectMode = false
 local ObjectThread = {}
-local SelectMode = false
 local Distance = 1000.0
 local UntrackedModels = {
     [0] = true,
 }
 local CategoryColor = {
-    Select = {r=0, g=218, b=175, a=255},
-    Hover = {r=80, g=193, b=238, a=255},
+    hover = {r=80, g=193, b=238, a=255},
+    select = {r=0, g=218, b=175, a=255},
 }
 local TrackedObjects = {
-    Select = nil,
-    Hover = nil,
+    hover = nil,
+    select = nil,
 }
 
 local TrackObject = function(category, handle)
@@ -26,15 +28,23 @@ end
 
 local DrawTrackedObjects = function()
     for category, handle in pairs(TrackedObjects) do
-        DrawBoundingBox(handle, CategoryColor[category])
+        if category ~= "hover" or handle ~= TrackedObjects.select then
+            DrawBoundingBox(handle, CategoryColor[category])
+        end
     end
 end
 
 local UpdateTrackedObjects = function(hit, obj)
-    if not hit then return; end
+    if not hit then
+        TrackedObjects.hover = nil
+        return
+    end
     local model = GetEntityModel(obj)
-    if not model or UntrackedModels[model] then return; end
-    TrackedObjects.Hover = obj
+    if not model or UntrackedModels[model] then
+        TrackedObjects.hover = nil
+        return
+    end
+    TrackedObjects.hover = obj
 end
 
 local GetThreadId = function()
@@ -46,96 +56,117 @@ local GetThreadId = function()
 end
 
 local NUIMessageWait = nil
-local _SendNUIUpdate = function(obj)
+local SendNUIUpdate = function(objects)
     if NUIMessageWait then return; end
     NUIMessageWait = true
     Citizen.SetTimeout(100, function() NUIMessageWait = nil end)
-    SendNUIMessage({type = "objUpdate", data = {
-        obj = obj,
-        selected = SelectedObject ~= nil,
+    SendNUIMessage({type = "nuiUpdate", objects = {
+        hover = objects.hover ~= nil,
+        select = objects.select ~= nil,
     }})
 end
 
-local SelectModeControlCheck = function()
+local ControlCheckCrosshair = function()
     DisablePlayerFiring(PPID, true)
     for _, control in pairs(Control) do
         DisableControlAction(0, control, true)
     end
-    if HoveredObject or SelectedObject then
 
-        -- Select Object (T)
-        if IsDisabledControlJustPressed(0, Control.T) then
-            if HoveredObject then
-                if HoveredObject == SelectedObject then
-                    SelectedObject = nil
-                else
-                    SelectedObject = HoveredObject
-                    SendNUIMessage({type = "clipboard", text = SelectedObject})
-                end
+    local pressed, justPressed = da.Dev.Control.GetPressed(
+        { "r", "Escape", "Alt", "Control", },
+        { "r", "x", "z", "MouseLeft", }
+    )
+
+    -- Select Object (MouseLeft)
+    if justPressed.MouseLeft  then
+        if TrackedObjects.hover then
+            if TrackedObjects.hover == TrackedObjects.select then
+                TrackedObjects.select = nil
             else
-                SelectedObject = nil
+                TrackedObjects.select = TrackedObjects.hover
             end
         end
+    end
 
-        -- Open Gizmo (R)
-        if not IsDisabledControlPressed(0, Control.LeftControl) and IsDisabledControlJustPressed(0, Control.R) then
-            if not SelectedObject and HoveredObject then
-                SelectedObject = HoveredObject
-            end
-            if IsDisabledControlPressed(0, Control.LAlt) and HoveredObject then
-                SelectedObject = HoveredObject
-            end
-            if SelectedObject then
-                StartGizmo(SelectedObject)
+    -- Open Gizmo (R)
+    if not pressed.Control and pressed.r then
+        if TrackedObjects.select then
+            StartGizmo(TrackedObjects.select)
+        end
+    end
+
+    if TrackedObjects.hover and TrackedObjects.select and pressed.Control then
+        if justPressed.r then
+            local hPos = GetEntityRotation(TrackedObjects.hover)
+            SetEntityRotation(TrackedObjects.select, hPos.x, hPos.y, hPos.z)
+        end
+        if justPressed.x then
+            local sPos = GetEntityCoords(TrackedObjects.select)
+            local hPos = GetEntityCoords(TrackedObjects.hover)
+            SetEntityCoords(TrackedObjects.select, hPos.x, hPos.y, sPos.z)
+        end
+        if justPressed.z then
+            local sPos = GetEntityCoords(TrackedObjects.select)
+            local hPos = GetEntityCoords(TrackedObjects.hover)
+            SetEntityCoords(TrackedObjects.select, sPos.x, sPos.y, hPos.z)
+        end
+    end
+
+    if pressed.Escape then
+        da.Dev.Mode.Remove("object")
+    end
+end
+
+local ControlCheckCursor = function(pressed, justPressed)
+    pressed = pressed or {}
+    justPressed = justPressed or {}
+
+    -- Select Object (MouseLeft)
+    if justPressed.MouseLeft then
+        if TrackedObjects.hover then
+            if TrackedObjects.hover == TrackedObjects.select then
+                TrackedObjects.select = nil
+            else
+                TrackedObjects.select = TrackedObjects.hover
             end
         end
+    end
 
-        if HoveredObject and SelectedObject and IsDisabledControlPressed(0, Control.LeftControl) then
-            if IsDisabledControlJustPressed(0, Control.R) then
-                local hPos = GetEntityRotation(HoveredObject)
-                SetEntityRotation(SelectedObject, hPos.x, hPos.y, hPos.z)
-            end
-            if IsDisabledControlJustPressed(0, Control.X) then
-                local sPos = GetEntityCoords(SelectedObject)
-                local hPos = GetEntityCoords(HoveredObject)
-                SetEntityCoords(SelectedObject, hPos.x, hPos.y, sPos.z)
-            end
-            if IsControlJustPressed(0, Control.Z) then
-                local sPos = GetEntityCoords(SelectedObject)
-                local hPos = GetEntityCoords(HoveredObject)
-                SetEntityCoords(SelectedObject, sPos.x, sPos.y, hPos.z)
-            end
+    if justPressed.r then
+        if not TrackedObjects.select and TrackedObjects.hover then
+            TrackedObjects.select = TrackedObjects.hover
         end
-
-
+        if pressed.alt and TrackedObjects.hover then
+            TrackedObjects.select = TrackedObjects.hover
+        end
+        if TrackedObjects.select then
+            StartGizmo(TrackedObjects.select)
+        end
     end
 end
 
 RegisterNUICallback('NUIKey', function(data, cb)
     if data.key == "r" then
-        if not SelectedObject and HoveredObject then
-            SelectedObject = HoveredObject
+        if not TrackedObjects.select and TrackedObjects.hover then
+            TrackedObjects.select = TrackedObjects.hover
         end
-        if data.alt and HoveredObject then
-            SelectedObject = HoveredObject
+        if data.alt and TrackedObjects.hover then
+            TrackedObjects.select = TrackedObjects.hover
         end
-        if SelectedObject then
-            StartGizmo(SelectedObject)
+        if TrackedObjects.select then
+            StartGizmo(TrackedObjects.select)
         end
         cb(true)
     end
 end)
 
 local SelectModeTick = function()
-    da.Log.Debug("SelectMode", SelectMode)
-    -- TODO: Add support for SelectMode
-    -- - Migrate away from EnableSelectMode
     local hit, obj = nil, nil
     if SelectMode == "Cursor" then
-        hit, obj = RayCastCursor(Distance)
+        hit, obj = RayCastCursor(MouseX, MouseY, Distance)
     elseif SelectMode == "Crosshair" then
         hit, obj = RayCastCrosshair(PPID, Distance)
-        SelectModeControlCheck()
+        ControlCheckCrosshair()
     else
         return
     end
@@ -143,7 +174,7 @@ local SelectModeTick = function()
     UpdateTrackedObjects(hit, obj)
     DrawTrackedObjects()
 
-    _SendNUIUpdate(obj)
+    SendNUIUpdate(TrackedObjects)
 end
 
 ObjectModeThread = function()
@@ -153,7 +184,7 @@ ObjectModeThread = function()
         ObjectThread[id] = true
         CurrentTree = "objectTree"
         PPID = PlayerPedId()
-        while ObjectThread[id] and EnableSelectMode do
+        while ObjectThread[id] and SelectMode do
             SelectModeTick()
             Citizen.Wait(0)
         end
@@ -162,10 +193,19 @@ ObjectModeThread = function()
     end)
 end
 
+RegisterNUICallback('sendCursorKey', function(data, cb)
+    ControlCheckCursor(data.pressed, data.justPressed)
+    cb(true)
+end)
+
 RegisterNUICallback('sendCursorPos', function(data, cb)
     MouseX = data.x
     MouseY = data.y
-    MouseClick = data.click
+    cb(true)
+end)
+
+RegisterNUICallback('sendControl', function(data, cb)
+    ControlCheckCursor(data.pressed, data.justPressed)
     cb(true)
 end)
 
@@ -179,87 +219,87 @@ RegisterNUICallback('trackObject', function(data, cb)
 end)
 
 
-da.Dev.Menu.RegisterOption("root", "obj mode", "e", function() da.Dev.Mode.Add("object") end, function() return not EnableSelectMode end)
-da.Dev.Menu.RegisterOption("objectRoot", "obj mode", "e", function() da.Dev.Mode.Remove("object") end, function() return EnableSelectMode end)
+da.Dev.Menu.RegisterOption("root", "obj mode", "e", function() da.Dev.Mode.Add("object") end, function() return not SelectMode end)
+da.Dev.Menu.RegisterOption("objectRoot", "obj mode", "e", function() da.Dev.Mode.Remove("object") end, function() return SelectMode end)
 
-da.Dev.Menu.RegisterOption("objectRoot", "mov/rot", "r", function() StartGizmo(SelectedObject) end, function() return SelectedObject ~= nil and not LocalPlayer.state.metadata.isdead end)
+da.Dev.Menu.RegisterOption("objectRoot", "mov/rot", "r", function() StartGizmo(TrackedObjects.select) end, function() return SelectedObject ~= nil and not LocalPlayer.state.metadata.isdead end)
 da.Dev.Menu.RegisterMenu("objectRoot", "obj clipboard", "q")
 
 
 da.Dev.Menu.RegisterOption("obj clipboard", "pos v3", "3", function()
-        local v3 = GetEntityCoords(SelectedObject)
+        local v3 = GetEntityCoords(TrackedObjects.select)
         SendNUIMessage({type = "clipboard", text = ("vector3(%.3f, %.3f, %.3f),"):format(v3.x, v3.y, v3.z)})
     end,
-    function() return SelectedObject ~= nil end)
+    function() return TrackedObjects.select ~= nil end)
 da.Dev.Menu.RegisterOption("obj clipboard", "pos v4", "4", function()
-        local v3 = GetEntityCoords(SelectedObject)
-        local hdg = GetEntityHeading(SelectedObject)
+        local v3 = GetEntityCoords(TrackedObjects.select)
+        local hdg = GetEntityHeading(TrackedObjects.select)
         SendNUIMessage({type = "clipboard", text = ("vector4(%.3f, %.3f, %.3f, %.3f),"):format(v3.x, v3.y, v3.z, hdg)})
     end,
-    function() return SelectedObject ~= nil end)
+    function() return TrackedObjects.select ~= nil end)
 
 da.Dev.Menu.RegisterOption("obj clipboard", "rot v3", "5", function()
-        local v3 = GetEntityRotation(SelectedObject)
+        local v3 = GetEntityRotation(TrackedObjects.select)
         SendNUIMessage({type = "clipboard", text = ("vector3(%.3f, %.3f, %.3f),"):format(v3.x, v3.y, v3.z)})
     end,
-    function() return SelectedObject ~= nil end)
+    function() return TrackedObjects.select ~= nil end)
 
 da.Dev.Menu.RegisterOption("obj clipboard", "entity id", "e", function()
-        SendNUIMessage({type = "clipboard", text = SelectedObject})
+        SendNUIMessage({type = "clipboard", text = TrackedObjects.select})
     end,
-    function() return SelectedObject ~= nil end)
+    function() return TrackedObjects.select ~= nil end)
 
 da.Dev.Menu.RegisterOption("obj clipboard", "model hash", "m", function()
-        SendNUIMessage({type = "clipboard", text = GetEntityModel(SelectedObject)})
+        SendNUIMessage({type = "clipboard", text = GetEntityModel(TrackedObjects.select)})
     end,
-    function() return SelectedObject ~= nil end)
+    function() return TrackedObjects.select ~= nil end)
 
 
 da.Dev.Menu.RegisterMenu("objectRoot", "obj set", "s")
 
 da.Dev.Menu.RegisterOption("obj set", "pos v3", "3", function()
-        local pos = GetEntityCoords(HoveredObject)
-        SetEntityCoords(SelectedObject, pos.x, pos.y, pos.z)
+        local pos = GetEntityCoords(TrackedObjects.hover)
+        SetEntityCoords(TrackedObjects.select, pos.x, pos.y, pos.z)
     end,
     function()
-        return SelectedObject ~= nil and HoveredObject ~= nil
+        return TrackedObjects.select ~= nil and TrackedObjects.hover ~= nil
     end)
 
 da.Dev.Menu.RegisterOption("obj set", "rot v3", "r", function()
-        local rot = GetEntityRotation(HoveredObject)
-        SetEntityRotation(SelectedObject, rot.x, rot.y, rot.z)
+        local rot = GetEntityRotation(TrackedObjects.hover)
+        SetEntityRotation(TrackedObjects.select, rot.x, rot.y, rot.z)
     end,
-    function() return SelectedObject ~= nil and HoveredObject ~= nil end)
+    function() return TrackedObjects.select ~= nil and TrackedObjects.hover ~= nil end)
 
 da.Dev.Menu.RegisterOption("obj set", "pos xy", "x", function()
-        local sPos = GetEntityCoords(SelectedObject)
-        local hPos = GetEntityCoords(HoveredObject)
-        SetEntityCoords(HoveredObject, hPos.x, hPos.y, sPos.z)
+        local sPos = GetEntityCoords(TrackedObjects.select)
+        local hPos = GetEntityCoords(TrackedObjects.hover)
+        SetEntityCoords(TrackedObjects.hover, hPos.x, hPos.y, sPos.z)
     end,
     function()
-        return SelectedObject ~= nil and HoveredObject ~= nil
+        return TrackedObjects.select ~= nil and TrackedObjects.hover ~= nil
     end)
 
 da.Dev.Menu.RegisterOption("objectRoot", "reset rot", "]", function()
-        local obj = HoveredObject ~= nil and HoveredObject or SelectedObject
+        local obj = TrackedObjects.hover ~= nil and HoveredObject or TrackedObjects.select
         SetEntityRotation(obj, 0, 0, 0)
     end,
     function()
-        return HoveredObject ~= nil or SelectedObject ~= nil
+        return TrackedObjects.hover ~= nil or TrackedObjects.select ~= nil
     end)
 
 -- Freeze
 da.Dev.Menu.RegisterOption("objectRoot", "frz", "f", function()
-        local obj = HoveredObject ~= nil and HoveredObject or SelectedObject
+        local obj = TrackedObjects.hover ~= nil and HoveredObject or TrackedObjects.select
         FreezeEntityPosition(obj, true)
     end, function()
-        local obj = HoveredObject ~= nil and HoveredObject or SelectedObject
+        local obj = TrackedObjects.hover ~= nil and HoveredObject or TrackedObjects.select
         return obj ~= nil and IsEntityFrozen(obj) == 0
     end)
 da.Dev.Menu.RegisterOption("objectRoot", "unfrz", "f", function()
-        local obj = HoveredObject ~= nil and HoveredObject or SelectedObject
+        local obj = TrackedObjects.hover ~= nil and HoveredObject or TrackedObjects.select
         FreezeEntityPosition(obj, false)
     end, function()
-        local obj = HoveredObject ~= nil and HoveredObject or SelectedObject
+        local obj = TrackedObjects.hover ~= nil and HoveredObject or TrackedObjects.select
         return obj ~= nil and IsEntityFrozen(obj) == 1
     end)

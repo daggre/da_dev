@@ -4,7 +4,7 @@ local lastObj = nil
 Citizen.CreateThread(function()
     while true do
         Citizen.Wait(5)
-        if (IsControlJustReleased(0, Control.Z) or IsDisabledControlJustReleased(0, Control.Z)) and not IsDisabledControlPressed(0, Control.LCtrl) then
+        if (IsControlJustReleased(0, Control.z) or IsDisabledControlJustReleased(0, Control.z)) and not IsDisabledControlPressed(0, Control.Control) then
             da.Dev.Mode.Add("devTree")
             SendNUIMessage({
                 type = "displayHUD",

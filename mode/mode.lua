@@ -178,8 +178,24 @@ Mode.gizmo = {
         focusKeyboard = true,
         focusCursor = true,
         keepFocus = true,
+        initFn = function()
+            SelectMode = "Cursor"
+            GizmoThread()
+            SendNUIMessage({
+                type = 'setGizmoState',
+                data = { shown = true }
+            })
+        end,
+        exitFn = function()
+            SelectMode = "Crosshair"
+            SendNUIMessage({
+                type = 'setGizmoState',
+                data = { shown = false }
+            })
+            GizmoThreadStarted = false
+        end,
         passthrough = false,
-        passthroughHaltKey = Control.C,
+        passthroughHaltKey = Control.c,
         passthroughFn = function()
             Mode.gizmo.modified.focusCursor = false
         end,
@@ -230,6 +246,7 @@ Mode.object = {
         keepFocus = false,
         initFn = function()
             da.Dev.Mode.Add("freecam")
+            SelectMode = "Cursor"
             ObjectModeThread()
             SendNUIMessage({
                 type = "displayHUD",
@@ -239,6 +256,7 @@ Mode.object = {
         end,
         exitFn = function()
             da.Dev.Mode.Remove("freecam")
+            SelectMode = false
             SendNUIMessage({
                 type = "displayHUD",
                 value = "object",
@@ -246,8 +264,9 @@ Mode.object = {
             })
         end,
         passthrough = false,
-        passthroughHaltKey = Control.C,
+        passthroughHaltKey = Control.c,
         passthroughFn = function()
+            SelectMode = "Crosshair"
             Mode.object.modified.focusCursor = false
             Mode.object.modified.keepFocus = true
         end,
@@ -255,7 +274,11 @@ Mode.object = {
             da.Control.WaitForKeyRelease(AllControls)
             Mode.object.modified = {}
             UpdateActiveMode()
-            SendNUIMessage({ type = "controlPass", enable = false, })
+            if SelectMode then SelectMode = "Cursor" end
+            SendNUIMessage({
+                type = "controlPass",
+                enable = false,
+            })
         end,
     },
 }
