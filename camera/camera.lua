@@ -36,7 +36,7 @@ end
 
 local Focus = function()
     if Camera.Mode == "free" then
-        if IsDisabledControlPressed(0, Control.LAlt) and HoveredObject then
+        if IsDisabledControlPressed(0, Control.Alt) and HoveredObject then
             SelectedObject = HoveredObject
         end
         if not SelectedObject then
@@ -67,7 +67,7 @@ local CheckControls = function()
         end
     end
 
-    if IsDisabledControlJustPressed(0, Control.F) then
+    if IsDisabledControlJustPressed(0, Control.f) then
         Focus()
     elseif Camera.Mode == "focus" and not SelectedObject then
         da.Dev.Mode.Remove("focus")
@@ -155,33 +155,17 @@ end
 local ControlTranslation = function(x, y, z, rot_x, rot_z, fov)
     local deltaLR = GetDisabledControlNormal(0, Control.MouseLR)
     local deltaUD = GetDisabledControlNormal(0, Control.MouseUD)
-    local pressed = {
-        W = IsDisabledControlPressed(0, Control.W),
-        S = IsDisabledControlPressed(0, Control.S),
-        A = IsDisabledControlPressed(0, Control.A),
-        D = IsDisabledControlPressed(0, Control.D),
-        Q = IsDisabledControlPressed(0, Control.Q),
-        E = IsDisabledControlPressed(0, Control.E),
-        X = IsDisabledControlPressed(0, Control.X),
-        LAlt = IsDisabledControlPressed(0, Control.LeftAlt),
-        LCtrl = IsDisabledControlPressed(0, Control.LeftControl),
-        LShift = IsDisabledControlPressed(0, Control.LeftShift),
-        WheelUp = IsDisabledControlPressed(0, Control.WheelUp),
-        WheelDown = IsDisabledControlPressed(0, Control.WheelDown),
-        Spacebar = IsDisabledControlPressed(0, Control.Spacebar),
-        MouseRight = IsDisabledControlPressed(0, Control.MouseRight),
-    }
-    local justPressed = {
-        X = IsDisabledControlJustPressed(0, Control.X),
-    }
-
+    local pressed, justPressed = da.Dev.Control.GetPressed(
+        { "a", "d", "e", "q", "s", "w", "x", "Spacebar", "Alt", "Control", "Shift", "WheelUp", "WheelDown", "MouseRight", },
+        { "x", }
+    )
     local modifier = Speed.Current
 
     -- Mouse Controls
-    if pressed.LCtrl then
-        -- Press LCtrl adjust FOV on Mouse Up/Down
+    if pressed.Control then
+        -- Press Control adjust FOV on Mouse Up/Down
 
-        if justPressed.X then
+        if justPressed.x then
             fov = Fov.Default
         end
         if deltaUD ~= 0.0 then
@@ -190,23 +174,23 @@ local ControlTranslation = function(x, y, z, rot_x, rot_z, fov)
         -- if deltaLR ~= 0.0 then
         --     rot_z = rot_z + deltaLR * -1.0 * (Speed.Mouse * (math.min(fov,50)/50))
         -- end
-    elseif pressed.LAlt and not (pressed.W or pressed.S or pressed.A or pressed.D) then
-        -- Press LAlt move camera on X/Y coordinate plane
+    elseif pressed.Alt and not (pressed.w or pressed.a or pressed.s or pressed.d or pressed.q or pressed.e) then
+        -- Press Alt move camera on X/Y coordinate plane
         if deltaLR ~= 0.0 then
             x, y, _ = Translate(x, y, z, rot_x, rot_z, 0-(deltaLR*modifier*2), true)
         end
         if deltaUD ~= 0.0 then
             x, y, _ = Translate(x, y, z, rot_x, rot_z, 0-(deltaUD*modifier*2))
         end
-    elseif pressed.LShift and not (pressed.W or pressed.S or pressed.A or pressed.D) then
-        -- Press LShift move camera on X/Z coordinate plane
+    elseif pressed.Shift and not (pressed.w or pressed.a or pressed.s or pressed.d or pressed.q or pressed.e) then
+        -- Press Shift move camera on X/Z coordinate plane
         if deltaLR ~= 0.0 then
             x, y, _ = Translate(x, y, z, rot_x, rot_z, 0-(deltaLR*modifier*2), true)
         end
         if deltaUD ~= 0.0 then
             z = z - deltaUD*modifier*2
         end
-    elseif Camera.Mode ~= "focus" and (ActiveMode ~= "gizmo" or pressed.MouseRight) then
+    elseif Camera.Mode ~= "focus" and (ActiveMode ~= "gizmo" or da.Control.PassthroughIsActive()) then
         -- Otherwise Mouse aims camera
         if deltaLR ~= 0.0 then
             rot_z = rot_z + deltaLR * -1.0 * (Speed.Mouse * (math.min(fov,50)/50))
@@ -217,7 +201,7 @@ local ControlTranslation = function(x, y, z, rot_x, rot_z, fov)
     end
 
     -- Speed Modifier
-    if pressed.LShift then modifier = (modifier * Speed.Fast)
+    if pressed.Shift then modifier = (modifier * Speed.Fast)
     elseif pressed.Spacebar then modifier = (modifier * Speed.Fine)
     end
 
@@ -228,12 +212,12 @@ local ControlTranslation = function(x, y, z, rot_x, rot_z, fov)
     end
 
     -- Translate Coordinates
-    if pressed.W then x, y, z = Translate(x, y, z, rot_x, rot_z, modifier) end
-    if pressed.S then x, y, z = Translate(x, y, z, rot_x, rot_z, 0 - modifier) end
-    if pressed.A then x, y, z = Translate(x, y, z, rot_x, rot_z, modifier, true) end
-    if pressed.D then x, y, z = Translate(x, y, z, rot_x, rot_z, 0 - modifier, true) end
-    if pressed.E then z = z + (modifier/2) end
-    if pressed.Q then z = z - (modifier/2) end
+    if pressed.w then x, y, z = Translate(x, y, z, rot_x, rot_z, modifier) end
+    if pressed.a then x, y, z = Translate(x, y, z, rot_x, rot_z, modifier, true) end
+    if pressed.s then x, y, z = Translate(x, y, z, rot_x, rot_z, 0 - modifier) end
+    if pressed.d then x, y, z = Translate(x, y, z, rot_x, rot_z, 0 - modifier, true) end
+    if pressed.e then z = z + (modifier/2) end
+    if pressed.q then z = z - (modifier/2) end
 
     -- Set Coords
     return x, y, z, rot_x, rot_z, fov

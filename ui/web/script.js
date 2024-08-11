@@ -6,15 +6,19 @@ var KeyPressRepeat = false
 var SpawnOption = new Map();
 var ControlPassActive = false
 var GizmoActive = false
+var GizmoActivePassthrough = false
 var SelectedObjectSpawnType = "objects"
 var SelectedObjectFavs = false
 var TrackedObjectsLoopRunning = false
 var MouseDown = false
 var LeftClickActive = false
-var QuickPress = { Timeout: 400, MiddleMouse: { active: false, }, }
 var CursorPosDelay = false
 const ResolutionX = window.screen.width
 const ResolutionY = window.screen.height
+
+var Pressed = {}
+var JustPressed = {}
+var QuickPress = { Timeout: 400, MiddleMouse: { active: false, }, }
 
 function ToUint32(value) { return value >>> 0; }
 
@@ -146,8 +150,8 @@ window.onload = function() {
             case "displayHUD":
                 ToggleUI(msg.data);
                 break;
-            case "objUpdate":
-                UpdateCrosshair(msg.data.data);
+            case "nuiUpdate":
+                UpdateCrosshair(msg.data.objects);
                 break;
             case "clipboard":
                 ClipboardCopy(msg.data.text);
@@ -178,12 +182,12 @@ $(document).ready(function() {
     });
 
     $(document).mousedown(function(event) {
+        MouseDown = true;
         switch(event.button) {
             case 0: // Left Click
                 LeftClickActive = true;
                 break;
         }
-        MouseDown = true;
         if (isVisible(document.getElementById('animHUD'))) {
             switch(event.button) {
                 case 0: // Left Click
@@ -198,37 +202,60 @@ $(document).ready(function() {
                         SendClientMessage('endPassthrough', {})
                         break;
                     }
+                    QuickPress.MiddleMouse.active = true;
+                    setTimeout(function() { QuickPress.MiddleMouse.active = false; }, QuickPress.Timeout);
                     SendClientMessage('modifyMode', {
                         mode: "anim",
                         focusCursor: false,
                         keepFocus: true,
                         passthrough: true,
                     });
-                    QuickPress.MiddleMouse.active = true;
-                    setTimeout(function() { QuickPress.MiddleMouse.active = false; }, QuickPress.Timeout);
                     break;
             }
         }
         if (isVisible(document.getElementById('objectHUD'))) {
-            switch(event.button) {
-                case 0: // Left Click
-                    // Modify this for objectHUD
-                    if (event.target.id == "activeAnimDict" || event.target.id == "activeAnimName") {
-                        if (event.target.innerHTML != "") {
-                            ClipboardCopy(event.target.innerHTML);
+            if (GizmoActive) {
+                switch(event.button) {
+                    case 1: // Middle Click
+                        QuickPress.MiddleMouse.active = true;
+                        setTimeout(function() { QuickPress.MiddleMouse.active = false; }, QuickPress.Timeout);
+                        if (GizmoActivePassthrough) {
+                            SendClientMessage('modifyMode', { mode: "gizmo", passthrough: false, });
+                            GizmoActivePassthrough = false
+                        } else {
+                            SendClientMessage('modifyMode', { mode: "gizmo", passthrough: true, });
+                            GizmoActivePassthrough = true
                         }
-                    }
-                    break;
-                case 1: // Middle Click
-                    if (ControlPassActive) {
-                        SendClientMessage('endPassthrough', {})
                         break;
-                    }
-                    SendClientMessage('modifyMode', { mode: "object", passthrough: true, });
-                    SendClientMessage('modifyMode', { mode: "gizmo", requireActive: true, passthrough: true, });
-                    QuickPress.MiddleMouse.active = true;
-                    setTimeout(function() { QuickPress.MiddleMouse.active = false; }, QuickPress.Timeout);
-                    break;
+                }
+            } else {
+                switch(event.button) {
+                    case 0: // Left Click
+                        // Modify this for objectHUD
+                        if (event.target.id == "activeAnimDict" || event.target.id == "activeAnimName") {
+                            if (event.target.innerHTML != "") {
+                                ClipboardCopy(event.target.innerHTML);
+                            }
+                        }
+                        if (!ControlPassActive) {
+                            SendClientMessage('sendCursorKey', {
+                                justPressed: { MouseLeft: true, }
+                            });
+                        }
+                        break;
+                    case 1: // Middle Click
+                        if (ControlPassActive) {
+                            SendClientMessage('endPassthrough', {})
+                            break;
+                        }
+                        QuickPress.MiddleMouse.active = true;
+                        setTimeout(function() { QuickPress.MiddleMouse.active = false; }, QuickPress.Timeout);
+                        SendClientMessage('modifyMode', { mode: "object", passthrough: true, });
+                        if (GizmoActive) {
+                            SendClientMessage('modifyMode', { mode: "gizmo", requireActive: true, passthrough: true, });
+                        }
+                        break;
+                }
             }
         }
     });
@@ -260,31 +287,34 @@ $(document).ready(function() {
         }
     });
 
+
+    $(document).keyup(function(event) {
+        JustPressed[event.key] = false;
+        Pressed[event.key] = false;
+    });
+
     $(document).keydown(function(event) {
         if (ControlPassActive) { return; }
+
+        if (!Pressed[event.key]) {
+            JustPressed[event.key] = true;
+        }
+        Pressed[event.key] = true;
+
         if (event.key != "Escape" && event.target.getAttribute('contenteditable') == "true") { return; }
         if (event.key == "Escape" && GizmoActive) { return; }
 
         if (isVisible(document.getElementById('devTreeHUD'))) {
             HandleKeysDevTree(event);
-            return;
-        }
-
-        if (isVisible(document.getElementById('animHUD'))) {
+        } else if (isVisible(document.getElementById('animHUD'))) {
             HandleKeysAnim(event);
-            return;
-        }
-
-        if (isVisible(document.getElementById('objectHUD'))) {
+        } else if (isVisible(document.getElementById('objectHUD'))) {
             HandleKeysObject(event);
-            return;
-        }
-
-        if (isVisible(document.getElementById('cameraHUD'))) {
+        } else if (isVisible(document.getElementById('cameraHUD'))) {
             HandleKeysCam(event);
-            return;
         }
 
+        JustPressed[event.key] = false;
     });
 
     $("div#valueAnimSearch.entryField").keydown(function(e) {
@@ -530,9 +560,9 @@ function ToggleUIObject(state) {
 
 function UpdateCrosshair(data) {
 	var crosshair = document.querySelector('#crosshair');
-	if (data.selected) {
+	if (data.select) {
 		crosshair.className = 'selected';
-	} else if (data.obj > 0) {
+	} else if (data.hover) {
 		crosshair.className = 'active';
 	} else {
 		crosshair.className = 'inactive';
@@ -1290,20 +1320,20 @@ function GetTrackedObjects() {
                         li.addEventListener('mouseenter', function() {
                             SendClientMessage('trackObject', {
                                 handle: this.innerHTML.split(" ")[1],
-                                category: "Hover",
+                                category: "hover",
                             });
                         })
                         li.addEventListener('mouseleave', function() {
                             SendClientMessage('trackObject', {
                                 handle: this.innerHTML.split(" ")[1],
-                                category: "Hover",
+                                category: "hover",
                                 remove: true,
                             });
                         })
                         li.addEventListener('click', function() {
                             SendClientMessage('trackObject', {
                                 handle: this.innerHTML.split(" ")[1],
-                                category: "Select",
+                                category: "select",
                             });
 
                         })
@@ -1325,122 +1355,134 @@ function GetTrackedObjects() {
 }
 
 function HandleKeysObject(event) {
-    switch(event.key) {
-        case "Escape":
-            var escaped = false;
-            event.preventDefault();
-            if (document.activeElement.classList.contains('entryField')) {
-                document.activeElement.blur();
+    if (GizmoActive) {
+        switch(event.key) {
+            case "Escape":
+                event.preventDefault();
+                sendClientMessage('gizmoStop', {})
                 break;
-            }
-            if (isVisible(document.getElementById('objHelp'))) {
-                ToggleHelp("objHelp", "off", true);
-                escaped = true;
-                break;
-            }
-            if (isVisible(document.getElementById('objSpawnOptions'))) {
-                ToggleObjectSpawn("off");
-                escaped = true;
-                break;
-            }
-            if (isVisible(document.getElementById('objSearchList'))) {
-                ToggleTrackedList("off");
-                escaped = true;
-                break;
-            }
-            if (isVisible(document.getElementById('objControlSpawnOptions'))) {
-                document.getElementById('objControlSpawnOptions').style.display = "none";
-                escaped = true;
-                break;
-            }
-            if (isVisible(document.getElementById('objSceneOptions'))) {
-                document.getElementById('objSceneOptions').style.display = "none";
-                escaped = true;
-            }
-            if (escaped) { break; }
+        }
+    } else {
+        switch(event.key) {
+            case "Escape":
+                var escaped = false;
+                event.preventDefault();
+                if (document.activeElement.classList.contains('entryField')) {
+                    document.activeElement.blur();
+                    break;
+                }
+                if (isVisible(document.getElementById('objHelp'))) {
+                    ToggleHelp("objHelp", "off", true);
+                    escaped = true;
+                    break;
+                }
+                if (isVisible(document.getElementById('objSpawnOptions'))) {
+                    ToggleObjectSpawn("off");
+                    escaped = true;
+                    break;
+                }
+                if (isVisible(document.getElementById('objSearchList'))) {
+                    ToggleTrackedList("off");
+                    escaped = true;
+                    break;
+                }
+                if (isVisible(document.getElementById('objControlSpawnOptions'))) {
+                    document.getElementById('objControlSpawnOptions').style.display = "none";
+                    escaped = true;
+                    break;
+                }
+                if (isVisible(document.getElementById('objSceneOptions'))) {
+                    document.getElementById('objSceneOptions').style.display = "none";
+                    escaped = true;
+                }
+                if (escaped) { break; }
 
-            SendClientMessage('modifyMode', { mode: "object", remove: true, });
-            break;
-        case " ":
-            if (typeof event.target.onclick == "function") {
-                event.target.onclick.apply();
-                event.preventDefault();
-            }
-            break;
-        case "c":
-            if (!document.activeElement.classList.contains('entryField') && !ControlPassActive) {
-                SendClientMessage('modifyMode', { mode: "object", passthrough: true, });
-                SendClientMessage('modifyMode', { mode: "gizmo", requireActive: true, passthrough: true, });
-            }
-            break;
-        case "f":
-            if (!document.activeElement.classList.contains('entryField') && !ControlPassActive) {
-                SendClientMessage('focus', {});
-            }
-            break;
-        case "!":
-        case "1":
-            var focusButton = false;
-            if (isVisible(document.getElementById('objSearchField'))) {
-                document.getElementById('objSearch').focus();
-                event.preventDefault();
+                SendClientMessage('modifyMode', { mode: "object", remove: true, });
                 break;
-            } else {
-                focusButton = true;
-            }
-            ToggleObjectSpawn("on");
-            if (focusButton) {
-                document.getElementById('button-spawn').focus();
-            }
-            break;
-        case "2":
-            var focusButton = false;
-            if (isVisible(document.getElementById('objNearbyRange'))) {
-                document.getElementById('nearbyRange').focus();
-                event.preventDefault();
+            case " ":
+                if (typeof event.target.onclick == "function") {
+                    event.target.onclick.apply();
+                    event.preventDefault();
+                }
                 break;
-            } else {
-                focusButton = true;
-            }
-            ToggleTrackedList("on");
-            if (focusButton) {
-                document.getElementById('button-trackedobjlist').focus();
-            }
-            break;
-        case "3":
-            break;
-        case "4":
-            ToggleSceneMove("on");
-            break;
-        case "5":
-            ToggleSceneTag("on");
-            break;
-        case "6":
-            ToggleImportExport("on");
-            break;
-        case "Backspace":
-            SendClientMessage('modifyMode', { mode: "object", remove: true, });
-            break;
-        case "?":
-        case "h":
-            ToggleHelp("objHelp", "toggle", true)
-            break;
-        case "r":
-            console.log("Sending object mode key r", event)
-            SendClientMessage('NUIKey', { key: "r", alt: event.altKey, });
-            break;
-        case "x":
-            document.getElementById('activeObject').innerHTML = "";
-            if (isVisible(document.getElementById('objSearchField'))) {
-                document.getElementById('objSearch').innerHTML = "";
-                ResetListGroup("objData", "flex");
+            case "c":
+                if (!document.activeElement.classList.contains('entryField') && !ControlPassActive) {
+                    SendClientMessage('modifyMode', { mode: "object", passthrough: true, });
+                    SendClientMessage('modifyMode', { mode: "gizmo", requireActive: true, passthrough: true, });
+                }
+                break;
+            case "f":
+                if (!document.activeElement.classList.contains('entryField') && !ControlPassActive) {
+                    SendClientMessage('focus', {});
+                }
+                break;
+            case "!":
+            case "1":
+                var focusButton = false;
+                if (isVisible(document.getElementById('objSearchField'))) {
+                    document.getElementById('objSearch').focus();
+                    event.preventDefault();
+                    break;
+                } else {
+                    focusButton = true;
+                }
+                ToggleObjectSpawn("on");
+                if (focusButton) {
+                    document.getElementById('button-spawn').focus();
+                }
+                break;
+            case "2":
+                var focusButton = false;
+                if (isVisible(document.getElementById('objNearbyRange'))) {
+                    document.getElementById('nearbyRange').focus();
+                    event.preventDefault();
+                    break;
+                } else {
+                    focusButton = true;
+                }
+                ToggleTrackedList("on");
+                if (focusButton) {
+                    document.getElementById('button-trackedobjlist').focus();
+                }
+                break;
+            case "3":
+                break;
+            case "4":
+                ToggleSceneMove("on");
+                break;
+            case "5":
+                ToggleSceneTag("on");
+                break;
+            case "6":
+                ToggleImportExport("on");
+                break;
+            case "Backspace":
+                SendClientMessage('modifyMode', { mode: "object", remove: true, });
+                break;
+            case "?":
+            case "h":
+                ToggleHelp("objHelp", "toggle", true)
+                break;
+            case "r":
+                console.log("Sending object mode key r", event)
+                SendClientMessage('sendCursorKey', {
+                    pressed: Pressed,
+                    justPressed: JustPressed
+                });
+                break;
+            case "x":
+                document.getElementById('activeObject').innerHTML = "";
+                if (isVisible(document.getElementById('objSearchField'))) {
+                    document.getElementById('objSearch').innerHTML = "";
+                    ResetListGroup("objData", "flex");
 
-            }
-            if (isVisible(document.getElementById('objNearbyRange'))) {
-                document.getElementById('objNearbyRange').innerHTML = "25";
-                GetTrackedObjects();
-            }
-            break;
+                }
+                if (isVisible(document.getElementById('objNearbyRange'))) {
+                    document.getElementById('objNearbyRange').innerHTML = "25";
+                    GetTrackedObjects();
+                }
+                break;
+        }
     }
 }
 
