@@ -10,7 +10,11 @@ var SelectedObjectSpawnType = "objects"
 var SelectedObjectFavs = false
 var TrackedObjectsLoopRunning = false
 var MouseDown = false
+var LeftClickActive = false
 var QuickPress = { Timeout: 400, MiddleMouse: { active: false, }, }
+var CursorPosDelay = false
+const ResolutionX = window.screen.width
+const ResolutionY = window.screen.height
 
 function ToUint32(value) { return value >>> 0; }
 
@@ -119,13 +123,13 @@ function ToggleUI(data) {
         case "devTreeHUD":
             ToggleUIDevTree(data)
             break;
-        case "animHUD":
+        case "anim":
             ToggleUIAnim("on");
             break;
-        case "objectHUD":
+        case "object":
             ToggleUIObject(data.mode);
             break;
-        case "cameraHUD":
+        case "camera":
             ToggleUICam(data.mode)
             if (data.mode == "on") {
                 UpdateUICam(data.camera)
@@ -159,75 +163,99 @@ window.onload = function() {
 }
 
 $(document).ready(function() {
+    $(document).mousemove(function(event) {
+        if (!CursorPosDelay && !ControlPassActive && !GizmoActive &&
+                isVisible(document.getElementById('objectHUD')) &&
+                !document.activeElement.classList.contains('entryField')) {
+            CursorPosDelay = true;
+            SendClientMessage('sendCursorPos', {
+                x: event.clientX/ResolutionX,
+                y: event.clientY/ResolutionY,
+                click: LeftClickActive,
+            });
+            setTimeout(function() { CursorPosDelay = false; }, 30);
+        }
+    });
+
     $(document).mousedown(function(event) {
+        switch(event.button) {
+            case 0: // Left Click
+                LeftClickActive = true;
+                break;
+        }
         MouseDown = true;
         if (isVisible(document.getElementById('animHUD'))) {
             switch(event.button) {
-            case 0: // Left Click
-                if (event.target.id == "activeAnimDict" || event.target.id == "activeAnimName") {
-                    if (event.target.innerHTML != "") {
-                        ClipboardCopy(event.target.innerHTML);
+                case 0: // Left Click
+                    if (event.target.id == "activeAnimDict" || event.target.id == "activeAnimName") {
+                        if (event.target.innerHTML != "") {
+                            ClipboardCopy(event.target.innerHTML);
+                        }
                     }
-                }
-                break;
-            case 1: // Middle Click
-                if (ControlPassActive) {
-                    SendClientMessage('endPassthrough', {})
                     break;
-                }
-                SendClientMessage('modifyMode', {
+                case 1: // Middle Click
+                    if (ControlPassActive) {
+                        SendClientMessage('endPassthrough', {})
+                        break;
+                    }
+                    SendClientMessage('modifyMode', {
                         mode: "anim",
                         focusCursor: false,
                         keepFocus: true,
                         passthrough: true,
                     });
-                QuickPress.MiddleMouse.active = true;
-                setTimeout(function() { QuickPress.MiddleMouse.active = false; }, QuickPress.Timeout);
-                break;
+                    QuickPress.MiddleMouse.active = true;
+                    setTimeout(function() { QuickPress.MiddleMouse.active = false; }, QuickPress.Timeout);
+                    break;
             }
         }
         if (isVisible(document.getElementById('objectHUD'))) {
             switch(event.button) {
-            case 0: // Left Click
-                // Modify this for objectHUD
-                if (event.target.id == "activeAnimDict" || event.target.id == "activeAnimName") {
-                    if (event.target.innerHTML != "") {
-                        ClipboardCopy(event.target.innerHTML);
+                case 0: // Left Click
+                    // Modify this for objectHUD
+                    if (event.target.id == "activeAnimDict" || event.target.id == "activeAnimName") {
+                        if (event.target.innerHTML != "") {
+                            ClipboardCopy(event.target.innerHTML);
+                        }
                     }
-                }
-                break;
-            case 1: // Middle Click
-                if (ControlPassActive) {
-                    SendClientMessage('endPassthrough', {})
                     break;
-                }
-                SendClientMessage('modifyMode', { mode: "object", passthrough: true, });
-                SendClientMessage('modifyMode', { mode: "gizmo", active: true, passthrough: true, });
-                QuickPress.MiddleMouse.active = true;
-                setTimeout(function() { QuickPress.MiddleMouse.active = false; }, QuickPress.Timeout);
-                break;
+                case 1: // Middle Click
+                    if (ControlPassActive) {
+                        SendClientMessage('endPassthrough', {})
+                        break;
+                    }
+                    SendClientMessage('modifyMode', { mode: "object", passthrough: true, });
+                    SendClientMessage('modifyMode', { mode: "gizmo", requireActive: true, passthrough: true, });
+                    QuickPress.MiddleMouse.active = true;
+                    setTimeout(function() { QuickPress.MiddleMouse.active = false; }, QuickPress.Timeout);
+                    break;
             }
         }
     });
 
     $(document).mouseup(function(event) {
         MouseDown = false;
+        switch(event.button) {
+            case 0: // Left Click
+                LeftClickActive = false;
+                break;
+        }
         if (isVisible(document.getElementById('animHUD'))) {
             switch(event.button) {
-            case 1: // Middle Click
-                if (!QuickPress.MiddleMouse.active) {
-                    SendClientMessage('endPassthrough', {})
-                }
-                break;
+                case 1: // Middle Click
+                    if (!QuickPress.MiddleMouse.active) {
+                        SendClientMessage('endPassthrough', {})
+                    }
+                    break;
             }
         }
         if (isVisible(document.getElementById('objectHUD'))) {
             switch(event.button) {
-            case 1: // Middle Click
-                if (!QuickPress.MiddleMouse.active) {
-                    SendClientMessage('endPassthrough', {})
-                }
-                break;
+                case 1: // Middle Click
+                    if (!QuickPress.MiddleMouse.active) {
+                        SendClientMessage('endPassthrough', {})
+                    }
+                    break;
             }
         }
     });
@@ -403,6 +431,8 @@ var HudTree = {}
 var TreeKeys = {}
 
 function ToggleUIDevTree(data) {
+    // TODO: remove TransitionHUD just use mode add remove
+    console.log(data)
     TransitionHUD(data.value);
     InitializeTree(data.optionTree[0]);
     document.getElementById('devTreeHUD').style.display = "flex";
@@ -1083,8 +1113,9 @@ function HandleKeysCam(event) {
                 ToggleHelp("camHelp", "off");
                 return;
             }
-            SendClientMessage('camera', { mode: "player" });
-            SendClientMessage('noclip', { mode: "off" });
+            console.log("exiting camera mode");
+            SendClientMessage('modifyMode', { mode: "freecam", remove: true, });
+            SendClientMessage('modifyMode', { mode: "noclip", remove: true, });
             break;
         case "?":
         case "h":
@@ -1257,13 +1288,24 @@ function GetTrackedObjects() {
                         var li = document.createElement('li');
                         li.innerHTML = `${objects[i].distance.toFixed(2)} ${objects[i].handle} ${objects[i].modelName}`;
                         li.addEventListener('mouseenter', function() {
-                            SendClientMessage('hoverObject', { handle: this.innerHTML.split(" ")[1] });
+                            SendClientMessage('trackObject', {
+                                handle: this.innerHTML.split(" ")[1],
+                                category: "Hover",
+                            });
                         })
                         li.addEventListener('mouseleave', function() {
-                            SendClientMessage('hoverObject', { handle: this.innerHTML.split(" ")[1], remove: true });
+                            SendClientMessage('trackObject', {
+                                handle: this.innerHTML.split(" ")[1],
+                                category: "Hover",
+                                remove: true,
+                            });
                         })
                         li.addEventListener('click', function() {
-                            SendClientMessage('selectObject', { handle: this.innerHTML.split(" ")[1] });
+                            SendClientMessage('trackObject', {
+                                handle: this.innerHTML.split(" ")[1],
+                                category: "Select",
+                            });
+
                         })
                         ul.appendChild(li);
                     }
@@ -1317,8 +1359,7 @@ function HandleKeysObject(event) {
             }
             if (escaped) { break; }
 
-            console.log("Sending object mode off")
-            SendClientMessage('objectMode', { mode: "off" });
+            SendClientMessage('modifyMode', { mode: "object", remove: true, });
             break;
         case " ":
             if (typeof event.target.onclick == "function") {
@@ -1329,7 +1370,7 @@ function HandleKeysObject(event) {
         case "c":
             if (!document.activeElement.classList.contains('entryField') && !ControlPassActive) {
                 SendClientMessage('modifyMode', { mode: "object", passthrough: true, });
-                SendClientMessage('modifyMode', { mode: "gizmo", active: true, passthrough: true, });
+                SendClientMessage('modifyMode', { mode: "gizmo", requireActive: true, passthrough: true, });
             }
             break;
         case "f":
@@ -1378,7 +1419,7 @@ function HandleKeysObject(event) {
             ToggleImportExport("on");
             break;
         case "Backspace":
-            SendClientMessage('objectMode', { mode: "off" });
+            SendClientMessage('modifyMode', { mode: "object", remove: true, });
             break;
         case "?":
         case "h":
@@ -1386,7 +1427,7 @@ function HandleKeysObject(event) {
             break;
         case "r":
             console.log("Sending object mode key r", event)
-            SendClientMessage('objectModeKey', { key: "r", alt: event.altKey, });
+            SendClientMessage('NUIKey', { key: "r", alt: event.altKey, });
             break;
         case "x":
             document.getElementById('activeObject').innerHTML = "";

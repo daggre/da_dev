@@ -1,4 +1,5 @@
 CurrentTree = "optionTree"
+local lastObj = nil
 
 Citizen.CreateThread(function()
     while true do

@@ -105,7 +105,6 @@ local StartGizmoMovedExpirer = function()
     ExpirerRunning = false
 end
 
-
 RegisterNUICallback('moveGizmoEntity', function(data, cb)
     if data.handle then
         if DoesEntityExist(data.handle) then
@@ -144,14 +143,3 @@ AddEventHandler('onResourceStop', function(resourceName)
     end
 end)
 
-RegisterCommand("startGizmo", function(source, args, rawCommand)
-    local entity = GetPlayerPed()
-    if args[1] then
-        entity = tonumber(args[1])
-    end
-    TriggerEvent("startGizmo", entity)
-end, false)
-
-RegisterCommand("stopGizmo", function(source, args, rawCommand)
-    GizmoThreadStarted = false
-end, false)

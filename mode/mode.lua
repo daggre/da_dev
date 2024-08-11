@@ -66,13 +66,27 @@ da.Dev.Mode.Add = function(mode)
         return
     end
     AllActiveModes[mode] = true
+    if Mode[mode].default.initFn then
+        Mode[mode].default.initFn()
+    end
     UpdateActiveMode()
 end
 
 da.Dev.Mode.Remove = function(mode)
     da.Log.Debug(("Removing mode %s"):format(mode))
+    if AllActiveModes[mode] and Mode[mode].default.exitFn then
+        Mode[mode].default.exitFn()
+    end
     AllActiveModes[mode] = nil
     UpdateActiveMode()
+end
+
+da.Dev.Mode.Toggle = function(mode)
+    if AllActiveModes[mode] then
+        da.Dev.Mode.Remove(mode)
+    else
+        da.Dev.Mode.Add(mode)
+    end
 end
 
 da.Dev.Mode.Clear = function()
@@ -81,11 +95,9 @@ da.Dev.Mode.Clear = function()
     SetMode("none")
 end
 
-RegisterNUICallback('controlPass', function(data, cb)
-    SetNuiFocusKeepInput(data.enable)
-    da.Control.Passthrough(data.enable)
-    cb(true)
-end)
+da.Dev.Mode.IsActive = function(mode)
+    return AllActiveModes[mode]
+end
 
 RegisterNUICallback('modifyMode', function(data, cb)
     if not Mode[data.mode] then
@@ -94,9 +106,18 @@ RegisterNUICallback('modifyMode', function(data, cb)
         return
     end
 
-    if data.active and not AllActiveModes[data.mode] then
+    if data.requireActive and not AllActiveModes[data.mode] then
         cb(true)
         return
+    end
+
+
+    if data.add then
+        da.Dev.Mode.Add(data.mode)
+    end
+
+    if data.remove then
+        da.Dev.Mode.Remove(data.mode)
     end
 
     if data.focusKeyboard ~= nil then
@@ -167,7 +188,7 @@ Mode.gizmo = {
             Mode.gizmo.modified = {}
             UpdateActiveMode()
             SendNUIMessage({ type = "controlPass", enable = false, })
-        end
+        end,
     },
 }
 Mode.devTree = {
@@ -185,6 +206,9 @@ Mode.anim = {
         focusKeyboard = true,
         focusCursor = true,
         keepFocus = false,
+        initFn = function()
+            SendNUIMessage({ type = "displayHUD", value = "anim"})
+        end,
         passthrough = false,
         passthroughFn = function()
             Mode.anim.modified.focusCursor = false
@@ -204,6 +228,23 @@ Mode.object = {
         focusKeyboard = true,
         focusCursor = true,
         keepFocus = false,
+        initFn = function()
+            da.Dev.Mode.Add("freecam")
+            ObjectModeThread()
+            SendNUIMessage({
+                type = "displayHUD",
+                value = "object",
+                enable = true,
+            })
+        end,
+        exitFn = function()
+            da.Dev.Mode.Remove("freecam")
+            SendNUIMessage({
+                type = "displayHUD",
+                value = "object",
+                enable = false,
+            })
+        end,
         passthrough = false,
         passthroughHaltKey = Control.C,
         passthroughFn = function()
@@ -215,8 +256,7 @@ Mode.object = {
             Mode.object.modified = {}
             UpdateActiveMode()
             SendNUIMessage({ type = "controlPass", enable = false, })
-        end
-
+        end,
     },
 }
 Mode.focus = {
@@ -234,6 +274,20 @@ Mode.freecam = {
         focusKeyboard = true,
         focusCursor = false,
         keepFocus = true,
+        initFn = function()
+            Camera.Mode = "free"
+            InitCamControl()
+            EnableFreeCam()
+        end,
+        exitFn = function()
+            Camera.Mode = "player"
+            DisableFreeCam()
+            SendNUIMessage({
+                type = "displayHUD",
+                value = "camera",
+                mode = "off",
+            })
+        end,
         passthrough = false,
     },
 }
@@ -243,6 +297,23 @@ Mode.noclip = {
         focusKeyboard = true,
         focusCursor = false,
         keepFocus = true,
+        initFn = function()
+            da.Dev.NoClip(true)
+            InitCamControl()
+            local playerPedId = PlayerPedId()
+            FreezeEntityPosition(playerPedId, true)
+            SetEntityInvincible(playerPedId, true)
+            SetEntityVisible(playerPedId, false)
+            NetworkSetEntityInvisibleToNetwork(playerPedId, true)
+        end,
+        exitFn = function()
+            da.Dev.NoClip(false)
+            local playerPedId = PlayerPedId()
+            FreezeEntityPosition(playerPedId, false)
+            SetEntityVisible(playerPedId, true)
+            NetworkSetEntityInvisibleToNetwork(playerPedId, false)
+            Citizen.SetTimeout(5000, function() SetEntityInvincible(playerPedId, false) end)
+        end,
         passthrough = false,
     },
 }

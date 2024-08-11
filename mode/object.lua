@@ -1,17 +1,46 @@
-local playerPedId = nil
+local PPID = nil
 local EnableSelectMode = false
-local SelectModeThread = {}
-local LightBlue = {r=80, g=193, b=238, a=255}
-local Green = {r=0, g=218, b=175, a=255}
-local NearbyObjects = {
-    Selected = nil,
-    Hovered = nil,
+local ObjectThread = {}
+local SelectMode = false
+local Distance = 1000.0
+local UntrackedModels = {
+    [0] = true,
+}
+local CategoryColor = {
+    Select = {r=0, g=218, b=175, a=255},
+    Hover = {r=80, g=193, b=238, a=255},
+}
+local TrackedObjects = {
+    Select = nil,
+    Hover = nil,
 }
 
-local _GetSelectModeThreadId = function()
-    local threadId = math.random(1, 1000)
-    while SelectModeThread[threadId] do
-        threadId = math.random(1, 1000)
+local TrackObject = function(category, handle)
+    if not handle then return; end
+    TrackedObjects[category] = handle
+end
+
+local RemoveTrackedObject = function(category)
+    TrackedObjects[category] = nil
+end
+
+local DrawTrackedObjects = function()
+    for category, handle in pairs(TrackedObjects) do
+        DrawBoundingBox(handle, CategoryColor[category])
+    end
+end
+
+local UpdateTrackedObjects = function(hit, obj)
+    if not hit then return; end
+    local model = GetEntityModel(obj)
+    if not model or UntrackedModels[model] then return; end
+    TrackedObjects.Hover = obj
+end
+
+local GetThreadId = function()
+    local threadId = math.random(1000)
+    while ObjectThread[threadId] do
+        threadId = math.random(1000)
     end
     return threadId
 end
@@ -28,7 +57,7 @@ local _SendNUIUpdate = function(obj)
 end
 
 local SelectModeControlCheck = function()
-    DisablePlayerFiring(playerPedId, true)
+    DisablePlayerFiring(PPID, true)
     for _, control in pairs(Control) do
         DisableControlAction(0, control, true)
     end
@@ -49,7 +78,7 @@ local SelectModeControlCheck = function()
         end
 
         -- Open Gizmo (R)
-        if not IsDisabledControlPressed(0, Control.LCtrl) and IsDisabledControlJustPressed(0, Control.R) then
+        if not IsDisabledControlPressed(0, Control.LeftControl) and IsDisabledControlJustPressed(0, Control.R) then
             if not SelectedObject and HoveredObject then
                 SelectedObject = HoveredObject
             end
@@ -61,7 +90,7 @@ local SelectModeControlCheck = function()
             end
         end
 
-        if HoveredObject and SelectedObject and IsDisabledControlPressed(0, Control.LeftCtrl) then
+        if HoveredObject and SelectedObject and IsDisabledControlPressed(0, Control.LeftControl) then
             if IsDisabledControlJustPressed(0, Control.R) then
                 local hPos = GetEntityRotation(HoveredObject)
                 SetEntityRotation(SelectedObject, hPos.x, hPos.y, hPos.z)
@@ -82,7 +111,7 @@ local SelectModeControlCheck = function()
     end
 end
 
-RegisterNUICallback('objectModeKey', function(data, cb)
+RegisterNUICallback('NUIKey', function(data, cb)
     if data.key == "r" then
         if not SelectedObject and HoveredObject then
             SelectedObject = HoveredObject
@@ -97,107 +126,62 @@ RegisterNUICallback('objectModeKey', function(data, cb)
     end
 end)
 
-RegisterNUICallback('selectObject', function(data, cb)
-    if data.handle then
-        SelectedObject = tonumber(data.handle)
-    end
-    cb(true)
-end)
-
-RegisterNUICallback('hoverObject', function(data, cb)
-    if data.remove then
-        if NearbyObjects.Hovered == tonumber(data.handle) then
-            NearbyObjects.Hovered = nil
-        end
-    elseif data.handle then
-        NearbyObjects.Hovered = tonumber(data.handle)
-    else
-        NearbyObjects.Hovered = nil
-    end
-    cb(true)
-end)
-
 local SelectModeTick = function()
-    local model = nil
-    local hit = nil
-    local obj = nil
-    local hover = nil
-    hit, obj = RayCastCamera(playerPedId, 1000.0)
-    if hit then
-        if SelectedObject ~= obj then
-            model = GetEntityModel(obj)
-            if model and model ~= 0 then
-                hover = true
-                if obj ~= HoveredObject then
-                    HoveredObject = obj
-                end
-            else
-                obj = 0
-            end
-        end
+    da.Log.Debug("SelectMode", SelectMode)
+    -- TODO: Add support for SelectMode
+    -- - Migrate away from EnableSelectMode
+    local hit, obj = nil, nil
+    if SelectMode == "Cursor" then
+        hit, obj = RayCastCursor(Distance)
+    elseif SelectMode == "Crosshair" then
+        hit, obj = RayCastCrosshair(PPID, Distance)
+        SelectModeControlCheck()
+    else
+        return
     end
-    if not hover then HoveredObject = nil; end
-    if SelectedObject then
-        DrawBoundingBox(SelectedObject, Green)
-    end
-    if HoveredObject and HoveredObject ~= SelectedObject then
-        DrawBoundingBox(HoveredObject, LightBlue)
-    end
-    if NearbyObjects.Hovered and NearbyObjects.Hovered ~= SelectedObject then
-        DrawBoundingBox(NearbyObjects.Hovered, LightBlue)
-    end
-    SelectModeControlCheck()
+
+    UpdateTrackedObjects(hit, obj)
+    DrawTrackedObjects()
+
     _SendNUIUpdate(obj)
 end
 
-local StartSelectModeThread = function(id)
-    SelectModeThread = {}
+ObjectModeThread = function()
+    local id = GetThreadId()
+    ObjectThread = {}
     Citizen.CreateThread(function()
-        SelectModeThread[id] = true
+        ObjectThread[id] = true
         CurrentTree = "objectTree"
-        playerPedId = PlayerPedId()
-        while SelectModeThread[id] and EnableSelectMode do
+        PPID = PlayerPedId()
+        while ObjectThread[id] and EnableSelectMode do
             SelectModeTick()
             Citizen.Wait(0)
         end
-        SelectModeThread[id] = nil
+        ObjectThread[id] = nil
         CurrentTree = "optionTree"
     end)
 end
 
-ObjectModeToggle = function(state)
-    if state ~= nil and EnableSelectMode == state then return; end
-    EnableSelectMode = not EnableSelectMode
-    da.Log.Info(("Entity select mode: %s"):format(EnableSelectMode and "^2ON^7" or "^1OFF^7"))
-    SendNUIMessage({type = "displayHUD", value = "objectHUD", enable = EnableSelectMode and "on" or "off"})
-    if EnableSelectMode then
-        da.Dev.Mode.Add("object")
-        StartSelectModeThread(_GetSelectModeThreadId())
-        if Camera.Mode ~= "free" then
-            Camera.Mode = "free"
-            EnableFreeCam()
-            InitCamControl()
-        end
-    else
-        da.Dev.Mode.Remove("object")
-        if Camera.Mode ~= "player" then
-            Camera.Mode = "player"
-            DisableFreeCam()
-        end
-    end
-end
-
-RegisterNUICallback('objectMode', function(data, cb)
-    ObjectModeToggle(data.enable == "on")
+RegisterNUICallback('sendCursorPos', function(data, cb)
+    MouseX = data.x
+    MouseY = data.y
+    MouseClick = data.click
     cb(true)
 end)
 
--- da.Dev.Menu.RegisterMenu("root", "object mode", "e")
-da.Dev.Menu.RegisterOption("root", "obj mode", "e", function() ObjectModeToggle() end, function() return not EnableSelectMode end)
-da.Dev.Menu.RegisterOption("objectRoot", "obj mode", "e", function() ObjectModeToggle() end, function() return EnableSelectMode end)
+RegisterNUICallback('trackObject', function(data, cb)
+    if data.remove then
+        RemoveTrackedObject(data.category)
+    else
+        TrackObject(data.category, tonumber(data.handle))
+    end
+    cb(true)
+end)
 
--- da.Dev.Menu.RegisterMenu("objectRoot", "object mode", "e")
--- da.Dev.Menu.RegisterOption("object mode", "exit mode", "e", function() ObjectModeToggle() end, function() return EnableSelectMode end)
+
+da.Dev.Menu.RegisterOption("root", "obj mode", "e", function() da.Dev.Mode.Add("object") end, function() return not EnableSelectMode end)
+da.Dev.Menu.RegisterOption("objectRoot", "obj mode", "e", function() da.Dev.Mode.Remove("object") end, function() return EnableSelectMode end)
+
 da.Dev.Menu.RegisterOption("objectRoot", "mov/rot", "r", function() StartGizmo(SelectedObject) end, function() return SelectedObject ~= nil and not LocalPlayer.state.metadata.isdead end)
 da.Dev.Menu.RegisterMenu("objectRoot", "obj clipboard", "q")
 
