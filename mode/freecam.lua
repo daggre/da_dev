@@ -83,7 +83,8 @@ end
 ---@return number z Translated Z Coordinate
 local Translate = function(x, y, z, rot_x, rot_z, dist, strafe)
     local math_rot_x, math_rot_y, math_rot_z, res_x, res_y, res_z
-    if da.Dev.Mode.IsActive("focus") then rot_x = 0; end
+    -- if da.Dev.Mode.IsActive("focus") then rot_x = 0; end -- Treat movement as if we are looking straight in focus mode
+    rot_x = 0 -- Always treat movement as if we are looking straight (TODO toggle for above behavior later)
 
     if strafe then
         rot_z = rot_z + 90 -- Strafe calculation, calculate speed 90 degrees from aim
@@ -112,9 +113,13 @@ end
 ---@return number y Translated Y Coordinate
 ---@return number z Translated Z Coordinate
 ---@return number rot_x Translated Rotation X
+---@return number rot_y Translated Rotation X
 ---@return number rot_z Translated Rotation Z
 ---@return number fov Translated Field of View
-local ControlTranslation = function(x, y, z, rot_x, rot_z, fov)
+local CheckMovementControls = function(x, y, z, rot_x, rot_y, rot_z, fov)
+    DisableAllControlActions(0)
+    local enableMouseAim = not da.Dev.Mode.IsActive("freecam")
+
     local deltaLR = GetDisabledControlNormal(0, Control.MouseLR)
     local deltaUD = GetDisabledControlNormal(0, Control.MouseUD)
     local pressed, justPressed = da.Dev.Control.GetPressed(
@@ -125,6 +130,7 @@ local ControlTranslation = function(x, y, z, rot_x, rot_z, fov)
 
     -- Mouse Controls
     if pressed.Control then
+        -- enableMouseAim = false
         -- Press Control adjust FOV on Mouse Up/Down
 
         if justPressed.x then
@@ -137,6 +143,7 @@ local ControlTranslation = function(x, y, z, rot_x, rot_z, fov)
         --     rot_z = rot_z + deltaLR * -1.0 * (Speed.Mouse * (math.min(fov,50)/50))
         -- end
     elseif pressed.Alt and not (pressed.w or pressed.a or pressed.s or pressed.d or pressed.q or pressed.e) then
+        enableMouseAim = false
         -- Press Alt move camera on X/Y coordinate plane
         if deltaLR ~= 0.0 then
             x, y, _ = Translate(x, y, z, rot_x, rot_z, 0-(deltaLR*modifier*2), true)
@@ -145,6 +152,7 @@ local ControlTranslation = function(x, y, z, rot_x, rot_z, fov)
             x, y, _ = Translate(x, y, z, rot_x, rot_z, 0-(deltaUD*modifier*2))
         end
     elseif pressed.Shift and not (pressed.w or pressed.a or pressed.s or pressed.d or pressed.q or pressed.e) then
+        enableMouseAim = false
         -- Press Shift move camera on X/Z coordinate plane
         if deltaLR ~= 0.0 then
             x, y, _ = Translate(x, y, z, rot_x, rot_z, 0-(deltaLR*modifier*2), true)
@@ -181,8 +189,13 @@ local ControlTranslation = function(x, y, z, rot_x, rot_z, fov)
     if pressed.e then z = z + (modifier/2) end
     if pressed.q then z = z - (modifier/2) end
 
+    if enableMouseAim then
+        EnableControlAction(0, Control.MouseLR)
+        EnableControlAction(0, Control.MouseUD)
+    end
+
     -- Set Coords
-    return x, y, z, rot_x, rot_z, fov
+    return x, y, z, rot_x, rot_y, rot_z, fov
 end
 
 local CamControlThread = false
@@ -208,16 +221,10 @@ InitCameraControlThread = function()
                     },
                 })
             end
-            DisableAllControlActions(0)
-            if not da.Dev.Mode.IsActive("freecam") then
-                EnableControlAction(0, Control.MouseLR)
-                EnableControlAction(0, Control.MouseUD)
-            end
             Citizen.Wait(0)
             x, y, z = GetCoords(playerPedId)
             rot_x, rot_y, rot_z = table.unpack(GetFinalRenderedCamRot())
-            x, y, z, rot_x, rot_z, fov = ControlTranslation(x, y, z, rot_x, rot_z, fov)
-            SetCoords(playerPedId, x, y, z, rot_x, rot_y, rot_z, fov)
+            SetCoords(playerPedId, CheckMovementControls(x, y, z, rot_x, rot_y, rot_z, fov))
             CheckCameraControls()
         end
         CamControlThread = false
@@ -244,7 +251,7 @@ function DisableFreeCam()
     Camera.Handle = nil
 end
 
-da.Dev.Menu.RegisterOption("root", "toggle cam", "c", function()
+da.Dev.Menu.RegisterOption("root", "mode:freecam", "c", function()
     da.Dev.Mode.Toggle("freecam")
 end)
 
