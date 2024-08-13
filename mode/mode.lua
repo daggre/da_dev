@@ -181,13 +181,13 @@ Mode.gizmo = {
         initFn = function()
             SelectMode = "Cursor"
             GizmoThread()
+            RemoveTrackedObject("hover")
             SendNUIMessage({
                 type = 'setGizmoState',
                 data = { shown = true }
             })
         end,
         exitFn = function()
-            SelectMode = "Crosshair"
             SendNUIMessage({
                 type = 'setGizmoState',
                 data = { shown = false }
@@ -227,6 +227,7 @@ Mode.anim = {
         end,
         passthrough = false,
         passthroughFn = function()
+            SelectMode = "Crosshair"
             Mode.anim.modified.focusCursor = false
             Mode.anim.modified.keepFocus = true
         end,
@@ -331,11 +332,19 @@ Mode.noclip = {
         end,
         exitFn = function()
             da.Dev.NoClip(false)
+            if not da.Dev.Mode.IsActive("noclip") then
+                DisableFreeCam()
+            end
             local playerPedId = PlayerPedId()
             FreezeEntityPosition(playerPedId, false)
             SetEntityVisible(playerPedId, true)
             NetworkSetEntityInvisibleToNetwork(playerPedId, false)
             Citizen.SetTimeout(5000, function() SetEntityInvincible(playerPedId, false) end)
+            SendNUIMessage({
+                type = "displayHUD",
+                value = "camera",
+                mode = "off",
+            })
         end,
         passthrough = false,
     },
