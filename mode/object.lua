@@ -17,6 +17,10 @@ local TrackedObjects = {
     select = nil,
 }
 
+GetTrackedObject = function(category)
+    return TrackedObjects[category]
+end
+
 TrackObject = function(category, handle)
     if not handle then return; end
     TrackedObjects[category] = handle
@@ -140,6 +144,10 @@ local ControlCheckCursor = function(pressed, justPressed)
                 TrackedObjects.select = TrackedObjects.hover
             end
         end
+    end
+
+    if justPressed.f then
+        da.Dev.Mode.Toggle("focus")
     end
 
     if justPressed.r then

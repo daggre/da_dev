@@ -1,10 +1,7 @@
-HoveredObject = nil
-SelectedObject = nil
 GizmoMovedRecently = nil
 
 Camera = {}
 Camera.Handle = nil
-Camera.Mode = "player"
 
 local NoClip = {}
 NoClip.Enabled = false
@@ -34,70 +31,40 @@ local Clamp = function(val, min, max)
     return val
 end
 
-local Focus = function()
-    if Camera.Mode == "free" then
-        if IsDisabledControlPressed(0, Control.Alt) and HoveredObject then
-            SelectedObject = HoveredObject
-        end
-        if not SelectedObject then
-            SelectedObject = HoveredObject
-        end
-        local obj = SelectedObject
-        if obj then
-            da.Dev.Mode.Add("focus")
-            Camera.Mode = "focus"
-            PointCamAtEntity(Camera.Handle, obj)
-        end
-    elseif Camera.Mode == "focus" then
-        da.Dev.Mode.Remove("focus")
-        Camera.Mode = "free"
-        StopCamPointing(Camera.Handle)
-    end
-end
+local CheckCameraControls = function()
+    local _, justPressed = da.Dev.Control.GetPressed( {}, { "f", })
 
-local CheckControls = function()
-    if IsDisabledControlJustPressed(0, Control.MouseLeft) then
-        if ActiveMode ~= "gizmo" and HoveredObject then
-            SelectedObject = HoveredObject
-        end
-    end
-
-    if IsDisabledControlJustPressed(0, Control.f) then
-        Focus()
-    elseif Camera.Mode == "focus" and not SelectedObject then
-        da.Dev.Mode.Remove("focus")
-        Camera.Mode = "free"
-        StopCamPointing(Camera.Handle)
+    if justPressed.f then
+        da.Dev.Mode.Toggle("focus")
     end
 end
 
 local GetCoords = function(ped)
-    if Camera.Mode == "free" or Camera.Mode == "focus" then
+    if da.Dev.Mode.IsActive("freecam") then
         return table.unpack(GetCamCoord(Camera.Handle))
-    elseif Camera.Mode == "player" then
+    else
         return table.unpack(GetEntityCoords(ped))
     end
 end
 
 local SetCoords = function(ped, x, y, z, rot_x, rot_y, rot_z, fov)
-    if Camera.Mode == "free" or Camera.Mode == "focus" then
+    if da.Dev.Mode.IsActive("freecam") then
         SetCamCoord(Camera.Handle, x, y, z)
         SetCamRot(Camera.Handle, rot_x, 0.0, rot_z, 2)
         SetCamFov(Camera.Handle, fov+0.0)
-        if Camera.Mode == "focus" then
-            local obj = SelectedObject
-            if obj then
+        if da.Dev.Mode.IsActive("focus") then
+            local selectedObject = GetTrackedObject("select")
+            if selectedObject then
                 if ActiveMode ~= "gizmo" or not GizmoMovedRecently then
-                -- if ActiveMode ~= "gizmo" or not IsControlPressed(0, `SKIPCUTSCENE`) then
-                    PointCamAtEntity(Camera.Handle, obj)
+                    PointCamAtEntity(Camera.Handle, selectedObject)
                 else
                     StopCamPointing(Camera.Handle)
                 end
             else
-                StopCamPointing(Camera.Handle)
+                da.Dev.Mode.Remove("focus")
             end
         end
-    elseif Camera.Mode == "player" then
+    else
         SetEntityRotation(ped, 0, 0, rot_z)
         SetEntityCoordsNoOffset(ped, x, y, z, true, true, true)
     end
@@ -116,7 +83,7 @@ end
 ---@return number z Translated Z Coordinate
 local Translate = function(x, y, z, rot_x, rot_z, dist, strafe)
     local math_rot_x, math_rot_y, math_rot_z, res_x, res_y, res_z
-    if Camera.Mode == "focus" then rot_x = 0; end
+    if da.Dev.Mode.IsActive("focus") then rot_x = 0; end
 
     if strafe then
         rot_z = rot_z + 90 -- Strafe calculation, calculate speed 90 degrees from aim
@@ -185,7 +152,7 @@ local ControlTranslation = function(x, y, z, rot_x, rot_z, fov)
         if deltaUD ~= 0.0 then
             z = z - deltaUD*modifier*2
         end
-    elseif Camera.Mode ~= "focus" and (ActiveMode ~= "gizmo" or da.Control.PassthroughIsActive()) then
+    elseif not da.Dev.Mode.IsActive("focus") and (not da.Dev.Mode.IsActive("gizmo") or da.Control.PassthroughIsActive()) then
         -- Otherwise Mouse aims camera
         if deltaLR ~= 0.0 then
             rot_z = rot_z + deltaLR * -1.0 * (Speed.Mouse * (math.min(fov,50)/50))
@@ -236,13 +203,13 @@ InitCameraControlThread = function()
                     mode = "on",
                     camera = {
                         speed = ("%.2f"):format(Speed.Current),
-                        cameraMode = Camera.Mode == "focus" and "" or "",
-                        noclip = Camera.Mode ~= "player" and "" or da.Dev.Mode.IsActive("noclip") and "" or "",
+                        cameraMode = da.Dev.Mode.IsActive("focus") and "" or "",
+                        noclip = da.Dev.Mode.IsActive("freecam") and "" or da.Dev.Mode.IsActive("noclip") and "" or "",
                     },
                 })
             end
             DisableAllControlActions(0)
-            if Camera.Mode == "player" then
+            if not da.Dev.Mode.IsActive("freecam") then
                 EnableControlAction(0, Control.MouseLR)
                 EnableControlAction(0, Control.MouseUD)
             end
@@ -251,7 +218,7 @@ InitCameraControlThread = function()
             rot_x, rot_y, rot_z = table.unpack(GetFinalRenderedCamRot())
             x, y, z, rot_x, rot_z, fov = ControlTranslation(x, y, z, rot_x, rot_z, fov)
             SetCoords(playerPedId, x, y, z, rot_x, rot_y, rot_z, fov)
-            CheckControls()
+            CheckCameraControls()
         end
         CamControlThread = false
     end)
@@ -278,11 +245,7 @@ function DisableFreeCam()
 end
 
 da.Dev.Menu.RegisterOption("root", "toggle cam", "c", function()
-    if Camera.Mode == "free" then
-        da.Dev.Mode.Remove("freecam")
-    elseif Camera.Mode == "player" then
-        da.Dev.Mode.Add("freecam")
-    end
+    da.Dev.Mode.Toggle("freecam")
 end)
 
 da.Dev.NoClip = function(state)

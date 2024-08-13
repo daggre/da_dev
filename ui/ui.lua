@@ -35,7 +35,7 @@ RegisterNUICallback('animHUD', function(data, cb)
 end)
 
 RegisterNUICallback('transitionControl', function(data, cb)
-    da.Log.DebugVerbose("transitionControl:", data)
+    da.Log.Debug("transitionControl:", data)
     -- Handle any transition away
     if data.from == "animHUD" then
         da.Dev.Mode.Remove("anim")
