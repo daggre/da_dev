@@ -264,6 +264,7 @@ Mode.object = {
         end,
         exitFn = function()
             da.Dev.Mode.Remove("freecam")
+            da.Dev.Mode.Remove("focus")
             SelectMode = false
             SendNUIMessage({
                 type = "displayHUD",
