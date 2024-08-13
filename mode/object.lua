@@ -237,6 +237,45 @@ RegisterNUICallback('trackObject', function(data, cb)
     cb(true)
 end)
 
+function GetNearbyObjects(range)
+    local pos = GetFinalRenderedCamCoord()
+    local entities = da.Util.GetEntitiesNearPoint(pos, range)
+    local entityData = {}
+    for i, entity in ipairs(entities) do
+        local model = GetEntityModel(entity)
+        local coords = GetEntityCoords(entity)
+        entityData[i] = {
+            handle = entity,
+            model = model,
+            modelName = ObjectsHashLookup[model] or
+                VehiclesHashLookup[model] or
+                PickupsHashLookup[model] or
+                PedsHashLookup[model] or
+                model,
+            distance = #(pos - coords),
+        }
+    end
+    local peds = da.Util.GetPedsNearPoint(pos, range)
+    for i, entity in ipairs(peds) do
+        local model = GetEntityModel(entity)
+        local coords = GetEntityCoords(entity)
+        entityData[i] = {
+            handle = entity,
+            model = model,
+            modelName = PedsHashLookup[model] or
+                VehiclesHashLookup[model] or
+                ObjectsHashLookup[model] or
+                PickupsHashLookup[model] or
+                model,
+            distance = #(pos - coords),
+        }
+    end
+    return entityData
+end
+
+RegisterNUICallback('nearbyObjects', function(data, cb)
+    cb({ nearbyObjects = GetNearbyObjects(data.range)})
+end)
 
 da.Dev.Menu.RegisterOption("root", "obj mode", "e", function() da.Dev.Mode.Add("object") end, function() return not SelectMode end)
 da.Dev.Menu.RegisterOption("objectRoot", "obj mode", "e", function() da.Dev.Mode.Remove("object") end, function() return SelectMode end)
