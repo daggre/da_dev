@@ -55,11 +55,6 @@ local Focus = function()
     end
 end
 
-RegisterNUICallback("focus", function(data, cb)
-    Focus()
-    cb(true)
-end)
-
 local CheckControls = function()
     if IsDisabledControlJustPressed(0, Control.MouseLeft) then
         if ActiveMode ~= "gizmo" and HoveredObject then
@@ -224,7 +219,7 @@ local ControlTranslation = function(x, y, z, rot_x, rot_z, fov)
 end
 
 local CamControlThread = false
-InitCamControl = function()
+InitCameraControlThread = function()
     local playerPedId = PlayerPedId()
     local x, y, z = GetCoords(playerPedId)
     local rot_x, rot_y, rot_z = table.unpack(GetFinalRenderedCamRot())
@@ -281,22 +276,6 @@ function DisableFreeCam()
     DestroyCam(Camera.Handle, true)
     Camera.Handle = nil
 end
-
-RegisterNUICallback("camera", function(data, cb)
-    if data.mode == "free" then
-        if Camera.Mode ~= "free" then
-            Camera.Mode = "free"
-            EnableFreeCam()
-            InitCamControl()
-        end
-    elseif data.mode == "player" then
-        if Camera.Mode ~= "player" then
-            Camera.Mode = "player"
-            DisableFreeCam()
-        end
-    end
-    cb({})
-end)
 
 da.Dev.Menu.RegisterOption("root", "toggle cam", "c", function()
     if Camera.Mode == "free" then

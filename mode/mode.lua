@@ -100,64 +100,67 @@ da.Dev.Mode.IsActive = function(mode)
 end
 
 RegisterNUICallback('modifyMode', function(data, cb)
-    if not Mode[data.mode] then
-        da.Log.Error(("Invalid mode '%s'"):format(data.mode))
-        cb(false)
+    da.Dev.Mode.Modify(data.mode, data)
+    cb(true)
+end)
+
+da.Dev.Mode.Modify = function(mode, data)
+    mode = mode or data.mode
+
+    if not Mode[mode] then
+        da.Log.Error(("Invalid mode '%s'"):format(mode))
         return
     end
 
-    if data.requireActive and not AllActiveModes[data.mode] then
-        cb(true)
+    if data.requireActive and not AllActiveModes[mode] then
         return
     end
-
 
     if data.add then
-        da.Dev.Mode.Add(data.mode)
+        da.Dev.Mode.Add(mode)
     end
 
     if data.remove then
-        da.Dev.Mode.Remove(data.mode)
+        da.Dev.Mode.Remove(mode)
     end
 
     if data.focusKeyboard ~= nil then
-        if Mode[data.mode].default.focusKeyboard ~= data.focusKeyboard then
-            Mode[data.mode].modified.focusKeyboard = data.focusKeyboard
+        if Mode[mode].default.focusKeyboard ~= data.focusKeyboard then
+            Mode[mode].modified.focusKeyboard = data.focusKeyboard
         else
-            Mode[data.mode].modified.focusKeyboard = nil
+            Mode[mode].modified.focusKeyboard = nil
         end
     end
 
     if data.focusCursor ~= nil then
-        if Mode[data.mode].default.focusCursor ~= data.focusCursor then
-            Mode[data.mode].modified.focusCursor = data.focusCursor
+        if Mode[mode].default.focusCursor ~= data.focusCursor then
+            Mode[mode].modified.focusCursor = data.focusCursor
         else
-            Mode[data.mode].modified.focusCursor = nil
+            Mode[mode].modified.focusCursor = nil
         end
     end
 
     if data.keepFocus ~= nil then
-        if Mode[data.mode].default.keepFocus ~= data.keepFocus then
-            Mode[data.mode].modified.keepFocus = data.keepFocus
+        if Mode[mode].default.keepFocus ~= data.keepFocus then
+            Mode[mode].modified.keepFocus = data.keepFocus
         else
-            Mode[data.mode].modified.keepFocus = nil
+            Mode[mode].modified.keepFocus = nil
         end
     end
 
     if data.passthrough ~= nil then
-        if Mode[data.mode].default.passthrough ~= data.passthrough then
-            Mode[data.mode].modified.passthrough = data.passthrough
-            if Mode[data.mode].default.passthroughFn ~= nil then
-                Mode[data.mode].default.passthroughFn()
+        if Mode[mode].default.passthrough ~= data.passthrough then
+            Mode[mode].modified.passthrough = data.passthrough
+            if Mode[mode].default.passthroughFn ~= nil then
+                Mode[mode].default.passthroughFn()
             end
         else
-            Mode[data.mode].modified.passthrough = nil
+            Mode[mode].modified.passthrough = nil
         end
     end
 
     UpdateActiveMode()
-    cb(true)
-end)
+end
 
 RegisterNUICallback('endPassthrough', function(data, cb)
     da.Control.Passthrough(false)
@@ -180,7 +183,7 @@ Mode.gizmo = {
         keepFocus = true,
         initFn = function()
             SelectMode = "Cursor"
-            GizmoThread()
+            InitGizmoThread()
             RemoveTrackedObject("hover")
             SendNUIMessage({
                 type = 'setGizmoState',
@@ -227,7 +230,6 @@ Mode.anim = {
         end,
         passthrough = false,
         passthroughFn = function()
-            SelectMode = "Crosshair"
             Mode.anim.modified.focusCursor = false
             Mode.anim.modified.keepFocus = true
         end,
@@ -254,6 +256,7 @@ Mode.object = {
                 value = "object",
                 enable = true,
             })
+            da.Dev.Mode.Modify("object", { passthrough = true, })
         end,
         exitFn = function()
             da.Dev.Mode.Remove("freecam")
@@ -267,7 +270,7 @@ Mode.object = {
         passthrough = false,
         passthroughHaltKey = Control.c,
         passthroughFn = function()
-            SelectMode = "Crosshair"
+            if SelectMode then SelectMode = "Crosshair"; end
             Mode.object.modified.focusCursor = false
             Mode.object.modified.keepFocus = true
         end,
@@ -300,7 +303,7 @@ Mode.freecam = {
         keepFocus = true,
         initFn = function()
             Camera.Mode = "free"
-            InitCamControl()
+            InitCameraControlThread()
             EnableFreeCam()
         end,
         exitFn = function()
@@ -323,7 +326,7 @@ Mode.noclip = {
         keepFocus = true,
         initFn = function()
             da.Dev.NoClip(true)
-            InitCamControl()
+            InitCameraControlThread()
             local playerPedId = PlayerPedId()
             FreezeEntityPosition(playerPedId, true)
             SetEntityInvincible(playerPedId, true)

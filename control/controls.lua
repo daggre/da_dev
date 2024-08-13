@@ -5,6 +5,7 @@ Control.d = `INPUT_MOVE_RIGHT_ONLY`
 Control.e = `INPUT_DYNAMIC_SCENARIO`
 Control.f = `INPUT_CONTEXT_B`
 Control.g = `INPUT_INTERACT_ANIMAL`
+Control.h = 0x24978A28
 Control.q = `INPUT_FRONTEND_LB`
 Control.r = `INPUT_RELOAD`
 Control.s = `INPUT_MOVE_DOWN_ONLY`

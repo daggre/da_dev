@@ -16,7 +16,7 @@ function StartGizmo(entity)
 end
 
 local GizmoThreadStarted = false
-function GizmoThread()
+function InitGizmoThread()
     if GizmoThreadStarted then return; end
     GizmoThreadStarted = true
     Citizen.CreateThread(function()
