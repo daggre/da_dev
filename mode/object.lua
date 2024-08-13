@@ -17,12 +17,12 @@ local TrackedObjects = {
     select = nil,
 }
 
-local TrackObject = function(category, handle)
+TrackObject = function(category, handle)
     if not handle then return; end
     TrackedObjects[category] = handle
 end
 
-local RemoveTrackedObject = function(category)
+RemoveTrackedObject = function(category)
     TrackedObjects[category] = nil
 end
 
@@ -35,6 +35,7 @@ local DrawTrackedObjects = function()
 end
 
 local UpdateTrackedObjects = function(hit, obj)
+    if da.Dev.Mode.IsActive("gizmo") then return; end
     if not hit then
         TrackedObjects.hover = nil
         return
