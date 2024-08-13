@@ -69,6 +69,7 @@ for i, option in ipairs(timeOptions) do
     da.Dev.Menu.RegisterOption("time", option.name, tostring(i), function()
         currentHour = option.hour
         currentMinute = option.minute
+        freezeTime = true
         TMC.Functions.TriggerServerEvent("weather:server:set", {
             type = "time",
             isFrozen = freezeTime,
