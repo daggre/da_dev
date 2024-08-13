@@ -113,12 +113,10 @@ function ClipboardCopy(val) {
 
 function TransitionHUD(to) {
     if (isVisible(document.getElementById('animHUD'))) {
-        ToggleUIAnim("off");
-        SendClientMessage('transitionControl', {
-            from: "animHUD",
-            to: to,
-        });
-        ControlPassActive = false;
+        // ToggleUIAnim("off");
+        // SendClientMessage('modifyMode', { mode: "anim", remove: true, })
+        // SendClientMessage('modifyMode', { mode: to, add: true, })
+        // ControlPassActive = false;
     }
 }
 
@@ -128,7 +126,7 @@ function ToggleUI(data) {
             ToggleUIDevTree(data)
             break;
         case "anim":
-            ToggleUIAnim("on");
+            ToggleUIAnim(data.mode);
             break;
         case "object":
             ToggleUIObject(data.mode);
@@ -457,6 +455,26 @@ $(document).ready(function() {
 
 });
 
+// Help HUD //
+function ToggleHelp(elementId, state, disableCursor = false) {
+    el = document.getElementById(elementId);
+    el_x = document.getElementById('crosshair');
+    if (state == "on") {
+        el.style.display = "block";
+        if (disableCursor) { el_x.style.display = "none"; }
+    } else if (state == "off") {
+        el.style.display = "none";
+        if (disableCursor) { el_x.style.display = "block"; }
+    } else if (state == "toggle") {
+        if (isVisible(el)) {
+            el.style.display = "none";
+            if (disableCursor) { el_x.style.display = "block"; }
+        } else {
+            el.style.display = "block";
+            if (disableCursor) { el_x.style.display = "none"; }
+        }
+    }
+}
 
 // Dev Tree HUD //
 var DevKeys = {}
@@ -464,8 +482,6 @@ var HudTree = {}
 var TreeKeys = {}
 
 function ToggleUIDevTree(data) {
-    // TODO: remove TransitionHUD just use mode add remove
-    console.log(data)
     TransitionHUD(data.value);
     InitializeTree(data.optionTree[0]);
     document.getElementById('devTreeHUD').style.display = "flex";
@@ -516,6 +532,7 @@ function KeyTranslate(key) {
     return map.hasOwnProperty(lowercaseKey) ? map[lowercaseKey] : lowercaseKey;
 }
 
+// Dev Tree Keys //
 function HandleKeysDevTree(event) {
     let key = event.key
     let translatedKey = KeyTranslate(key)
@@ -533,63 +550,6 @@ function HandleKeysDevTree(event) {
         SendClientMessage('exit', { key: translatedKey });
         document.getElementById('devTreeHUD').style.display = "none";
     }
-}
-
-// Object HUD //
-function ToggleUIObject(state) {
-    document.getElementById('objSearchField').style.display = "none";
-    document.getElementById('objData').style.display = "none";
-
-    if (state == "on") {
-        document.getElementById('objectHUD').style.display = "flex";
-        document.getElementById('objControlOptions').style.display = "flex";
-        document.getElementById('selectedObjectDisplay').style.display = "flex";
-    } else if (state == "off") {
-        document.getElementById('objectHUD').style.display = "none";
-        document.getElementById('objControlOptions').style.display = "none";
-        document.getElementById('selectedObjectDisplay').style.display = "none";
-    } else {
-        if (isVisible(document.getElementById('objectHUD'))) {
-            document.getElementById('objectHUD').style.display = "none";
-            document.getElementById('objControlOptions').style.display = "none";
-            document.getElementById('selectedObjectDisplay').style.display = "none";
-        } else {
-            document.getElementById('objectHUD').style.display = "flex";
-            document.getElementById('objControlOptions').style.display = "flex";
-            document.getElementById('selectedObjectDisplay').style.display = "flex";
-        }
-    }
-}
-
-function UpdateCrosshair(data) {
-	var crosshair = document.querySelector('#crosshair');
-	if (data.select) {
-		crosshair.className = 'selected';
-	} else if (data.hover) {
-		crosshair.className = 'active';
-	} else {
-		crosshair.className = 'inactive';
-    }
-}
-
-function ToggleUICam(state) {
-    if (state == "on") {
-        document.getElementById('cameraHUD').style.display = "flex";
-    } else if (state == "off") {
-        document.getElementById('cameraHUD').style.display = "none";
-    } else {
-        if (isVisible(document.getElementById('cameraHUD'))) {
-            document.getElementById('cameraHUD').style.display = "none";
-        } else {
-            document.getElementById('cameraHUD').style.display = "flex";
-        }
-    }
-}
-
-function UpdateUICam(data) {
-    document.getElementById('cam-speed').innerHTML = data.speed;
-    document.getElementById('cam-mode').innerHTML = data.cameraMode;
-    document.getElementById('cam-noclip').innerHTML = data.noclip;
 }
 
 // Animation HUD //
@@ -980,26 +940,7 @@ function ToggleEntity(state) {
     }
 }
 
-function ToggleHelp(elementId, state, disableCursor = false) {
-    el = document.getElementById(elementId);
-    el_x = document.getElementById('crosshair');
-    if (state == "on") {
-        el.style.display = "block";
-        if (disableCursor) { el_x.style.display = "none"; }
-    } else if (state == "off") {
-        el.style.display = "none";
-        if (disableCursor) { el_x.style.display = "block"; }
-    } else if (state == "toggle") {
-        if (isVisible(el)) {
-            el.style.display = "none";
-            if (disableCursor) { el_x.style.display = "block"; }
-        } else {
-            el.style.display = "block";
-            if (disableCursor) { el_x.style.display = "none"; }
-        }
-    }
-}
-
+// Anim Keys //
 function HandleKeysAnim(event) {
     switch(event.key) {
         case "Escape":
@@ -1139,6 +1080,28 @@ function HandleKeysAnim(event) {
     }
 }
 
+// Camera HUD //
+function ToggleUICam(state) {
+    if (state == "on") {
+        document.getElementById('cameraHUD').style.display = "flex";
+    } else if (state == "off") {
+        document.getElementById('cameraHUD').style.display = "none";
+    } else {
+        if (isVisible(document.getElementById('cameraHUD'))) {
+            document.getElementById('cameraHUD').style.display = "none";
+        } else {
+            document.getElementById('cameraHUD').style.display = "flex";
+        }
+    }
+}
+
+function UpdateUICam(data) {
+    document.getElementById('cam-speed').innerHTML = data.speed;
+    document.getElementById('cam-mode').innerHTML = data.cameraMode;
+    document.getElementById('cam-noclip').innerHTML = data.noclip;
+}
+
+// Cam Keys //
 function HandleKeysCam(event) {
     switch(event.key) {
         case "Escape":
@@ -1155,6 +1118,43 @@ function HandleKeysCam(event) {
             ToggleHelp("camHelp", "toggle");
             break;
             }
+}
+
+// Object HUD //
+function ToggleUIObject(state) {
+    document.getElementById('objSearchField').style.display = "none";
+    document.getElementById('objData').style.display = "none";
+
+    if (state == "on") {
+        document.getElementById('objectHUD').style.display = "flex";
+        document.getElementById('objControlOptions').style.display = "flex";
+        document.getElementById('selectedObjectDisplay').style.display = "flex";
+    } else if (state == "off") {
+        document.getElementById('objectHUD').style.display = "none";
+        document.getElementById('objControlOptions').style.display = "none";
+        document.getElementById('selectedObjectDisplay').style.display = "none";
+    } else {
+        if (isVisible(document.getElementById('objectHUD'))) {
+            document.getElementById('objectHUD').style.display = "none";
+            document.getElementById('objControlOptions').style.display = "none";
+            document.getElementById('selectedObjectDisplay').style.display = "none";
+        } else {
+            document.getElementById('objectHUD').style.display = "flex";
+            document.getElementById('objControlOptions').style.display = "flex";
+            document.getElementById('selectedObjectDisplay').style.display = "flex";
+        }
+    }
+}
+
+function UpdateCrosshair(data) {
+	var crosshair = document.querySelector('#crosshair');
+	if (data.select) {
+		crosshair.className = 'selected';
+	} else if (data.hover) {
+		crosshair.className = 'active';
+	} else {
+		crosshair.className = 'inactive';
+    }
 }
 
 function ResetObjData() {
@@ -1174,12 +1174,14 @@ function ToggleControlObjectSpawn(state) {
     var el_o = document.getElementById('objControlSpawnOptions');
     if (el.classList.contains('selected')) {
         ToggleControlScene("off");
+        ToggleObjectDetails("off");
         el_o.style.display = "inline-flex";
     } else {
         el_o.style.display = "none";
     }
 }
 
+// Object Spawn //
 function ToggleObjectSpawn(state) {
     var el = document.getElementById('button-spawn');
     ToggleSelected(el, state);
@@ -1188,8 +1190,7 @@ function ToggleObjectSpawn(state) {
     if (el.classList.contains('selected')) {
         ToggleHelp("objHelp", "off", true)
         ToggleControlObjectSpawn("on");
-        document.getElementById('button-spawnfavs').classList.remove('selected');
-        document.getElementById('button-trackedobjlist').classList.remove('selected');
+        SelectObjectButton('button-spawn');
         document.getElementById('objSearchField').style.display = "flex";
         document.getElementById('objSearchList').style.display = "flex";
         document.getElementById('objSpawnOptions').style.display = "inline-flex";
@@ -1212,6 +1213,7 @@ function ToggleObjectFavsSpawn(state) {
     }
 }
 
+// Object Nearby //
 function ToggleTrackedList(state) {
     var el = document.getElementById('button-trackedobjlist');
     ToggleSelected(el, state);
@@ -1219,11 +1221,9 @@ function ToggleTrackedList(state) {
 
     if (el.classList.contains('selected')) {
         ToggleHelp("objHelp", "off", true)
-        ToggleControlScene("off");
         ToggleControlObjectSpawn("on");
         GetTrackedObjects();
-        document.getElementById('button-spawn').classList.remove('selected');
-        document.getElementById('button-spawnfavs').classList.remove('selected');
+        SelectObjectButton('button-trackedobjlist');
         document.getElementById('objSearchField').style.display = "none";
         document.getElementById('objSearchList').style.display = "flex";
         document.getElementById('objNearbyRange').style.display = "flex";
@@ -1232,72 +1232,6 @@ function ToggleTrackedList(state) {
         document.getElementById('objSearchField').style.display = "none";
         document.getElementById('objSearchList').style.display = "none";
         document.getElementById('objSpawnOptions').style.display = "none";
-    }
-}
-
-function ToggleControlScene(state) {
-    var el = document.getElementById('button-objectscene');
-    ToggleSelected(el, state);
-
-    if (el.classList.contains('selected')) {
-        ToggleHelp("objHelp", "off", true)
-        ToggleObjectSpawn("off");
-        ToggleControlObjectSpawn("off");
-        ResetObjData();
-        document.getElementById('objSceneOptions').style.display = "inline-flex";
-    } else {
-        document.getElementById('objSceneOptions').style.display = "none";
-    }
-}
-
-function ToggleSceneMove(state) {
-    var el = document.getElementById('button-scenecontrol');
-    ToggleSelected(el, state);
-
-    if (el.classList.contains('selected')) {
-        ToggleHelp("objHelp", "off", true)
-        ToggleControlObjectSpawn("off");
-        ToggleControlScene("on");
-        document.getElementById('button-scenetags').classList.remove('selected');
-        document.getElementById('button-importexport').classList.remove('selected');
-        document.getElementById('objSpawnOptions').style.display = "none";
-        document.getElementById('objSearchList').style.display = "flex";
-    } else {
-        document.getElementById('objSearchList').style.display = "none";
-    }
-}
-
-function ToggleSceneTag(state) {
-    var el = document.getElementById('button-scenetags');
-    ToggleSelected(el, state);
-
-    if (el.classList.contains('selected')) {
-        ToggleHelp("objHelp", "off", true)
-        ToggleControlObjectSpawn("off");
-        ToggleControlScene("on");
-        document.getElementById('button-scenecontrol').classList.remove('selected');
-        document.getElementById('button-importexport').classList.remove('selected');
-        document.getElementById('objSpawnOptions').style.display = "none";
-        document.getElementById('objSearchList').style.display = "flex";
-    } else {
-        document.getElementById('objSearchList').style.display = "none";
-    }
-}
-
-function ToggleImportExport(state) {
-    var el = document.getElementById('button-importexport');
-    ToggleSelected(el, state);
-
-    if (el.classList.contains('selected')) {
-        ToggleHelp("objHelp", "off", true)
-        ToggleControlObjectSpawn("off");
-        ToggleControlScene("on");
-        document.getElementById('button-scenecontrol').classList.remove('selected');
-        document.getElementById('button-scenetags').classList.remove('selected');
-        document.getElementById('objSpawnOptions').style.display = "none";
-        document.getElementById('objSearchList').style.display = "flex";
-    } else {
-        document.getElementById('objSearchList').style.display = "none";
     }
 }
 
@@ -1357,6 +1291,100 @@ function GetTrackedObjects() {
     }, 250);
 }
 
+// Object Scene //
+function ToggleControlScene(state) {
+    var el = document.getElementById('button-objectscene');
+    ToggleSelected(el, state);
+
+    if (el.classList.contains('selected')) {
+        ToggleHelp("objHelp", "off", true)
+        ToggleObjectSpawn("off");
+        ToggleControlObjectSpawn("off");
+        ResetObjData();
+        document.getElementById('button-objectspawn').classList.remove('selected');
+        document.getElementById('button-objectdetails').classList.remove('selected');
+        document.getElementById('objSceneOptions').style.display = "inline-flex";
+    } else {
+        document.getElementById('objSceneOptions').style.display = "none";
+    }
+}
+
+function ToggleSceneMove(state) {
+    var el = document.getElementById('button-scenecontrol');
+    ToggleSelected(el, state);
+
+    if (el.classList.contains('selected')) {
+        ToggleHelp("objHelp", "off", true)
+        ToggleControlScene("on");
+        SelectObjectButton('button-scenecontrol');
+        document.getElementById('objSpawnOptions').style.display = "none";
+        document.getElementById('objSearchList').style.display = "flex";
+    } else {
+        document.getElementById('objSearchList').style.display = "none";
+    }
+}
+
+function ToggleSceneTag(state) {
+    var el = document.getElementById('button-scenetags');
+    ToggleSelected(el, state);
+
+    if (el.classList.contains('selected')) {
+        ToggleHelp("objHelp", "off", true)
+        ToggleControlScene("on");
+        SelectObjectButton('button-scenetags');
+        document.getElementById('objSpawnOptions').style.display = "none";
+        document.getElementById('objSearchList').style.display = "flex";
+    } else {
+        document.getElementById('objSearchList').style.display = "none";
+    }
+}
+
+function ToggleImportExport(state) {
+    var el = document.getElementById('button-importexport');
+    ToggleSelected(el, state);
+
+    if (el.classList.contains('selected')) {
+        ToggleHelp("objHelp", "off", true)
+        ToggleControlScene("on");
+        SelectObjectButton('button-importexport');
+        document.getElementById('objSpawnOptions').style.display = "none";
+        document.getElementById('objSearchList').style.display = "flex";
+    } else {
+        document.getElementById('objSearchList').style.display = "none";
+    }
+}
+
+function ToggleObjectDetails(state) {
+    var el = document.getElementById('button-objectdetails');
+    ToggleSelected(el, state);
+
+    if (el.classList.contains('selected')) {
+        ToggleHelp("objHelp", "off", true)
+        ToggleObjectSpawn("off");
+        ToggleControlObjectSpawn("off");
+        ToggleControlScene("off");
+        document.getElementById('objSpawnOptions').style.display = "none";
+        document.getElementById('objSearchList').style.display = "none";
+    } else {
+        // document.getElementById('objDetails').style.display = "none";
+    }
+}
+
+function SelectObjectButton(el) {
+    var elementIds = [
+        'button-spawn',
+        'button-trackedobjlist',
+        'button-scenecontrol',
+        'button-scenetags',
+        'button-importexport',
+    ];
+
+    elementIds.forEach(id => { if (id != el) {
+        document.getElementById(id).classList.remove('selected');
+    }});
+}
+
+// Object Keys //
 function HandleKeysObject(event) {
     if (GizmoActive) {
         switch(event.key) {
@@ -1452,17 +1480,15 @@ function HandleKeysObject(event) {
                 }
                 break;
             case "3":
-                break;
-            case "4":
                 ToggleSceneMove("on");
                 break;
-            case "5":
+            case "4":
                 ToggleSceneTag("on");
                 break;
-            case "6":
+            case "5":
                 ToggleImportExport("on");
                 break;
-            case "7":
+            case "6":
                 ToggleObjectDetails("on");
                 break;
             case "Backspace":

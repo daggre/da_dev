@@ -226,7 +226,10 @@ Mode.anim = {
         focusCursor = true,
         keepFocus = false,
         initFn = function()
-            SendNUIMessage({ type = "displayHUD", value = "anim"})
+            SendNUIMessage({ type = "displayHUD", value = "anim", mode = "on" })
+        end,
+        exitFn = function()
+            SendNUIMessage({ type = "displayHUD", value = "anim", mode = "off" })
         end,
         passthrough = false,
         passthroughFn = function()
@@ -248,6 +251,7 @@ Mode.object = {
         focusCursor = true,
         keepFocus = false,
         initFn = function()
+            da.Dev.Mode.Remove("anim")
             da.Dev.Mode.Add("freecam")
             SelectMode = "Cursor"
             ObjectModeThread()
@@ -289,6 +293,16 @@ Mode.object = {
 Mode.focus = {
     priority = 3,
     default = {
+        initFn = function()
+            local trackedObject = GetTrackedObject("select")
+            if trackedObject then
+                da.Log.Debug(("Focusing on object %s"):format(trackedObject))
+                PointCamAtEntity(Camera.Handle, trackedObject)
+            end
+        end,
+        exitFn = function()
+            StopCamPointing(Camera.Handle)
+        end,
         focusKeyboard = true,
         focusCursor = false,
         keepFocus = true,
@@ -302,12 +316,10 @@ Mode.freecam = {
         focusCursor = false,
         keepFocus = true,
         initFn = function()
-            Camera.Mode = "free"
             InitCameraControlThread()
             EnableFreeCam()
         end,
         exitFn = function()
-            Camera.Mode = "player"
             DisableFreeCam()
             SendNUIMessage({
                 type = "displayHUD",
