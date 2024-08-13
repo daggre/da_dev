@@ -94,6 +94,7 @@ local weatherTypes = {
 
 for title, weatherName in pairs(weatherTypes) do
     da.Dev.Menu.RegisterOption("weather", title, title:sub(1, 1), function()
+        freezeWeather = true
         TMC.Functions.TriggerServerEvent("weather:server:set", {
             type = "weather",
             isFrozen = freezeWeather,
