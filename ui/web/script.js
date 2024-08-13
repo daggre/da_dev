@@ -150,6 +150,7 @@ window.onload = function() {
                 break;
             case "nuiUpdate":
                 UpdateCrosshair(msg.data.objects);
+                UpdateObjectDetails(msg.data.objects);
                 break;
             case "clipboard":
                 ClipboardCopy(msg.data.text);
@@ -1128,20 +1129,16 @@ function ToggleUIObject(state) {
     if (state == "on") {
         document.getElementById('objectHUD').style.display = "flex";
         document.getElementById('objControlOptions').style.display = "flex";
-        document.getElementById('selectedObjectDisplay').style.display = "flex";
     } else if (state == "off") {
         document.getElementById('objectHUD').style.display = "none";
         document.getElementById('objControlOptions').style.display = "none";
-        document.getElementById('selectedObjectDisplay').style.display = "none";
     } else {
         if (isVisible(document.getElementById('objectHUD'))) {
             document.getElementById('objectHUD').style.display = "none";
             document.getElementById('objControlOptions').style.display = "none";
-            document.getElementById('selectedObjectDisplay').style.display = "none";
         } else {
             document.getElementById('objectHUD').style.display = "flex";
             document.getElementById('objControlOptions').style.display = "flex";
-            document.getElementById('selectedObjectDisplay').style.display = "flex";
         }
     }
 }
@@ -1195,9 +1192,11 @@ function ToggleObjectSpawn(state) {
         document.getElementById('objSearchList').style.display = "flex";
         document.getElementById('objSpawnOptions').style.display = "inline-flex";
         document.getElementById('objData').style.display = "flex";
+        document.getElementById('selectedObjectDisplay').style.display = "flex";
     } else {
         document.getElementById('objSearchField').style.display = "none";
         document.getElementById('objSearchList').style.display = "none";
+        document.getElementById('selectedObjectDisplay').style.display = "none";
         if (document.activeElement.classList.contains('entryField')) {
             document.activeElement.blur();
         }
@@ -1225,6 +1224,7 @@ function ToggleTrackedList(state) {
         GetTrackedObjects();
         SelectObjectButton('button-trackedobjlist');
         document.getElementById('objSearchField').style.display = "none";
+        document.getElementById('selectedObjectDisplay').style.display = "none";
         document.getElementById('objSearchList').style.display = "flex";
         document.getElementById('objNearbyRange').style.display = "flex";
         document.getElementById('objNearbyResults').style.display = "flex";
@@ -1365,9 +1365,44 @@ function ToggleObjectDetails(state) {
         ToggleControlScene("off");
         document.getElementById('objSpawnOptions').style.display = "none";
         document.getElementById('objSearchList').style.display = "none";
+        document.getElementById('objDetails').style.display = "flex";
+        document.getElementById('objDetailsOptions').style.display = "inline-flex";
+        document.getElementById('objDetailsList').style.display = "flex";
+        SwitchObjectDetailsSpecific('button-objDetailsPosition', 'objDetailsListPosition');
     } else {
-        // document.getElementById('objDetails').style.display = "none";
+        document.getElementById('objDetails').style.display = "none";
+        document.getElementById('objDetailsOptions').style.display = "none";
+        document.getElementById('objDetailsList').style.display = "none";
+        SwitchObjectDetailsSpecific('', '');
     }
+}
+
+function SwitchObjectDetailsSpecific(elID, listElID) {
+    var buttonSpecific = [
+        'button-objDetailsPosition',
+        'button-objDetailsStatus',
+    ];
+
+    var listSpecific = [
+        'objDetailsListPosition',
+        'objDetailsListStatus',
+    ]
+
+    buttonSpecific.forEach(button => {
+        if (button != elID) {
+            document.getElementById(button).classList.remove('selected');
+        } else {
+            document.getElementById(button).classList.add('selected');
+        }
+    });
+
+    listSpecific.forEach(list => {
+        if (list != listElID) {
+            document.getElementById(list).style.display = "none";
+        } else {
+            document.getElementById(list).style.display = "flex";
+        }
+    });
 }
 
 function SelectObjectButton(el) {
@@ -1382,6 +1417,21 @@ function SelectObjectButton(el) {
     elementIds.forEach(id => { if (id != el) {
         document.getElementById(id).classList.remove('selected');
     }});
+}
+
+function UpdateObjectDetails(data) {
+    if (!data.select) { return; }
+
+    document.getElementById("objDetailsEntityHandle").innerHTML = data.selectData.handle;
+    // document.getElementById("objDetailsEntityHandle").innerHTML = data.selectData.modelHash;
+    document.getElementById("objDetailsEntityModelName").innerHTML = data.selectData.modelName;
+    document.getElementById("objDetailsEntityPosX").innerHTML = data.selectData.coords.x;
+    document.getElementById("objDetailsEntityPosY").innerHTML = data.selectData.coords.y;
+    document.getElementById("objDetailsEntityPosZ").innerHTML = data.selectData.coords.z;
+    document.getElementById("objDetailsEntityRotPitch").innerHTML = data.selectData.rotation.pitch;
+    document.getElementById("objDetailsEntityRotRoll").innerHTML = data.selectData.rotation.roll;
+    document.getElementById("objDetailsEntityRotYaw").innerHTML = data.selectData.rotation.yaw;
+    document.getElementById("objDetailsEntityFrozen").innerHTML = data.selectData.frozen;
 }
 
 // Object Keys //
@@ -1404,6 +1454,11 @@ function HandleKeysObject(event) {
                 }
                 if (isVisible(document.getElementById('objHelp'))) {
                     ToggleHelp("objHelp", "off", true);
+                    escaped = true;
+                    break;
+                }
+                if (isVisible(document.getElementById('objDetails'))) {
+                    ToggleObjectDetails("off");
                     escaped = true;
                     break;
                 }
@@ -1450,8 +1505,12 @@ function HandleKeysObject(event) {
                     });
                 }
                 break;
-            case "!":
             case "1":
+                ToggleObjectDetails("on");
+                document.getElementById('button-objectdetails').focus();
+                break;
+            case "@":
+            case "2":
                 var focusButton = false;
                 if (isVisible(document.getElementById('objSearchField'))) {
                     document.getElementById('objSearch').focus();
@@ -1465,7 +1524,7 @@ function HandleKeysObject(event) {
                     document.getElementById('button-spawn').focus();
                 }
                 break;
-            case "2":
+            case "3":
                 var focusButton = false;
                 if (isVisible(document.getElementById('objNearbyRange'))) {
                     document.getElementById('nearbyRange').focus();
@@ -1479,17 +1538,17 @@ function HandleKeysObject(event) {
                     document.getElementById('button-trackedobjlist').focus();
                 }
                 break;
-            case "3":
-                ToggleSceneMove("on");
-                break;
             case "4":
-                ToggleSceneTag("on");
+                ToggleSceneMove("on");
+                document.getElementById('button-scenecontrol').focus();
                 break;
             case "5":
-                ToggleImportExport("on");
+                ToggleSceneTag("on");
+                document.getElementById('button-scenetags').focus();
                 break;
             case "6":
-                ToggleObjectDetails("on");
+                ToggleImportExport("on");
+                document.getElementById('button-importexport').focus();
                 break;
             case "Backspace":
                 SendClientMessage('modifyMode', { mode: "object", remove: true, });

@@ -17,6 +17,14 @@ local TrackedObjects = {
     select = nil,
 }
 
+local GetThreadId = function()
+    local threadId = math.random(1000)
+    while ObjectThread[threadId] do
+        threadId = math.random(1000)
+    end
+    return threadId
+end
+
 GetTrackedObject = function(category)
     return TrackedObjects[category]
 end
@@ -52,22 +60,50 @@ local UpdateTrackedObjects = function(hit, obj)
     TrackedObjects.hover = obj
 end
 
-local GetThreadId = function()
-    local threadId = math.random(1000)
-    while ObjectThread[threadId] do
-        threadId = math.random(1000)
-    end
-    return threadId
+local GetSelectedObjectData = function(entityHandle)
+    local objData = {}
+
+    local modelHash = GetEntityModel(entityHandle)
+    local modelName = ObjectsHashLookup[modelHash] or
+        VehiclesHashLookup[modelHash] or
+        PickupsHashLookup[modelHash] or
+        PedsHashLookup[modelHash] or
+        modelHash
+    local x,y,z = table.unpack(GetEntityCoords(entityHandle))
+    local pitch, roll, yaw = table.unpack(GetEntityRotation(entityHandle, 2))
+    local frozen = IsEntityFrozen(entityHandle) == 1
+
+    objData.handle = entityHandle
+    objData.modelHash = modelHash
+    objData.modelName = modelName
+    objData.coords = {
+        x = string.format("%.2f", x),
+        y = string.format("%.2f", y),
+        z = string.format("%.2f", z),
+    }
+    objData.rotation = {
+        pitch = string.format("%.2f", pitch),
+        roll = string.format("%.2f", roll),
+        yaw = string.format("%.2f", yaw),
+    }
+    objData.frozen = frozen
+
+    return objData
 end
 
 local NUIMessageWait = nil
 local SendNUIUpdate = function(objects)
+    local selectedObjectData = {}
+    if objects.select ~= nil then
+        selectedObjectData = GetSelectedObjectData(objects.select)
+    end
     if NUIMessageWait then return; end
     NUIMessageWait = true
     Citizen.SetTimeout(100, function() NUIMessageWait = nil end)
     SendNUIMessage({type = "nuiUpdate", objects = {
         hover = objects.hover ~= nil,
         select = objects.select ~= nil,
+        selectData = selectedObjectData,
     }})
 end
 
@@ -277,8 +313,8 @@ RegisterNUICallback('nearbyObjects', function(data, cb)
     cb({ nearbyObjects = GetNearbyObjects(data.range)})
 end)
 
-da.Dev.Menu.RegisterOption("root", "obj mode", "e", function() da.Dev.Mode.Add("object") end, function() return not SelectMode end)
-da.Dev.Menu.RegisterOption("objectRoot", "obj mode", "e", function() da.Dev.Mode.Remove("object") end, function() return SelectMode end)
+da.Dev.Menu.RegisterOption("root", "mode:edit", "e", function() da.Dev.Mode.Add("object") end, function() return not SelectMode end)
+da.Dev.Menu.RegisterOption("objectRoot", "mode:edit", "e", function() da.Dev.Mode.Remove("object") end, function() return SelectMode end)
 
 da.Dev.Menu.RegisterOption("objectRoot", "mov/rot", "r", function() StartGizmo(TrackedObjects.select) end, function() return SelectedObject ~= nil and not LocalPlayer.state.metadata.isdead end)
 da.Dev.Menu.RegisterMenu("objectRoot", "obj clipboard", "q")

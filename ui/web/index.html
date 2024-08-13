@@ -69,13 +69,13 @@
                 <div class="helpTitle">Object Mode by daggre_actual</div>
                 <div class="helpTitle" style="font-size:3vh;"></div>
                 <ul>
-                    <li><div class="entryLabel">1</div><div class="entryField">Search/Select Spawn Objects</div></li>
-                    <li><div class="entryLabel">2</div><div class="entryField">View Nearby Objects</div></li>
-                    <li><div class="entryLabel">3</div><div class="entryField"></div></li>
-                    <li><div class="entryLabel">4</div><div class="entryField">Group Select</div></li>
-                    <li><div class="entryLabel">5</div><div class="entryField">Group Tag Objects</div></li>
-                    <li><div class="entryLabel">6</div><div class="entryField">Group Move</div></li>
-                    <li><div class="entryLabel">7</div><div class="entryField">View/Edit Selected Object Details</div></li>
+                    <li><div class="entryLabel">1</div><div class="entryField">View/Edit Selected Object Details</div></li>
+                    <li><div class="entryLabel">2</div><div class="entryField">Search/Select Spawn Objects</div></li>
+                    <li><div class="entryLabel">3</div><div class="entryField">View Nearby Objects</div></li>
+                    <li><div class="entryLabel">4</div><div class="entryField"></div></li>
+                    <li><div class="entryLabel">5</div><div class="entryField">Group Select</div></li>
+                    <li><div class="entryLabel">6</div><div class="entryField">Group Tag Objects</div></li>
+                    <li><div class="entryLabel">7</div><div class="entryField">Group Move</div></li>
                     <li> </li>
                     <li><div class="entryLabel">c</div><div class="entryField">Toggle Control Passthrough</div></li>
                     <li><div class="entryLabel">MMB (Click)</div><div class="entryField">Toggle Control Passthrough</div></li>
@@ -97,28 +97,84 @@
             <div id="objControlOptions" class="controlGroup dev">
                 <ul class="row">
                     <li id="objControlSpawnOptions" style="display:none;">
-                        <div id="button-spawn" class="control" tabindex="2" role="button" aria-pressed="false"
+                        <div id="button-spawn" class="control" tabindex="12" role="button" aria-pressed="false"
                             onclick="ToggleObjectSpawn('toggle');">󰐫</div>
-                        <div id="button-trackedobjlist" class="control" tabindex="11" role="button" aria-pressed="false"
+                        <div id="button-trackedobjlist" class="control" tabindex="21" role="button" aria-pressed="false"
                             onclick="ToggleTrackedList('toggle');">󰉺</div>
                     </li>
                     <li id="objSceneOptions" style="display:none;">
-                        <div id="button-scenecontrol" class="control" tabindex="21" role="button" aria-pressed="false"
+                        <div id="button-scenecontrol" class="control" tabindex="31" role="button" aria-pressed="false"
                             onclick="ToggleSceneMove('toggle');">󱞔</div>
-                        <div id="button-scenetags" class="control" tabindex="22" role="button" aria-pressed="false"
+                        <div id="button-scenetags" class="control" tabindex="32" role="button" aria-pressed="false"
                             onclick="ToggleSceneTag('toggle');">󰜢</div>
-                        <div id="button-importexport" class="control" tabindex="23" role="button" aria-pressed="false"
+                        <div id="button-importexport" class="control" tabindex="33" role="button" aria-pressed="false"
                             onclick="ToggleImportExport('toggle');">󰾛</div>
                     </li>
                     <li>
-                        <div id="button-objectspawn" class="control" tabindex="1" role="button" aria-pressed="false"
+                        <div id="button-objectdetails" class="control" tabindex="1" role="button" aria-pressed="false"
+                            onclick="ToggleObjectDetails('toggle');">󰘱</div>
+                        <div id="button-objectspawn" class="control" tabindex="20" role="button" aria-pressed="false"
                             onclick="ToggleControlObjectSpawn('toggle');">󰥵</div>
-                        <div id="button-objectscene" class="control" tabindex="20" role="button" aria-pressed="false"
+                        <div id="button-objectscene" class="control" tabindex="30" role="button" aria-pressed="false"
                             onclick="ToggleControlScene('toggle');">󰷔</div>
-                        <div id="button-objectdetails" class="control" tabindex="30" role="button" aria-pressed="false"
-                            onclick="ToggleDetails('toggle');">󰘱</div>
                     </li>
                 </ul>
+            </div>
+            <div id="objDetails" class="dev listGroup">
+                <div id="objDetailsList" class="entryList optList" style="background:none; height:fit-content;">
+                    <ul>
+                        <li>
+                            <div class="entryLabel">Entity</div>
+                            <div id="objDetailsEntityHandle" class="entryField" contenteditable="true" tabindex="3">1.0</div>
+                        </li> <li>
+                            <div class="entryLabel">Model Name</div>
+                            <div id="objDetailsEntityModelName" class="entryField" contenteditable="true" tabindex="3">1.0</div>
+                        </li>
+                    </ul>
+                </div>
+                <div id="objDetailsOptions" class="inlineControlGroup controlGroup dev">
+                    <ul class="row">
+                        <li>
+                            <div id="button-objDetailsPosition" class="control selected" tabindex="14" role="button" aria-pressed="false"
+                                onclick="SwitchObjectDetailsSpecific('button-objDetailsPosition', 'objDetailsListPosition');">󰍒</div>
+                            <div id="button-objDetailsStatus" class="control" tabindex="15" role="button" aria-pressed="false"
+                                onclick="SwitchObjectDetailsSpecific('button-objDetailsStatus', 'objDetailsListStatus');">󱖫</div>
+                        </li>
+                    </ul>
+                </div>
+                <div id="objDetailsListPosition" class="entryList optList" style="background:none; height:fit-content;">
+                    <ul>
+                        <li>
+                            <div class="entryLabel">X</div>
+                            <div id="objDetailsEntityPosX" class="entryField" contenteditable="true" tabindex="3">0</div>
+                        </li> <li>
+                            <div class="entryLabel">Y</div>
+                            <div id="objDetailsEntityPosY" class="entryField" contenteditable="true" tabindex="3">0</div>
+                        </li> <li>
+                            <div class="entryLabel">Z</div>
+                            <div id="objDetailsEntityPosZ" class="entryField" contenteditable="true" tabindex="3">0</div>
+                        </li> <li>
+                            <div class="entryLabel">Pitch</div>
+                            <div id="objDetailsEntityRotPitch" class="entryField" contenteditable="true" tabindex="3">0</div>
+                        </li> <li>
+                            <div class="entryLabel">Roll</div>
+                            <div id="objDetailsEntityRotRoll" class="entryField" contenteditable="true" tabindex="3">0</div>
+                        </li> <li>
+                            <div class="entryLabel">Yaw</div>
+                            <div id="objDetailsEntityRotYaw" class="entryField" contenteditable="true" tabindex="3">0</div>
+                        </li>
+                    </ul>
+                </div>
+                <div id="objDetailsListStatus" class="entryList optList" style="background:none; height:fit-content;">
+                    <ul>
+                        <li>
+                            <div class="entryLabel">Frozen</div>
+                            <div id="objDetailsEntityFrozen" class="entryField" contenteditable="true" tabindex="3">test</div>
+                        </li>
+                    </ul>
+                </div>
+                <!-- <div id="objData" class="listTop"> -->
+                <!-- </div> -->
             </div>
             <div id="selectedObjectDisplay" class="optList dev">
                 <ul id="selectedObject">
@@ -132,19 +188,19 @@
                 <div id="objSpawnOptions" class="inlineControlGroup controlGroup dev">
                     <ul class="row">
                         <li>
-                            <div id="button-spawnfavs" class="control" tabindex="3" role="button" aria-pressed="false"
+                            <div id="button-spawnfavs" class="control" tabindex="13" role="button" aria-pressed="false"
                                 onclick="ToggleObjectFavsSpawn('toggle');">󰓎</div>
-                            <div id="button-spawnobjects" class="control selected" tabindex="4" role="button" aria-pressed="false"
+                            <div id="button-spawnobjects" class="control selected" tabindex="14" role="button" aria-pressed="false"
                                 onclick="SelectSpawnType('objects');"></div>
-                            <div id="button-spawnpeds" class="control" tabindex="5" role="button" aria-pressed="false"
+                            <div id="button-spawnpeds" class="control" tabindex="15" role="button" aria-pressed="false"
                                 onclick="SelectSpawnType('peds');"></div>
-                            <div id="button-spawnvehicles" class="control" tabindex="6" role="button" aria-pressed="false"
+                            <div id="button-spawnvehicles" class="control" tabindex="16" role="button" aria-pressed="false"
                                 onclick="SelectSpawnType('vehicles');">󱓲</div>
-                            <div id="button-spawnpropsets" class="control" tabindex="7" role="button" aria-pressed="false"
+                            <div id="button-spawnpropsets" class="control" tabindex="17" role="button" aria-pressed="false"
                                 onclick="SelectSpawnType('propsets');"></div>
-                            <div id="button-spawnpickups" class="control" tabindex="8" role="button" aria-pressed="false"
+                            <div id="button-spawnpickups" class="control" tabindex="18" role="button" aria-pressed="false"
                                 onclick="SelectSpawnType('pickups');"></div>
-                            <div id="button-spawnother" class="control" tabindex="9" role="button" aria-pressed="false"
+                            <div id="button-spawnother" class="control" tabindex="19" role="button" aria-pressed="false"
                                 onclick="SelectSpawnType('other');">󱝤</div>
                         </li>
                     </ul>
@@ -153,7 +209,7 @@
                 </div>
                 <div id="objNearbyRange" class="dev" style="flex-shrink: 0;">
                     <div class="entryLabel">range</div>
-                    <div id="nearbyRange" class="entryField" tabindex="12" contenteditable="true">20</div>
+                    <div id="nearbyRange" class="entryField" tabindex="22" contenteditable="true">20</div>
                 </div>
                 <!-- <div id="objNearbyControl" class="inlineControlGroup controlGroup dev"> -->
                 <!--     <ul class="row"> -->

@@ -37,7 +37,6 @@ client_scripts {
     "control/disco_keys.lua",
     "teleport/teleport.lua",
     "entity/kinematics.lua",
-    "mode/mode.lua",
     "env.lua",
     -- "entity/fx.lua",
     "ui/ui.lua",
@@ -45,6 +44,7 @@ client_scripts {
     "mode/freecam.lua",
     "mode/gizmo.lua",
     "mode/object.lua",
+    "mode/mode.lua",
 }
 
 files {
