@@ -162,6 +162,9 @@ window.onload = function() {
             case "setGizmoState":
                 GizmoActive = msg.data.data.shown
                 break;
+            case "toggleHelp":
+                ToggleHelp(msg.data.mode, msg.data.state, msg.data.toggleCursor);
+                break;
         }
     })
 }
@@ -1413,7 +1416,10 @@ function HandleKeysObject(event) {
                 break;
             case "f":
                 if (!document.activeElement.classList.contains('entryField') && !ControlPassActive) {
-                    SendClientMessage('focus', {});
+                    SendClientMessage('sendCursorKey', {
+                        pressed: Pressed,
+                        justPressed: JustPressed
+                    });
                 }
                 break;
             case "!":
@@ -1456,6 +1462,9 @@ function HandleKeysObject(event) {
             case "6":
                 ToggleImportExport("on");
                 break;
+            case "7":
+                ToggleObjectDetails("on");
+                break;
             case "Backspace":
                 SendClientMessage('modifyMode', { mode: "object", remove: true, });
                 break;
@@ -1464,7 +1473,6 @@ function HandleKeysObject(event) {
                 ToggleHelp("objHelp", "toggle", true)
                 break;
             case "r":
-                console.log("Sending object mode key r", event)
                 SendClientMessage('sendCursorKey', {
                     pressed: Pressed,
                     justPressed: JustPressed

@@ -75,8 +75,17 @@ local ControlCheckCrosshair = function()
 
     local pressed, justPressed = da.Dev.Control.GetPressed(
         { "r", "Escape", "Alt", "Control", },
-        { "r", "x", "z", "MouseLeft", }
+        { "h", "r", "x", "z", "MouseLeft", }
     )
+
+    if justPressed.h then
+        SendNUIMessage({
+            type = "toggleHelp",
+            mode = "objHelp",
+            state = "toggle",
+            toggleCursor = true,
+        })
+    end
 
     -- Select Object (MouseLeft)
     if justPressed.MouseLeft  then
@@ -159,6 +168,7 @@ RegisterNUICallback('NUIKey', function(data, cb)
         end
         cb(true)
     end
+
 end)
 
 local SelectModeTick = function()
