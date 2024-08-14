@@ -1423,6 +1423,7 @@ function UpdateObjectDetails(data) {
     if (!data.select) { return; }
 
     document.getElementById("objDetailsEntityHandle").innerHTML = data.selectData.handle;
+    document.getElementById("objDetailsEntityNetworkId").innerHTML = data.selectData.networkID;
     // document.getElementById("objDetailsEntityHandle").innerHTML = data.selectData.modelHash;
     document.getElementById("objDetailsEntityModelName").innerHTML = data.selectData.modelName;
     document.getElementById("objDetailsEntityPosX").innerHTML = data.selectData.coords.x;
@@ -1432,6 +1433,7 @@ function UpdateObjectDetails(data) {
     document.getElementById("objDetailsEntityRotRoll").innerHTML = data.selectData.rotation.roll;
     document.getElementById("objDetailsEntityRotYaw").innerHTML = data.selectData.rotation.yaw;
     document.getElementById("objDetailsEntityFrozen").innerHTML = data.selectData.frozen;
+    document.getElementById("objDetailsEntityCollision").innerHTML = data.selectData.collision;
 }
 
 // Object Keys //

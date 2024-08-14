@@ -63,6 +63,7 @@ end
 local GetSelectedObjectData = function(entityHandle)
     local objData = {}
 
+    local networkID = NetworkGetEntityIsNetworked(entityHandle) and NetworkGetNetworkIdFromEntity(entityHandle) or false
     local modelHash = GetEntityModel(entityHandle)
     local modelName = ObjectsHashLookup[modelHash] or
         VehiclesHashLookup[modelHash] or
@@ -72,9 +73,12 @@ local GetSelectedObjectData = function(entityHandle)
     local x,y,z = table.unpack(GetEntityCoords(entityHandle))
     local pitch, roll, yaw = table.unpack(GetEntityRotation(entityHandle, 2))
     local frozen = IsEntityFrozen(entityHandle) == 1
+    local collision = GetEntityCollisionDisabled(entityHandle) == false
+
 
     objData.handle = entityHandle
     objData.modelHash = modelHash
+    objData.networkID = networkID
     objData.modelName = modelName
     objData.coords = {
         x = string.format("%.2f", x),
@@ -87,6 +91,7 @@ local GetSelectedObjectData = function(entityHandle)
         yaw = string.format("%.2f", yaw),
     }
     objData.frozen = frozen
+    objData.collision = collision
 
     return objData
 end
