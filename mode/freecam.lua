@@ -130,7 +130,6 @@ local CheckMovementControls = function(x, y, z, rot_x, rot_y, rot_z, fov)
 
     -- Mouse Controls
     if pressed.Control then
-        -- enableMouseAim = false
         -- Press Control adjust FOV on Mouse Up/Down
 
         if justPressed.x then
@@ -224,7 +223,8 @@ InitCameraControlThread = function()
             Citizen.Wait(0)
             x, y, z = GetCoords(playerPedId)
             rot_x, rot_y, rot_z = table.unpack(GetFinalRenderedCamRot())
-            SetCoords(playerPedId, CheckMovementControls(x, y, z, rot_x, rot_y, rot_z, fov))
+            x, y, z, rot_x, rot_y, rot_z, fov = CheckMovementControls(x, y, z, rot_x, rot_y, rot_z, fov)
+            SetCoords(playerPedId, x, y, z, rot_x, rot_y, rot_z, fov)
             CheckCameraControls()
         end
         CamControlThread = false
