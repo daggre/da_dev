@@ -30,9 +30,9 @@ function isVisible(el) {
 }
 
 function ToggleSelected(el, state = "toggle") {
-    if (state == "on") {
+    if (state == true || state == "true" || state == "on") {
         el.classList.add('selected');
-    } else if (state == "off") {
+    } else if (state == false || state == "false" || state == "off") {
         el.classList.remove('selected');
     } else if (state == "toggle") {
         el.classList.toggle('selected');
@@ -251,7 +251,7 @@ $(document).ready(function() {
 
                             // Stop further processing if the clicked element matches any target class
                             if (isInterruptingElement) {
-                                console.log("Clicked on a HUD element, skipping game logic.");
+                                // console.log("Clicked on a HUD element, skipping game logic.");
                                 event.stopPropagation(); // Prevent event from bubbling up further if necessary
                                 return; // Short-circuit the game logic
                             }
@@ -1383,7 +1383,9 @@ function ToggleObjectDetails(state) {
         document.getElementById('objDetails').style.display = "flex";
         document.getElementById('objDetailsOptions').style.display = "inline-flex";
         document.getElementById('objDetailsList').style.display = "flex";
-        SwitchObjectDetailsSpecific('button-objDetailsPosition', 'objDetailsListPosition');
+        // SwitchObjectDetailsSpecific('button-objDetailsPosition', 'objDetailsListPosition');
+        ToggleObjectListDetails('button-objDetailsPosition', 'objDetailsListPosition', true);
+        ToggleObjectListDetails('button-objDetailsStatus', 'objDetailsListStatus', true);
     } else {
         document.getElementById('objDetails').style.display = "none";
         document.getElementById('objDetailsOptions').style.display = "none";
@@ -1391,6 +1393,23 @@ function ToggleObjectDetails(state) {
         SwitchObjectDetailsSpecific('', '');
     }
 }
+
+function ToggleObjectListDetails(elID, listElID, state = "toggle") {
+    if (state == true || state == "true" || state == "on") {
+        document.getElementById(elID).classList.add('selected');
+        document.getElementById(listElID).style.display = "flex";
+    } else if (state == false || state == "false" || state == "off") {
+        document.getElementById(elID).classList.remove('selected');
+        document.getElementById(listElID).style.display = "none";
+    } else if (state == "toggle") {
+        document.getElementById(elID).classList.toggle('selected');
+        if (document.getElementById(elID).classList.contains('selected')) {
+            document.getElementById(listElID).style.display = "flex";
+        } else {
+            document.getElementById(listElID).style.display = "none";
+        }
+    }
+};
 
 function SwitchObjectDetailsSpecific(elID, listElID) {
     var buttonSpecific = [
@@ -1447,8 +1466,8 @@ function UpdateObjectDetails(data) {
     document.getElementById("objDetailsEntityRotPitch").innerHTML = data.selectData.rotation.pitch;
     document.getElementById("objDetailsEntityRotRoll").innerHTML = data.selectData.rotation.roll;
     document.getElementById("objDetailsEntityRotYaw").innerHTML = data.selectData.rotation.yaw;
-    document.getElementById("objDetailsEntityFrozen").innerHTML = data.selectData.frozen;
-    document.getElementById("objDetailsEntityCollision").innerHTML = data.selectData.collision;
+    ToggleSelected(document.getElementById("objDetailsEntityFrozen"), data.selectData.frozen);
+    ToggleSelected(document.getElementById("objDetailsEntityCollision"), data.selectData.collision);
 }
 
 // Object Keys //
