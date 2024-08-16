@@ -240,6 +240,21 @@ $(document).ready(function() {
                             }
                         }
                         if (!ControlPassActive) {
+                            // Get the target element that was clicked, and check if we should block the event
+                            const target = event.target;
+                            const isInterruptingElement = target.classList.contains('entryLabel') ||
+                                                        target.classList.contains('entryField') ||
+                                                        target.classList.contains('control') ||
+                                                        target.closest('.entryLabel') ||
+                                                        target.closest('.entryField') ||
+                                                        target.closest('.control');
+
+                            // Stop further processing if the clicked element matches any target class
+                            if (isInterruptingElement) {
+                                console.log("Clicked on a HUD element, skipping game logic.");
+                                event.stopPropagation(); // Prevent event from bubbling up further if necessary
+                                return; // Short-circuit the game logic
+                            }
                             SendClientMessage('sendCursorKey', {
                                 justPressed: { MouseLeft: true, }
                             });
