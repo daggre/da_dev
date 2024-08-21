@@ -32,7 +32,7 @@ local Clamp = function(val, min, max)
 end
 
 local CheckCameraControls = function()
-    local _, justPressed = da.Dev.Control.GetPressed( {}, { "f", })
+    local justPressed = da.Control.GetJustPressed({ "f", })
 
     if justPressed.f then
         da.Mode.Toggle("focus")
@@ -120,12 +120,12 @@ local CheckMovementControls = function(x, y, z, rot_x, rot_y, rot_z, fov)
     DisableAllControlActions(0)
     local enableMouseAim = not da.Mode.IsActive("freecam")
 
-    local deltaLR = GetDisabledControlNormal(0, Control.MouseLR)
-    local deltaUD = GetDisabledControlNormal(0, Control.MouseUD)
-    local pressed, justPressed = da.Dev.Control.GetPressed(
-        { "a", "d", "e", "q", "s", "w", "x", "Spacebar", "Alt", "Control", "Shift", "WheelUp", "WheelDown", "MouseRight", },
-        { "x", }
-    )
+    local deltaLR = GetDisabledControlNormal(0, da.Control.Map.MouseLR)
+    local deltaUD = GetDisabledControlNormal(0, da.Control.Map.MouseUD)
+    local pressed = da.Control.GetPressed(
+        { "a", "d", "e", "q", "s", "w", "x", "Spacebar", "Alt", "Control", "Shift", "WheelUp", "WheelDown", "MouseRight", })
+    local justPressed = da.Control.GetPressed(
+        { "x", })
     local modifier = Speed.Current
 
     -- Mouse Controls
@@ -189,8 +189,8 @@ local CheckMovementControls = function(x, y, z, rot_x, rot_y, rot_z, fov)
     if pressed.q then z = z - (modifier/2) end
 
     if enableMouseAim then
-        EnableControlAction(0, Control.MouseLR)
-        EnableControlAction(0, Control.MouseUD)
+        EnableControlAction(0, da.Control.Map.MouseLR)
+        EnableControlAction(0, da.Control.Map.MouseUD)
     end
 
     -- Set Coords

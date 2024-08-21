@@ -17,7 +17,7 @@ da.Mode.New("animation", 70, {
         da.Mode.Modify("animation", { focusCursor = false, keepFocus = true, })
     end,
     passthroughCallback = function()
-        da.Control.WaitForKeyRelease(AllControls)
+        da.Control.WaitForKeyRelease(da.Control.Keys)
         da.Mode.Reset("animation")
         SendNUIMessage({ type = "controlPass", enable = false, })
     end,

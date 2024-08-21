@@ -66,7 +66,7 @@ da.Dev.Menu.RegisterOption("teleport", "disappear", "0", function()
         coords = coords,
         networked = true,
     })
-    Citzen.Wait(1000)
+    Citizen.Wait(1000)
     da.Mode.Add("noclip")
     da.Fx.New("anm_shows", "ent_anim_magician_smoke", {
         coords = coords,
