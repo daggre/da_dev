@@ -2,7 +2,7 @@
 function StartGizmo(entity)
     if not entity then return; end
     if not DoesEntityExist(entity) then return; end
-    da.Dev.Mode.Add("gizmo")
+    da.Mode.Add("gizmo")
     Citizen.Wait(100)
     SendNUIMessage({
         type = 'setGizmoEntity',
@@ -27,7 +27,7 @@ function InitGizmoThread()
             }})
             Citizen.Wait(0)
         end
-        da.Dev.Mode.Remove("gizmo")
+        da.Mode.Remove("gizmo")
         GizmoThreadStarted = false
     end)
 end
@@ -56,17 +56,49 @@ RegisterNUICallback('moveGizmoEntity', function(data, cb)
 end)
 
 RegisterNUICallback('gizmoStop', function()
-    da.Dev.Mode.Remove("gizmo")
+    da.Mode.Remove("gizmo")
 end)
 
 AddEventHandler("stopGizmo", function()
-    da.Dev.Mode.Remove("gizmo")
+    da.Mode.Remove("gizmo")
 end)
 
 AddEventHandler('onResourceStop', function(resourceName)
     if resourceName == GetCurrentResourceName() then
         GizmoThreadStarted = false
-        da.Dev.Mode.Remove("gizmo")
+        da.Mode.Remove("gizmo")
     end
 end)
+
+da.Mode.New("gizmo", 100, {
+    focusKeyboard = true,
+    focusCursor = true,
+    keepFocus = true,
+    updateFn = function(data)
+        SetNuiFocus(data.focusKeyboard, data.focusCursor)
+        SetNuiFocusKeepInput(data.keepFocus)
+        SendNUIMessage({ type = "controlPass", enable = data.passthrough, })
+    end,
+    initFn = function()
+        SelectMode = "Cursor"
+        InitGizmoThread()
+        RemoveTrackedObject("hover")
+        SendNUIMessage({
+            type = 'setGizmoState',
+            data = { shown = true }
+        })
+    end,
+    exitFn = function()
+        SendNUIMessage({ type = 'setGizmoState', data = { shown = false } })
+        GizmoThreadStarted = false
+    end,
+    passthroughFn = function()
+        da.Mode.Modify("gizmo", { focusCursor = true, })
+    end,
+    passthroughCallback = function()
+        da.Control.WaitForKeyRelease(AllControls)
+        da.Mode.Reset("gizmo")
+        SendNUIMessage({ type = "controlPass", enable = false, })
+    end,
+})
 

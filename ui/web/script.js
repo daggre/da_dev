@@ -125,7 +125,7 @@ function ToggleUI(data) {
         case "devTreeHUD":
             ToggleUIDevTree(data)
             break;
-        case "anim":
+        case "animation":
             ToggleUIAnim(data.mode);
             break;
         case "object":
@@ -207,7 +207,7 @@ $(document).ready(function() {
                     QuickPress.MiddleMouse.active = true;
                     setTimeout(function() { QuickPress.MiddleMouse.active = false; }, QuickPress.Timeout);
                     SendClientMessage('modifyMode', {
-                        mode: "anim",
+                        mode: "animation",
                         focusCursor: false,
                         keepFocus: true,
                         passthrough: true,

@@ -47,7 +47,7 @@ local DrawTrackedObjects = function()
 end
 
 local UpdateTrackedObjects = function(hit, obj)
-    if da.Dev.Mode.IsActive("gizmo") then return; end
+    if da.Mode.IsActive("gizmo") then return; end
     if not hit then
         TrackedObjects.hover = nil
         return
@@ -65,11 +65,7 @@ local GetSelectedObjectData = function(entityHandle)
 
     local networkID = NetworkGetEntityIsNetworked(entityHandle) and NetworkGetNetworkIdFromEntity(entityHandle) or false
     local modelHash = GetEntityModel(entityHandle)
-    local modelName = ObjectsHashLookup[modelHash] or
-        VehiclesHashLookup[modelHash] or
-        PickupsHashLookup[modelHash] or
-        PedsHashLookup[modelHash] or
-        modelHash
+    local modelName = da.Util.GetModelName(modelHash)
     local x,y,z = table.unpack(GetEntityCoords(entityHandle))
     local pitch, roll, yaw = table.unpack(GetEntityRotation(entityHandle, 2))
     local frozen = IsEntityFrozen(entityHandle) == 1
@@ -168,7 +164,7 @@ local ControlCheckCrosshair = function()
     end
 
     if pressed.Escape then
-        da.Dev.Mode.Remove("object")
+        da.Mode.Remove("object")
     end
 end
 
@@ -188,7 +184,7 @@ local ControlCheckCursor = function(pressed, justPressed)
     end
 
     if justPressed.f then
-        da.Dev.Mode.Toggle("focus")
+        da.Mode.Toggle("focus")
     end
 
     if justPressed.r then
@@ -288,11 +284,7 @@ function GetNearbyObjects(range)
         entityData[i] = {
             handle = entity,
             model = model,
-            modelName = ObjectsHashLookup[model] or
-                VehiclesHashLookup[model] or
-                PickupsHashLookup[model] or
-                PedsHashLookup[model] or
-                model,
+            modelName = da.Util.GetModelName(modelHash),
             distance = #(pos - coords),
         }
     end
@@ -303,11 +295,7 @@ function GetNearbyObjects(range)
         entityData[i] = {
             handle = entity,
             model = model,
-            modelName = PedsHashLookup[model] or
-                VehiclesHashLookup[model] or
-                ObjectsHashLookup[model] or
-                PickupsHashLookup[model] or
-                model,
+            modelName = da.Util.GetModelName(modelHash),
             distance = #(pos - coords),
         }
     end
@@ -318,8 +306,8 @@ RegisterNUICallback('nearbyObjects', function(data, cb)
     cb({ nearbyObjects = GetNearbyObjects(data.range)})
 end)
 
-da.Dev.Menu.RegisterOption("root", "mode:edit", "e", function() da.Dev.Mode.Add("object") end, function() return not SelectMode end)
-da.Dev.Menu.RegisterOption("objectRoot", "mode:edit", "e", function() da.Dev.Mode.Remove("object") end, function() return SelectMode end)
+da.Dev.Menu.RegisterOption("root", "mode:edit", "e", function() da.Mode.Add("object") end, function() return not SelectMode end)
+da.Dev.Menu.RegisterOption("objectRoot", "mode:edit", "e", function() da.Mode.Remove("object") end, function() return SelectMode end)
 
 da.Dev.Menu.RegisterOption("objectRoot", "mov/rot", "r", function() StartGizmo(TrackedObjects.select) end, function() return SelectedObject ~= nil and not LocalPlayer.state.metadata.isdead end)
 da.Dev.Menu.RegisterMenu("objectRoot", "obj clipboard", "q")
@@ -380,7 +368,7 @@ da.Dev.Menu.RegisterOption("obj set", "pos xy", "x", function()
     end)
 
 da.Dev.Menu.RegisterOption("objectRoot", "reset rot", "]", function()
-        local obj = TrackedObjects.hover ~= nil and HoveredObject or TrackedObjects.select
+        local obj = TrackedObjects.hover ~= nil and TrackedObjects.hover or TrackedObjects.select
         SetEntityRotation(obj, 0, 0, 0)
     end,
     function()
@@ -389,16 +377,81 @@ da.Dev.Menu.RegisterOption("objectRoot", "reset rot", "]", function()
 
 -- Freeze
 da.Dev.Menu.RegisterOption("objectRoot", "frz", "f", function()
-        local obj = TrackedObjects.hover ~= nil and HoveredObject or TrackedObjects.select
+        local obj = TrackedObjects.hover ~= nil and TrackedObjects.hover or TrackedObjects.select
         FreezeEntityPosition(obj, true)
     end, function()
-        local obj = TrackedObjects.hover ~= nil and HoveredObject or TrackedObjects.select
+        local obj = TrackedObjects.hover ~= nil and TrackedObjects.hover or TrackedObjects.select
         return obj ~= nil and IsEntityFrozen(obj) == 0
     end)
 da.Dev.Menu.RegisterOption("objectRoot", "unfrz", "f", function()
-        local obj = TrackedObjects.hover ~= nil and HoveredObject or TrackedObjects.select
+        local obj = TrackedObjects.hover ~= nil and TrackedObjects.hover or TrackedObjects.select
         FreezeEntityPosition(obj, false)
     end, function()
-        local obj = TrackedObjects.hover ~= nil and HoveredObject or TrackedObjects.select
+        local obj = TrackedObjects.hover ~= nil and TrackedObjects.hover or TrackedObjects.select
         return obj ~= nil and IsEntityFrozen(obj) == 1
     end)
+
+da.Mode.New("object", 60, {
+    focusKeyboard = true,
+    focusCursor = true,
+    keepFocus = false,
+    updateFn = function(data)
+        SetNuiFocus(data.focusKeyboard, data.focusCursor)
+        SetNuiFocusKeepInput(data.keepFocus)
+        SendNUIMessage({ type = "controlPass", enable = data.passthrough, })
+    end,
+    initFn = function()
+        da.Mode.Remove("animation")
+        da.Mode.Add("freecam")
+        SelectMode = "Cursor"
+        ObjectModeThread()
+        SendNUIMessage({
+            type = "displayHUD",
+            value = "object",
+            enable = true,
+        })
+        da.Mode.Modify("object", { passthrough = true, })
+    end,
+    exitFn = function()
+        da.Mode.Remove("freecam")
+        da.Mode.Remove("focus")
+        SelectMode = false
+        SendNUIMessage({
+            type = "displayHUD",
+            value = "object",
+            enable = false,
+        })
+    end,
+    passthroughHaltKey = da.Control.Map.c,
+    passthroughFn = function()
+        if SelectMode then SelectMode = "Crosshair"; end
+        da.Mode.Modify("object", { focusCursor = false, keepFocus = true, })
+    end,
+    passthroughCallback = function()
+        da.Control.WaitForKeyRelease(AllControls)
+        da.Mode.Reset("object")
+        if SelectMode then SelectMode = "Cursor" end
+        SendNUIMessage({ type = "controlPass", enable = false, })
+    end,
+})
+
+da.Mode.New("focus", 40, {
+    focusKeyboard = true,
+    focusCursor = false,
+    keepFocus = true,
+    updateFn = function(data)
+        SetNuiFocus(data.focusKeyboard, data.focusCursor)
+        SetNuiFocusKeepInput(data.keepFocus)
+        SendNUIMessage({ type = "controlPass", enable = data.passthrough, })
+    end,
+    initFn = function()
+        local trackedObject = GetTrackedObject("select")
+        if trackedObject then
+            da.Log.Debug(("Focusing on object %s"):format(trackedObject))
+            PointCamAtEntity(Camera.Handle, trackedObject)
+        end
+    end,
+    exitFn = function()
+        StopCamPointing(Camera.Handle)
+    end,
+})

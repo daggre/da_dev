@@ -35,12 +35,12 @@ local CheckCameraControls = function()
     local _, justPressed = da.Dev.Control.GetPressed( {}, { "f", })
 
     if justPressed.f then
-        da.Dev.Mode.Toggle("focus")
+        da.Mode.Toggle("focus")
     end
 end
 
 local GetCoords = function(ped)
-    if da.Dev.Mode.IsActive("freecam") then
+    if da.Mode.IsActive("freecam") then
         return table.unpack(GetCamCoord(Camera.Handle))
     else
         return table.unpack(GetEntityCoords(ped))
@@ -48,20 +48,20 @@ local GetCoords = function(ped)
 end
 
 local SetCoords = function(ped, x, y, z, rot_x, rot_y, rot_z, fov)
-    if da.Dev.Mode.IsActive("freecam") then
+    if da.Mode.IsActive("freecam") then
         SetCamCoord(Camera.Handle, x, y, z)
         SetCamRot(Camera.Handle, rot_x, 0.0, rot_z, 2)
         SetCamFov(Camera.Handle, fov+0.0)
-        if da.Dev.Mode.IsActive("focus") then
+        if da.Mode.IsActive("focus") then
             local selectedObject = GetTrackedObject("select")
             if selectedObject then
-                if ActiveMode ~= "gizmo" or not GizmoMovedRecently then
+                if not GizmoMovedRecently then
                     PointCamAtEntity(Camera.Handle, selectedObject)
                 else
                     StopCamPointing(Camera.Handle)
                 end
             else
-                da.Dev.Mode.Remove("focus")
+                da.Mode.Remove("focus")
             end
         end
     else
@@ -83,7 +83,7 @@ end
 ---@return number z Translated Z Coordinate
 local Translate = function(x, y, z, rot_x, rot_z, dist, strafe)
     local math_rot_x, math_rot_y, math_rot_z, res_x, res_y, res_z
-    -- if da.Dev.Mode.IsActive("focus") then rot_x = 0; end -- Treat movement as if we are looking straight in focus mode
+    -- if da.Mode.IsActive("focus") then rot_x = 0; end -- Treat movement as if we are looking straight in focus mode
     rot_x = 0 -- Always treat movement as if we are looking straight (TODO toggle for above behavior later)
 
     if strafe then
@@ -118,7 +118,7 @@ end
 ---@return number fov Translated Field of View
 local CheckMovementControls = function(x, y, z, rot_x, rot_y, rot_z, fov)
     DisableAllControlActions(0)
-    local enableMouseAim = not da.Dev.Mode.IsActive("freecam")
+    local enableMouseAim = not da.Mode.IsActive("freecam")
 
     local deltaLR = GetDisabledControlNormal(0, Control.MouseLR)
     local deltaUD = GetDisabledControlNormal(0, Control.MouseUD)
@@ -159,7 +159,7 @@ local CheckMovementControls = function(x, y, z, rot_x, rot_y, rot_z, fov)
         if deltaUD ~= 0.0 then
             z = z - deltaUD*modifier*2
         end
-    elseif not da.Dev.Mode.IsActive("focus") and (not da.Dev.Mode.IsActive("gizmo") or da.Control.PassthroughIsActive()) then
+    elseif not da.Mode.IsActive("focus") and (not da.Mode.IsActive("gizmo") or da.Control.PassthroughIsActive()) then
         -- Otherwise Mouse aims camera
         if deltaLR ~= 0.0 then
             rot_z = rot_z + deltaLR * -1.0 * (Speed.Mouse * (math.min(fov,50)/50))
@@ -206,7 +206,7 @@ InitCameraControlThread = function()
     if CamControlThread then return; end
     Citizen.CreateThread(function()
         CamControlThread = true
-        while da.Dev.Mode.IsActive("freecam") or da.Dev.Mode.IsActive("noclip") do
+        while da.Mode.IsActive("freecam") or da.Mode.IsActive("noclip") do
             -- Send NUI message with camera info for display
             if da.Cache.Lazy.Delay("dadev","camUpdate",100) then
                 SendNUIMessage({
@@ -215,8 +215,8 @@ InitCameraControlThread = function()
                     mode = "on",
                     camera = {
                         speed = ("%.2f"):format(Speed.Current),
-                        cameraMode = da.Dev.Mode.IsActive("focus") and "" or "",
-                        noclip = da.Dev.Mode.IsActive("freecam") and "" or da.Dev.Mode.IsActive("noclip") and "" or "",
+                        cameraMode = da.Mode.IsActive("focus") and "" or "",
+                        noclip = da.Mode.IsActive("freecam") and "" or da.Mode.IsActive("noclip") and "" or "",
                     },
                 })
             end
@@ -252,7 +252,7 @@ function DisableFreeCam()
 end
 
 da.Dev.Menu.RegisterOption("root", "mode:freecam", "c", function()
-    da.Dev.Mode.Toggle("freecam")
+    da.Mode.Toggle("freecam")
 end)
 
 da.Dev.NoClip = function(state)
@@ -270,3 +270,55 @@ AddEventHandler('onResourceStop', function(resourceName)
     end
 end)
 
+da.Mode.New("freecam", 20, {
+    focusKeyboard = true,
+    focusCursor = false,
+    keepFocus = true,
+    updateFn = function(data)
+        SetNuiFocus(data.focusKeyboard, data.focusCursor)
+        SetNuiFocusKeepInput(data.keepFocus)
+        SendNUIMessage({ type = "controlPass", enable = data.passthrough, })
+    end,
+    initFn = function()
+        InitCameraControlThread()
+        EnableFreeCam()
+    end,
+    exitFn = function()
+        DisableFreeCam()
+        SendNUIMessage({
+            type = "displayHUD",
+            value = "camera",
+            mode = "off",
+        })
+    end,
+})
+
+da.Mode.New("noclip", 10, {
+    focusKeyboard = true,
+    focusCursor = false,
+    keepFocus = true,
+    updateFn = function(data)
+        SetNuiFocus(data.focusKeyboard, data.focusCursor)
+        SetNuiFocusKeepInput(data.keepFocus)
+        SendNUIMessage({ type = "controlPass", enable = data.passthrough, })
+    end,
+    initFn = function()
+        da.Dev.NoClip(true)
+        InitCameraControlThread()
+        local playerPedId = PlayerPedId()
+        FreezeEntityPosition(playerPedId, true)
+        SetEntityInvincible(playerPedId, true)
+        SetEntityVisible(playerPedId, false)
+        NetworkSetEntityInvisibleToNetwork(playerPedId, true)
+    end,
+    exitFn = function()
+        da.Dev.NoClip(false)
+        if not da.Mode.IsActive("noclip") then DisableFreeCam(); end
+        local playerPedId = PlayerPedId()
+        FreezeEntityPosition(playerPedId, false)
+        SetEntityVisible(playerPedId, true)
+        NetworkSetEntityInvisibleToNetwork(playerPedId, false)
+        Citizen.SetTimeout(5000, function() SetEntityInvincible(playerPedId, false) end)
+        SendNUIMessage({ type = "displayHUD", value = "camera", mode = "off", })
+    end,
+})
