@@ -69,11 +69,7 @@ function GetNearbyObjects(range)
         entityData[i] = {
             handle = entity,
             model = model,
-            modelName = ObjectsHashLookup[model] or
-                VehiclesHashLookup[model] or
-                PickupsHashLookup[model] or
-                PedsHashLookup[model] or
-                model,
+            modelName = da.Util.GetModelName(model),
             distance = #(pos - coords),
         }
     end
@@ -84,11 +80,7 @@ function GetNearbyObjects(range)
         entityData[i] = {
             handle = entity,
             model = model,
-            modelName = PedsHashLookup[model] or
-                VehiclesHashLookup[model] or
-                ObjectsHashLookup[model] or
-                PickupsHashLookup[model] or
-                model,
+            modelName = da.Util.GetModelName(model),
             distance = #(pos - coords),
         }
     end

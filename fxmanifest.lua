@@ -41,10 +41,11 @@ client_scripts {
     -- "entity/fx.lua",
     "ui/ui.lua",
     "ui/map.lua",
+    "mode/animation.lua",
     "mode/freecam.lua",
     "mode/gizmo.lua",
     "mode/object.lua",
-    "mode/mode.lua",
+    "mode/devtree.lua",
 }
 
 files {

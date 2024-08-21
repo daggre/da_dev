@@ -1,7 +1,7 @@
-da.Dev.Menu.RegisterOption("root", "mode:noclip", "z", function() da.Dev.Mode.Toggle("noclip") end)
+da.Dev.Menu.RegisterOption("root", "mode:noclip", "z", function() da.Mode.Toggle("noclip") end)
 da.Dev.Menu.RegisterOption("root", "revive", "r", function() TriggerEvent('TMC:Command:Revive') end, function() return LocalPlayer.state.metadata.isdead end)
 da.Dev.Menu.RegisterOption("objectRoot", "mode:noclip", "z", function()
-    da.Dev.Mode.Toggle("noclip")
+    da.Mode.Toggle("noclip")
 end)
 da.Dev.Menu.RegisterOption("objectRoot", "revive", "r", function() TriggerEvent('TMC:Command:Revive') end, function() return LocalPlayer.state.metadata.isdead end)
 
@@ -43,5 +43,5 @@ da.Dev.Menu.RegisterOption("menu", "horsetack", "h", function()
 end)
 
 da.Dev.Menu.RegisterOption("root", "mode:anim", "a", function()
-    da.Dev.Mode.Toggle("anim")
+    da.Mode.Toggle("animation")
 end)

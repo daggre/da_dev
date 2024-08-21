@@ -1,11 +1,12 @@
 CurrentTree = "optionTree"
-local lastObj = nil
 
 Citizen.CreateThread(function()
     while true do
         Citizen.Wait(5)
-        if (IsControlJustReleased(0, Control.z) or IsDisabledControlJustReleased(0, Control.z)) and not IsDisabledControlPressed(0, Control.Control) then
-            da.Dev.Mode.Add("devTree")
+        local pressed, justPressed = da.Control.GetPressed({ "Control" },{})
+        local released, justReleased = da.Control.GetReleased({},{ "z" })
+        if justReleased.z and not pressed.Control then
+            da.Mode.Add("devTree")
             SendNUIMessage({
                 type = "displayHUD",
                 value = "devTreeHUD",
@@ -15,40 +16,30 @@ Citizen.CreateThread(function()
     end
 end)
 
+RegisterNUICallback('endPassthrough', function(data, cb)
+    da.Control.Passthrough(false)
+    cb(true)
+end)
+
+RegisterNUICallback('modifyMode', function(data, cb)
+    da.Mode.Modify(data.mode, data)
+    cb(true)
+end)
+
 RegisterNUICallback('exit', function(data, cb)
-    da.Dev.Mode.Remove("anim")
-    da.Dev.Mode.Remove("devTree")
+    da.Mode.Remove("animation")
+    da.Mode.Remove("devTree")
     cb(true)
 end)
 
 RegisterNUICallback('trigger', function(data, cb)
-    da.Dev.Mode.Remove("devTree")
+    da.Log.Debug("trigger data:", data)
+    da.Mode.Remove("devTree")
     da.Dev.Menu.TriggerOption(data.menuName, data.optionName, data.params)
     cb(true)
 end)
 
 -- Animations
-
-RegisterNUICallback('animHUD', function(data, cb)
-    da.Dev.Mode.Add("anim")
-    cb(true)
-end)
-
-RegisterNUICallback('transitionControl', function(data, cb)
-    da.Log.Debug("transitionControl:", data)
-    -- Handle any transition away
-    if data.from == "animHUD" then
-        da.Dev.Mode.Remove("anim")
-    end
-
-    -- Handle any transition to
-    if data.to == "devTreeHUD" then
-        da.Dev.Mode.Add("devTree")
-    end
-
-    cb(true)
-end)
-
 RegisterNUICallback('playAnim', function(data, cb)
     -- The flag anim has some linebreaks in it so I need to find out why
     da.Log.Debug("playAnim:", data)
@@ -104,24 +95,32 @@ RegisterNUICallback('stopAnim', function(data, cb)
 end)
 
 RegisterNUICallback('initAnims', function(data, cb)
-    cb({ animations = json.encode(Animations) })
+    cb({ animations = json.encode(da.Data.Animations()) })
 end)
 
 RegisterNUICallback('initObjects', function(data, cb)
     cb({
-        objects = json.encode(Objects),
-        peds = json.encode(Peds),
-        vehicles = json.encode(Vehicles),
-        pickups = json.encode(Pickups),
-        propsets = json.encode(Propsets),
+        objects = json.encode(da.Data.GetObjects()),
+        peds = json.encode(da.Data.GetPeds()),
+        vehicles = json.encode(da.Data.GetVehicles()),
+        pickups = json.encode(da.Data.GetPickups()),
+        propsets = json.encode(da.Data.Propsets()),
     })
 end)
 
 RegisterNUICallback('initAnimFlags', function(data, cb)
-    cb({ flags = json.encode(AnimFlags) })
+    cb({ flags = json.encode(da.Data.GetAnimFlags()) })
 end)
 
 RegisterNUICallback('initIKAnimFlags', function(data, cb)
-    cb({ flags = json.encode(IKFlags) })
+    cb({ flags = json.encode(da.Data.GetIkFlags()) })
+end)
+
+AddEventHandler('onResourceStop', function(resourceName)
+    if resourceName == GetCurrentResourceName() then
+        SetNuiFocus(false, false)
+        SetNuiFocusKeepInput(false)
+        da.Control.Passthrough(false)
+    end
 end)
 
