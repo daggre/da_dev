@@ -74,7 +74,7 @@ local GetSelectedObjectData = function(entityHandle)
 
     objData.handle = entityHandle
     objData.modelHash = modelHash
-    objData.networkID = networkID
+    objData.networkID = networkID ~= false and networkID or "-"
     objData.modelName = modelName
     objData.coords = {
         x = string.format("%.2f", x),
@@ -110,14 +110,12 @@ end
 
 local ControlCheckCrosshair = function()
     DisablePlayerFiring(PPID, true)
-    for _, control in pairs(Control) do
+    for _, control in pairs(da.Control.Map) do
         DisableControlAction(0, control, true)
     end
 
-    local pressed, justPressed = da.Dev.Control.GetPressed(
-        { "r", "Escape", "Alt", "Control", },
-        { "h", "r", "x", "z", "MouseLeft", }
-    )
+    local pressed = da.Control.GetPressed({ "r", "Escape", "Alt", "Control", })
+    local justPressed = da.Control.GetJustPressed({ "h", "r", "x", "z", "MouseLeft", })
 
     if justPressed.h then
         SendNUIMessage({
@@ -284,7 +282,7 @@ function GetNearbyObjects(range)
         entityData[i] = {
             handle = entity,
             model = model,
-            modelName = da.Util.GetModelName(modelHash),
+            modelName = da.Util.GetModelName(model),
             distance = #(pos - coords),
         }
     end
@@ -295,7 +293,7 @@ function GetNearbyObjects(range)
         entityData[i] = {
             handle = entity,
             model = model,
-            modelName = da.Util.GetModelName(modelHash),
+            modelName = da.Util.GetModelName(model),
             distance = #(pos - coords),
         }
     end
@@ -309,7 +307,7 @@ end)
 da.Dev.Menu.RegisterOption("root", "mode:edit", "e", function() da.Mode.Add("object") end, function() return not SelectMode end)
 da.Dev.Menu.RegisterOption("objectRoot", "mode:edit", "e", function() da.Mode.Remove("object") end, function() return SelectMode end)
 
-da.Dev.Menu.RegisterOption("objectRoot", "mov/rot", "r", function() StartGizmo(TrackedObjects.select) end, function() return SelectedObject ~= nil and not LocalPlayer.state.metadata.isdead end)
+da.Dev.Menu.RegisterOption("objectRoot", "mov/rot", "r", function() StartGizmo(TrackedObjects.select) end, function() return TrackedObjects.select ~= nil and not LocalPlayer.state.metadata.isdead end)
 da.Dev.Menu.RegisterMenu("objectRoot", "obj clipboard", "q")
 
 
@@ -428,7 +426,7 @@ da.Mode.New("object", 60, {
         da.Mode.Modify("object", { focusCursor = false, keepFocus = true, })
     end,
     passthroughCallback = function()
-        da.Control.WaitForKeyRelease(AllControls)
+        da.Control.WaitForKeyRelease(da.Control.Keys)
         da.Mode.Reset("object")
         if SelectMode then SelectMode = "Cursor" end
         SendNUIMessage({ type = "controlPass", enable = false, })

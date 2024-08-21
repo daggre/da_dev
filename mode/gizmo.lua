@@ -96,7 +96,7 @@ da.Mode.New("gizmo", 100, {
         da.Mode.Modify("gizmo", { focusCursor = true, })
     end,
     passthroughCallback = function()
-        da.Control.WaitForKeyRelease(AllControls)
+        da.Control.WaitForKeyRelease(da.Control.Keys)
         da.Mode.Reset("gizmo")
         SendNUIMessage({ type = "controlPass", enable = false, })
     end,

@@ -3,8 +3,8 @@ CurrentTree = "optionTree"
 Citizen.CreateThread(function()
     while true do
         Citizen.Wait(5)
-        local pressed, justPressed = da.Control.GetPressed({ "Control" },{})
-        local released, justReleased = da.Control.GetReleased({},{ "z" })
+        local pressed = da.Control.GetPressed({ "Control" })
+        local justReleased = da.Control.GetJustReleased({ "z" })
         if justReleased.z and not pressed.Control then
             da.Mode.Add("devTree")
             SendNUIMessage({
@@ -109,11 +109,11 @@ RegisterNUICallback('initObjects', function(data, cb)
 end)
 
 RegisterNUICallback('initAnimFlags', function(data, cb)
-    cb({ flags = json.encode(da.Data.GetAnimFlags()) })
+    cb({ flags = json.encode(da.Data.GetAnimFlags())})
 end)
 
 RegisterNUICallback('initIKAnimFlags', function(data, cb)
-    cb({ flags = json.encode(da.Data.GetIkFlags()) })
+    cb({ flags = json.encode(da.Data.GetIkFlags())})
 end)
 
 AddEventHandler('onResourceStop', function(resourceName)

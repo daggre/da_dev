@@ -22,7 +22,6 @@ server_scripts {
 client_scripts {
     "util/bounding_box.lua",
     "util/raycast.lua",
-    "control/controls.lua",
     "ui/tree.lua",
     "root.lua",
     "control/disco_keys.lua",
