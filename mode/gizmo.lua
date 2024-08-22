@@ -69,36 +69,3 @@ AddEventHandler('onResourceStop', function(resourceName)
         da.Mode.Remove("gizmo")
     end
 end)
-
-da.Mode.New("gizmo", 100, {
-    focusKeyboard = true,
-    focusCursor = true,
-    keepFocus = true,
-    updateFn = function(data)
-        SetNuiFocus(data.focusKeyboard, data.focusCursor)
-        SetNuiFocusKeepInput(data.keepFocus)
-        SendNUIMessage({ type = "controlPass", enable = data.passthrough, })
-    end,
-    initFn = function()
-        SelectMode = "Cursor"
-        InitGizmoThread()
-        RemoveTrackedObject("hover")
-        SendNUIMessage({
-            type = 'setGizmoState',
-            data = { shown = true }
-        })
-    end,
-    exitFn = function()
-        SendNUIMessage({ type = 'setGizmoState', data = { shown = false } })
-        GizmoThreadStarted = false
-    end,
-    passthroughFn = function()
-        da.Mode.Modify("gizmo", { focusCursor = true, })
-    end,
-    passthroughCallback = function()
-        da.Control.WaitForKeyRelease(da.Control.Keys)
-        da.Mode.Reset("gizmo")
-        SendNUIMessage({ type = "controlPass", enable = false, })
-    end,
-})
-
