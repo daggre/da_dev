@@ -3,9 +3,6 @@ GizmoMovedRecently = nil
 Camera = {}
 Camera.Handle = nil
 
-local NoClip = {}
-NoClip.Enabled = false
-
 local Speed = {}
 Speed.Fast = 3
 Speed.Default = 0.2
@@ -197,17 +194,15 @@ local CheckMovementControls = function(x, y, z, rot_x, rot_y, rot_z, fov)
     return x, y, z, rot_x, rot_y, rot_z, fov
 end
 
-local CamControlThread = false
-InitCameraControlThread = function()
-    local playerPedId = PlayerPedId()
+CameraControlThread = {}
+function CameraControlThread:Start()
     local x, y, z = GetCoords(playerPedId)
     local rot_x, rot_y, rot_z = table.unpack(GetFinalRenderedCamRot())
 	local fov = GetGameplayCamFov()
-    if CamControlThread then return; end
+    local playerPedId = PlayerPedId()
+    self.active = true
     Citizen.CreateThread(function()
-        CamControlThread = true
-        while da.Mode.IsActive("freecam") or da.Mode.IsActive("noclip") do
-            -- Send NUI message with camera info for display
+        while self.active do
             if da.Cache.Lazy.Delay("dadev","camUpdate",100) then
                 SendNUIMessage({
                     type = "displayHUD",
@@ -227,11 +222,16 @@ InitCameraControlThread = function()
             SetCoords(playerPedId, x, y, z, rot_x, rot_y, rot_z, fov)
             CheckCameraControls()
         end
-        CamControlThread = false
+        self.active = false
     end)
 end
 
-function EnableFreeCam()
+function CameraControlThread:Stop()
+    self.active = false
+end
+
+Freecam = {}
+function Freecam:Start()
 	local x, y, z = table.unpack(GetGameplayCamCoord())
 	local pitch, roll, yaw = table.unpack(GetGameplayCamRot(2))
 	local fov = GetGameplayCamFov()
@@ -242,7 +242,7 @@ function EnableFreeCam()
 	RenderScriptCams(true, true, 500, true, true)
 end
 
-function DisableFreeCam()
+function Freecam:Stop()
     CamControlThread = false
     RenderScriptCams(false, true, 500, true, true)
     SetCamActive(Camera.Handle, false)
@@ -255,70 +255,28 @@ da.Dev.Menu.RegisterOption("root", "mode:freecam", "c", function()
     da.Mode.Toggle("freecam")
 end)
 
-da.Dev.NoClip = function(state)
-    if state == nil then
-        NoClip.Enabled = not NoClip.Enabled
-    else
-        NoClip.Enabled = state
-    end
+NoClip = {}
+function NoClip:Start()
+    self.active = true
+    local playerPedId = PlayerPedId()
+    FreezeEntityPosition(playerPedId, true)
+    SetEntityInvincible(playerPedId, true)
+    SetEntityVisible(playerPedId, false)
+    NetworkSetEntityInvisibleToNetwork(playerPedId, true)
+end
+
+function NoClip:Stop()
+    self.active = false
+    local playerPedId = PlayerPedId()
+    FreezeEntityPosition(playerPedId, false)
+    SetEntityVisible(playerPedId, true)
+    NetworkSetEntityInvisibleToNetwork(playerPedId, false)
+    Citizen.SetTimeout(5000, function() SetEntityInvincible(playerPedId, false) end)
 end
 
 AddEventHandler('onResourceStop', function(resourceName)
     GizmoThreadStarted = false
     if resourceName == GetCurrentResourceName() then
-        DisableFreeCam()
+        Freecam:Stop()
     end
 end)
-
-da.Mode.New("freecam", 20, {
-    focusKeyboard = true,
-    focusCursor = false,
-    keepFocus = true,
-    updateFn = function(data)
-        SetNuiFocus(data.focusKeyboard, data.focusCursor)
-        SetNuiFocusKeepInput(data.keepFocus)
-        SendNUIMessage({ type = "controlPass", enable = data.passthrough, })
-    end,
-    initFn = function()
-        InitCameraControlThread()
-        EnableFreeCam()
-    end,
-    exitFn = function()
-        DisableFreeCam()
-        SendNUIMessage({
-            type = "displayHUD",
-            value = "camera",
-            mode = "off",
-        })
-    end,
-})
-
-da.Mode.New("noclip", 10, {
-    focusKeyboard = true,
-    focusCursor = false,
-    keepFocus = true,
-    updateFn = function(data)
-        SetNuiFocus(data.focusKeyboard, data.focusCursor)
-        SetNuiFocusKeepInput(data.keepFocus)
-        SendNUIMessage({ type = "controlPass", enable = data.passthrough, })
-    end,
-    initFn = function()
-        da.Dev.NoClip(true)
-        InitCameraControlThread()
-        local playerPedId = PlayerPedId()
-        FreezeEntityPosition(playerPedId, true)
-        SetEntityInvincible(playerPedId, true)
-        SetEntityVisible(playerPedId, false)
-        NetworkSetEntityInvisibleToNetwork(playerPedId, true)
-    end,
-    exitFn = function()
-        da.Dev.NoClip(false)
-        if not da.Mode.IsActive("noclip") then DisableFreeCam(); end
-        local playerPedId = PlayerPedId()
-        FreezeEntityPosition(playerPedId, false)
-        SetEntityVisible(playerPedId, true)
-        NetworkSetEntityInvisibleToNetwork(playerPedId, false)
-        Citizen.SetTimeout(5000, function() SetEntityInvincible(playerPedId, false) end)
-        SendNUIMessage({ type = "displayHUD", value = "camera", mode = "off", })
-    end,
-})
