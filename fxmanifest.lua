@@ -31,11 +31,15 @@ client_scripts {
     -- "entity/fx.lua",
     "ui/ui.lua",
     "ui/map.lua",
-    "mode/animation.lua",
     "mode/freecam.lua",
     "mode/gizmo.lua",
     "mode/object.lua",
-    "mode/devtree.lua",
+    "src/mode_cl.lua",
+    "cmd/client.lua",
+    "src/debug_cl.lua",
+
+    -- Testing
+    "test/debug.lua",
 }
 
 files {

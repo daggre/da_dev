@@ -95,7 +95,7 @@ RegisterNUICallback('stopAnim', function(data, cb)
 end)
 
 RegisterNUICallback('initAnims', function(data, cb)
-    cb({ animations = json.encode(da.Data.Animations()) })
+    cb({ animations = json.encode(da.Data.GetAnimations()) })
 end)
 
 RegisterNUICallback('initObjects', function(data, cb)
@@ -104,7 +104,7 @@ RegisterNUICallback('initObjects', function(data, cb)
         peds = json.encode(da.Data.GetPeds()),
         vehicles = json.encode(da.Data.GetVehicles()),
         pickups = json.encode(da.Data.GetPickups()),
-        propsets = json.encode(da.Data.Propsets()),
+        propsets = json.encode(da.Data.GetPropsets()),
     })
 end)
 
