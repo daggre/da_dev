@@ -121,7 +121,7 @@ local CheckMovementControls = function(x, y, z, rot_x, rot_y, rot_z, fov)
     local deltaUD = GetDisabledControlNormal(0, da.Control.Map.MouseUD)
     local pressed = da.Control.GetPressed(
         { "a", "d", "e", "q", "s", "w", "x", "Spacebar", "Alt", "Control", "Shift", "WheelUp", "WheelDown", "MouseRight", })
-    local justPressed = da.Control.GetPressed(
+    local justPressed = da.Control.GetJustPressed(
         { "x", })
     local modifier = Speed.Current
 
@@ -196,10 +196,10 @@ end
 
 CameraControlThread = {}
 function CameraControlThread:Start()
+    local playerPedId = PlayerPedId()
     local x, y, z = GetCoords(playerPedId)
     local rot_x, rot_y, rot_z = table.unpack(GetFinalRenderedCamRot())
 	local fov = GetGameplayCamFov()
-    local playerPedId = PlayerPedId()
     self.active = true
     Citizen.CreateThread(function()
         while self.active do
