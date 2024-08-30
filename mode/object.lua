@@ -12,6 +12,7 @@ local CategoryColor = {
     hover = {r=80, g=193, b=238, a=255},
     select = {r=0, g=218, b=175, a=255},
 }
+local SpawnObject = nil
 local TrackedObjects = {
     hover = nil,
     select = nil,
@@ -71,7 +72,6 @@ local GetSelectedObjectData = function(entityHandle)
     local frozen = IsEntityFrozen(entityHandle) == 1
     local collision = GetEntityCollisionDisabled(entityHandle) == false
 
-
     objData.handle = entityHandle
     objData.modelHash = modelHash
     objData.networkID = networkID ~= false and networkID or "-"
@@ -108,14 +108,14 @@ local SendNUIUpdate = function(objects)
     }})
 end
 
-local ControlCheckCrosshair = function()
+local ControlCheckCrosshair = function(hitCoords)
     DisablePlayerFiring(PPID, true)
     for _, control in pairs(da.Control.Map) do
         DisableControlAction(0, control, true)
     end
 
     local pressed = da.Control.GetPressed({ "r", "Escape", "Alt", "Control", })
-    local justPressed = da.Control.GetJustPressed({ "h", "r", "x", "z", "MouseLeft", })
+    local justPressed = da.Control.GetJustPressed({ "g", "h", "r", "x", "z", "MouseLeft", })
 
     if justPressed.h then
         SendNUIMessage({
@@ -124,6 +124,14 @@ local ControlCheckCrosshair = function()
             state = "toggle",
             toggleCursor = true,
         })
+    end
+
+    if justPressed.g then
+        local spawnObjectHash = SpawnObject
+        local obj = da.Obj.Create(spawnObjectHash, hitCoords, {
+            ground = true,
+        })
+        TrackedObjects.select = obj
     end
 
     -- Select Object (MouseLeft)
@@ -215,12 +223,12 @@ RegisterNUICallback('NUIKey', function(data, cb)
 end)
 
 local SelectModeTick = function()
-    local hit, obj = nil, nil
+    local hit, obj, pos = nil, nil, nil
     if SelectMode == "Cursor" then
         hit, obj = RayCastCursor(MouseX, MouseY, Distance)
     elseif SelectMode == "Crosshair" then
-        hit, obj = RayCastCrosshair(PPID, Distance)
-        ControlCheckCrosshair()
+        hit, obj, pos = RayCastCrosshair(PPID, Distance)
+        ControlCheckCrosshair(pos)
     else
         return
     end
@@ -255,11 +263,6 @@ end)
 RegisterNUICallback('sendCursorPos', function(data, cb)
     MouseX = data.x
     MouseY = data.y
-    cb(true)
-end)
-
-RegisterNUICallback('sendControl', function(data, cb)
-    ControlCheckCursor(data.pressed, data.justPressed)
     cb(true)
 end)
 
@@ -302,6 +305,11 @@ end
 
 RegisterNUICallback('nearbyObjects', function(data, cb)
     cb({ nearbyObjects = GetNearbyObjects(data.range)})
+end)
+
+RegisterNUICallback('selectSpawnObject', function(data, cb)
+    SpawnObject = GetHashKey(data.name)
+    cb(true)
 end)
 
 da.Dev.Menu.RegisterOption("root", "mode:edit", "e", function() da.Mode.Add("object") end, function() return not SelectMode end)

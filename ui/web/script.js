@@ -670,8 +670,7 @@ function SearchBasicRedMList(searchValue, searchList, elementId) {
     for (var i=0; i < results.length && i < maxResults; ++i) {
         var li = document.createElement('li');
         li.addEventListener('click', function() {
-            document.getElementById("activeObject").innerHTML = this.innerHTML;
-            // Select Object
+            SelectSpawnObject(this.innerHTML)
         })
         li.innerHTML = results[i];
         ul.appendChild(li);
@@ -1225,6 +1224,11 @@ function ToggleObjectFavsSpawn(state) {
     if (el.classList.contains('selected')) {
     } else {
     }
+}
+
+function SelectSpawnObject(object) {
+    document.getElementById("activeObject").innerHTML = object;
+    SendClientMessage('selectSpawnObject', { name: object });
 }
 
 // Object Nearby //
