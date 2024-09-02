@@ -1,9 +1,9 @@
 da.Dev.Menu.RegisterOption("root", "mode:noclip", "z", function() da.Mode.Toggle("noclip") end)
-da.Dev.Menu.RegisterOption("root", "revive", "r", function() TriggerEvent('TMC:Command:Revive') end, function() return LocalPlayer.state.metadata.isdead end)
+-- da.Dev.Menu.RegisterOption("root", "revive", "r", function() TriggerEvent('TMC:Command:Revive') end, function() return LocalPlayer.state.metadata.isdead end)
 da.Dev.Menu.RegisterOption("objectRoot", "mode:noclip", "z", function()
     da.Mode.Toggle("noclip")
 end)
-da.Dev.Menu.RegisterOption("objectRoot", "revive", "r", function() TriggerEvent('TMC:Command:Revive') end, function() return LocalPlayer.state.metadata.isdead end)
+da.Dev.Menu.RegisterOption("objectRoot", "revive", "r", function() da.Fn.Revive() end, function() return IsPedDeadOrDying(PlayerPedId()) end)
 
 da.Dev.Menu.RegisterOption("root", "max cores", "9", function()
     local playerPedId = PlayerPedId()
@@ -26,21 +26,31 @@ da.Dev.Menu.RegisterOption("root", "max cores", "9", function()
 end)
 
 da.Dev.Menu.RegisterMenu("root", "pos", "v")
-da.Dev.Menu.RegisterOption("pos", "cpy vec2", "2", function() TriggerEvent("v2copycoords") end)
-da.Dev.Menu.RegisterOption("pos", "cpy vec3", "3", function() TriggerEvent("v3copycoords") end)
-da.Dev.Menu.RegisterOption("pos", "cpy vec4", "4", function() TriggerEvent("v4copycoords") end)
+da.Dev.Menu.RegisterOption("pos", "cpy vec2", "2", function()
+    local coords = GetEntityCoords(PlayerPedId())
+    SendNUIMessage({ type = "clipboard", text = ("vector2(%.3f, %.3f)"):format(coords.x, coords.y), })
+end)
+da.Dev.Menu.RegisterOption("pos", "cpy vec3", "3", function()
+    local coords = GetEntityCoords(PlayerPedId())
+    SendNUIMessage({ type = "clipboard", text = ("vector3(%.3f, %.3f, %.3f)"):format(coords.x, coords.y, coords.z), })
+end)
+da.Dev.Menu.RegisterOption("pos", "cpy vec4", "4", function()
+    local coords = GetEntityCoords(PlayerPedId())
+    local heading = GetEntityHeading(PlayerPedId())
+    SendNUIMessage({ type = "clipboard", text = ("vector4(%.3f, %.3f, %.3f, %.3f)"):format(coords.x, coords.y, coords.z, heading), })
+end)
 
 da.Dev.Menu.RegisterMenu("root", "menu", "m")
-da.Dev.Menu.RegisterOption("menu", "clothing", "c", function() TriggerEvent('clothing:openMenu', true, false, true) end) -- Barber disabled
-da.Dev.Menu.RegisterOption("menu", "horsetack", "h", function()
-    local horseEntity, dist = TMC.Functions.GetClosestHorse()
-    if dist > 25 or not horseEntity or not Entity(horseEntity) or not Entity(horseEntity).state then
-        da.Log.Debug("No horse close enough")
-        return
-    end
-    local horseId = Entity(horseEntity).state and Entity(horseEntity).state.horseId
-    TriggerServerEvent('stables:server:getTack', horseId, horseEntity)
-end)
+-- da.Dev.Menu.RegisterOption("menu", "clothing", "c", function() TriggerEvent('clothing:openMenu', true, false, true) end) -- Barber disabled
+-- da.Dev.Menu.RegisterOption("menu", "horsetack", "h", function()
+--     local horseEntity, dist = TMC.Functions.GetClosestHorse()
+--     if dist > 25 or not horseEntity or not Entity(horseEntity) or not Entity(horseEntity).state then
+--         da.Log.Debug("No horse close enough")
+--         return
+--     end
+--     local horseId = Entity(horseEntity).state and Entity(horseEntity).state.horseId
+--     TriggerServerEvent('stables:server:getTack', horseId, horseEntity)
+-- end)
 
 da.Dev.Menu.RegisterOption("root", "mode:anim", "a", function()
     da.Mode.Toggle("animation")
