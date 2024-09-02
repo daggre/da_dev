@@ -12,7 +12,7 @@ local TeleportLocations = {
     ["Van Horn"] = { key = "h", location = vector3(2930.864, 512.522, 45.882), category = "towns", },
     ["Mt Shan"] = { key = "m", location = vector3(-1976.458, 31.508, 330.356), },
     ["Rhodes"] = { key = "r", location = vector3(1373.57, -1293.563, 77.077), category = "towns", },
-    ["Wapiti"] = { key = "r", location = vector3(490.008, 2233.7, 248.402), },
+    ["Wapiti"] = { key = "r", location = vector4(478.767, 2219.107, 247.071, 118.443), },
     ["Strawberry"] = { key = "s", location = vector3(-1787.239, -370.698, 159.9), category = "towns", },
     ["Tumbleweed"] = { key = "t", location = vector3(-5530.891, -2964.492, -1.245), category = "towns", },
     ["Valentine"] = { key = "v", location = vector3(-280.086, 798.556, 119.349), category = "towns", },
@@ -24,7 +24,7 @@ local TeleportLocations = {
     ["Music Vendor"] = { key = "m", location = vector4(2655.914, -1379.673, 48.532, 225.987), category = "npc" },
 }
 
-da.Dev.Teleport = function(coords) TriggerEvent('TMC:Command:TeleportToCoords', coords) end
+da.Dev.Teleport = function(coords) da.Fn.Teleport(coords) end
 
 da.Dev.Menu.RegisterMenu("root", "teleport", "t")
 da.Dev.Menu.RegisterMenu("teleport", "towns", "t")
