@@ -15,21 +15,21 @@ shared_scripts {
 }
 
 server_scripts {
-    -- "db/convert.lua",
+    -- "src/db_inv_etl.lua",
     "src/cmd_srv.lua",
 }
 
 client_scripts {
-    "util/bounding_box.lua",
-    "util/raycast.lua",
+    "src/util/bbox_cl.lua",
+    "src/util/raycast_cl.lua",
     "ui/tree.lua",
-    "root.lua",
+    "ui/ui.lua",
+    "ui/map.lua",
+    "src/menu_cl.lua",
     "src/keys_cl.lua",
     "src/kinematics_cl.lua",
     "src/environment_cl.lua",
     -- "src/fx_cl.lua",
-    "ui/ui.lua",
-    "ui/map.lua",
     "src/mode_freecam_cl.lua",
     "src/mode_gizmo_cl.lua",
     "src/mode_object_cl.lua",
