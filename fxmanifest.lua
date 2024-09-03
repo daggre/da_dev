@@ -26,7 +26,7 @@ client_scripts {
     "root.lua",
     "src/keys_cl.lua",
     "src/kinematics_cl.lua",
-    "env.lua",
+    "src/environment_cl.lua",
     -- "src/fx_cl.lua",
     "ui/ui.lua",
     "ui/map.lua",
