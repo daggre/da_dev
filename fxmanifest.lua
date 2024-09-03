@@ -16,7 +16,7 @@ shared_scripts {
 
 server_scripts {
     -- "db/convert.lua",
-    "cmd/server.lua",
+    "src/cmd_srv.lua",
 }
 
 client_scripts {
@@ -37,7 +37,7 @@ client_scripts {
     "src/teleport_cl.lua",
     "src/ped_cl.lua",
     "src/debug_cl.lua",
-    "cmd/client.lua",
+    "src/cmd_cl.lua",
 
     -- Testing
     "test/test_debug.lua",
