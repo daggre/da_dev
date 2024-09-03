@@ -24,7 +24,7 @@ client_scripts {
     "util/raycast.lua",
     "ui/tree.lua",
     "root.lua",
-    "control/disco_keys.lua",
+    "src/keys_cl.lua",
     "src/kinematics_cl.lua",
     "env.lua",
     -- "src/fx_cl.lua",
