@@ -25,7 +25,6 @@ client_scripts {
     "ui/tree.lua",
     "root.lua",
     "control/disco_keys.lua",
-    "teleport/teleport.lua",
     "entity/kinematics.lua",
     "env.lua",
     -- "entity/fx.lua",
@@ -35,11 +34,13 @@ client_scripts {
     "mode/gizmo.lua",
     "mode/object.lua",
     "src/mode_cl.lua",
-    "cmd/client.lua",
+    "src/teleport_cl.lua",
+    "src/ped_cl.lua",
     "src/debug_cl.lua",
+    "cmd/client.lua",
 
     -- Testing
-    "test/debug.lua",
+    "test/test_debug.lua",
 }
 
 files {

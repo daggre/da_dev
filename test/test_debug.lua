@@ -1,4 +1,4 @@
-RegisterCommand("debugtest", function(source, args, rawCommand)
+RegisterCommand("dadev_test_debug", function(source, args, rawCommand)
     local z = 3
 
     local testFn = function(y)
