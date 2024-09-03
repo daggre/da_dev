@@ -1,5 +1,5 @@
-local DiscoKeysThread = false
-local DiscoKeyLog = {}
+local KeysThread = false
+local KeyLog = {}
 
 local GetKeys = function()
     return {
@@ -780,37 +780,37 @@ local GetKeys = function()
     }
 end
 
-function DiscoKeys(state)
-    if DiscoKeysThread == state then return; end
+-- Track key hashes that are being pressed for identifying controls
+function StartKeyDiscovery(state)
+    if KeysThread == state then return; end
     if state ~= nil then
-        DiscoKeysThread = state
+        KeysThread = state
     else
-        DiscoKeysThread = not DiscoKeysThread
+        KeysThread = not KeysThread
     end
 
-    if DiscoKeysThread then
+    if KeysThread then
         local allKeys = GetKeys()
         Citizen.SetTimeout(15000, function()
-            da.Log.Debug(DiscoKeyLog)
-            DiscoKeysThread = false
+            da.Log.Debug(KeyLog)
+            KeysThread = false
         end)
         Citizen.CreateThread(function()
-            da.Log.Debug("DiscoKeys ^2ON^7")
-            while DiscoKeysThread do
+            da.Log.Debug("Key Discovery ^2ON^7")
+            while KeysThread do
                 for name, keyHash in pairs(allKeys) do
                     if IsControlPressed(0, keyHash) then
                         da.Log.Debug(name)
-                        DiscoKeyLog[keyHash] = name
+                        KeyLog[keyHash] = name
                     end
                 end
                 Citizen.Wait(100)
             end
-            DiscoKeysThread = false
-            da.Log.Debug("DiscoKeys ^1OFF^7")
-            DiscoKeyLog = {}
+            KeysThread = false
+            da.Log.Debug("Key Discovery ^1OFF^7")
+            KeyLog = {}
         end)
     end
 end
 
-da.Dev.Menu.RegisterOption("menu", "discokeys", "k", function() DiscoKeys() end)
-
+da.Dev.Menu.RegisterOption("menu", "keylog", "k", function() StartKeyDiscovery() end)
