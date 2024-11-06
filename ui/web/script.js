@@ -1,24 +1,32 @@
-var Animations = {}
-var FlagTotals = 0
-var IKFlagTotals = 0
-var KeyPressRepeat = false
+var Animations = {};
+var FlagTotals = 0;
+var IKFlagTotals = 0;
+var KeyPressRepeat = false;
 
 var SpawnOption = new Map();
-var ControlPassActive = false
-var GizmoActive = false
-var GizmoActivePassthrough = false
-var SelectedObjectSpawnType = "objects"
-var SelectedObjectFavs = false
-var TrackedObjectsLoopRunning = false
-var MouseDown = false
-var LeftClickActive = false
-var CursorPosDelay = false
-const ResolutionX = window.screen.width
-const ResolutionY = window.screen.height
+var ControlPassActive = false;
+var GizmoActive = false;
+var GizmoActivePassthrough = false;
+var SelectedObjectSpawnType = "objects";
+var SelectedObjectFavs = false;
+var TrackedObjectsLoopRunning = false;
+var MouseDown = false;
+var LeftClickActive = false;
+var CursorPosDelay = false;
+const ResolutionX = window.screen.width;
+const ResolutionY = window.screen.height;
 
 var Pressed = {}
 var JustPressed = {}
 var QuickPress = { Timeout: 400, MiddleMouse: { active: false, }, }
+var NearbyOption = {
+    object: true,
+    ped: true,
+    vehicle: true,
+    other: false,
+    origin: "camera",
+    range: 50,
+}
 
 function ToUint32(value) { return value >>> 0; }
 
@@ -82,6 +90,33 @@ function SelectSpawnType(spawnType) {
     document.getElementById('objSearch').focus();
 }
 
+function SelectNearbyOrigin(originType) {
+    var previousType = NearbyOption.origin;
+    if (originType == previousType) { return; }
+    if (originType != "camera" &&
+        originType != "offset" &&
+        originType != "player" &&
+        originType != "raycast" &&
+        originType != "select" &&
+        originType != "pos") {
+        console.log("Invalid origin type: " + originType);
+        return;
+    }
+    NearbyOption.origin = originType;
+    document.getElementById('button-nearbyOrigin-' + previousType).classList.remove('selected');
+    document.getElementById('button-nearbyOrigin-' + originType).classList.add('selected');
+
+    document.getElementById("activeNearbyOrigin").innerHTML = originType;
+
+    if (originType == "pos") {
+        SendClientMessage('setNearbyOriginPos', {});
+    } else {
+        SendClientMessage('setNearbyOriginPos', { remove: true, });
+    }
+
+    SendClientMessage('setObjSettings', { nearby: JSON.stringify(NearbyOption) });
+}
+
 function SendClientMessage(endpoint, data) {
     const url = `https://${GetParentResourceName()}/${endpoint}`;
     // console.log(`Sending request to ${url}:`, data);
@@ -109,15 +144,6 @@ function ClipboardCopy(val) {
     console.log(val)
     document.execCommand("copy");
     $temp.remove();
-}
-
-function TransitionHUD(to) {
-    if (isVisible(document.getElementById('animHUD'))) {
-        // ToggleUIAnim("off");
-        // SendClientMessage('modifyMode', { mode: "anim", remove: true, })
-        // SendClientMessage('modifyMode', { mode: to, add: true, })
-        // ControlPassActive = false;
-    }
 }
 
 function ToggleUI(data) {
@@ -149,8 +175,8 @@ window.onload = function() {
                 ToggleUI(msg.data);
                 break;
             case "nuiUpdate":
-                UpdateCrosshair(msg.data.objects);
-                UpdateObjectDetails(msg.data.objects);
+                UpdateCrosshair(msg.data);
+                UpdateObjectDetails(msg.data);
                 break;
             case "clipboard":
                 ClipboardCopy(msg.data.text);
@@ -164,6 +190,11 @@ window.onload = function() {
             case "toggleHelp":
                 ToggleHelp(msg.data.mode, msg.data.state, msg.data.toggleCursor);
                 break;
+            case "keyPress":
+                if (msg.data.mode == "object") {
+                    ObjectKeys(msg.data.key);
+                    break;
+                }
         }
     })
 }
@@ -206,12 +237,7 @@ $(document).ready(function() {
                     }
                     QuickPress.MiddleMouse.active = true;
                     setTimeout(function() { QuickPress.MiddleMouse.active = false; }, QuickPress.Timeout);
-                    SendClientMessage('modifyMode', {
-                        mode: "animation",
-                        focusCursor: false,
-                        keepFocus: true,
-                        passthrough: true,
-                    });
+                    SendClientMessage('modifyMode', { mode: "animation", passthrough: true, });
                     break;
             }
         }
@@ -269,7 +295,7 @@ $(document).ready(function() {
                         setTimeout(function() { QuickPress.MiddleMouse.active = false; }, QuickPress.Timeout);
                         SendClientMessage('modifyMode', { mode: "object", passthrough: true, });
                         if (GizmoActive) {
-                            SendClientMessage('modifyMode', { mode: "gizmo", requireActive: true, passthrough: true, });
+                            SendClientMessage('modifyMode', { mode: "gizmo", passthrough: true, });
                         }
                         break;
                 }
@@ -303,7 +329,6 @@ $(document).ready(function() {
             }
         }
     });
-
 
     $(document).keyup(function(event) {
         JustPressed[event.key] = false;
@@ -366,6 +391,36 @@ $(document).ready(function() {
             e.preventDefault();
             GetTrackedObjects();
         }
+    });
+
+    SendClientMessage('initObjSettings', {}).then(function(resp) {
+        NearbyOption = JSON.parse(resp.nearby);
+
+        if (NearbyOption.object) {
+            document.getElementById('button-nearby-object').classList.add('selected');
+        } else {
+            document.getElementById('button-nearby-object').classList.remove('selected');
+        }
+        if (NearbyOption.ped) {
+            document.getElementById('button-nearby-ped').classList.add('selected');
+        } else {
+            document.getElementById('button-nearby-ped').classList.remove('selected');
+        }
+        if (NearbyOption.vehicle) {
+            document.getElementById('button-nearby-vehicle').classList.add('selected');
+        } else {
+            document.getElementById('button-nearby-vehicle').classList.remove('selected');
+        }
+        if (NearbyOption.other) {
+            document.getElementById('button-nearby-other').classList.add('selected');
+        } else {
+            document.getElementById('button-nearby-other').classList.remove('selected');
+        }
+
+        document.getElementById('nearbyRange').innerHTML = NearbyOption.range;
+
+        document.getElementById('button-nearbyOrigin-' + NearbyOption.origin).classList.add('selected');
+        document.getElementById("activeNearbyOrigin").innerHTML = NearbyOption.origin;
     });
 
     SendClientMessage('initAnims', {}).then(function(resp) {
@@ -498,8 +553,7 @@ var HudTree = {}
 var TreeKeys = {}
 
 function ToggleUIDevTree(data) {
-    TransitionHUD(data.value);
-    InitializeTree(data.optionTree[0]);
+    InitializeTree(data.tree);
     document.getElementById('devTreeHUD').style.display = "flex";
 }
 
@@ -511,13 +565,13 @@ function InitializeTree(optionTree) {
     $('#menuOptions').html("");
     $('#devOptions').html("");
 
-    if (optionTree.subMenu) {
-        for (idx in optionTree.subMenu) {
-            AppendMenuOption(idx, optionTree.subMenu[idx])
+    if (optionTree.children && optionTree.children.length > 0) {
+        for (idx in optionTree.children) {
+            AppendMenuOption(idx, optionTree.children[idx])
         }
     }
 
-    if (optionTree.options) {
+    if (optionTree.options && optionTree.options.length > 0) {
         for (idx in optionTree.options) {
             AppendOption(idx, optionTree.options[idx]);
         }
@@ -526,13 +580,13 @@ function InitializeTree(optionTree) {
 
 function AppendOption(index, value) {
     DevKeys[value.key] = index;
-    const html = '<div class="row"> <div class="column value">'+value.optionName+'</div> <div class="column key">'+value.key+'</div> </div>';
+    const html = '<div class="row"> <div class="column value">'+value.name+'</div> <div class="column key">'+value.key+'</div> </div>';
     $("#devOptions").append(html);
 }
 
 function AppendMenuOption(index, value) {
     TreeKeys[value.key] = index;
-    const html = '<div class="row"> <div class="column value">  '+value.menuName+'</div> <div class="column key">'+value.key+'</div> </div>';
+    const html = '<div class="row"> <div class="column value">  '+value.name+'</div> <div class="column key">'+value.key+'</div> </div>';
     $("#menuOptions").append(html);
 }
 
@@ -554,12 +608,14 @@ function HandleKeysDevTree(event) {
     let translatedKey = KeyTranslate(key)
     if (TreeKeys[translatedKey]) {
         let idx = TreeKeys[translatedKey]
-        InitializeTree(HudTree.subMenu[idx])
+        SendClientMessage('chooseMenu', {
+            menu: HudTree.children[idx].name,
+        });
     } else if (DevKeys[translatedKey]) {
         let idx = DevKeys[translatedKey]
-        SendClientMessage('trigger', {
-            menuName: HudTree.options[idx].menuName,
-            optionName: HudTree.options[idx].optionName
+        SendClientMessage('runOption', {
+            menu: HudTree.name,
+            option: HudTree.options[idx].name
         });
         document.getElementById('devTreeHUD').style.display = "none";
     } else {
@@ -1125,8 +1181,8 @@ function HandleKeysCam(event) {
                 return;
             }
             console.log("exiting camera mode");
-            SendClientMessage('modifyMode', { mode: "freecam", remove: true, });
-            SendClientMessage('modifyMode', { mode: "noclip", remove: true, });
+            SendClientMessage('modifyMode', { mode: "freecam", stop: true, });
+            SendClientMessage('modifyMode', { mode: "noclip", stop: true, });
             break;
         case "?":
         case "h":
@@ -1202,6 +1258,11 @@ function ToggleObjectSpawn(state) {
         ToggleHelp("objHelp", "off", true)
         ToggleControlObjectSpawn("on");
         SelectObjectButton('button-spawn');
+        document.getElementById('objNearbyRange').style.display = "none";
+        document.getElementById('objNearbyFilter').style.display = "none";
+        document.getElementById('objNearbyOrigin').style.display = "none";
+        document.getElementById('objNearbyResults').style.display = "none";
+        document.getElementById('selectedNearbyOriginDisplay').style.display = "none";
         document.getElementById('objSearchField').style.display = "flex";
         document.getElementById('objSearchList').style.display = "flex";
         document.getElementById('objSpawnOptions').style.display = "inline-flex";
@@ -1231,6 +1292,20 @@ function SelectSpawnObject(object) {
     SendClientMessage('selectSpawnObject', { name: object });
 }
 
+function ToggleNearbyFilter(type) {
+    var el = document.getElementById('button-nearby-' + type);
+
+    if (el.classList.contains('selected')) {
+        el.classList.remove('selected');
+        NearbyOption[type] = false;
+    } else {
+        el.classList.add('selected');
+        NearbyOption[type] = true;
+    }
+
+    SendClientMessage('setObjSettings', { nearby: JSON.stringify(NearbyOption) });
+}
+
 // Object Nearby //
 function ToggleTrackedList(state) {
     var el = document.getElementById('button-trackedobjlist');
@@ -1246,11 +1321,15 @@ function ToggleTrackedList(state) {
         document.getElementById('selectedObjectDisplay').style.display = "none";
         document.getElementById('objSearchList').style.display = "flex";
         document.getElementById('objNearbyRange').style.display = "flex";
+        document.getElementById('objNearbyFilter').style.display = "flex";
+        document.getElementById('objNearbyOrigin').style.display = "flex";
         document.getElementById('objNearbyResults').style.display = "flex";
+        document.getElementById('selectedNearbyOriginDisplay').style.display = "flex";
     } else {
         document.getElementById('objSearchField').style.display = "none";
         document.getElementById('objSearchList').style.display = "none";
         document.getElementById('objSpawnOptions').style.display = "none";
+        document.getElementById('selectedNearbyOriginDisplay').style.display = "none";
     }
 }
 
@@ -1263,34 +1342,54 @@ function GetTrackedObjects() {
     const loopId = setInterval(function() {
         if (isVisible(el)) {
             if (!MouseDown) {
-                SendClientMessage('nearbyObjects', { range: document.getElementById('nearbyRange').innerHTML, }).then(function(resp) {
-                    //TODO: isnt clearing on Escape if nearby is last selected HUD
-                    var objects = resp.nearbyObjects;
-                    objects.sort((a, b) => a.distance - b.distance);
+                var currentNearbyRange = document.getElementById('nearbyRange').innerHTML;
+                if (currentNearbyRange != NearbyOption.range) {
+                    NearbyOption.range = currentNearbyRange;
+                    SendClientMessage('setObjSettings', { nearby: JSON.stringify(NearbyOption) });
+                }
+                SendClientMessage('nearbyObjects', {
+                    range: currentNearbyRange,
+                    origin: NearbyOption.origin,
+                }).then(function(resp) {
+                        var objects = resp.nearbyObjects;
+                        objects.sort((a, b) => a.distance - b.distance);
 
-                    el.innerHTML = "";
-                    var ul = document.createElement('ul');
-                    for (var i = 0; i < objects.length; ++i) {
-                        var li = document.createElement('li');
-                        li.innerHTML = `${objects[i].distance.toFixed(2)} ${objects[i].handle} ${objects[i].modelName}`;
-                        li.addEventListener('mouseenter', function() {
-                            SendClientMessage('trackObject', {
-                                handle: this.innerHTML.split(" ")[1],
-                                category: "hover",
-                            });
-                        })
-                        li.addEventListener('mouseleave', function() {
-                            SendClientMessage('trackObject', {
-                                handle: this.innerHTML.split(" ")[1],
-                                category: "hover",
-                                remove: true,
-                            });
-                        })
-                        li.addEventListener('click', function() {
-                            SendClientMessage('trackObject', {
-                                handle: this.innerHTML.split(" ")[1],
-                                category: "select",
-                            });
+                        el.innerHTML = "";
+                        var ul = document.createElement('ul');
+                        for (var i = 0; i < objects.length; ++i) {
+                            if (objects[i].objType && !NearbyOption[objects[i].objType]) {
+                                continue;
+                            }
+
+                            var li = document.createElement('li');
+                            var handle = objects[i].handle;
+                            if (objects[i].networkId) {
+                                handle = handle + " [" + objects[i].networkId + "]";
+                            }
+                            li.innerHTML = `${objects[i].distance.toFixed(2)} ${handle} ${objects[i].modelName}`;
+                            if (objects[i].select) {
+                                li.classList.add('selected');
+                            } else if (objects[i].hover) {
+                                li.classList.add('hover');
+                            }
+                            li.addEventListener('mouseenter', function() {
+                                SendClientMessage('trackObject', {
+                                    handle: this.innerHTML.split(" ")[1],
+                                    category: "hover",
+                                });
+                            })
+                            li.addEventListener('mouseleave', function() {
+                                SendClientMessage('trackObject', {
+                                    handle: this.innerHTML.split(" ")[1],
+                                    category: "hover",
+                                    remove: true,
+                                });
+                            })
+                            li.addEventListener('click', function() {
+                                SendClientMessage('trackObject', {
+                                    handle: this.innerHTML.split(" ")[1],
+                                    category: "select",
+                                });
 
                         })
                         ul.appendChild(li);
@@ -1307,7 +1406,7 @@ function GetTrackedObjects() {
             clearInterval(loopId);
             TrackedObjectsLoopRunning = false;
         }
-    }, 250);
+    }, 50);
 }
 
 // Object Scene //
@@ -1387,6 +1486,8 @@ function ToggleObjectDetails(state) {
         document.getElementById('objDetails').style.display = "flex";
         document.getElementById('objDetailsOptions').style.display = "inline-flex";
         document.getElementById('objDetailsList').style.display = "flex";
+        document.getElementById('selectedObjectDisplay').style.display = "none";
+        document.getElementById('selectedNearbyOriginDisplay').style.display = "none";
         // SwitchObjectDetailsSpecific('button-objDetailsPosition', 'objDetailsListPosition');
         ToggleObjectListDetails('button-objDetailsPosition', 'objDetailsListPosition', true);
         ToggleObjectListDetails('button-objDetailsStatus', 'objDetailsListStatus', true);
@@ -1457,8 +1558,26 @@ function SelectObjectButton(el) {
     }});
 }
 
+function ClearObjectDetails() {
+    document.getElementById("objDetailsEntityHandle").innerHTML = "";
+    document.getElementById("objDetailsEntityNetworkId").innerHTML = "";
+    // document.getElementById("objDetailsEntityHandle").innerHTML = "";
+    document.getElementById("objDetailsEntityModelName").innerHTML = "";
+    document.getElementById("objDetailsEntityPosX").innerHTML = "";
+    document.getElementById("objDetailsEntityPosY").innerHTML = "";
+    document.getElementById("objDetailsEntityPosZ").innerHTML = "";
+    document.getElementById("objDetailsEntityRotPitch").innerHTML = "";
+    document.getElementById("objDetailsEntityRotRoll").innerHTML = "";
+    document.getElementById("objDetailsEntityRotYaw").innerHTML = "";
+    ToggleSelected(document.getElementById("objDetailsEntityFrozen"), false);
+    ToggleSelected(document.getElementById("objDetailsEntityCollision"), false);
+}
+
 function UpdateObjectDetails(data) {
-    if (!data.select) { return; }
+    if (!data.select) {
+        ClearObjectDetails();
+        return;
+    }
 
     document.getElementById("objDetailsEntityHandle").innerHTML = data.selectData.handle;
     document.getElementById("objDetailsEntityNetworkId").innerHTML = data.selectData.networkID;
@@ -1474,88 +1593,61 @@ function UpdateObjectDetails(data) {
     ToggleSelected(document.getElementById("objDetailsEntityCollision"), data.selectData.collision);
 }
 
-// Object Keys //
-function HandleKeysObject(event) {
-    if (GizmoActive) {
-        switch(event.key) {
-            case "Escape":
-                event.preventDefault();
-                sendClientMessage('gizmoStop', {})
-                break;
-        }
-    } else {
-        switch(event.key) {
+function ObjectKeys(key, event) {
+    if (event) {
+        switch(key) {
             case "Escape":
                 var escaped = false;
                 event.preventDefault();
                 if (document.activeElement.classList.contains('entryField')) {
                     document.activeElement.blur();
-                    break;
+                    return;
                 }
                 if (isVisible(document.getElementById('objHelp'))) {
                     ToggleHelp("objHelp", "off", true);
                     escaped = true;
-                    break;
+                    return;
                 }
                 if (isVisible(document.getElementById('objDetails'))) {
                     ToggleObjectDetails("off");
                     escaped = true;
-                    break;
+                    return;
                 }
                 if (isVisible(document.getElementById('objSpawnOptions'))) {
                     ToggleObjectSpawn("off");
                     escaped = true;
-                    break;
+                    return;
                 }
                 if (isVisible(document.getElementById('objSearchList'))) {
                     ToggleTrackedList("off");
                     escaped = true;
-                    break;
+                    return;
                 }
                 if (isVisible(document.getElementById('objControlSpawnOptions'))) {
                     document.getElementById('objControlSpawnOptions').style.display = "none";
                     escaped = true;
-                    break;
+                    return;
                 }
                 if (isVisible(document.getElementById('objSceneOptions'))) {
                     document.getElementById('objSceneOptions').style.display = "none";
                     escaped = true;
                 }
-                if (escaped) { break; }
+                if (escaped) { return; }
 
-                SendClientMessage('modifyMode', { mode: "object", remove: true, });
-                break;
+                SendClientMessage('modifyMode', { mode: "object", stop: true, });
+                return;
             case " ":
                 if (typeof event.target.onclick == "function") {
                     event.target.onclick.apply();
                     event.preventDefault();
                 }
-                break;
-            case "c":
-                if (!document.activeElement.classList.contains('entryField') && !ControlPassActive) {
-                    SendClientMessage('modifyMode', { mode: "object", passthrough: true, });
-                    SendClientMessage('modifyMode', { mode: "gizmo", requireActive: true, passthrough: true, });
-                }
-                break;
-            case "f":
-                if (!document.activeElement.classList.contains('entryField') && !ControlPassActive) {
-                    SendClientMessage('sendCursorKey', {
-                        pressed: Pressed,
-                        justPressed: JustPressed
-                    });
-                }
-                break;
-            case "1":
-                ToggleObjectDetails("on");
-                document.getElementById('button-objectdetails').focus();
-                break;
-            case "@":
+                return;
             case "2":
                 var focusButton = false;
                 if (isVisible(document.getElementById('objSearchField'))) {
                     document.getElementById('objSearch').focus();
                     event.preventDefault();
-                    break;
+                    return;
                 } else {
                     focusButton = true;
                 }
@@ -1563,13 +1655,13 @@ function HandleKeysObject(event) {
                 if (focusButton) {
                     document.getElementById('button-spawn').focus();
                 }
-                break;
+                return;
             case "3":
                 var focusButton = false;
                 if (isVisible(document.getElementById('objNearbyRange'))) {
                     document.getElementById('nearbyRange').focus();
                     event.preventDefault();
-                    break;
+                    return;
                 } else {
                     focusButton = true;
                 }
@@ -1577,45 +1669,127 @@ function HandleKeysObject(event) {
                 if (focusButton) {
                     document.getElementById('button-trackedobjlist').focus();
                 }
-                break;
-            case "4":
-                ToggleSceneMove("on");
-                document.getElementById('button-scenecontrol').focus();
-                break;
-            case "5":
-                ToggleSceneTag("on");
-                document.getElementById('button-scenetags').focus();
-                break;
-            case "6":
-                ToggleImportExport("on");
-                document.getElementById('button-importexport').focus();
-                break;
-            case "Backspace":
-                SendClientMessage('modifyMode', { mode: "object", remove: true, });
-                break;
-            case "?":
-            case "h":
-                ToggleHelp("objHelp", "toggle", true)
-                break;
-            case "r":
+                return;
+        }
+    }
+    switch(key) {
+        case "Escape":
+            var escaped = false;
+            if (document.activeElement.classList.contains('entryField')) {
+                document.activeElement.blur();
+                return;
+            }
+            if (isVisible(document.getElementById('objHelp'))) {
+                ToggleHelp("objHelp", "off", true);
+                escaped = true;
+                return;
+            }
+            if (isVisible(document.getElementById('objDetails'))) {
+                ToggleObjectDetails("off");
+                escaped = true;
+                return;
+            }
+            if (isVisible(document.getElementById('objSpawnOptions'))) {
+                ToggleObjectSpawn("off");
+                escaped = true;
+                return;
+            }
+            if (isVisible(document.getElementById('objSearchList'))) {
+                ToggleTrackedList("off");
+                escaped = true;
+                return;
+            }
+            if (isVisible(document.getElementById('objControlSpawnOptions'))) {
+                document.getElementById('objControlSpawnOptions').style.display = "none";
+                escaped = true;
+                return;
+            }
+            if (isVisible(document.getElementById('objSceneOptions'))) {
+                document.getElementById('objSceneOptions').style.display = "none";
+                escaped = true;
+            }
+            if (escaped) { return; }
+
+            SendClientMessage('modifyMode', { mode: "object", stop: true, });
+            return;
+        case "c":
+            if (!document.activeElement.classList.contains('entryField') && !ControlPassActive) {
+                SendClientMessage('modifyMode', { mode: "object", passthrough: true, });
+                SendClientMessage('modifyMode', { mode: "gizmo", passthrough: true, });
+            }
+            return;
+        case "f":
+            if (!document.activeElement.classList.contains('entryField') && !ControlPassActive) {
                 SendClientMessage('sendCursorKey', {
                     pressed: Pressed,
                     justPressed: JustPressed
                 });
-                break;
-            case "x":
-                document.getElementById('activeObject').innerHTML = "";
-                if (isVisible(document.getElementById('objSearchField'))) {
-                    document.getElementById('objSearch').innerHTML = "";
-                    ResetListGroup("objData", "flex");
+            }
+            return;
+        case "1":
+            ToggleObjectDetails("on");
+            document.getElementById('button-objectdetails').focus();
+            return;
+        case "@":
+        case "2":
+            ToggleObjectSpawn("on");
+            document.getElementById('button-spawn').focus();
+            return;
+        case "3":
+            ToggleTrackedList("on");
+            document.getElementById('button-trackedobjlist').focus();
+            return;
+        case "4":
+            ToggleSceneMove("on");
+            document.getElementById('button-scenecontrol').focus();
+            return;
+        case "5":
+            ToggleSceneTag("on");
+            document.getElementById('button-scenetags').focus();
+            return;
+        case "6":
+            ToggleImportExport("on");
+            document.getElementById('button-importexport').focus();
+            return;
+        case "Backspace":
+            SendClientMessage('modifyMode', { mode: "object", stop: true, });
+            return;
+        case "?":
+        case "h":
+            ToggleHelp("objHelp", "toggle", true)
+            return;
+        case "r":
+            SendClientMessage('sendCursorKey', {
+                pressed: Pressed,
+                justPressed: JustPressed
+            });
+            return;
+        case "x":
+            document.getElementById('activeObject').innerHTML = "";
+            if (isVisible(document.getElementById('objSearchField'))) {
+                document.getElementById('objSearch').innerHTML = "";
+                ResetListGroup("objData", "flex");
+            } else if (isVisible(document.getElementById('objDetails'))) {
+                SendClientMessage('sendCursorKey', {
+                    justPressed: { x: true, }
+                })
+            }
+            return;
+    }
+}
 
-                }
-                if (isVisible(document.getElementById('objNearbyRange'))) {
-                    document.getElementById('objNearbyRange').innerHTML = "25";
-                    GetTrackedObjects();
-                }
-                break;
+
+// Object Keys //
+function HandleKeysObject(event) {
+    if (GizmoActive) {
+        switch(event.key) {
+            case "Escape":
+                event.preventDefault();
+                sendClientMessage('modifyMody', { mode: "gizmo", stop: true, })
+                return;
         }
+    } else {
+        ObjectKeys(event.key, event);
     }
 }
 

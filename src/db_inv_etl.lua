@@ -1,6 +1,5 @@
 TMC = exports.core:getCoreObject()
 da = exports.da_lib:importLib()
-da.Log.Register(function(msg) print(msg) end)
 
 local DryRun = true
 
@@ -24,27 +23,27 @@ end
 
 function PrintStats()
     if DryRun then
-        da.Log.Info("Dry run, no changes made.")
+        log.info("Dry run, no changes made.")
     end
-    da.Log.Info("\n-Stats-------------")
-    da.Log.Info(("  Total:     %5d"):format(ResultStats.total))
-    da.Log.Info(("  Updated:   %5d"):format(ResultStats.updated))
-    da.Log.Info(("  Skipped:   %5d"):format(#ResultStats.skipped))
-    da.Log.Info(("  Failed:    %5d"):format(#ResultStats.failed))
-    da.Log.Info("-------------------")
-    da.Log.DebugVerbose("Failed IDs: ", ResultStats.failed)
-    da.Log.DebugVerbose("Skipped IDs: ", ResultStats.skipped)
+    log.info("\n-Stats-------------")
+    log.info(("  Total:     %5d"):format(ResultStats.total))
+    log.info(("  Updated:   %5d"):format(ResultStats.updated))
+    log.info(("  Skipped:   %5d"):format(#ResultStats.skipped))
+    log.info(("  Failed:    %5d"):format(#ResultStats.failed))
+    log.info("-------------------")
+    log.spam("Failed IDs: ", ResultStats.failed)
+    log.spam("Skipped IDs: ", ResultStats.skipped)
 end
 
 function setUpJob()
     ResetStats()
-    da.Log.Info("Starting job...")
+    log.info("Starting job...")
 end
 
 function tearDownJob()
     PrintStats()
     DryRun = true
-    da.Log.Info("Job finished.")
+    log.info("Job finished.")
 end
 
 function UpdateDbRep(result)
@@ -53,7 +52,7 @@ function UpdateDbRep(result)
     local id = result['#']
 
     if not metadata then
-        da.Log.Error("No metadata found.", result)
+        log.error("No metadata found.", result)
         return
     elseif not rep then
         rep = {}
@@ -96,7 +95,7 @@ function UpdateDbRep(result)
             elseif rep[mapRepType] then
                 rep[mapRepType] = tonumber(rep[mapRepType]) + tonumber(metadata[repType])
             else
-                da.Log.Debug("Invalid case:", repType)
+                log.debug("Invalid case:", repType)
             end
         end
         metadata[repType] = nil
@@ -108,7 +107,7 @@ function UpdateDbRep(result)
                     elseif rep[jobRepType] then
                         rep[jobRepType] = tonumber(rep[jobRepType]) + tonumber(metadata['jobrep'][jobRepType])
                     else
-                        da.Log.Debug("Invalid case:", jobRepType)
+                        log.debug("Invalid case:", jobRepType)
                     end
                 end
             end
@@ -134,7 +133,7 @@ RegisterCommand("__da_db_update_rep", function(source, args, rawCommand)
     local queryUPDATE = "UPDATE `players` SET `metadata` = @metadata, `rep` = @rep WHERE `#` = @id"
 
     for interval = MinId, MaxId, BatchInterval do
-        da.Log.Info("Interval:", interval, "to", interval + BatchInterval)
+        log.info("Interval:", interval, "to", interval + BatchInterval)
         TMC.Functions.ExecuteSqlSync(
             querySELECT,
             {
@@ -142,7 +141,7 @@ RegisterCommand("__da_db_update_rep", function(source, args, rawCommand)
                 ["@batchInterval"] = BatchInterval
             }, function(result)
                 if not result then
-                    da.Log.Error("No SQL Result.")
+                    log.error("No SQL Result.")
                     return
                 end
                 if result then
@@ -152,7 +151,7 @@ RegisterCommand("__da_db_update_rep", function(source, args, rawCommand)
                         ResultStats.total = ResultStats.total + 1
                         if not updatedResult or not updatedResult.id then
                             table.insert(ResultStats.skipped, thisResult['#'])
-                            da.Log.Debug("Skipped:", thisResult['#'])
+                            log.debug("Skipped:", thisResult['#'])
                             return
                         elseif not DryRun then
                             TMC.Functions.ExecuteSql(queryUPDATE, {
@@ -166,17 +165,17 @@ RegisterCommand("__da_db_update_rep", function(source, args, rawCommand)
                                         table.insert(ResultStats.failed, result['#'])
                                     end
                                 end, function(error)
-                                    da.Log.Error("DB Error:", error)
+                                    log.error("DB Error:", error)
                                 end)
                         else
-                            -- da.Log.Verbose(updatedResult)
+                            -- log.verbose(updatedResult)
                             ResultStats.updated = ResultStats.updated + 1
                         end
                     end
                     Citizen.Wait(250)
                 end
             end, function(error)
-                da.Log.Error("DB Error:", error)
+                log.error("DB Error:", error)
             end)
     end
 
