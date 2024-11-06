@@ -35,14 +35,14 @@
                     <li><div class="entryLabel">LSHIFT + Mouse Left</div><div class="entryField">Move Camera Left</div></li>
                     <li><div class="entryLabel">LSHIFT + Mouse Right</div><div class="entryField">Move Camera Right</div></li>
                     <li> </li>
-                    <li><div class="entryLabel">LALT + Mouse Forward</div><div class="entryField">Move Camera Forward</div></li>
-                    <li><div class="entryLabel">LALT + Mouse Back</div><div class="entryField">Move Camera Backward</div></li>
-                    <li><div class="entryLabel">LALT + Mouse Left</div><div class="entryField">Move Camera Left</div></li>
-                    <li><div class="entryLabel">LALT + Mouse Right</div><div class="entryField">Move Camera Right</div></li>
+                    <li><div class="entryLabel">LCTRL + Mouse Forward</div><div class="entryField">Move Camera Forward</div></li>
+                    <li><div class="entryLabel">LCTRL + Mouse Back</div><div class="entryField">Move Camera Backward</div></li>
+                    <li><div class="entryLabel">LCTRL + Mouse Left</div><div class="entryField">Move Camera Left</div></li>
+                    <li><div class="entryLabel">LCTRL + Mouse Right</div><div class="entryField">Move Camera Right</div></li>
                     <li> </li>
-                    <li><div class="entryLabel">LCTRL + Mouse Up</div><div class="entryField">Decrease FreeCam FOV</div></li>
-                    <li><div class="entryLabel">LCTRL + Mouse Down</div><div class="entryField">Increase FreeCam FOV</div></li>
-                    <li><div class="entryLabel">LCTRL + x</div><div class="entryField">Reset FOV</div></li>
+                    <li><div class="entryLabel">LALT + Mouse Up</div><div class="entryField">Decrease FreeCam FOV</div></li>
+                    <li><div class="entryLabel">LALT + Mouse Down</div><div class="entryField">Increase FreeCam FOV</div></li>
+                    <li><div class="entryLabel">LALT + x</div><div class="entryField">Reset FOV</div></li>
                     <li> </li>
                     <li><div class="entryLabel">z</div><div class="entryField">Open Dev Tree Menu</div></li>
                     <li><div class="entryLabel">?</div><div class="entryField">Toggle Help Panel</div></li>
@@ -83,8 +83,14 @@
                     <li> </li>
                     <!-- <li><div class="entryLabel">f</div><div class="entryField">(No Selection) Select Object Under Crosshair</div></li> -->
                     <!-- <li><div class="entryLabel">f</div><div class="entryField">Focus Selected/Hovered Object</div></li> -->
-                    <li><div class="entryLabel">r</div><div class="entryField">Move/Rotate Hovered/Selected Object</div></li>
                     <li><div class="entryLabel">LMB</div><div class="entryField">Select Object Under Crosshair</div></li>
+                    <li><div class="entryLabel">r</div><div class="entryField">Move/Rotate Selected Object</div></li>
+                    <li><div class="entryLabel">Alt r</div><div class="entryField">Move/Rotate Hovered Object</div></li>
+                    <li><div class="entryLabel">g</div><div class="entryField">Spawn Object</div></li>
+                    <li><div class="entryLabel">Shift x</div><div class="entryField">Delete Selected Object</div></li>
+                    <li><div class="entryLabel">Ctrl r</div><div class="entryField">Set Selected to Hovered Object Rotation</div></li>
+                    <li><div class="entryLabel">Ctrl x</div><div class="entryField">Set Selected to Hovered Object Position</div></li>
+                    <li><div class="entryLabel">Ctrl z</div><div class="entryField">Set Selected to Hovered Object Height</div></li>
                     <li> </li>
                     <li><div class="entryLabel">x</div><div class="entryField">Reset Active Menu To Default Values</div></li>
                     <li><div class="entryLabel">z</div><div class="entryField">Open Dev Tree Menu</div></li>
@@ -115,7 +121,7 @@
                             onclick="ToggleObjectDetails('toggle');">󰘱</div>
                         <div id="button-objectspawn" class="control" tabindex="20" role="button" aria-pressed="false"
                             onclick="ToggleControlObjectSpawn('toggle');">󰥵</div>
-                        <div id="button-objectscene" class="control" tabindex="30" role="button" aria-pressed="false"
+                        <div id="button-objectscene" class="control" tabindex="40" role="button" aria-pressed="false"
                             onclick="ToggleControlScene('toggle');">󰷔</div>
                     </li>
                 </ul>
@@ -192,6 +198,14 @@
                     </li>
                 </ul>
             </div>
+            <div id="selectedNearbyOriginDisplay" class="optList dev">
+                <ul id="selectedNearbyOrigin">
+                    <li>
+                        <div class="entryLabel">origin</div>
+                        <div id="activeNearbyOrigin" class="entryField">camera</div>
+                    </li>
+                </ul>
+            </div>
             <div id="objSearchList" class="dev listGroup">
                 <div id="objSpawnOptions" class="inlineControlGroup controlGroup dev">
                     <ul class="row">
@@ -203,7 +217,7 @@
                             <div id="button-spawnpeds" class="control" tabindex="15" role="button" aria-pressed="false"
                                 onclick="SelectSpawnType('peds');"></div>
                             <div id="button-spawnvehicles" class="control" tabindex="16" role="button" aria-pressed="false"
-                                onclick="SelectSpawnType('vehicles');">󱓲</div>
+                                onclick="SelectSpawnType('vehicles');">󱢑</div>
                             <div id="button-spawnpropsets" class="control" tabindex="17" role="button" aria-pressed="false"
                                 onclick="SelectSpawnType('propsets');"></div>
                             <div id="button-spawnpickups" class="control" tabindex="18" role="button" aria-pressed="false"
@@ -215,9 +229,43 @@
                 </div>
                 <div id="objData" class="listTop">
                 </div>
+                <div id="objNearbyOrigin" class="inlineControlGroup controlGroup dev">
+                    <ul class="row">
+                        <li>
+                            <div id="button-nearbyOrigin-camera" class="control" tabindex="21" role="button" aria-pressed="false"
+                                onclick="SelectNearbyOrigin('camera');"></div>
+                            <div id="button-nearbyOrigin-offset" class="control" tabindex="22" role="button" aria-pressed="false"
+                                onclick="SelectNearbyOrigin('offset');">󱣿</div>
+                            <div id="button-nearbyOrigin-player" class="control" tabindex="23" role="button" aria-pressed="false"
+                                onclick="SelectNearbyOrigin('player');"></div>
+                            <div id="button-nearbyOrigin-raycast" class="control" tabindex="24" role="button" aria-pressed="false"
+                                onclick="SelectNearbyOrigin('raycast');"></div>
+                            <div id="button-nearbyOrigin-pos" class="control" tabindex="25" role="button" aria-pressed="false"
+                                onclick="SelectNearbyOrigin('pos');"></div>
+                            <div id="button-nearbyOrigin-select" class="control" tabindex="26" role="button" aria-pressed="false"
+                                onclick="SelectNearbyOrigin('select');"></div>
+                        </li>
+                    </ul>
+                </div>
+                <div id="objNearbyFilter" class="inlineControlGroup controlGroup dev">
+                    <ul class="row">
+                        <li>
+                            <div id="button-nearby-object" class="control selected" tabindex="27" role="button" aria-pressed="false"
+                                onclick="ToggleNearbyFilter('object');"></div>
+                            <div id="button-nearby-ped" class="control selected" tabindex="28" role="button" aria-pressed="false"
+                                onclick="ToggleNearbyFilter('ped');"></div>
+                            <div id="button-nearby-vehicle" class="control selected" tabindex="29" role="button" aria-pressed="false"
+                                onclick="ToggleNearbyFilter('vehicle');">󱢑</div>
+                            <!-- <div id="button-nearbypropset" class="control selected" tabindex="27" role="button" aria-pressed="false" -->
+                            <!--     onclick="SelectSpawnType('propset');"></div> -->
+                            <div id="button-nearby-other" class="control" tabindex="30" role="button" aria-pressed="false"
+                                onclick="ToggleNearbyFilter('other');">󱝤</div>
+                        </li>
+                    </ul>
+                </div>
                 <div id="objNearbyRange" class="dev" style="flex-shrink: 0;">
                     <div class="entryLabel">range</div>
-                    <div id="nearbyRange" class="entryField" tabindex="22" contenteditable="true">20</div>
+                    <div id="nearbyRange" class="entryField" tabindex="40" contenteditable="true">50</div>
                 </div>
                 <!-- <div id="objNearbyControl" class="inlineControlGroup controlGroup dev"> -->
                 <!--     <ul class="row"> -->

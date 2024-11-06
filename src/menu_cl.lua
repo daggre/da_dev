@@ -1,11 +1,8 @@
-da.Dev.Menu.RegisterOption("root", "mode:noclip", "z", function() da.Mode.Toggle("noclip") end)
--- da.Dev.Menu.RegisterOption("root", "revive", "r", function() TriggerEvent('TMC:Command:Revive') end, function() return LocalPlayer.state.metadata.isdead end)
-da.Dev.Menu.RegisterOption("objectRoot", "mode:noclip", "z", function()
-    da.Mode.Toggle("noclip")
-end)
-da.Dev.Menu.RegisterOption("objectRoot", "revive", "r", function() da.Fn.Revive() end, function() return IsPedDeadOrDying(PlayerPedId()) end)
+da_trie.addOpt("devRoot", "revive", "r", function() API.revive() end, function() return IsPedDeadOrDying(PlayerPedId()) end)
+da_trie.addOpt("objRoot", "revive", "r", function() API.revive() end, function() return IsPedDeadOrDying(PlayerPedId()) end)
 
-da.Dev.Menu.RegisterOption("root", "max cores", "9", function()
+
+da_trie.addOpt("devRoot", "max cores", "9", function()
     local playerPedId = PlayerPedId()
     for i = 0, 1 do
         Citizen.InvokeNative(0xC6258F41D86676E0, playerPedId, i, 100) -- SetAttributeCoreValue
@@ -25,33 +22,29 @@ da.Dev.Menu.RegisterOption("root", "max cores", "9", function()
     -- Citizen.InvokeNative(0x835F131E7DC8F97A, PlayerPedId(), 1000) --ChangeEntityHeath
 end)
 
-da.Dev.Menu.RegisterMenu("root", "pos", "v")
-da.Dev.Menu.RegisterOption("pos", "cpy vec2", "2", function()
+da_trie.add("devRoot", "pos", "v")
+da_trie.addOpt("pos", "cpy vec2", "2", function()
     local coords = GetEntityCoords(PlayerPedId())
     SendNUIMessage({ type = "clipboard", text = ("vector2(%.3f, %.3f)"):format(coords.x, coords.y), })
 end)
-da.Dev.Menu.RegisterOption("pos", "cpy vec3", "3", function()
+da_trie.addOpt("pos", "cpy vec3", "3", function()
     local coords = GetEntityCoords(PlayerPedId())
     SendNUIMessage({ type = "clipboard", text = ("vector3(%.3f, %.3f, %.3f)"):format(coords.x, coords.y, coords.z), })
 end)
-da.Dev.Menu.RegisterOption("pos", "cpy vec4", "4", function()
+da_trie.addOpt("pos", "cpy vec4", "4", function()
     local coords = GetEntityCoords(PlayerPedId())
     local heading = GetEntityHeading(PlayerPedId())
     SendNUIMessage({ type = "clipboard", text = ("vector4(%.3f, %.3f, %.3f, %.3f)"):format(coords.x, coords.y, coords.z, heading), })
 end)
 
-da.Dev.Menu.RegisterMenu("root", "menu", "m")
--- da.Dev.Menu.RegisterOption("menu", "clothing", "c", function() TriggerEvent('clothing:openMenu', true, false, true) end) -- Barber disabled
--- da.Dev.Menu.RegisterOption("menu", "horsetack", "h", function()
+da_trie.add("devRoot", "menu", "m")
+-- da_trie.addOpt("menu", "clothing", "c", function() TriggerEvent('clothing:openMenu', true, false, true) end) -- Barber disabled
+-- da_trie.addOpt("menu", "horsetack", "h", function()
 --     local horseEntity, dist = TMC.Functions.GetClosestHorse()
 --     if dist > 25 or not horseEntity or not Entity(horseEntity) or not Entity(horseEntity).state then
---         da.Log.Debug("No horse close enough")
+--         log.debug("No horse close enough")
 --         return
 --     end
 --     local horseId = Entity(horseEntity).state and Entity(horseEntity).state.horseId
 --     TriggerServerEvent('stables:server:getTack', horseId, horseEntity)
 -- end)
-
-da.Dev.Menu.RegisterOption("root", "mode:anim", "a", function()
-    da.Mode.Toggle("animation")
-end)

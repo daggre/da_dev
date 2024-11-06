@@ -792,25 +792,25 @@ function StartKeyDiscovery(state)
     if KeysThread then
         local allKeys = GetKeys()
         Citizen.SetTimeout(15000, function()
-            da.Log.Debug(KeyLog)
+            log.debug(KeyLog)
             KeysThread = false
         end)
         Citizen.CreateThread(function()
-            da.Log.Debug("Key Discovery ^2ON^7")
+            log.debug("Key Discovery ^2ON^7")
             while KeysThread do
                 for name, keyHash in pairs(allKeys) do
                     if IsControlPressed(0, keyHash) then
-                        da.Log.Debug(name)
+                        log.debug(name)
                         KeyLog[keyHash] = name
                     end
                 end
                 Citizen.Wait(100)
             end
             KeysThread = false
-            da.Log.Debug("Key Discovery ^1OFF^7")
+            log.debug("Key Discovery ^1OFF^7")
             KeyLog = {}
         end)
     end
 end
 
-da.Dev.Menu.RegisterOption("menu", "keylog", "k", function() StartKeyDiscovery() end)
+da_trie.addOpt("menu", "keylog", "k", function() StartKeyDiscovery() end)

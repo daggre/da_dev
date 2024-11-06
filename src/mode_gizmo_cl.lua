@@ -1,8 +1,38 @@
+da_mode.new("gizmo", {
+    priority = 100,
+    default = { focusKeyboard = true, focusCursor = true, keepFocus = true, },
+    passthrough = { focusCursor = false, },
+    updateFn = function(data)
+        SetNuiFocus(data.focusKeyboard, data.focusCursor)
+        SetNuiFocusKeepInput(data.keepFocus)
+        SendNUIMessage({ type = "controlPass", enable = data.passthrough, })
+    end,
+    startFn = function()
+        Hover = nil
+        SelectMode = "Cursor"
+        InitGizmoThread()
+        SendNUIMessage({ type = 'setGizmoState', data = { shown = true } })
+    end,
+    stopFn = function()
+        SendNUIMessage({ type = 'setGizmoState', data = { shown = false } })
+        GizmoThreadStarted = false
+    end,
+    passthroughKey = da_control.keyHash['c'],
+    passthroughFn = function(state, haltKey, cb)
+        da_controlpass:set(state, haltKey, cb)
+    end,
+    passthroughCb = function()
+        da_control.waitForRelease(dat.keys)
+        da_mode.reset("gizmo")
+        SendNUIMessage({ type = "controlPass", enable = false, })
+    end,
+})
+
 
 function StartGizmo(entity)
     if not entity then return; end
     if not DoesEntityExist(entity) then return; end
-    da.Mode.Add("gizmo")
+    da_mode.start("gizmo")
     Citizen.Wait(100)
     SendNUIMessage({
         type = 'setGizmoEntity',
@@ -27,7 +57,7 @@ function InitGizmoThread()
             }})
             Citizen.Wait(0)
         end
-        da.Mode.Remove("gizmo")
+        if da_mode.isActive("gizmo") then da_mode.stop("gizmo") end
         GizmoThreadStarted = false
     end)
 end
@@ -56,16 +86,13 @@ RegisterNUICallback('moveGizmoEntity', function(data, cb)
 end)
 
 RegisterNUICallback('gizmoStop', function()
-    da.Mode.Remove("gizmo")
-end)
-
-AddEventHandler("stopGizmo", function()
-    da.Mode.Remove("gizmo")
+    -- This is called from the gizmo js script
+    da_mode.stop("gizmo")
 end)
 
 AddEventHandler('onResourceStop', function(resourceName)
     if resourceName == GetCurrentResourceName() then
         GizmoThreadStarted = false
-        da.Mode.Remove("gizmo")
+        da_mode.stop("gizmo")
     end
 end)

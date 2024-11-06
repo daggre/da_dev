@@ -24,53 +24,58 @@ local TeleportLocations = {
     ["Music Vendor"] = { key = "m", location = vector4(2655.914, -1379.673, 48.532, 225.987), category = "npc" },
 }
 
-da.Dev.Teleport = function(coords) da.Fn.Teleport(coords) end
-
-da.Dev.Menu.RegisterMenu("root", "teleport", "t")
-da.Dev.Menu.RegisterMenu("teleport", "towns", "t")
-da.Dev.Menu.RegisterMenu("teleport", "custom", "1")
-da.Dev.Menu.RegisterMenu("teleport", "npc", "n")
-da.Dev.Menu.RegisterMenu("custom", "clear", "x")
+da_trie.add("devRoot", "teleport", "t")
+da_trie.add("teleport", "towns", "t")
+da_trie.add("teleport", "custom", "1")
+da_trie.add("teleport", "npc", "n")
+da_trie.add("custom", "clear", "x")
 
 for name, tpData in pairs(TeleportLocations) do
-    da.Dev.Menu.RegisterOption(tpData.category or "teleport", name, tpData.key, function()
-        da.Dev.Teleport(tpData.location)
+    da_trie.addOpt(tpData.category or "teleport", name, tpData.key, function()
+        API.teleport(tpData.location)
     end)
 end
 
 for i=1,5 do
-    da.Dev.Menu.RegisterOption("custom", "sav "..tostring(i), tostring(i), function()
+    da_trie.addOpt("custom", "sav "..tostring(i), tostring(i), function()
         local position = GetEntityCoords(PlayerPedId())
         local heading = GetEntityHeading(PlayerPedId())
         SavedLocations[i] = vec4(position.x, position.y, position.z, heading)
     end, function()
         return SavedLocations[i] == nil
     end)
-    da.Dev.Menu.RegisterOption("custom", "tp "..tostring(i), tostring(i), function()
+    da_trie.addOpt("custom", "tp "..tostring(i), tostring(i), function()
         if SavedLocations[i] then
-            da.Dev.Teleport(SavedLocations[i])
+            API.teleport(SavedLocations[i])
         end
     end, function()
         return SavedLocations[i] ~= nil
     end)
-    da.Dev.Menu.RegisterOption("clear", "clear "..tostring(i), tostring(i), function()
+    da_trie.addOpt("clear", "clear "..tostring(i), tostring(i), function()
         SavedLocations[i] = nil
     end, function()
         return SavedLocations[i] ~= nil
     end)
 end
 
-da.Dev.Menu.RegisterOption("teleport", "disappear", "0", function()
+da_trie.addOpt("teleport", "disappear", "0", function()
     local coords = GetEntityCoords(PlayerPedId())
     da.Fx.New("des_bnk_safe_exp", "ent_ray_bnk_safe_exp_end", {
         coords = coords,
         networked = true,
     })
     Citizen.Wait(1000)
-    da.Mode.Add("noclip")
+    da_mode.start("noclip")
     da.Fx.New("anm_shows", "ent_anim_magician_smoke", {
         coords = coords,
         networked = true,
     })
 end)
 
+da_trie.addOpt("objRoot", "tp to cam", "t", function()
+    local playerPedId = PlayerPedId()
+    local coords = GetFinalRenderedCamCoord()
+    SetEntityInvincible(playerPedId, true)
+    API.teleport(coords, false)
+    Citizen.SetTimeout(10000, function() SetEntityInvincible(playerPedId, false) end)
+end)

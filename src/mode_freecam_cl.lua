@@ -1,8 +1,3 @@
-GizmoMovedRecently = nil
-
-Camera = {}
-Camera.Handle = nil
-
 local Speed = {}
 Speed.Fast = 3
 Speed.Default = 0.2
@@ -19,6 +14,81 @@ Fov.RateChange = 6
 
 local radian = math.pi / 180
 
+GizmoMovedRecently = nil
+
+Camera = {}
+Camera.Handle = nil
+
+da_mode.new("freecam", {
+    priority = 20,
+    default = { focusKeyboard = true, focusCursor = false, keepFocus = true, },
+    updateFn = function(data)
+        SetNuiFocus(data.focusKeyboard, data.focusCursor)
+        SetNuiFocusKeepInput(data.keepFocus)
+        SendNUIMessage({ type = "controlPass", enable = data.passthrough, })
+    end,
+    startFn = function()
+        CameraControlThread:Start()
+        Freecam:Start()
+    end,
+    stopFn = function()
+        CameraControlThread:Stop()
+        Freecam:Stop()
+        SendNUIMessage({ type = "displayHUD", value = "camera", mode = "off", })
+    end,
+    controlMap = {
+        {
+            key = 'f',
+            justPressed = {
+                active = "freecam",
+                fn = function() da_mode.toggle("focus") end
+            }
+        },
+    },
+})
+
+da_mode.new("noclip", {
+    priority = 10,
+    default = { focusKeyboard = true, focusCursor = false, keepFocus = true, },
+    updateFn = function(data)
+        SetNuiFocus(data.focusKeyboard, data.focusCursor)
+        SetNuiFocusKeepInput(data.keepFocus)
+        SendNUIMessage({ type = "controlPass", enable = data.passthrough, })
+    end,
+    startFn = function()
+        NoClip:Start()
+        CameraControlThread:Start()
+    end,
+    stopFn = function()
+        CameraControlThread:Stop()
+        NoClip:Stop()
+        SendNUIMessage({ type = "displayHUD", value = "camera", mode = "off", })
+    end,
+})
+
+da_mode.new("focus", {
+    default = { focusKeyboard = true, focusCursor = false, keepFocus = true, },
+    updateFn = function(data)
+        SetNuiFocus(data.focusKeyboard, data.focusCursor)
+        SetNuiFocusKeepInput(data.keepFocus)
+        SendNUIMessage({ type = "controlPass", enable = data.passthrough, })
+    end,
+    startFn = function()
+        local trackedObject = Select
+        if trackedObject then
+            log.debug(("Focusing on object %s"):format(trackedObject))
+            PointCamAtEntity(Camera.Handle, trackedObject)
+        end
+    end,
+    stopFn = function()
+        StopCamPointing(Camera.Handle)
+    end,
+})
+
+da_trie.addOpt("devRoot", "mode:freecam", "c", function() da_mode.toggle("freecam") end)
+da_trie.addOpt("devRoot", "noclip", "z", function() da_mode.toggle("noclip") end)
+da_trie.addOpt("objRoot", "noclip", "z", function() da_mode.toggle("noclip") end)
+
 local Clamp = function(val, min, max)
     if val < min then
         return min
@@ -28,16 +98,8 @@ local Clamp = function(val, min, max)
     return val
 end
 
-local CheckCameraControls = function()
-    local justPressed = da.Control.GetJustPressed({ "f", })
-
-    if justPressed.f then
-        da.Mode.Toggle("focus")
-    end
-end
-
 local GetCoords = function(ped)
-    if da.Mode.IsActive("freecam") then
+    if da_mode.isActive("freecam") then
         return table.unpack(GetCamCoord(Camera.Handle))
     else
         return table.unpack(GetEntityCoords(ped))
@@ -45,12 +107,12 @@ local GetCoords = function(ped)
 end
 
 local SetCoords = function(ped, x, y, z, rot_x, rot_y, rot_z, fov)
-    if da.Mode.IsActive("freecam") then
+    if da_mode.isActive("freecam") then
         SetCamCoord(Camera.Handle, x, y, z)
         SetCamRot(Camera.Handle, rot_x, 0.0, rot_z, 2)
         SetCamFov(Camera.Handle, fov+0.0)
-        if da.Mode.IsActive("focus") then
-            local selectedObject = GetTrackedObject("select")
+        if da_mode.isActive("focus") then
+            local selectedObject = Select
             if selectedObject then
                 if not GizmoMovedRecently then
                     PointCamAtEntity(Camera.Handle, selectedObject)
@@ -58,7 +120,7 @@ local SetCoords = function(ped, x, y, z, rot_x, rot_y, rot_z, fov)
                     StopCamPointing(Camera.Handle)
                 end
             else
-                da.Mode.Remove("focus")
+                da_mode.stop("focus")
             end
         end
     else
@@ -80,7 +142,7 @@ end
 ---@return number z Translated Z Coordinate
 local Translate = function(x, y, z, rot_x, rot_z, dist, strafe)
     local math_rot_x, math_rot_y, math_rot_z, res_x, res_y, res_z
-    -- if da.Mode.IsActive("focus") then rot_x = 0; end -- Treat movement as if we are looking straight in focus mode
+    -- if da_mode.isActive("focus") then rot_x = 0; end -- Treat movement as if we are looking straight in focus mode
     rot_x = 0 -- Always treat movement as if we are looking straight (TODO toggle for above behavior later)
 
     if strafe then
@@ -115,32 +177,19 @@ end
 ---@return number fov Translated Field of View
 local CheckMovementControls = function(x, y, z, rot_x, rot_y, rot_z, fov)
     DisableAllControlActions(0)
-    local enableMouseAim = not da.Mode.IsActive("freecam")
+    local enableMouseAim = not da_mode.isActive("freecam")
 
-    local deltaLR = GetDisabledControlNormal(0, da.Control.Map.MouseLR)
-    local deltaUD = GetDisabledControlNormal(0, da.Control.Map.MouseUD)
-    local pressed = da.Control.GetPressed(
-        { "a", "d", "e", "q", "s", "w", "x", "Spacebar", "Alt", "Control", "Shift", "WheelUp", "WheelDown", "MouseRight", })
-    local justPressed = da.Control.GetJustPressed(
-        { "x", })
+    local deltaLR = GetDisabledControlNormal(0, da_control.keyHash['MouseLR'])
+    local deltaUD = GetDisabledControlNormal(0, da_control.keyHash['MouseUD'])
+    local pressed = da_control.isPressed(
+        { "a", "d", "e", "q", "s", "w", "x", "Spacebar", "Alt", "Ctrl", "Shift", "WheelUp", "WheelDown", "MouseRight", })
+    local justPressed = da_control.isJustPressed({ "x", })
     local modifier = Speed.Current
 
     -- Mouse Controls
-    if pressed.Control then
-        -- Press Control adjust FOV on Mouse Up/Down
-
-        if justPressed.x then
-            fov = Fov.Default
-        end
-        if deltaUD ~= 0.0 then
-            fov = Clamp(fov + (deltaUD * Fov.RateChange), Fov.Min, Fov.Max)
-        end
-        -- if deltaLR ~= 0.0 then
-        --     rot_z = rot_z + deltaLR * -1.0 * (Speed.Mouse * (math.min(fov,50)/50))
-        -- end
-    elseif pressed.Alt and not (pressed.w or pressed.a or pressed.s or pressed.d or pressed.q or pressed.e) then
+    if pressed.Ctrl and not (pressed.w or pressed.a or pressed.s or pressed.d or pressed.q or pressed.e) then
         enableMouseAim = false
-        -- Press Alt move camera on X/Y coordinate plane
+        -- Pressed Ctrl move camera on X/Y coordinate plane
         if deltaLR ~= 0.0 then
             x, y, _ = Translate(x, y, z, rot_x, rot_z, 0-(deltaLR*modifier*2), true)
         end
@@ -156,7 +205,19 @@ local CheckMovementControls = function(x, y, z, rot_x, rot_y, rot_z, fov)
         if deltaUD ~= 0.0 then
             z = z - deltaUD*modifier*2
         end
-    elseif not da.Mode.IsActive("focus") and (not da.Mode.IsActive("gizmo") or da.Control.PassthroughIsActive()) then
+    elseif pressed.Alt then
+        -- Press Alt adjust FOV on Mouse Up/Down
+
+        if justPressed.x then
+            fov = Fov.Default
+        end
+        if deltaUD ~= 0.0 then
+            fov = Clamp(fov + (deltaUD * Fov.RateChange), Fov.Min, Fov.Max)
+        end
+        -- if deltaLR ~= 0.0 then
+        --     rot_z = rot_z + deltaLR * -1.0 * (Speed.Mouse * (math.min(fov,50)/50))
+        -- end
+    elseif not da_mode.isActive("focus") and (not da_mode.isActive("gizmo") or da_mode.isPassthrough("gizmo")) then
         -- Otherwise Mouse aims camera
         if deltaLR ~= 0.0 then
             rot_z = rot_z + deltaLR * -1.0 * (Speed.Mouse * (math.min(fov,50)/50))
@@ -186,12 +247,25 @@ local CheckMovementControls = function(x, y, z, rot_x, rot_y, rot_z, fov)
     if pressed.q then z = z - (modifier/2) end
 
     if enableMouseAim then
-        EnableControlAction(0, da.Control.Map.MouseLR)
-        EnableControlAction(0, da.Control.Map.MouseUD)
+        EnableControlAction(0, da_control.keyHash['MouseLR'])
+        EnableControlAction(0, da_control.keyHash['MouseUD'])
     end
 
     -- Set Coords
     return x, y, z, rot_x, rot_y, rot_z, fov
+end
+
+lazy.camUpdate = function(speed)
+    SendNUIMessage({
+        type = "displayHUD",
+        value = "camera",
+        mode = "on",
+        camera = {
+            speed = ("%.2f"):format(speed),
+            cameraMode = da_mode.isActive("focus") and "" or "",
+            noclip = da_mode.isActive("freecam") and "" or da_mode.isActive("noclip") and "" or "",
+        },
+    })
 end
 
 CameraControlThread = {}
@@ -203,24 +277,12 @@ function CameraControlThread:Start()
     self.active = true
     Citizen.CreateThread(function()
         while self.active do
-            if da.Cache.Lazy.Delay("dadev","camUpdate",100) then
-                SendNUIMessage({
-                    type = "displayHUD",
-                    value = "camera",
-                    mode = "on",
-                    camera = {
-                        speed = ("%.2f"):format(Speed.Current),
-                        cameraMode = da.Mode.IsActive("focus") and "" or "",
-                        noclip = da.Mode.IsActive("freecam") and "" or da.Mode.IsActive("noclip") and "" or "",
-                    },
-                })
-            end
+            lazy(100).camUpdate(Speed.Current)
             Citizen.Wait(0)
             x, y, z = GetCoords(playerPedId)
             rot_x, rot_y, rot_z = table.unpack(GetFinalRenderedCamRot())
             x, y, z, rot_x, rot_y, rot_z, fov = CheckMovementControls(x, y, z, rot_x, rot_y, rot_z, fov)
             SetCoords(playerPedId, x, y, z, rot_x, rot_y, rot_z, fov)
-            CheckCameraControls()
         end
         self.active = false
     end)
@@ -250,10 +312,6 @@ function Freecam:Stop()
     DestroyCam(Camera.Handle, true)
     Camera.Handle = nil
 end
-
-da.Dev.Menu.RegisterOption("root", "mode:freecam", "c", function()
-    da.Mode.Toggle("freecam")
-end)
 
 NoClip = {}
 function NoClip:Start()

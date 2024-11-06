@@ -2,7 +2,7 @@ local IKThread = false
 local IKEnabled = {}
 local IKMenuName = "ikinemat"
 
-da.Dev.Menu.RegisterMenu("root", IKMenuName, "q")
+da_trie.add("root", IKMenuName, "q")
 
 local IKTypes = {
     ["head"] = { key = "h", fn_address = 0xC11C18092C5530DC, },
@@ -19,7 +19,7 @@ for ikType, ikData in pairs(IKTypes) do
     IKEnabled[ikType] = true
 
     -- Enable IK
-    da.Dev.Menu.RegisterOption(IKMenuName, ikType.." ik on", ikData.key, function()
+    da_trie.addOpt(IKMenuName, ikType.." ik on", ikData.key, function()
         if not IKThread then StartKinematicsThread(); end
         local ped = PlayerPedId()
         Citizen.InvokeNative(ikData.fn_address, ped, 1)
@@ -27,14 +27,14 @@ for ikType, ikData in pairs(IKTypes) do
     end, function() return not IKEnabled[ikType] end)
 
     -- Disable IK
-    da.Dev.Menu.RegisterOption(IKMenuName, ikType.." ik off", ikData.key, function()
+    da_trie.addOpt(IKMenuName, ikType.." ik off", ikData.key, function()
         if not IKThread then StartKinematicsThread(); end
         IKEnabled[ikType] = nil
     end, function() return IKEnabled[ikType] end)
 
 end
 
-da.Dev.Menu.RegisterOption(IKMenuName, "stop all", "x", function()
+da_trie.addOpt(IKMenuName, "stop all", "x", function()
     IKThread = false
 end, function() return IKThread end)
 
@@ -58,35 +58,3 @@ function StartKinematicsThread()
         IKThread = false
     end)
 end
-
-function GetNearbyObjects(range)
-    local pos = GetFinalRenderedCamCoord()
-    local entities = da.Util.GetEntitiesNearPoint(pos, range)
-    local entityData = {}
-    for i, entity in ipairs(entities) do
-        local model = GetEntityModel(entity)
-        local coords = GetEntityCoords(entity)
-        entityData[i] = {
-            handle = entity,
-            model = model,
-            modelName = da.Util.GetModelName(model),
-            distance = #(pos - coords),
-        }
-    end
-    local peds = da.Util.GetPedsNearPoint(pos, range)
-    for i, entity in ipairs(peds) do
-        local model = GetEntityModel(entity)
-        local coords = GetEntityCoords(entity)
-        entityData[i] = {
-            handle = entity,
-            model = model,
-            modelName = da.Util.GetModelName(model),
-            distance = #(pos - coords),
-        }
-    end
-    return entityData
-end
-
-RegisterNUICallback('nearbyObjects', function(data, cb)
-    cb({ nearbyObjects = GetNearbyObjects(data.range)})
-end)

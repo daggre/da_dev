@@ -239,7 +239,7 @@
     float: right;
 }
 
-#activeAnimDisplay, #selectedObjectDisplay {
+#activeAnimDisplay, #selectedObjectDisplay, #selectedNearbyOriginDisplay {
     left: 50vw;
     top: 1vh;
     width: fit-content;
@@ -447,4 +447,12 @@ li {
 #objNearbyRange {
     position: relative;
     direction: ltr;
+}
+
+#objNearbyResults li.selected {
+    color: var(--style-aux);
+}
+
+#objNearbyResults li.hover {
+    color: #fff;
 }
