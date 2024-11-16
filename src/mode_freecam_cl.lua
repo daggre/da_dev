@@ -13,75 +13,121 @@ Fov.Default = 48.84
 Fov.RateChange = 6
 
 local radian = math.pi / 180
+local CamHandle = nil
 
 GizmoMovedRecently = nil
 
-Camera = {}
-Camera.Handle = nil
-
-da_mode.new("freecam", {
+da_mode.register({
+    name = "freecam",
     priority = 20,
-    default = { focusKeyboard = true, focusCursor = false, keepFocus = true, },
-    updateFn = function(data)
-        SetNuiFocus(data.focusKeyboard, data.focusCursor)
-        SetNuiFocusKeepInput(data.keepFocus)
-        SendNUIMessage({ type = "controlPass", enable = data.passthrough, })
-    end,
-    startFn = function()
+    onActivate = function()
+        SetNuiFocus(true, false)
+        SetNuiFocusKeepInput(true)
+
+        da_ui.send("ui", { mode = "camera" })
+
+        local x, y, z = table.unpack(GetGameplayCamCoord())
+        local pitch, roll, yaw = table.unpack(GetGameplayCamRot(2))
+        local fov = GetGameplayCamFov()
+
         CameraControlThread:Start()
-        Freecam:Start()
+        CamHandle = CreateCam("DEFAULT_SCRIPTED_CAMERA", true)
+        SetCamCoord(CamHandle, x, y, z)
+        SetCamRot(CamHandle, pitch, roll, yaw, 2)
+        SetCamFov(CamHandle, fov+0.0)
+        RenderScriptCams(true, true, 500, true, true)
     end,
-    stopFn = function()
-        CameraControlThread:Stop()
-        Freecam:Stop()
-        SendNUIMessage({ type = "displayHUD", value = "camera", mode = "off", })
+    onDeactivate = function()
+        SetNuiFocus(false, false)
+        SetNuiFocusKeepInput(false)
+
+        if not da_mode.isActive("noclip") then
+            CameraControlThread:Stop()
+        end
+        RenderScriptCams(false, true, 500, true, true)
+        SetCamActive(CamHandle, false)
+        DetachCam(CamHandle)
+        DestroyCam(CamHandle, true)
+        CamHandle = nil
+
+        if not da_mode.isActive("object") and not da_mode.isActive("noclip") then
+            da_ui.send("ui", { mode = "camera", state = "off", })
+        end
     end,
-    controlMap = {
-        {
-            key = 'f',
+    keymaps = {
+        f = {
             justPressed = {
-                active = "freecam",
-                fn = function() da_mode.toggle("focus") end
+                active = true,
+                fn = function()
+                    da_mode.toggle("focus")
+                end
             }
         },
-    },
+        Escape = {
+            justPressed = {
+                primary = true,
+                fn = function()
+                    da_mode.deactivate("freecam")
+                end
+            }
+        },
+    }
 })
 
-da_mode.new("noclip", {
+da_mode.register({
+    name = "noclip",
     priority = 10,
-    default = { focusKeyboard = true, focusCursor = false, keepFocus = true, },
-    updateFn = function(data)
-        SetNuiFocus(data.focusKeyboard, data.focusCursor)
-        SetNuiFocusKeepInput(data.keepFocus)
-        SendNUIMessage({ type = "controlPass", enable = data.passthrough, })
-    end,
-    startFn = function()
-        NoClip:Start()
+    onActivate = function()
+        local playerPedId = PlayerPedId()
+        SetNuiFocus(true, false)
+        SetNuiFocusKeepInput(true)
+        FreezeEntityPosition(playerPedId, true)
+        SetEntityInvincible(playerPedId, true)
+        SetEntityVisible(playerPedId, false)
+        NetworkSetEntityInvisibleToNetwork(playerPedId, true)
         CameraControlThread:Start()
     end,
-    stopFn = function()
-        CameraControlThread:Stop()
-        NoClip:Stop()
-        SendNUIMessage({ type = "displayHUD", value = "camera", mode = "off", })
+    onDeactivate = function()
+        local playerPedId = PlayerPedId()
+        SetNuiFocus(false, false)
+        SetNuiFocusKeepInput(false)
+        if not da_mode.isActive("freecam") then
+            CameraControlThread:Stop()
+        end
+        FreezeEntityPosition(playerPedId, false)
+        SetEntityVisible(playerPedId, true)
+        NetworkSetEntityInvisibleToNetwork(playerPedId, false)
+        Citizen.SetTimeout(5000, function() SetEntityInvincible(playerPedId, false) end)
+
+        if not da_mode.isActive("object") and not da_mode.isActive("freecam") then
+            da_ui.send("ui", { mode = "camera", state = "off", })
+        end
     end,
+    keymaps = {
+        Escape = {
+            justPressed = {
+                primary = true,
+                fn = function()
+                    da_mode.deactivate("noclip")
+                end
+            }
+        },
+    }
 })
 
-da_mode.new("focus", {
-    default = { focusKeyboard = true, focusCursor = false, keepFocus = true, },
-    updateFn = function(data)
-        SetNuiFocus(data.focusKeyboard, data.focusCursor)
-        SetNuiFocusKeepInput(data.keepFocus)
-        SendNUIMessage({ type = "controlPass", enable = data.passthrough, })
-    end,
-    startFn = function()
+da_mode.register({
+    name = "focus",
+    onActivate = function()
         local trackedObject = Select
         if trackedObject then
             log.debug(("Focusing on object %s"):format(trackedObject))
-            PointCamAtEntity(Camera.Handle, trackedObject)
+            PointCamAtEntity(CamHandle, trackedObject)
         end
+        da_ui.send("ui", { mode = "camera", focus = true, })
     end,
-    stopFn = function()
-        StopCamPointing(Camera.Handle)
+    onDeactivate = function()
+        StopCamPointing(CamHandle)
+        da_ui.send("ui", { mode = "camera", focus = false, })
     end,
 })
 
@@ -100,7 +146,7 @@ end
 
 local GetCoords = function(ped)
     if da_mode.isActive("freecam") then
-        return table.unpack(GetCamCoord(Camera.Handle))
+        return table.unpack(GetCamCoord(CamHandle))
     else
         return table.unpack(GetEntityCoords(ped))
     end
@@ -108,19 +154,19 @@ end
 
 local SetCoords = function(ped, x, y, z, rot_x, rot_y, rot_z, fov)
     if da_mode.isActive("freecam") then
-        SetCamCoord(Camera.Handle, x, y, z)
-        SetCamRot(Camera.Handle, rot_x, 0.0, rot_z, 2)
-        SetCamFov(Camera.Handle, fov+0.0)
+        SetCamCoord(CamHandle, x, y, z)
+        SetCamRot(CamHandle, rot_x, 0.0, rot_z, 2)
+        SetCamFov(CamHandle, fov+0.0)
         if da_mode.isActive("focus") then
             local selectedObject = Select
             if selectedObject then
                 if not GizmoMovedRecently then
-                    PointCamAtEntity(Camera.Handle, selectedObject)
+                    PointCamAtEntity(CamHandle, selectedObject)
                 else
-                    StopCamPointing(Camera.Handle)
+                    StopCamPointing(CamHandle)
                 end
             else
-                da_mode.stop("focus")
+                da_mode.deactivate("focus")
             end
         end
     else
@@ -256,15 +302,13 @@ local CheckMovementControls = function(x, y, z, rot_x, rot_y, rot_z, fov)
 end
 
 lazy.camUpdate = function(speed)
-    SendNUIMessage({
-        type = "displayHUD",
-        value = "camera",
-        mode = "on",
+    da_ui.send("ui", {
+        mode = "camera",
         camera = {
             speed = ("%.2f"):format(speed),
             cameraMode = da_mode.isActive("focus") and "" or "",
             noclip = da_mode.isActive("freecam") and "" or da_mode.isActive("noclip") and "" or "",
-        },
+        }
     })
 end
 
@@ -292,49 +336,9 @@ function CameraControlThread:Stop()
     self.active = false
 end
 
-Freecam = {}
-function Freecam:Start()
-	local x, y, z = table.unpack(GetGameplayCamCoord())
-	local pitch, roll, yaw = table.unpack(GetGameplayCamRot(2))
-	local fov = GetGameplayCamFov()
-	Camera.Handle = CreateCam("DEFAULT_SCRIPTED_CAMERA", true)
-	SetCamCoord(Camera.Handle, x, y, z)
-	SetCamRot(Camera.Handle, pitch, roll, yaw, 2)
-	SetCamFov(Camera.Handle, fov+0.0)
-	RenderScriptCams(true, true, 500, true, true)
-end
-
-function Freecam:Stop()
-    CamControlThread = false
-    RenderScriptCams(false, true, 500, true, true)
-    SetCamActive(Camera.Handle, false)
-    DetachCam(Camera.Handle)
-    DestroyCam(Camera.Handle, true)
-    Camera.Handle = nil
-end
-
-NoClip = {}
-function NoClip:Start()
-    self.active = true
-    local playerPedId = PlayerPedId()
-    FreezeEntityPosition(playerPedId, true)
-    SetEntityInvincible(playerPedId, true)
-    SetEntityVisible(playerPedId, false)
-    NetworkSetEntityInvisibleToNetwork(playerPedId, true)
-end
-
-function NoClip:Stop()
-    self.active = false
-    local playerPedId = PlayerPedId()
-    FreezeEntityPosition(playerPedId, false)
-    SetEntityVisible(playerPedId, true)
-    NetworkSetEntityInvisibleToNetwork(playerPedId, false)
-    Citizen.SetTimeout(5000, function() SetEntityInvincible(playerPedId, false) end)
-end
-
 AddEventHandler('onResourceStop', function(resourceName)
     GizmoThreadStarted = false
     if resourceName == GetCurrentResourceName() then
-        Freecam:Stop()
+        da_mode.deactivate("freecam")
     end
 end)

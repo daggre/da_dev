@@ -117,23 +117,37 @@ function SelectNearbyOrigin(originType) {
     SendClientMessage('setObjSettings', { nearby: JSON.stringify(NearbyOption) });
 }
 
+let lastErrorMessage = null;
 function SendClientMessage(endpoint, data) {
     const url = `https://${GetParentResourceName()}/${endpoint}`;
-    // console.log(`Sending request to ${url}:`, data);
     return fetch(url, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json; charset=UTF-8',
-        },
+        headers: { 'Content-Type': 'application/json; charset=UTF-8', },
+        body: JSON.stringify(data),
+    }).catch(error => {
+            const errorMessage = error.message || error.toString();
+            if (errorMessage !== lastErrorMessage) {
+                console.error("SendClientMessage error:", errorMessage, url, data);
+                lastErrorMessage = errorMessage;
+            }
+        });
+}
+
+function SendClientPromise(endpoint, data) {
+    const url = `https://${GetParentResourceName()}/${endpoint}`;
+    return fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json; charset=UTF-8', },
         body: JSON.stringify(data),
     }).then(response => {
-            if (!response.ok) {
-                throw new Error(`Server error: ${response.statusText}`);
-            }
+            if (!response.ok) { throw new Error(`Server error: ${response.statusText}`); }
             return response.json();
         }).catch(error => {
-            console.error('Fetch error:', error, url, data);
-            throw error;
+            const errorMessage = error.message || error.toString();
+            if (errorMessage !== lastErrorMessage) {
+                console.error("SendClientPromise error:", errorMessage, url, data);
+                lastErrorMessage = errorMessage;
+            }
         });
 }
 
@@ -146,22 +160,19 @@ function ClipboardCopy(val) {
     $temp.remove();
 }
 
-function ToggleUI(data) {
-    switch(data.value) {
-        case "devTreeHUD":
-            ToggleUIDevTree(data)
+function SetUI(data) {
+    switch(data.mode) {
+        case "tree":
+            SetUITree(data)
             break;
         case "animation":
-            ToggleUIAnim(data.mode);
+            SetUIAnim(data.state);
             break;
         case "object":
-            ToggleUIObject(data.mode);
+            SetUIObj(data.state);
             break;
         case "camera":
-            ToggleUICam(data.mode)
-            if (data.mode == "on") {
-                UpdateUICam(data.camera)
-            }
+            SetUICam(data)
             break;
         default:
             break;
@@ -171,10 +182,10 @@ function ToggleUI(data) {
 window.onload = function() {
     window.addEventListener('message', function(msg) {
         switch(msg.data.type) {
-            case "displayHUD":
-                ToggleUI(msg.data);
+            case "ui":
+                SetUI(msg.data);
                 break;
-            case "nuiUpdate":
+            case "update":
                 UpdateCrosshair(msg.data);
                 UpdateObjectDetails(msg.data);
                 break;
@@ -232,12 +243,12 @@ $(document).ready(function() {
                     break;
                 case 1: // Middle Click
                     if (ControlPassActive) {
-                        SendClientMessage('endPassthrough', {})
+                        SendClientMessage('deactivateMCP', { mode: "animation" })
                         break;
                     }
                     QuickPress.MiddleMouse.active = true;
                     setTimeout(function() { QuickPress.MiddleMouse.active = false; }, QuickPress.Timeout);
-                    SendClientMessage('modifyMode', { mode: "animation", passthrough: true, });
+                    SendClientMessage('activateMCP', { mode: "animation" });
                     break;
             }
         }
@@ -248,10 +259,10 @@ $(document).ready(function() {
                         QuickPress.MiddleMouse.active = true;
                         setTimeout(function() { QuickPress.MiddleMouse.active = false; }, QuickPress.Timeout);
                         if (GizmoActivePassthrough) {
-                            SendClientMessage('modifyMode', { mode: "gizmo", passthrough: false, });
+                            SendClientMessage('deactivateMCP', { mode: "gizmo" });
                             GizmoActivePassthrough = false
                         } else {
-                            SendClientMessage('modifyMode', { mode: "gizmo", passthrough: true, });
+                            SendClientMessage('activateMCP', { mode: "gizmo" });
                             GizmoActivePassthrough = true
                         }
                         break;
@@ -288,15 +299,12 @@ $(document).ready(function() {
                         break;
                     case 1: // Middle Click
                         if (ControlPassActive) {
-                            SendClientMessage('endPassthrough', {})
+                            SendClientMessage('deactivateMCP', { mode: "object" })
                             break;
                         }
                         QuickPress.MiddleMouse.active = true;
                         setTimeout(function() { QuickPress.MiddleMouse.active = false; }, QuickPress.Timeout);
-                        SendClientMessage('modifyMode', { mode: "object", passthrough: true, });
-                        if (GizmoActive) {
-                            SendClientMessage('modifyMode', { mode: "gizmo", passthrough: true, });
-                        }
+                        SendClientMessage('activateMCP', { mode: "object" });
                         break;
                 }
             }
@@ -314,7 +322,7 @@ $(document).ready(function() {
             switch(event.button) {
                 case 1: // Middle Click
                     if (!QuickPress.MiddleMouse.active) {
-                        SendClientMessage('endPassthrough', {})
+                        SendClientMessage('deactivateMCP', { mode: "animation" })
                     }
                     break;
             }
@@ -323,7 +331,7 @@ $(document).ready(function() {
             switch(event.button) {
                 case 1: // Middle Click
                     if (!QuickPress.MiddleMouse.active) {
-                        SendClientMessage('endPassthrough', {})
+                        SendClientMessage('deactivateMCP', { mode: "object" })
                     }
                     break;
             }
@@ -361,6 +369,7 @@ $(document).ready(function() {
 
     $("div#valueAnimSearch.entryField").keydown(function(e) {
         if (e.code == "Enter") {
+            console.log("searching for", this.innerHTML);
             e.preventDefault();
             var dictList = document.getElementById("animDictList");
             var animList = document.getElementById("animList");
@@ -372,6 +381,7 @@ $(document).ready(function() {
             animList.innerHTML = "";
             animList.scrollTop = 0;
             animList.scrollLeft = -1000;
+            console.log("searching...", dictList, animList)
             SearchRedMAnims(this.innerHTML);
         }
     });
@@ -393,7 +403,7 @@ $(document).ready(function() {
         }
     });
 
-    SendClientMessage('initObjSettings', {}).then(function(resp) {
+    SendClientPromise('initObjSettings', {}).then(function(resp) {
         NearbyOption = JSON.parse(resp.nearby);
 
         if (NearbyOption.object) {
@@ -423,11 +433,11 @@ $(document).ready(function() {
         document.getElementById("activeNearbyOrigin").innerHTML = NearbyOption.origin;
     });
 
-    SendClientMessage('initAnims', {}).then(function(resp) {
+    SendClientPromise('initAnims', {}).then(function(resp) {
         Animations = JSON.parse(resp.animations);
     });
 
-    SendClientMessage('initObjects', {}).then(function(resp) {
+    SendClientPromise('initObjects', {}).then(function(resp) {
         SpawnOption.set("objects", JSON.parse(resp.objects));
         SpawnOption.set("peds", JSON.parse(resp.peds));
         SpawnOption.set("vehicles", JSON.parse(resp.vehicles));
@@ -435,7 +445,7 @@ $(document).ready(function() {
         SpawnOption.set("pickups", JSON.parse(resp.pickups));
     });
 
-    SendClientMessage('initAnimFlags', {}).then(function(resp) {
+    SendClientPromise('initAnimFlags', {}).then(function(resp) {
         var flagList = document.getElementById('animFlagsOptions');
         var ul = document.createElement('ul');
 
@@ -479,7 +489,7 @@ $(document).ready(function() {
         flagList.appendChild(ul);
     });
 
-    SendClientMessage('initIKAnimFlags', {}).then(function(resp) {
+    SendClientPromise('initIKAnimFlags', {}).then(function(resp) {
         var flagList = document.getElementById('animIKFlagsOptions');
         var ul = document.createElement('ul');
 
@@ -552,7 +562,7 @@ var DevKeys = {}
 var HudTree = {}
 var TreeKeys = {}
 
-function ToggleUIDevTree(data) {
+function SetUITree(data) {
     InitializeTree(data.tree);
     document.getElementById('devTreeHUD').style.display = "flex";
 }
@@ -625,7 +635,7 @@ function HandleKeysDevTree(event) {
 }
 
 // Animation HUD //
-function ToggleUIAnim(state) {
+function SetUIAnim(state) {
     // Toggle all submenus off
     document.getElementById('animDictList').style.display = "none";
     document.getElementById('animList').style.display = "none";
@@ -635,24 +645,16 @@ function ToggleUIAnim(state) {
     document.getElementById('animIKFlagsOptions').style.display = "none";
     document.getElementById('animEntityOptions').style.display = "none";
 
-    if (state == "on") {
-        document.getElementById('animHUD').style.display = "flex";
-        document.getElementById('animControlOptions').style.display = "flex";
-        document.getElementById('activeAnimDisplay').style.display = "flex";
-    } else if (state == "off") {
+    if (state == "off") {
         document.getElementById('animHUD').style.display = "none";
         document.getElementById('animControlOptions').style.display = "none";
         document.getElementById('activeAnimDisplay').style.display = "none";
+        document.getElementById('animSearchLists').style.display = "none";
     } else {
-        if (isVisible(document.getElementById('animHUD'))) {
-            document.getElementById('animHUD').style.display = "none";
-            document.getElementById('animControlOptions').style.display = "none";
-            document.getElementById('activeAnimDisplay').style.display = "none";
-        } else {
-            document.getElementById('animHUD').style.display = "flex";
-            document.getElementById('animControlOptions').style.display = "flex";
-            document.getElementById('activeAnimDisplay').style.display = "flex";
-        }
+        document.getElementById('animHUD').style.display = "flex";
+        document.getElementById('animControlOptions').style.display = "flex";
+        document.getElementById('activeAnimDisplay').style.display = "flex";
+        document.getElementById('animSearchLists').style.display = "flex";
     }
 }
 
@@ -796,6 +798,7 @@ function SearchRedMAnims(searchValue) {
     }
     el.scrollTop = 0;
     el.scrollLeft = -1000;
+    console.log("searched for", searchValue, "found results", results.length);
 }
 
 function TogglePlay(state = "toggle") {
@@ -813,7 +816,7 @@ function ToggleStop() {
     var p_el = document.getElementById('button-play');
     p_el.classList.remove('selected');
     setTimeout(function() { s_el.classList.remove('selected'); }, 200);
-    SendClientMessage('stopAnim', {})
+    SendClientMessage('stopAnim', {});
 }
 
 function ToggleLoop() { ToggleFlag(1); }
@@ -1044,8 +1047,7 @@ function HandleKeysAnim(event) {
 
             SendClientMessage('exit', {});
             document.getElementById('devTreeHUD').style.display = "none";
-            ToggleUIAnim("off");
-
+            SetUIAnim("off");
             return;
         case " ":
             if (typeof event.target.onclick == "function") {
@@ -1152,16 +1154,13 @@ function HandleKeysAnim(event) {
 }
 
 // Camera HUD //
-function ToggleUICam(state) {
-    if (state == "on") {
-        document.getElementById('cameraHUD').style.display = "flex";
-    } else if (state == "off") {
+function SetUICam(data) {
+    if (data.state == "off") {
         document.getElementById('cameraHUD').style.display = "none";
     } else {
-        if (isVisible(document.getElementById('cameraHUD'))) {
-            document.getElementById('cameraHUD').style.display = "none";
-        } else {
-            document.getElementById('cameraHUD').style.display = "flex";
+        document.getElementById('cameraHUD').style.display = "flex";
+        if (data.camera) {
+            UpdateUICam(data.camera);
         }
     }
 }
@@ -1181,8 +1180,8 @@ function HandleKeysCam(event) {
                 return;
             }
             console.log("exiting camera mode");
-            SendClientMessage('modifyMode', { mode: "freecam", stop: true, });
-            SendClientMessage('modifyMode', { mode: "noclip", stop: true, });
+            SendClientMessage('deactivateMode', { mode: "freecam" });
+            SendClientMessage('deactivateMode', { mode: "noclip" });
             break;
         case "?":
         case "h":
@@ -1192,24 +1191,16 @@ function HandleKeysCam(event) {
 }
 
 // Object HUD //
-function ToggleUIObject(state) {
+function SetUIObj(state) {
     document.getElementById('objSearchField').style.display = "none";
     document.getElementById('objData').style.display = "none";
 
-    if (state == "on") {
-        document.getElementById('objectHUD').style.display = "flex";
-        document.getElementById('objControlOptions').style.display = "flex";
-    } else if (state == "off") {
+    if (state == "off") {
         document.getElementById('objectHUD').style.display = "none";
         document.getElementById('objControlOptions').style.display = "none";
     } else {
-        if (isVisible(document.getElementById('objectHUD'))) {
-            document.getElementById('objectHUD').style.display = "none";
-            document.getElementById('objControlOptions').style.display = "none";
-        } else {
-            document.getElementById('objectHUD').style.display = "flex";
-            document.getElementById('objControlOptions').style.display = "flex";
-        }
+        document.getElementById('objectHUD').style.display = "flex";
+        document.getElementById('objControlOptions').style.display = "flex";
     }
 }
 
@@ -1347,7 +1338,7 @@ function GetTrackedObjects() {
                     NearbyOption.range = currentNearbyRange;
                     SendClientMessage('setObjSettings', { nearby: JSON.stringify(NearbyOption) });
                 }
-                SendClientMessage('nearbyObjects', {
+                SendClientPromise('nearbyObjects', {
                     range: currentNearbyRange,
                     origin: NearbyOption.origin,
                 }).then(function(resp) {
@@ -1406,7 +1397,7 @@ function GetTrackedObjects() {
             clearInterval(loopId);
             TrackedObjectsLoopRunning = false;
         }
-    }, 50);
+    }, 250);
 }
 
 // Object Scene //
@@ -1634,7 +1625,8 @@ function ObjectKeys(key, event) {
                 }
                 if (escaped) { return; }
 
-                SendClientMessage('modifyMode', { mode: "object", stop: true, });
+                SendClientMessage('deactivateMode', { mode: "object" });
+                SetUIObj("off");
                 return;
             case " ":
                 if (typeof event.target.onclick == "function") {
@@ -1710,12 +1702,13 @@ function ObjectKeys(key, event) {
             }
             if (escaped) { return; }
 
-            SendClientMessage('modifyMode', { mode: "object", stop: true, });
+            SendClientMessage('deactivateMode', { mode: "object" });
+            SetUIObj("off");
             return;
         case "c":
             if (!document.activeElement.classList.contains('entryField') && !ControlPassActive) {
-                SendClientMessage('modifyMode', { mode: "object", passthrough: true, });
-                SendClientMessage('modifyMode', { mode: "gizmo", passthrough: true, });
+                SendClientMessage('activateMCP', { mode: "object" });
+                SendClientMessage('activateMCP', { mode: "gizmo" });
             }
             return;
         case "f":
@@ -1752,7 +1745,7 @@ function ObjectKeys(key, event) {
             document.getElementById('button-importexport').focus();
             return;
         case "Backspace":
-            SendClientMessage('modifyMode', { mode: "object", stop: true, });
+            SendClientMessage('deactivateMode', { mode: "object" });
             return;
         case "?":
         case "h":

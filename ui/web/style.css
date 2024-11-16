@@ -155,9 +155,9 @@
     width: 34vw;
     max-height: 70vh;
     padding: 0px;
-    display: flex;
     flex-direction: column;
     background: none;
+    display: none;
 }
 
 .listGroup > div {
