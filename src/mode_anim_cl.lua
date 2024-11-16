@@ -1,26 +1,63 @@
-da_mode.new("animation", {
-    priority = 70,
-    default = { focusKeyboard = true, focusCursor = true, keepFocus = false, },
-    passthrough = { focusCursor = false, keepFocus = true, },
-    updateFn = function(data)
-        SetNuiFocus(data.focusKeyboard, data.focusCursor)
-        SetNuiFocusKeepInput(data.keepFocus)
-        SendNUIMessage({ type = "controlPass", enable = data.passthrough, })
+Citizen.CreateThread(function()
+    da_mode.register({
+        name = "animation",
+        priority = 70,
+        onActivate = function()
+            SetNuiFocus(true, true)
+            da_ui.send("ui", { mode = "animation" })
+        end,
+        onDeactivate = function()
+            da_mcp.deactivate()
+            da_ui.send("ui", { mode = "animation", state = "off" })
+            log.debug("Restoring Nui anim mode onDeactivate")
+            SetNuiFocus(false, false)
+            SetNuiFocusKeepInput(false)
+        end,
+        onPrimary = function()
+            SetNuiFocus(true, true)
+        end,
+        activateMCP = function()
+            da_mcp.activate({
+                key = da_control.keyHash['MouseScrollClick'],
+                activate = function()
+                    SetNuiFocus(true, false)
+                    SetNuiFocusKeepInput(true)
+                end,
+                deactivate = function()
+                    log.debug("deactivating mcp for anim mode")
+                    if not da_mode.isPrimary("animation") then return end
+                    SetNuiFocus(true, true)
+                    SetNuiFocusKeepInput(false)
+                end,
+            })
+        end,
+        keymaps = {
+            escape = {
+                justReleased = {
+                    active = true,
+                    fn = function()
+                        da_mode.deactivate("animation")
+                    end,
+                }
+            },
+            -- c = {
+            --     justReleased = {
+            --         active = true,
+            --         fn = function()
+            --             da_mcp.deactivate()
+            --         end,
+            --     }
+            -- },
+        }
+    })
+end)
+
+da_ui.events({
+    activateMCP = function(data)
+        da_mode.activateMCP(data.mode)
     end,
-    startFn = function()
-        SendNUIMessage({ type = "displayHUD", value = "animation", mode = "on" })
-    end,
-    stopFn = function()
-        SendNUIMessage({ type = "displayHUD", value = "animation", mode = "off" })
-        da_mode.reset("animation")
-    end,
-    passthroughFn = function(state, haltKey, cb)
-        da_controlpass:set(state, haltKey, cb)
-    end,
-    passthroughCb = function()
-        da_control.waitForRelease(dat.keyHashList)
-        SendNUIMessage({ type = "controlPass", enable = false, })
-        da_mode.reset("animation")
+    deactivateMCP = function(data)
+        da_mcp.deactivate()
     end,
 })
 

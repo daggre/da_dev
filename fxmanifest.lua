@@ -21,6 +21,7 @@ server_scripts {
 }
 
 client_scripts {
+    '@da_lib/lib/nui_cl.lua',
     '@da_lib/lib/cache_delay.lua',
     '@da_lib/lib/cache_lazy.lua',
     '@da_lib/lib/util_cl.lua',

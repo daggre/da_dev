@@ -1,6 +1,125 @@
 local SkipNext = false
 CurrentTree = "devRoot"
 
+da_trie.addRoot("devRoot")
+da_trie.addRoot("objRoot")
+
+da_ui.callbacks({
+    ["initAnims"] = function() return { animations = json.encode(dat.animation) } end,
+    ["initAnimFlags"] = function() return { flags = json.encode(dat.flags.anim) } end,
+    ["initIKAnimFlags"] = function() return { flags = json.encode(dat.flags.ik) } end,
+    ["initObjSettings"] = function() return { nearby = kvp.rawget("setting:ui:nearby") } end,
+    ["initObjects"] = function() return {
+        peds = json.encode(dat.ped),
+        objects = json.encode(dat.object),
+        pickups = json.encode(dat.pickup),
+        vehicles = json.encode(dat.vehicle),
+        propsets = json.encode(dat.propset),
+    } end,
+})
+
+da_ui.events({
+    ["activateMode"] = function(data)
+        da_mode.activate(data.mode)
+    end,
+    ["deactivateMode"] = function(data)
+        da_mode.deactivate(data.mode)
+    end,
+    ["setObjSettings"] = function(data)
+        kvp.rawset("setting:ui:nearby", data.nearby)
+    end,
+    ["playAnim"] = function(data)
+        local entity = data.entity and tonumber(data.entity) or nil
+        if data.entity and IsEntityAnObject(entity) and not IsEntityAPed(entity) then
+            da_anim.object(
+                tonumber(data.entity),
+                data.animDict,
+                data.animName)
+        elseif data.type == "advanced" then
+            da_anim.adv(
+                entity or PlayerPedId(),
+                data.animDict,
+                data.animName,
+                tonumber(data.posX),
+                tonumber(data.posY),
+                tonumber(data.posZ),
+                tonumber(data.rotZ),
+                tonumber(data.speed),
+                tonumber(data.speedMultiplier),
+                tonumber(data.duration),
+                tonumber(data.flags),
+                tonumber(data.animTime),
+                nil, nil, nil)
+        else
+            da_anim.ped(
+                entity or PlayerPedId(),
+                data.animDict,
+                data.animName,
+                tonumber(data.blendInSpeed),
+                tonumber(data.blendOutSpeed),
+                tonumber(data.duration),
+                tonumber(data.flag),
+                tonumber(data.playbackRate),
+                tonumber(data.ikFlag),
+                data.taskFilter)
+        end
+    end,
+    ["stopAnim"] = function(data)
+        ClearPedTasksImmediately(data.entity or PlayerPedId())
+    end,
+    ["runOption"] = function(data)
+        da_trie.run(data.menu, data.option)
+        da_mode.deactivate("devTree")
+    end,
+    ["chooseMenu"] = function(data)
+        da_ui.send("ui", { mode = "tree", tree = da_trie.get(data.menu) })
+    end,
+    ["exit"] = function()
+        da_mode.deactivate("animation"); da_mode.deactivate("devTree")
+    end,
+    ["onResourceStop"] = function(resourceName)
+        if resourceName == GetCurrentResourceName() then
+            da_mode.deactivate("devTree")
+            da_mode.unregister("devTree")
+            SetNuiFocus(false, false)
+            SetNuiFocusKeepInput(false)
+            da_controlpass:set(false)
+        end
+    end,
+})
+
+Citizen.CreateThread(function()
+    da_mode.register({
+        name = "devTree",
+        priority = 80,
+        onActivate = function()
+            SetNuiFocus(true, false)
+            da_ui.send("ui", { mode = "tree", tree = da_trie.get(CurrentTree) })
+        end,
+        onDeactivate = function()
+            SetNuiFocus(false, false)
+        end,
+        keymaps = {
+            z = {
+                justReleased = {
+                    modifiers = { ctrl = false },
+                    fn = function()
+                        if SkipNext then
+                            SkipNext = false
+                            return
+                        end
+                        da_mode.activate("devTree")
+                    end
+                },
+                justPressed = {
+                    active = true,
+                    fn = function() SkipNext = true end
+                },
+            }
+        }
+    })
+end)
+
 do
     local setting = { ui = {}, }
     setting.ui.nearby = { object = true, ped = true, vehicle = true, other = false, origin = "camera", range = 50, }
@@ -31,175 +150,4 @@ RegisterCommand("dadev_setting_remove", function(source, args, rawCommand)
     kvp.delete(key)
     log.info("Cleared setting "..key)
 end, false)
-
-da_trie.addRoot("devRoot")
-da_trie.addRoot("objRoot")
-
-RegisterNUICallback('runOption', function(data, cb)
-    da_trie.run(data.menu, data.option)
-    da_mode.stop("devTree")
-    cb(true)
-end)
-
-RegisterNUICallback('initObjSettings', function(data, cb)
-    cb({ nearby = kvp.rawget("setting:ui:nearby") })
-end)
-
-RegisterNUICallback('setObjSettings', function(data, cb)
-    kvp.rawset("setting:ui:nearby", data.nearby)
-    cb(true)
-end)
-
-RegisterNUICallback('chooseMenu', function(data, cb)
-    SendNUIMessage({
-        type = "displayHUD",
-        value = "devTreeHUD",
-        tree = da_trie.get(data.menu)
-    })
-    cb(true)
-end)
-
-da_mode.new("devTree", {
-    priority = 80,
-    default = { focusKeyboard = true, focusCursor = false, keepFocus = false, },
-    startFn = function()
-        log.spam("devTree startFn")
-        SendNUIMessage({
-            type = "displayHUD",
-            value = "devTreeHUD",
-            tree = da_trie.get(CurrentTree)
-        })
-    end,
-    updateFn = function(data)
-        log.spam("devTree updateFn", data)
-        SetNuiFocus(data.focusKeyboard, data.focusCursor)
-        SetNuiFocusKeepInput(data.keepFocus)
-        SendNUIMessage({ type = "controlPass", enable = data.passthrough, })
-    end,
-    stopFn = function()
-        log.spam("devTree stopFn")
-    end,
-    controlMap = {
-        {
-            key = 'z',
-            justReleased = {
-                modifier = { ['Ctrl'] = false, },
-                fn = function()
-                    if SkipNext then
-                        SkipNext = false
-                        return
-                    end
-                    da_mode.start("devTree")
-                end,
-            },
-            justPressed = {
-                active = "devTree",
-                fn = function() SkipNext = true end,
-            },
-        },
-    },
-})
-
-RegisterNUICallback('endPassthrough', function(data, cb)
-    log.debug("endPassthrough", da_controlpass:isActive())
-    da_controlpass:set(false)
-    cb(true)
-end)
-
-RegisterNUICallback('modifyMode', function(data, cb)
-    log.debug("modifyMode called")
-    da_mode.set(data.mode, data)
-    cb(true)
-end)
-
-RegisterNUICallback('exit', function(data, cb)
-    da_mode.stop("animation")
-    da_mode.stop("devTree")
-    cb(true)
-end)
-
--- Animations
-RegisterNUICallback('playAnim', function(data, cb)
-    -- The flag anim has some linebreaks in it so I need to find out why
-    log.debug("playAnim:" .. log.format(data))
-    local entity = data.entity and tonumber(data.entity) or nil
-    if data.entity and IsEntityAnObject(entity) and not IsEntityAPed(entity) then
-        da_anim.object(
-            tonumber(data.entity),
-            data.animDict,
-            data.animName
-        )
-    elseif data.type == "advanced" then
-        local p14 = nil
-        local p15 = nil
-        local p16 = nil
-        da_anim.adv(
-            entity or PlayerPedId(),
-            data.animDict,
-            data.animName,
-            tonumber(data.posX),
-            tonumber(data.posY),
-            tonumber(data.posZ),
-            tonumber(data.rotZ),
-            tonumber(data.speed),
-            tonumber(data.speedMultiplier),
-            tonumber(data.duration),
-            tonumber(data.flags),
-            tonumber(data.animTime),
-            p14,
-            p15,
-            p16
-        )
-    else
-        da_anim.ped(
-            entity or PlayerPedId(),
-            data.animDict,
-            data.animName,
-            tonumber(data.blendInSpeed),
-            tonumber(data.blendOutSpeed),
-            tonumber(data.duration),
-            tonumber(data.flag),
-            tonumber(data.playbackRate),
-            tonumber(data.ikFlag),
-            data.taskFilter
-        )
-    end
-    cb(true)
-end)
-
-RegisterNUICallback('stopAnim', function(data, cb)
-    local ped = data.entity or PlayerPedId()
-    ClearPedTasksImmediately(ped)
-    cb(true)
-end)
-
-RegisterNUICallback('initAnims', function(data, cb)
-    cb({animations = json.encode(dat.animation)})
-end)
-
-RegisterNUICallback('initObjects', function(data, cb)
-    cb({
-        peds = json.encode(dat.ped),
-        objects = json.encode(dat.object),
-        pickups = json.encode(dat.pickup),
-        vehicles = json.encode(dat.vehicle),
-        propsets = json.encode(dat.propset),
-    })
-end)
-
-RegisterNUICallback('initAnimFlags', function(data, cb)
-    cb({flags = json.encode(dat.flags.anim)})
-end)
-
-RegisterNUICallback('initIKAnimFlags', function(data, cb)
-    cb({flags = json.encode(dat.flags.ik)})
-end)
-
-AddEventHandler('onResourceStop', function(resourceName)
-    if resourceName == GetCurrentResourceName() then
-        SetNuiFocus(false, false)
-        SetNuiFocusKeepInput(false)
-        da_controlpass:set(false)
-    end
-end)
 
