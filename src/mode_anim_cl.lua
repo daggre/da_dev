@@ -1,3 +1,4 @@
+local animMCPState = false
 Citizen.CreateThread(function()
     da_mode.register({
         name = "animation",
@@ -5,49 +6,58 @@ Citizen.CreateThread(function()
         onActivate = function()
             SetNuiFocus(true, true)
             da_ui.send("ui", { mode = "animation" })
+            if animMCPState then
+                da_mode.activateMCP("animation")
+            end
         end,
         onDeactivate = function()
             da_mcp.deactivate()
             da_ui.send("ui", { mode = "animation", state = "off" })
-            log.debug("Restoring Nui anim mode onDeactivate")
             SetNuiFocus(false, false)
             SetNuiFocusKeepInput(false)
         end,
         onPrimary = function()
             SetNuiFocus(true, true)
+            SetNuiFocusKeepInput(false)
+            if animMCPState then
+                da_mode.activateMCP("animation")
+                SetNuiFocus(true, false)
+                SetNuiFocusKeepInput(true)
+            end
+        end,
+        onLosePrimary = function()
+            da_mcp.deactivate()
         end,
         activateMCP = function()
+            if da_mcp.active then return; end
             da_mcp.activate({
-                key = da_control.keyHash['MouseScrollClick'],
+                key = dat.keyHash['MouseScrollClick'],
                 activate = function()
+                    da_ui.send("mcp", { active = true, })
+                    if not da_mode.isPrimary("animation") then return end
+                    animMCPState = true
                     SetNuiFocus(true, false)
                     SetNuiFocusKeepInput(true)
                 end,
                 deactivate = function()
-                    log.debug("deactivating mcp for anim mode")
+                    da_ui.send("mcp", { active = false, })
                     if not da_mode.isPrimary("animation") then return end
+                    da_control.waitForRelease(dat.keys)
+                    animMCPState = false
                     SetNuiFocus(true, true)
                     SetNuiFocusKeepInput(false)
                 end,
             })
         end,
         keymaps = {
-            escape = {
-                justReleased = {
-                    active = true,
-                    fn = function()
-                        da_mode.deactivate("animation")
-                    end,
-                }
+            {
+                key = "Escape3",
+                event = "justPressed",
+                primary = true,
+                fn = function()
+                    da_mode.deactivate("animation")
+                end,
             },
-            -- c = {
-            --     justReleased = {
-            --         active = true,
-            --         fn = function()
-            --             da_mcp.deactivate()
-            --         end,
-            --     }
-            -- },
         }
     })
 end)

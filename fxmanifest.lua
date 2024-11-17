@@ -30,6 +30,7 @@ client_scripts {
     '@da_lib/lib/control_cl.lua',
     '@da_lib/lib/object_cl.lua',
     '@da_lib/lib/mode_cl.lua',
+    '@da_lib/lib/net_cl.lua',
     '@da_lib/api/api_sh.lua',
     '@da_lib/lib/kvp_sh.lua',
     '@da_lib/lib/fx_cl.lua',

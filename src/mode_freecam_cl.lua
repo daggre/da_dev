@@ -55,21 +55,20 @@ da_mode.register({
         end
     end,
     keymaps = {
-        f = {
-            justPressed = {
-                active = true,
-                fn = function()
-                    da_mode.toggle("focus")
-                end
-            }
-        },
-        Escape = {
-            justPressed = {
-                primary = true,
-                fn = function()
-                    da_mode.deactivate("freecam")
-                end
-            }
+        {
+            key = "f",
+            event = "justPressed",
+            active = true,
+            fn = function()
+                da_mode.toggle("focus")
+            end
+        }, {
+            key = "Escape",
+            event = "justPressed",
+            primary = true,
+            fn = function()
+                da_mode.deactivate("freecam")
+            end
         },
     }
 })
@@ -104,13 +103,13 @@ da_mode.register({
         end
     end,
     keymaps = {
-        Escape = {
-            justPressed = {
-                primary = true,
-                fn = function()
-                    da_mode.deactivate("noclip")
-                end
-            }
+        {
+            key = "Escape",
+            event = "justPressed",
+            primary = true,
+            fn = function()
+                da_mode.deactivate("noclip")
+            end
         },
     }
 })
@@ -160,7 +159,7 @@ local SetCoords = function(ped, x, y, z, rot_x, rot_y, rot_z, fov)
         if da_mode.isActive("focus") then
             local selectedObject = Select
             if selectedObject then
-                if not GizmoMovedRecently then
+                if not IsCameraLockActive then
                     PointCamAtEntity(CamHandle, selectedObject)
                 else
                     StopCamPointing(CamHandle)
@@ -225,15 +224,15 @@ local CheckMovementControls = function(x, y, z, rot_x, rot_y, rot_z, fov)
     DisableAllControlActions(0)
     local enableMouseAim = not da_mode.isActive("freecam")
 
-    local deltaLR = GetDisabledControlNormal(0, da_control.keyHash['MouseLR'])
-    local deltaUD = GetDisabledControlNormal(0, da_control.keyHash['MouseUD'])
+    local deltaLR = GetDisabledControlNormal(0, dat.keyHash['MouseLR'])
+    local deltaUD = GetDisabledControlNormal(0, dat.keyHash['MouseUD'])
     local pressed = da_control.isPressed(
-        { "a", "d", "e", "q", "s", "w", "x", "Spacebar", "Alt", "Ctrl", "Shift", "WheelUp", "WheelDown", "MouseRight", })
+        { "a", "d", "e", "q", "s", "w", "x", "Spacebar", "alt", "ctrl", "shift", "WheelUp", "WheelDown", "MouseRight", })
     local justPressed = da_control.isJustPressed({ "x", })
     local modifier = Speed.Current
 
     -- Mouse Controls
-    if pressed.Ctrl and not (pressed.w or pressed.a or pressed.s or pressed.d or pressed.q or pressed.e) then
+    if pressed.ctrl and not (pressed.w or pressed.a or pressed.s or pressed.d or pressed.q or pressed.e) then
         enableMouseAim = false
         -- Pressed Ctrl move camera on X/Y coordinate plane
         if deltaLR ~= 0.0 then
@@ -242,7 +241,7 @@ local CheckMovementControls = function(x, y, z, rot_x, rot_y, rot_z, fov)
         if deltaUD ~= 0.0 then
             x, y, _ = Translate(x, y, z, rot_x, rot_z, 0-(deltaUD*modifier*2))
         end
-    elseif pressed.Shift and not (pressed.w or pressed.a or pressed.s or pressed.d or pressed.q or pressed.e) then
+    elseif pressed.shift and not (pressed.w or pressed.a or pressed.s or pressed.d or pressed.q or pressed.e) then
         enableMouseAim = false
         -- Press Shift move camera on X/Z coordinate plane
         if deltaLR ~= 0.0 then
@@ -251,7 +250,7 @@ local CheckMovementControls = function(x, y, z, rot_x, rot_y, rot_z, fov)
         if deltaUD ~= 0.0 then
             z = z - deltaUD*modifier*2
         end
-    elseif pressed.Alt then
+    elseif pressed.alt then
         -- Press Alt adjust FOV on Mouse Up/Down
 
         if justPressed.x then
@@ -263,7 +262,7 @@ local CheckMovementControls = function(x, y, z, rot_x, rot_y, rot_z, fov)
         -- if deltaLR ~= 0.0 then
         --     rot_z = rot_z + deltaLR * -1.0 * (Speed.Mouse * (math.min(fov,50)/50))
         -- end
-    elseif not da_mode.isActive("focus") and (not da_mode.isActive("gizmo") or da_mode.isPassthrough("gizmo")) then
+    elseif not da_mode.isActive("focus") and (not da_mode.isActive("gizmo") or da_mcp.active) then
         -- Otherwise Mouse aims camera
         if deltaLR ~= 0.0 then
             rot_z = rot_z + deltaLR * -1.0 * (Speed.Mouse * (math.min(fov,50)/50))
@@ -274,7 +273,7 @@ local CheckMovementControls = function(x, y, z, rot_x, rot_y, rot_z, fov)
     end
 
     -- Speed Modifier
-    if pressed.Shift then modifier = (modifier * Speed.Fast)
+    if pressed.shift then modifier = (modifier * Speed.Fast)
     elseif pressed.Spacebar then modifier = (modifier * Speed.Fine)
     end
 
@@ -293,8 +292,8 @@ local CheckMovementControls = function(x, y, z, rot_x, rot_y, rot_z, fov)
     if pressed.q then z = z - (modifier/2) end
 
     if enableMouseAim then
-        EnableControlAction(0, da_control.keyHash['MouseLR'])
-        EnableControlAction(0, da_control.keyHash['MouseUD'])
+        EnableControlAction(0, dat.keyHash['MouseLR'])
+        EnableControlAction(0, dat.keyHash['MouseUD'])
     end
 
     -- Set Coords

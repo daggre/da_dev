@@ -113,15 +113,15 @@ local SelectModeTick = function()
     -- Update the tracked objects
     local model = nil
     if not hit then
-        if LastHoverMode == "Object" and not da_mode.isActive("gizmo") then
+        if LastHoverMode == "Object" then
             Hover = nil
         end
-    else
+    elseif not da_mode.isActive("gizmo") then
         model = GetEntityModel(obj)
         if model and not UntrackedModels[model] then
             LastHoverMode = "Object"
             Hover = obj
-        elseif LastHoverMode == "Object" and not da_mode.isActive("gizmo") then
+        elseif LastHoverMode == "Object" then
             Hover = nil
         end
     end
@@ -139,16 +139,16 @@ local ObjectModeThread = function()
     ObjectThread = {}
     Citizen.CreateThread(function()
         ObjectThread[id] = true
-        CurrentTree = "objRoot"
         PPID = PlayerPedId()
         while ObjectThread[id] and SelectMode do
             SelectModeTick()
             Citizen.Wait(0)
         end
         ObjectThread[id] = nil
-        CurrentTree = "devRoot"
     end)
 end
+
+local objectMCPState = true
 
 da_mode.register({
     name = "object",
@@ -156,21 +156,26 @@ da_mode.register({
     onActivate = function()
         SetNuiFocus(true, true)
         SetNuiFocusKeepInput(false)
-        da_mode.activate("freecam")
+        CurrentTree = "objRoot"
         SelectMode = "Cursor"
         ObjectModeThread()
+        da_mode.activate("freecam")
         da_ui.send("ui", { mode = "object" })
+        if objectMCPState then
+            da_mode.activateMCP("object")
+        end
     end,
     onDeactivate = function()
         SetNuiFocus(false, false)
         da_mode.deactivate("freecam")
         da_mode.deactivate("focus")
-        SelectMode = false
         da_ui.send("ui", { mode = "object", state = "off" })
         da_mcp.deactivate()
         if not da_mode.isActive("noclip") then
             da_ui.send("ui", { mode = "camera", state = "off", })
         end
+        SelectMode = false
+        CurrentTree = "devRoot"
     end,
     onPrimary = function()
         if SelectMode == "Cursor" then
@@ -180,53 +185,176 @@ da_mode.register({
             SetNuiFocus(true, false)
             SetNuiFocusKeepInput(true)
         end
+        if objectMCPState then
+            da_mode.activateMCP("object")
+        end
+    end,
+    onLosePrimary = function()
+        da_mcp.deactivate()
     end,
     activateMCP = function()
+        if da_mcp.active then return; end
         da_mcp.activate({
-            key = da_control.keyHash['MouseScrollClick'],
+            key = dat.keyHash['MouseScrollClick'],
             activate = function()
-                if not da_mode.isActive("object") then return; end
+                objectMCPState = true
                 log.debug("Activating MCP for object mode")
                 SelectMode = "Crosshair"
+                if not da_mode.isPrimary("object") then return; end
+                objectMCPState = true
                 SetNuiFocus(true, false)
                 SetNuiFocusKeepInput(true)
             end,
             deactivate = function()
-                if not da_mode.isPrimary("object") then return; end
                 log.debug("Deactivating MCP for object mode")
                 SelectMode = "Cursor"
+                da_control.waitForRelease(da_control.keys)
+                da_ui.send("mcp", { active = false, })
+                if not da_mode.isPrimary("object") then return; end
+                objectMCPState = false
                 SetNuiFocus(true, true)
                 SetNuiFocusKeepInput(false)
             end,
         })
     end,
+    deactivateMCP = function()
+        da_mcp.deactivate()
+    end,
     keymaps = {
-        r = {
-            justPressed = {
-                modifiers = { ctrl = false, alt = false },
-                fn = function()
-                    if Select then StartGizmo(Select) end
-                end,
-            },
+        {
+            key = "Escape",
+            event = "justPressed",
+            primary = true,
+            fn = function()
+                da_mode.deactivate("object")
+            end,
         },
-        MouseLeft = {
-            justPressed = {
+        {
+            key = "MouseLeft",
+            event = "justPressed",
+            modifiers = { shift = false, },
+            primary = true,
             fn = function()
                 if not Hover then return; end
                 Select = (Hover ~= Select) and Hover or nil
             end,
-            },
         },
-        -- c = {
-        --     justReleased = {
-        --         modifiers = { ctrl = false },
-        --         fn = function()
-        --             da_mode.activateMCP("object")
-        --         end
-        --     },
-        -- },
-    }
-
+        {
+            key = "MouseLeft",
+            event = "justPressed",
+            primary = true,
+            modifiers = { shift = true, },
+            fn = function()
+                if not Spawn or not HitCoords then return; end
+                local obj = da_obj.create(Spawn, HitCoords, { ground = true, })
+                Select = obj
+            end
+        },
+        {
+            key = "r",
+            event = "justPressed",
+            primary = true,
+            modifiers = { ctrl = false, alt = false },
+            fn = function()
+                if Select then StartGizmo(Select) end
+            end,
+        },
+        {
+            key = "r",
+            event = "justPressed",
+            primary = true,
+            modifiers = { alt = true },
+            fn = function()
+                if Hover then Select = Hover end
+                if Select then StartGizmo(Select) end
+            end,
+        },
+        {
+            key = "r",
+            event = "justPressed",
+            primary = true,
+            modifiers = { ctrl = true },
+            fn = function()
+                if Hover and Select then
+                    local hPos = GetEntityRotation(Hover)
+                    SetEntityRotation(Select, hPos.x, hPos.y, hPos.z)
+                end
+            end,
+        },
+        {
+            key = "x",
+            event = "justPressed",
+            primary = true,
+            modifiers = { ctrl = true },
+            fn = function()
+                if Hover and Select then
+                    local sPos = GetEntityCoords(Select)
+                    local hPos = GetEntityCoords(Hover)
+                    SetEntityCoords(Select, hPos.x, hPos.y, sPos.z)
+                end
+            end,
+        },
+        {
+            key = "x",
+            event = "justPressed",
+            primary = true,
+            modifiers = { shift = true },
+            fn = function()
+                log.debug("Deleting entity", Select)
+                if not Select then return; end
+                DeleteEntity(Select)
+            end,
+        },
+        {
+            key = "z",
+            event = "justPressed",
+            primary = true,
+            modifiers = { ctrl = true, },
+            fn = function()
+                if Hover and Select then
+                    local sPos = GetEntityCoords(Select)
+                    local hPos = GetEntityCoords(Hover)
+                    SetEntityCoords(Select, sPos.x, sPos.y, hPos.z)
+                end
+            end,
+        },
+        {
+            key = "h",
+            event = "justPressed",
+            primary = true,
+            fn = function()
+                da_ui.send("toggleHelp", {
+                    mode = "objHelp",
+                    state = "toggle",
+                    toggleCursor = true
+                })
+            end,
+        },
+        {
+            key = "1",
+            event = "justPressed",
+            active = true,
+            fn = function()
+                da_ui.send("keyPress", { mode = "object", key = "1" })
+            end,
+        },
+        {
+            key = "2",
+            event = "justPressed",
+            active = true,
+            fn = function()
+                da_ui.send("keyPress", { mode = "object", key = "2" })
+            end,
+        },
+        {
+            key = "3",
+            event = "justPressed",
+            active = true,
+            fn = function()
+                da_ui.send("keyPress", { mode = "object", key = "3" })
+            end,
+        },
+    },
 })
 
 -- UI Functions
@@ -376,7 +504,7 @@ local ControlCheckCursor = function(pressed, justPressed)
         if not Select and Hover then
             Select = Hover
         end
-        if pressed.Alt and Hover then
+        if pressed.alt and Hover then
             Select = Hover
         end
         if Select then
@@ -405,11 +533,11 @@ da_ui.events({
 
 da_trie.addOpt("devRoot", "mode:edit", "e",
     function() da_mode.activate("object") end,
-    function() return not SelectMode end)
+    function() return not da_mode.isActive("object") end)
 
 da_trie.addOpt("objRoot", "mode:edit", "e",
-    function() da_mode.stop("object") end,
-    function() return SelectMode end)
+    function() da_mode.deactivate("object") end,
+    function() return da_mode.isActive("object") end)
 
 da_trie.addOpt("objRoot", "mov/rot", "r",
     function() StartGizmo(Select) end,
@@ -510,180 +638,4 @@ da_trie.addOpt("obj set", "pos xy", "x",
         return Select ~= nil and Hover ~= nil
     end)
 
--- da_mode.new("object", {
---     priority = 70,
---     default = { focusKeyboard = true, focusCursor = true, keepFocus = false, },
---     passthrough = { focusCursor = false, keepFocus = true, },
---     updateFn = function(data)
---         SetNuiFocus(data.focusKeyboard, data.focusCursor)
---         SetNuiFocusKeepInput(data.keepFocus)
---         da_ui.send("controlPass", { enable = data.passthrough, })
---     end,
---     startFn = function()
---         da_mode.stop("animation")
---         da_mode.start("freecam")
---         SelectMode = "Cursor"
---         ObjectModeThread()
---         da_ui.send("ui", { mode = "object" })
---         da_mode.passthrough("object", true)
---     end,
---     stopFn = function()
---         da_mode.stop("freecam")
---         da_mode.stop("focus")
---         SelectMode = false
---         da_ui.send("controlPass", { value = "object", enable = false, })
---         da_ui.send("ui", { mode = "object", state = "off" })
---     end,
---     passthroughKey = da_control.keyHash['c'],
---     passthroughFn = function(state, haltKey, cb)
---         SelectMode = state and "Crosshair" or "Cursor"
---         da_controlpass:set(state, haltKey, cb)
---         da_ui.send("controlPass", { enable = state, })
---     end,
---     passthroughCb = function()
---         da_control.waitForRelease(dat.keys)
---         da_mode.reset("object")
---     end,
---     controlMap = {
---         disablePlayerFiring = true,
---         {
---             key = "r",
---             justPressed = {
---                 active = "object",
---                 modifier = { ['Ctrl'] = false, ['Alt'] = false, },
---                 fn = function()
---                     if Select then StartGizmo(Select) end
---                 end,
---             },
---         },
---         {
---             key = "r",
---             justPressed = {
---                 active = "object",
---                 modifier = { ['Alt'] = true, },
---                 fn = function()
---                     if Hover then Select = Hover end
---                     if Select then StartGizmo(Select) end
---                 end,
---             },
---         },
---         {
---             key = "r",
---             justPressed = {
---                 active = "object",
---                 modifier = { ['Ctrl'] = true, },
---                 fn = function()
---                     if Hover and Select then
---                         local hPos = GetEntityRotation(Hover)
---                         SetEntityRotation(Select, hPos.x, hPos.y, hPos.z)
---                     end
---                 end,
---             },
---         },
---         {
---             key = "x",
---             justPressed = {
---                 active = "object",
---                 modifier = { ['Ctrl'] = true, },
---                 fn = function()
---                     if Hover and Select then
---                         local sPos = GetEntityCoords(Select)
---                         local hPos = GetEntityCoords(Hover)
---                         SetEntityCoords(Select, hPos.x, hPos.y, sPos.z)
---                     end
---                 end,
---             },
---         },
---         {
---             key = "x",
---             justPressed = {
---                 active = "object",
---                 modifier = { ['Shift'] = true, },
---                 fn = function()
---                     if not Select then return; end
---                     log.debug("Deleting entity", Select)
---                     DeleteEntity(Select)
---                 end,
---             },
---         },
---         {
---             key = "z",
---             justPressed = {
---                 active = "object",
---                 modifier = { ['Ctrl'] = true, },
---                 fn = function()
---                     if Hover and Select then
---                         local sPos = GetEntityCoords(Select)
---                         local hPos = GetEntityCoords(Hover)
---                         SetEntityCoords(Select, sPos.x, sPos.y, hPos.z)
---                     end
---                 end,
---             },
---         },
---         {
---             key = "h",
---             justPressed = {
---                 primary = "object",
---                 fn = function()
---                     da_ui.send("toggleHelp", {
---                         mode = "objHelp",
---                         state = "toggle",
---                         toggleCursor = true
---                     })
---                 end,
---
---             }
---         },
---         {
---             key = "MouseLeft",
---             justPressed = {
---                 active = "object",
---                 fn = function()
---                     log.debug("MouseLeft", Hover, Hover == Select)
---                     if not Hover then return; end
---                     Select = (Hover ~= Select) and Hover or nil
---                 end,
---             },
---         },
---         {
---             key = "g",
---             justPressed = {
---                 primary = "object",
---                 fn = function()
---                     if not Spawn or not HitCoords then return; end
---                     local obj = da_obj.create(Spawn, HitCoords, { ground = true, })
---                     Select = obj
---                 end
---             },
---         },
---         {
---             key = "Escape",
---             justPressed = {
---                 primary = "object",
---                 fn = function() da_ui.send("keyPress", { mode = "object", key = "Escape" }) end,
---             },
---         },
---         {
---             key = "1",
---             justPressed = {
---                 active = "object",
---                 fn = function() da_ui.send("keyPress", { mode = "object", key = "1" }) end,
---             },
---         },
---         {
---             key = "2",
---             justPressed = {
---                 active = "object",
---                 fn = function() da_ui.send("keyPress", { mode = "object", key = "2" }) end,
---             },
---         },
---         {
---             key = "3",
---             justPressed = {
---                 active = "object",
---                 fn = function() da_ui.send("keyPress", { mode = "object", key = "3" }) end,
---             },
---         },
---     }
--- })
 
