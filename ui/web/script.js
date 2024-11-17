@@ -4,9 +4,8 @@ var IKFlagTotals = 0;
 var KeyPressRepeat = false;
 
 var SpawnOption = new Map();
-var ControlPassActive = false;
+var MCP = false;
 var GizmoActive = false;
-var GizmoActivePassthrough = false;
 var SelectedObjectSpawnType = "objects";
 var SelectedObjectFavs = false;
 var TrackedObjectsLoopRunning = false;
@@ -28,7 +27,7 @@ var NearbyOption = {
     range: 50,
 }
 
-function ToUint32(value) { return value >>> 0; }
+function toUint32(value) { return value >>> 0; }
 
 function isVisible(el) {
     var style = window.getComputedStyle(el)
@@ -192,8 +191,8 @@ window.onload = function() {
             case "clipboard":
                 ClipboardCopy(msg.data.text);
                 break;
-            case "controlPass":
-                ControlPassActive = msg.data.enable;
+            case "mcp":
+                MCP = msg.data.active;
                 break;
             case "setGizmoState":
                 GizmoActive = msg.data.data.shown
@@ -212,7 +211,7 @@ window.onload = function() {
 
 $(document).ready(function() {
     $(document).mousemove(function(event) {
-        if (!CursorPosDelay && !ControlPassActive && !GizmoActive &&
+        if (!CursorPosDelay && !MCP && !GizmoActive &&
                 isVisible(document.getElementById('objectHUD')) &&
                 !document.activeElement.classList.contains('entryField')) {
             CursorPosDelay = true;
@@ -232,7 +231,14 @@ $(document).ready(function() {
                 LeftClickActive = true;
                 break;
         }
-        if (isVisible(document.getElementById('animHUD'))) {
+        if (isVisible(document.getElementById('devTreeHUD'))) {
+            // switch(event.button) {
+            //     case 0:
+            //         break;
+            //     case 1:
+            //         break;
+            // }
+        } else if (isVisible(document.getElementById('animHUD'))) {
             switch(event.button) {
                 case 0: // Left Click
                     if (event.target.id == "activeAnimDict" || event.target.id == "activeAnimName") {
@@ -242,29 +248,32 @@ $(document).ready(function() {
                     }
                     break;
                 case 1: // Middle Click
-                    if (ControlPassActive) {
-                        SendClientMessage('deactivateMCP', { mode: "animation" })
+                    if (MCP) {
+                        SendClientMessage('deactivateMCP', {});
+                        MCP = false;
                         break;
                     }
                     QuickPress.MiddleMouse.active = true;
                     setTimeout(function() { QuickPress.MiddleMouse.active = false; }, QuickPress.Timeout);
                     SendClientMessage('activateMCP', { mode: "animation" });
+                    MCP = true;
                     break;
             }
-        }
-        if (isVisible(document.getElementById('objectHUD'))) {
+        } else if (isVisible(document.getElementById('objectHUD'))) {
             if (GizmoActive) {
                 switch(event.button) {
                     case 1: // Middle Click
                         QuickPress.MiddleMouse.active = true;
                         setTimeout(function() { QuickPress.MiddleMouse.active = false; }, QuickPress.Timeout);
-                        if (GizmoActivePassthrough) {
-                            SendClientMessage('deactivateMCP', { mode: "gizmo" });
-                            GizmoActivePassthrough = false
-                        } else {
-                            SendClientMessage('activateMCP', { mode: "gizmo" });
-                            GizmoActivePassthrough = true
-                        }
+                        // if (GizmoActivePassthrough) {
+                        //     // SendClientMessage('deactivateMCP', {});
+                        //     GizmoActivePassthrough = false
+                        // } else {
+                        //     SendClientMessage('activateMCP', { mode: "gizmo" });
+                        //     GizmoActivePassthrough = true
+                        // }
+                        SendClientMessage('activateMCP', { mode: "gizmo" });
+                        MCP = true;
                         break;
                 }
             } else {
@@ -276,7 +285,7 @@ $(document).ready(function() {
                                 ClipboardCopy(event.target.innerHTML);
                             }
                         }
-                        if (!ControlPassActive) {
+                        if (!MCP) {
                             // Get the target element that was clicked, and check if we should block the event
                             const target = event.target;
                             const isInterruptingElement = target.classList.contains('entryLabel') ||
@@ -298,13 +307,15 @@ $(document).ready(function() {
                         }
                         break;
                     case 1: // Middle Click
-                        if (ControlPassActive) {
-                            SendClientMessage('deactivateMCP', { mode: "object" })
+                        if (MCP) {
+                            SendClientMessage('deactivateMCP', {});
+                            MCP = false;
                             break;
                         }
                         QuickPress.MiddleMouse.active = true;
                         setTimeout(function() { QuickPress.MiddleMouse.active = false; }, QuickPress.Timeout);
                         SendClientMessage('activateMCP', { mode: "object" });
+                        MCP = true;
                         break;
                 }
             }
@@ -322,7 +333,8 @@ $(document).ready(function() {
             switch(event.button) {
                 case 1: // Middle Click
                     if (!QuickPress.MiddleMouse.active) {
-                        SendClientMessage('deactivateMCP', { mode: "animation" })
+                        SendClientMessage('deactivateMCP', {});
+                        MCP = false;
                     }
                     break;
             }
@@ -331,7 +343,8 @@ $(document).ready(function() {
             switch(event.button) {
                 case 1: // Middle Click
                     if (!QuickPress.MiddleMouse.active) {
-                        SendClientMessage('deactivateMCP', { mode: "object" })
+                        SendClientMessage('deactivateMCP', {});
+                        MCP = false;
                     }
                     break;
             }
@@ -344,7 +357,7 @@ $(document).ready(function() {
     });
 
     $(document).keydown(function(event) {
-        if (ControlPassActive) { return; }
+        if (MCP) { return; }
 
         if (!Pressed[event.key]) {
             JustPressed[event.key] = true;
@@ -369,7 +382,6 @@ $(document).ready(function() {
 
     $("div#valueAnimSearch.entryField").keydown(function(e) {
         if (e.code == "Enter") {
-            console.log("searching for", this.innerHTML);
             e.preventDefault();
             var dictList = document.getElementById("animDictList");
             var animList = document.getElementById("animList");
@@ -381,14 +393,12 @@ $(document).ready(function() {
             animList.innerHTML = "";
             animList.scrollTop = 0;
             animList.scrollLeft = -1000;
-            console.log("searching...", dictList, animList)
             SearchRedMAnims(this.innerHTML);
         }
     });
 
     $("div#objSearch.entryField").keydown(function(e) {
         if (e.code == "Enter") {
-            console.log("searching for", SelectedObjectSpawnType, this.innerHTML);
             e.preventDefault();
             ResetListGroup("objData", "flex");
             SearchBasicRedMList(this.innerHTML, SpawnOption.get(SelectedObjectSpawnType), "objData");
@@ -629,7 +639,7 @@ function HandleKeysDevTree(event) {
         });
         document.getElementById('devTreeHUD').style.display = "none";
     } else {
-        SendClientMessage('exit', { key: translatedKey });
+        SendClientMessage('deactivateMode', { mode: "devTree" });
         document.getElementById('devTreeHUD').style.display = "none";
     }
 }
@@ -932,7 +942,7 @@ function ToggleFlag(flag) {
 
     FlagTotals = 0;
     for (var i=0; i < 32 ; i++) {
-        let v = ToUint32(1 << i);
+        let v = toUint32(1 << i);
         if (document.getElementById("flag-" + v).classList.contains("selected")) {
             FlagTotals += v;
         }
@@ -988,7 +998,7 @@ function ToggleIKFlag(flag) {
 
     IKFlagTotals = 0;
     for (var i=0; i < 31 ; i++) {
-        let v = ToUint32(1 << i);
+        let v = toUint32(1 << i);
         if (document.getElementById("ikflag-" + v).classList.contains("selected")) {
             IKFlagTotals += v;
         }
@@ -1045,9 +1055,16 @@ function HandleKeysAnim(event) {
             }
             if (escaped == true) { return; }
 
-            SendClientMessage('exit', {});
-            document.getElementById('devTreeHUD').style.display = "none";
-            SetUIAnim("off");
+            if (isVisible(document.getElementById('animHUD'))) {
+                SetUIAnim("off");
+                SendClientMessage('deactivateMode', { mode: "animation" });
+                return;
+            }
+
+            if (isVisible(document.getElementById('devTreeHUD'))) {
+                document.getElementById('devTreeHUD').style.display = "none";
+                SendClientMessage('deactivateMode', { mode: "devTree" });
+            }
             return;
         case " ":
             if (typeof event.target.onclick == "function") {
@@ -1122,7 +1139,7 @@ function HandleKeysAnim(event) {
             } else if (isVisible(document.getElementById("animFlagsOptions"))) {
                 // Clear all flags
                 for (var i=0; i < 32 ; i++) {
-                    let v = ToUint32(1 << i);
+                    let v = toUint32(1 << i);
                     if (document.getElementById("flag-" + v).classList.contains("selected")) {
                         ToggleFlag(v);
                     }
@@ -1130,7 +1147,7 @@ function HandleKeysAnim(event) {
             } else if (isVisible(document.getElementById("animIKFlagsOptions"))) {
                 // Clear all ikflags
                 for (var i=0; i < 32 ; i++) {
-                    let v = ToUint32(1 << i);
+                    let v = toUint32(1 << i);
                     if (document.getElementById("ikflag-" + v).classList.contains("selected")) {
                         ToggleIKFlag(v);
                     }
@@ -1705,14 +1722,14 @@ function ObjectKeys(key, event) {
             SendClientMessage('deactivateMode', { mode: "object" });
             SetUIObj("off");
             return;
-        case "c":
-            if (!document.activeElement.classList.contains('entryField') && !ControlPassActive) {
-                SendClientMessage('activateMCP', { mode: "object" });
-                SendClientMessage('activateMCP', { mode: "gizmo" });
-            }
-            return;
+        // case "c":
+        //     if (!document.activeElement.classList.contains('entryField') && !MCP) {
+        //         SendClientMessage('activateMCP', { mode: "object" });
+        //         SendClientMessage('activateMCP', { mode: "gizmo" });
+        //     }
+        //     return;
         case "f":
-            if (!document.activeElement.classList.contains('entryField') && !ControlPassActive) {
+            if (!document.activeElement.classList.contains('entryField') && !MCP) {
                 SendClientMessage('sendCursorKey', {
                     pressed: Pressed,
                     justPressed: JustPressed
@@ -1763,9 +1780,7 @@ function ObjectKeys(key, event) {
                 document.getElementById('objSearch').innerHTML = "";
                 ResetListGroup("objData", "flex");
             } else if (isVisible(document.getElementById('objDetails'))) {
-                SendClientMessage('sendCursorKey', {
-                    justPressed: { x: true, }
-                })
+                SendClientMessage('sendCursorKey', { justPressed: { x: true, } });
             }
             return;
     }

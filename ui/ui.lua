@@ -19,12 +19,8 @@ da_ui.callbacks({
 })
 
 da_ui.events({
-    ["activateMode"] = function(data)
-        da_mode.activate(data.mode)
-    end,
-    ["deactivateMode"] = function(data)
-        da_mode.deactivate(data.mode)
-    end,
+    ["activateMode"] = function(data) da_mode.activate(data.mode) end,
+    ["deactivateMode"] = function(data) da_mode.deactivate(data.mode) end,
     ["setObjSettings"] = function(data)
         kvp.rawset("setting:ui:nearby", data.nearby)
     end,
@@ -77,6 +73,9 @@ da_ui.events({
     ["exit"] = function()
         da_mode.deactivate("animation"); da_mode.deactivate("devTree")
     end,
+})
+
+da_net.events({
     ["onResourceStop"] = function(resourceName)
         if resourceName == GetCurrentResourceName() then
             da_mode.deactivate("devTree")
@@ -94,28 +93,38 @@ Citizen.CreateThread(function()
         priority = 80,
         onActivate = function()
             SetNuiFocus(true, false)
+            SetNuiFocusKeepInput(false)
             da_ui.send("ui", { mode = "tree", tree = da_trie.get(CurrentTree) })
         end,
         onDeactivate = function()
+            if not da_mode.isPrimary("devTree") then return end
             SetNuiFocus(false, false)
+            SetNuiFocusKeepInput(false)
+        end,
+        onPrimary = function()
+            SetNuiFocus(true, false)
+            SetNuiFocusKeepInput(false)
         end,
         keymaps = {
-            z = {
-                justReleased = {
-                    modifiers = { ctrl = false },
-                    fn = function()
-                        if SkipNext then
-                            SkipNext = false
-                            return
-                        end
-                        da_mode.activate("devTree")
+            {
+                key = "z",
+                event = "justReleased",
+                modifiers = { ctrl = false },
+                fn = function()
+                    if SkipNext then
+                        SkipNext = false
+                        return
                     end
-                },
-                justPressed = {
-                    active = true,
-                    fn = function() SkipNext = true end
-                },
-            }
+                    if da_mode.isActive("gizmo") then return end
+                    da_mode.activate("devTree")
+                end
+            },
+            {
+                key = "z",
+                event = "justPressed",
+                active = true,
+                fn = function() SkipNext = true end
+            },
         }
     })
 end)
