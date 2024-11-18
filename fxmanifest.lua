@@ -21,6 +21,16 @@ server_scripts {
 }
 
 client_scripts {
+    '@da_lib/dat/animation.lua',
+    '@da_lib/dat/flags_af.lua',
+    '@da_lib/dat/flags_aik.lua',
+    '@da_lib/dat/key.lua',
+    '@da_lib/dat/object.lua',
+    '@da_lib/dat/ped.lua',
+    '@da_lib/dat/pickup.lua',
+    '@da_lib/dat/propset.lua',
+    '@da_lib/dat/vehicle.lua',
+
     '@da_lib/lib/nui_cl.lua',
     '@da_lib/lib/cache_delay.lua',
     '@da_lib/lib/cache_lazy.lua',
@@ -34,16 +44,6 @@ client_scripts {
     '@da_lib/api/api_sh.lua',
     '@da_lib/lib/kvp_sh.lua',
     '@da_lib/lib/fx_cl.lua',
-
-    '@da_lib/dat/animation.lua',
-    '@da_lib/dat/flags_af.lua',
-    '@da_lib/dat/flags_aik.lua',
-    '@da_lib/dat/key.lua',
-    '@da_lib/dat/object.lua',
-    '@da_lib/dat/ped.lua',
-    '@da_lib/dat/pickup.lua',
-    '@da_lib/dat/propset.lua',
-    '@da_lib/dat/vehicle.lua',
 
     '@polyzone/client.lua',
     '@polyzone/CircleZone.lua',
