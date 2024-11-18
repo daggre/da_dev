@@ -480,6 +480,7 @@ local SetNearbyOriginPos = function(data)
 end
 
 local ControlCheckCursor = function(pressed, justPressed)
+    if SelectMode ~= "Cursor" then return; end
     pressed = pressed or {}
     justPressed = justPressed or {}
 
