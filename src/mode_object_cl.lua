@@ -395,7 +395,7 @@ local function GetNearbyObjects(range, origin)
     elseif origin == "pos" then
         pos = NearbyOriginPos ~= nil and NearbyOriginPos or pos
     elseif origin == "select" then
-        pos = Select ~= nil and GetEntityCoords(Select) or pos
+        pos = Select ~= nil and DoesEntityExist(Select) and GetEntityCoords(Select) or pos
     end
 
     if not tonumber(range) then range = LastValidRange end
@@ -519,8 +519,29 @@ local ControlCheckCursor = function(pressed, justPressed)
     end
 end
 
+local testsceneobjects = {
+    { model = "prop_test1", pos = vector3(1, 2, 3), rot = vector3(4, 5, 6), },
+    { model = "prop_test1", pos = vector3(1, 2, 3), rot = vector3(4, 5, 6), },
+    { model = "prop_test2", pos = vector3(1, 2, 3), rot = vector3(4, 5, 6), },
+    { model = "prop_test2", pos = vector3(0, 0, 0), rot = vector3(0, 0, 0), },
+    { model = "prop_test3", pos = vector3(0, 0, 0), rot = vector3(0, 0, 0), },
+}
+-- kvp.encode("scenes:test_1", { name = "test_1", objects = testsceneobjects })
+-- kvp.encode("scenes:test_2", { name = "test_2", objects = testsceneobjects })
+-- kvp.encode("scenes:test_3", { name = "test_3", objects = testsceneobjects })
+-- kvp.encode("scenes:test_4", { name = "test_4", objects = testsceneobjects })
+
 da_ui.callbacks({
     nearbyObjects = function(data) return {nearbyObjects = GetNearbyObjects(data.range, data.origin)} end,
+    scenesList = function()
+        local sceneNames = kvp.search("scenes:")
+        local scenes = {}
+        for _, scene in ipairs(sceneNames) do
+            local s = kvp.decode(scene)
+            table.insert(scenes, s)
+        end
+        return { scenes = scenes }
+    end,
 })
 da_ui.events({
     sendCursorKey = function(data) ControlCheckCursor(data.pressed, data.justPressed) end,

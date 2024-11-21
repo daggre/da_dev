@@ -29,7 +29,7 @@ cli.add_cmd("zone", { desc = "Zone commands" })
 cli.add_subcmd("zone", "add", {
     desc = "Add a zone",
     args = { "name" },
-    opts = { "range", },
+    opt = { range = { desc = "Radius of the zone (default 1.0)", }, },
     fn = function(args)
         local radius = tonumber(args.range) or 1.0
         local z = zone.circle(GetEntityCoords(PlayerPedId()).xyz, radius, {

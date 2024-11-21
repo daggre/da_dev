@@ -239,7 +239,7 @@
     float: right;
 }
 
-#activeAnimDisplay, #selectedObjectDisplay, #selectedNearbyOriginDisplay {
+#activeAnimDisplay, #selectedObjectDetails, #selectedNearbyOriginDisplay, #sceneSelected {
     left: 50vw;
     top: 1vh;
     width: fit-content;
