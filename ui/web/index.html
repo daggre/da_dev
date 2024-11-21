@@ -190,7 +190,7 @@
                 <!-- <div id="objData" class="listTop"> -->
                 <!-- </div> -->
             </div>
-            <div id="selectedObjectDisplay" class="optList dev">
+            <div id="selectedObjectDetails" class="optList dev">
                 <ul id="selectedObject">
                     <li>
                         <div class="entryLabel">spawn</div>
@@ -203,6 +203,14 @@
                     <li>
                         <div class="entryLabel">origin</div>
                         <div id="activeNearbyOrigin" class="entryField">camera</div>
+                    </li>
+                </ul>
+            </div>
+            <div id="sceneSelected" class="optList dev">
+                <ul id="sceneSelectedOptions">
+                    <li>
+                        <div class="entryLabel">scene</div>
+                        <div id="selectedScene" class="entryField"></div>
                     </li>
                 </ul>
             </div>
@@ -267,17 +275,21 @@
                     <div class="entryLabel">range</div>
                     <div id="nearbyRange" class="entryField" tabindex="40" contenteditable="true">50</div>
                 </div>
-                <!-- <div id="objNearbyControl" class="inlineControlGroup controlGroup dev"> -->
-                <!--     <ul class="row"> -->
-                <!--         <li> -->
-                <!--             <div id="button-nearbyRangeInc" class="control" tabindex="1" role="button" aria-pressed="false" -->
-                <!--                 onclick="NearbyRangeIncrease();"></div> -->
-                <!--             <div id="button-nearbyRangeDec" class="control" tabindex="1" role="button" aria-pressed="false" -->
-                <!--                 onclick="NearbyRangeDecrease();"></div> -->
-                <!--         </li> -->
-                <!--     </ul> -->
-                <!-- </div> -->
                 <div id="objNearbyResults" class="listTop">
+                </div>
+                <div id="objSceneTagOptions" class="inlineControlGroup controlGroup dev">
+                    <ul class="row">
+                        <li>
+                            <div id="button-tagtest" class="control" tabindex="62" role="button" aria-pressed="false"
+                                onclick="">󰑐</div>
+                        </li>
+                    </ul>
+                </div>
+                <div id="objScenesList" class="listTop">
+                    <ul>
+                        <li>test</li>
+                        <li>test</li>
+                    </ul>
                 </div>
             </div>
             <div id="sceneData" class="dev listGroup">
