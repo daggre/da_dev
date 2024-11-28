@@ -5,20 +5,20 @@
 }
 
 :root {
-    --style-color: #50c1ee;
-    --style-t: #50c1ee80;
-    --style-aux: #00daaf;
-    --style-pur: #bb73eb;
+    --style-color: #50c1ee; /* blue */
+    --style-t: #50c1ee80; /* blue transparent */
+    --style-aux: #00daaf; /* green */
+    --style-pur: #bb73eb; /* purple */
     --style-bg: rgba(4, 16, 29, 0.669);
-    --aux: #ddd;
+    --aux: #ddd; /* white */
 }
 
 :focus {
-    color: var(--style-aux)!important;
+    color: var(--aux)!important;
     outline: none;
     text-shadow:
-        0 0 0px var(--style-aux),
-        0 0 14px var(--style-aux);
+        0 0 0px var(--aux),
+        0 0 14px var(--aux);
 }
 
 .dev {
@@ -125,6 +125,8 @@
     position: static;
     transform: none;
     flex-shrink: 0;
+    /*margin-left: 0.3vw;*/
+    margin-bottom: 2px;
 }
 
 .searchField {
@@ -160,11 +162,25 @@
     display: none;
 }
 
+.listGroupRight {
+    color: var(--aux);
+    right: 2vh;
+    left: auto;
+    top: 1vh;
+    width: fit-content;
+    max-height: 70vh;
+    padding: 0px;
+    flex-direction: column;
+    background: none;
+    display: none;
+    justify-content: flex-start;
+}
+
 .listGroup > div {
     width: fit-content;
     max-width: 100%;
-    margin-top: 1vh;
-    direction: rtl;
+    /*margin-top: 1vh;*/
+    /*direction: rtl;*/
     overflow-y: auto;
     /*overflow-x: hidden;*/
     display: none;
@@ -198,13 +214,17 @@
         0 0 14px;
 }
 
+.listGroup > div {
+    margin-bottom: 3px;
+}
+
 .entryList {
     left: 2vh;
     top: 2vh;
-    width: 10vw;
+    /*width: 10vw;*/
     max-height: 80vh;
-    padding-top: 2px;
-    padding-bottom: 2px;
+    /*padding-top: 2px;*/
+    /*padding-bottom: 2px;*/
     background: none;
     /*display: flex;*/
 }
@@ -212,6 +232,10 @@
 .optList li {
     margin-bottom: 3px;
     /* overflow: hidden; */
+}
+
+.optList li:last-child {
+    margin-bottom: 2px;
 }
 
 /* .#animTimings .entryField { */
@@ -239,7 +263,7 @@
     float: right;
 }
 
-#activeAnimDisplay, #selectedObjectDetails, #selectedNearbyOriginDisplay, #sceneSelected {
+#activeAnimDisplay, #sceneSelected {
     left: 50vw;
     top: 1vh;
     width: fit-content;
@@ -258,6 +282,22 @@
 
 #activeAnimDict {
     margin-right: 1vh;
+}
+
+.entryLabelRight {
+    color: black;
+    height: auto;
+    padding-top: 1px;
+    font-weight: 900;
+    font-size: 1.0vh;
+    text-shadow: none;
+    text-align: right;
+    padding-left: 5px;
+    padding-right: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+    /*border-left: 1px solid var(--style-color);*/
+    background: var(--style-color);
 }
 
 .entryLabel {
@@ -280,6 +320,14 @@
     width: min-content;
 }
 
+.entryFieldRight, .toggleFieldRight {
+    color: var(--aux);
+    font-size: 1.0vh;
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+    background: var(--style-bg);
+}
+
 .entryField, .toggleField {
     color: var(--aux);
     font-size: 1.0vh;
@@ -288,16 +336,34 @@
     background: var(--style-bg);
 }
 
+.entryFieldRight:focus, .toggleFieldRight:focus {
+    border-left: 2px solid var(--style-aux);
+}
+
 .entryField:focus, .toggleField:focus {
     border-right: 2px solid var(--style-aux);
 }
 
-.toggleField {
+.toggleField, .toggleFieldRight {
     min-width: 2.5vh;
+}
+
+.toggleFieldRight.selected:before {
+    content: " ";
 }
 
 .toggleField.selected:after {
     content: " ";
+}
+
+.entryFieldRight:after, .toggleFieldRight:after {
+    color: var(--style-color);
+    content: " ";
+    text-shadow:
+        0 0 4px var(--style-color),
+        0 0 10px var(--style-color),
+        0 0 14px var(--style-color),
+        0 0 18px var(--style-color);
 }
 
 .entryField:before, .toggleField:before {
@@ -308,6 +374,11 @@
         0 0 10px var(--style-color),
         0 0 14px var(--style-color),
         0 0 18px var(--style-color);
+}
+
+.entryFieldRight:before {
+    color: transparent;
+    content: "  ";
 }
 
 .entryField:after {
@@ -444,7 +515,8 @@ li {
 	color: var(--style-aux);
 }
 
-#objNearbyRange {
+.listEntryField {
+    flex-shrink: 0;
     position: relative;
     direction: ltr;
 }

@@ -9,6 +9,7 @@ var GizmoActive = false;
 var SelectedObjectSpawnType = "objects";
 var SelectedObjectFavs = false;
 var TrackedObjectsLoopRunning = false;
+var SceneObjectsLoopRunning = false;
 var MouseDown = false;
 var LeftClickActive = false;
 var CursorPosDelay = false;
@@ -18,6 +19,9 @@ const ResolutionY = window.screen.height;
 var Pressed = {}
 var JustPressed = {}
 var QuickPress = { Timeout: 400, MiddleMouse: { active: false, }, }
+var TagOption = {
+    sort: "dist",
+}
 var NearbyOption = {
     object: true,
     ped: true,
@@ -97,17 +101,17 @@ function SelectNearbyOrigin(originType) {
         originType != "player" &&
         originType != "raycast" &&
         originType != "select" &&
-        originType != "pos") {
+        originType != "set position") {
         console.log("Invalid origin type: " + originType);
         return;
     }
     NearbyOption.origin = originType;
-    document.getElementById('button-nearbyOrigin-' + previousType).classList.remove('selected');
-    document.getElementById('button-nearbyOrigin-' + originType).classList.add('selected');
+    document.getElementById('button-nearbyOrigin-' + previousType.replace(/ /g, '-')).classList.remove('selected');
+    document.getElementById('button-nearbyOrigin-' + originType.replace(/ /g, '-')).classList.add('selected');
 
     document.getElementById("activeNearbyOrigin").innerHTML = originType;
 
-    if (originType == "pos") {
+    if (originType == "set position") {
         SendClientMessage('setNearbyOriginPos', {});
     } else {
         SendClientMessage('setNearbyOriginPos', { remove: true, });
@@ -439,8 +443,11 @@ $(document).ready(function() {
 
         document.getElementById('nearbyRange').innerHTML = NearbyOption.range;
 
-        document.getElementById('button-nearbyOrigin-' + NearbyOption.origin).classList.add('selected');
+        document.getElementById('button-nearbyOrigin-' + NearbyOption.origin.replace(/ /g, '-')).classList.add('selected');
         document.getElementById("activeNearbyOrigin").innerHTML = NearbyOption.origin;
+
+        TagOption = JSON.parse(resp.tags);
+        document.getElementById('button-tagsortby' + TagOption.sort).classList.add('selected');
     });
 
     SendClientPromise('initAnims', {}).then(function(resp) {
@@ -1248,8 +1255,6 @@ function ToggleControlObjectSpawn(state) {
     ToggleSelected(el, state);
     var el_o = document.getElementById('objControlSpawnOptions');
     if (el.classList.contains('selected')) {
-        ToggleControlScene("off");
-        ToggleObjectDetails("off");
         el_o.style.display = "inline-flex";
     } else {
         el_o.style.display = "none";
@@ -1264,25 +1269,23 @@ function ToggleObjectSpawn(state) {
 
     if (el.classList.contains('selected')) {
         ToggleHelp("objHelp", "off", true)
-        ToggleControlObjectSpawn("on");
+        // ToggleControlObjectSpawn("on");
         SelectObjectButton('button-spawn');
-        document.getElementById('objNearbyRange').style.display = "none";
-        document.getElementById('objNearbyFilter').style.display = "none";
-        document.getElementById('objNearbyOrigin').style.display = "none";
-        document.getElementById('objNearbyResults').style.display = "none";
+        ToggleNearby("off");
         document.getElementById('sceneSelected').style.display = "none";
         document.getElementById('objSceneTagOptions').style.display = "none";
         document.getElementById('objScenesList').style.display = "none";
-        document.getElementById('selectedNearbyOriginDisplay').style.display = "none";
+        document.getElementById('objSceneObjectsList').style.display = "none";
+
         document.getElementById('objSearchField').style.display = "flex";
-        document.getElementById('objSearchList').style.display = "flex";
+        document.getElementById('selectedObjectDetails').style.display = "flex";
         document.getElementById('objSpawnOptions').style.display = "inline-flex";
         document.getElementById('objData').style.display = "flex";
-        document.getElementById('selectedObjectDetails').style.display = "flex";
+        document.getElementById('objSearchList').style.display = "flex";
     } else {
-        document.getElementById('objSearchField').style.display = "none";
         document.getElementById('objSearchList').style.display = "none";
         document.getElementById('selectedObjectDetails').style.display = "none";
+        document.getElementById('objSearchField').style.display = "none";
         if (document.activeElement.classList.contains('entryField')) {
             document.activeElement.blur();
         }
@@ -1325,25 +1328,22 @@ function ToggleTrackedList(state) {
 
     if (el.classList.contains('selected')) {
         ToggleHelp("objHelp", "off", true)
-        ToggleControlObjectSpawn("on");
         GetTrackedObjects();
         SelectObjectButton('button-trackedobjlist');
         document.getElementById('objSearchField').style.display = "none";
         document.getElementById('selectedObjectDetails').style.display = "none";
         document.getElementById('objSearchList').style.display = "flex";
-        document.getElementById('objNearbyRange').style.display = "flex";
-        document.getElementById('objNearbyFilter').style.display = "flex";
-        document.getElementById('objNearbyOrigin').style.display = "flex";
-        document.getElementById('objNearbyResults').style.display = "flex";
-        document.getElementById('selectedNearbyOriginDisplay').style.display = "flex";
+        ToggleNearby("on");
+        // document.getElementById('selectedNearbyOriginDisplay').style.display = "flex";
         document.getElementById('sceneSelected').style.display = "none";
         document.getElementById('objSceneTagOptions').style.display = "none";
         document.getElementById('objScenesList').style.display = "none";
+        document.getElementById('objSceneObjectsList').style.display = "none";
     } else {
         document.getElementById('objSearchField').style.display = "none";
         document.getElementById('objSearchList').style.display = "none";
         document.getElementById('objSpawnOptions').style.display = "none";
-        document.getElementById('selectedNearbyOriginDisplay').style.display = "none";
+        // document.getElementById('selectedNearbyOriginDisplay').style.display = "none";
     }
 }
 
@@ -1431,21 +1431,33 @@ function ToggleControlScene(state) {
     if (el.classList.contains('selected')) {
         ToggleHelp("objHelp", "off", true)
         ToggleObjectSpawn("off");
-        ToggleControlObjectSpawn("off");
+        // ToggleControlObjectSpawn("off");
         ResetObjData();
         document.getElementById('button-objectspawn').classList.remove('selected');
-        document.getElementById('button-objectdetails').classList.remove('selected');
-        document.getElementById('objSceneOptions').style.display = "inline-flex";
+        // document.getElementById('button-objectdetails').classList.remove('selected');
+        // document.getElementById('objSceneOptions').style.display = "inline-flex";
         document.getElementById('selectedObjectDetails').style.display = "none";
-        document.getElementById('selectedNearbyOriginDisplay').style.display = "none";
+        // document.getElementById('selectedNearbyOriginDisplay').style.display = "none";
     } else {
-        document.getElementById('objSceneOptions').style.display = "none";
+        // document.getElementById('objSceneOptions').style.display = "none";
     }
 }
 
 function SelectScene(sceneName) {
     var el = document.getElementById("selectedScene");
     el.innerHTML = sceneName;
+    GetSceneObjects(sceneName);
+}
+
+function TagSelectSort(sortType) {
+    var prev = document.getElementById('button-tagsortby' + TagOption.sort);
+    prev.classList.remove('selected');
+
+    var el = document.getElementById('button-tagsortby' + sortType);
+    el.classList.add('selected');
+    TagOption.sort = sortType;
+    SendClientMessage('setObjSettings', { tags: JSON.stringify(TagOption) });
+    // GetSceneObjects();
 }
 
 function GetScenes() {
@@ -1474,12 +1486,97 @@ function GetScenes() {
             ul.appendChild(li);
         }
         el.appendChild(ul);
-        if (sceneList.length < 4) {
-            el.style.minHeight = sceneList.length + ".3vh";
-        } else {
-            el.style.minHeight = "4.9vh";
-        }
+        // if (sceneList.length < 4) {
+        //     el.style.minHeight = sceneList.length + ".3vh";
+        // } else {
+        //     el.style.minHeight = "4.9vh";
+        // }
     });
+}
+
+function GetSceneObjects(sceneName) {
+    if (SceneObjectsLoopRunning) { return; }
+    SceneObjectsLoopRunning = false;
+    var elID = "objSceneObjectsList";
+    var el = document.getElementById(elID);
+    ResetListGroup(elID, "flex");
+    const loopId = setInterval(function() {
+        if (isVisible(el)) {
+            if (!MouseDown) {
+                SendClientPromise('sceneObjects', {
+                    scene: sceneName,
+                }).then(function(resp) {
+                        var objects = resp.objects;
+                        // This is for objects in the scene
+                        if (TagOption.sort == "dist") {
+                            objects.sort((a, b) => a.distance - b.distance);
+                        } else if (TagOption.sort == "name") {
+                            objects.sort((a, b) => a.model.localeCompare(b.model));
+                        }
+                        el.innerHTML = "";
+                        var ul = document.createElement('ul');
+                        for (var i = 0; i < objects.length; ++i) {
+                            var li = document.createElement('li');
+                            var handle = objects[i].handle;
+                            if (objects[i].networkId) {
+                                handle = handle + " [" + objects[i].networkId + "]";
+                            }
+                            li.innerHTML = `${objects[i].distance.toFixed(2)} ${handle} ${objects[i].model}`;
+                            // li.addEventListener('mouseenter', function() {
+                            //     console.log("hovering over object", this.innerHTML);
+                            // })
+                            // li.addEventListener('mouseleave', function() {
+                            //     console.log("leaving object", this.innerHTML);
+                            // })
+                            li.addEventListener('click', function() {
+                                SelectObject(this.innerHTML.split(" ")[1]);
+                            })
+                            ul.appendChild(li);
+                        }
+                        el.appendChild(ul);
+                        if (objects.length < 4) {
+                            el.style.minHeight = objects.length + ".3vh";
+                        } else {
+                            el.style.minHeight = "4.9vh";
+                        }
+                    });
+            } else {
+                clearInterval(loopId);
+                SceneObjectsLoopRunning = false;
+            }
+        }
+    }, 250);
+}
+
+function ToggleObjSpawn(state) {
+    if (state == "on") {
+        document.getElementById('objSearchList').style.display = "flex";
+        document.getElementById('objSearchField').style.display = "flex";
+        document.getElementById('selectedObjectDetails').style.display = "flex";
+        document.getElementById('objSpawnOptions').style.display = "flex";
+        document.getElementById('objData').style.display = "flex";
+    } else if (state == "off") {
+        document.getElementById('objSearchField').style.display = "none";
+        document.getElementById('selectedObjectDetails').style.display = "none";
+        document.getElementById('objSpawnOptions').style.display = "none";
+        document.getElementById('objData').style.display = "none";
+    }
+}
+
+function ToggleNearby(state) {
+    if (state == "off") {
+        document.getElementById('selectedNearbyOrigin').style.display = "none";
+        document.getElementById('objNearbyRange').style.display = "none";
+        document.getElementById('objNearbyFilter').style.display = "none";
+        document.getElementById('objNearbyOrigin').style.display = "none";
+        document.getElementById('objNearbyResults').style.display = "none";
+    } else if (state == "on") {
+        document.getElementById('selectedNearbyOrigin').style.display = "flex";
+        document.getElementById('objNearbyRange').style.display = "flex";
+        document.getElementById('objNearbyFilter').style.display = "flex";
+        document.getElementById('objNearbyOrigin').style.display = "flex";
+        document.getElementById('objNearbyResults').style.display = "flex";
+    }
 }
 
 function ToggleSceneMove(state) {
@@ -1488,16 +1585,13 @@ function ToggleSceneMove(state) {
 
     if (el.classList.contains('selected')) {
         ToggleHelp("objHelp", "off", true)
-        ToggleControlScene("on");
         SelectObjectButton('button-scenecontrol');
-        document.getElementById('objNearbyRange').style.display = "none";
-        document.getElementById('objNearbyFilter').style.display = "none";
-        document.getElementById('objNearbyOrigin').style.display = "none";
-        document.getElementById('objNearbyResults').style.display = "none";
-        document.getElementById('objSpawnOptions').style.display = "none";
+        ToggleNearby("off");
+        ToggleObjSpawn("off");
         document.getElementById('sceneSelected').style.display = "none";
         document.getElementById('objSceneTagOptions').style.display = "none";
         document.getElementById('objScenesList').style.display = "none";
+        document.getElementById('objSceneObjectsList').style.display = "none";
         // Toggle SceneMove specific on
     } else {
         // Toggle SceneMove specific off
@@ -1510,17 +1604,13 @@ function ToggleSceneTag(state) {
 
     if (el.classList.contains('selected')) {
         ToggleHelp("objHelp", "off", true)
-        ToggleControlScene("on");
         SelectObjectButton('button-scenetags');
-        document.getElementById('objNearbyRange').style.display = "none";
-        document.getElementById('objNearbyFilter').style.display = "none";
-        document.getElementById('objNearbyOrigin').style.display = "none";
-        document.getElementById('objNearbyResults').style.display = "none";
-        document.getElementById('objSearchList').style.display = "flex";
-        document.getElementById('objSpawnOptions').style.display = "none";
+        ToggleNearby("off");
+        ToggleObjSpawn("off");
         document.getElementById('sceneSelected').style.display = "flex";
         document.getElementById('objSceneTagOptions').style.display = "flex";
         document.getElementById('objScenesList').style.display = "flex";
+        document.getElementById('objSceneObjectsList').style.display = "flex";
         GetScenes()
         // Toggle SceneTag specific on
     } else {
@@ -1528,6 +1618,7 @@ function ToggleSceneTag(state) {
         document.getElementById('sceneSelected').style.display = "none";
         document.getElementById('objSceneTagOptions').style.display = "none";
         document.getElementById('objScenesList').style.display = "none";
+        document.getElementById('objSceneObjectsList').style.display = "none";
         // Toggle SceneTag specific off
     }
 }
@@ -1538,17 +1629,14 @@ function ToggleImportExport(state) {
 
     if (el.classList.contains('selected')) {
         ToggleHelp("objHelp", "off", true)
-        ToggleControlScene("on");
         SelectObjectButton('button-importexport');
-        document.getElementById('objNearbyRange').style.display = "none";
-        document.getElementById('objNearbyFilter').style.display = "none";
-        document.getElementById('objNearbyOrigin').style.display = "none";
-        document.getElementById('objNearbyResults').style.display = "none";
+        ToggleNearby("off");
+        ToggleObjSpawn("off");
         document.getElementById('objSearchList').style.display = "flex";
-        document.getElementById('objSpawnOptions').style.display = "none";
         document.getElementById('sceneSelected').style.display = "flex";
         document.getElementById('objSceneTagOptions').style.display = "flex";
         document.getElementById('objScenesList').style.display = "flex";
+        document.getElementById('objSceneObjectsList').style.display = "flex";
         GetScenes()
         // Toggle Import/Export specific on
     } else {
@@ -1556,29 +1644,16 @@ function ToggleImportExport(state) {
         document.getElementById('sceneSelected').style.display = "none";
         document.getElementById('objSceneTagOptions').style.display = "none";
         document.getElementById('objScenesList').style.display = "none";
+        document.getElementById('objSceneObjectsList').style.display = "none";
         // Toggle Import/Export specific off
     }
 }
 
 function ToggleObjectDetails(state) {
-    var el = document.getElementById('button-objectdetails');
-    ToggleSelected(el, state);
-
-    if (el.classList.contains('selected')) {
-        ToggleHelp("objHelp", "off", true)
-        ToggleObjectSpawn("off");
-        ToggleControlObjectSpawn("off");
-        ToggleControlScene("off");
-        document.getElementById('objSpawnOptions').style.display = "none";
-        document.getElementById('sceneSelected').style.display = "none";
-        document.getElementById('objSceneTagOptions').style.display = "none";
-        document.getElementById('objSearchList').style.display = "none";
+    if (state == "on") {
         document.getElementById('objDetails').style.display = "flex";
         document.getElementById('objDetailsOptions').style.display = "inline-flex";
         document.getElementById('objDetailsList').style.display = "flex";
-        document.getElementById('selectedObjectDetails').style.display = "none";
-        document.getElementById('selectedNearbyOriginDisplay').style.display = "none";
-        // SwitchObjectDetailsSpecific('button-objDetailsPosition', 'objDetailsListPosition');
         ToggleObjectListDetails('button-objDetailsPosition', 'objDetailsListPosition', true);
         ToggleObjectListDetails('button-objDetailsStatus', 'objDetailsListStatus', true);
     } else {
@@ -1638,8 +1713,8 @@ function SelectObjectButton(el) {
     var elementIds = [
         'button-spawn',
         'button-trackedobjlist',
-        'button-scenecontrol',
-        'button-scenetags',
+        // 'button-scenecontrol',
+        // 'button-scenetags',
         'button-importexport',
     ];
 
@@ -1665,13 +1740,15 @@ function ClearObjectDetails() {
 
 function UpdateObjectDetails(data) {
     if (!data.select) {
+        ToggleObjectDetails("off");
         ClearObjectDetails();
         return;
     }
 
+    ToggleObjectDetails("on");
     document.getElementById("objDetailsEntityHandle").innerHTML = data.selectData.handle;
     document.getElementById("objDetailsEntityNetworkId").innerHTML = data.selectData.networkID;
-    // document.getElementById("objDetailsEntityHandle").innerHTML = data.selectData.modelHash;
+    // document.getElementById("objDetailsEntityModelHash").innerHTML = data.selectData.modelHash;
     document.getElementById("objDetailsEntityModelName").innerHTML = data.selectData.modelName;
     document.getElementById("objDetailsEntityPosX").innerHTML = data.selectData.coords.x;
     document.getElementById("objDetailsEntityPosY").innerHTML = data.selectData.coords.y;
@@ -1698,11 +1775,6 @@ function ObjectKeys(key, event) {
                     escaped = true;
                     return;
                 }
-                if (isVisible(document.getElementById('objDetails'))) {
-                    ToggleObjectDetails("off");
-                    escaped = true;
-                    return;
-                }
                 if (isVisible(document.getElementById('objSpawnOptions'))) {
                     ToggleObjectSpawn("off");
                     escaped = true;
@@ -1713,15 +1785,15 @@ function ObjectKeys(key, event) {
                     escaped = true;
                     return;
                 }
-                if (isVisible(document.getElementById('objControlSpawnOptions'))) {
-                    document.getElementById('objControlSpawnOptions').style.display = "none";
-                    escaped = true;
-                    return;
-                }
-                if (isVisible(document.getElementById('objSceneOptions'))) {
-                    document.getElementById('objSceneOptions').style.display = "none";
-                    escaped = true;
-                }
+                // if (isVisible(document.getElementById('objControlSpawnOptions'))) {
+                //     document.getElementById('objControlSpawnOptions').style.display = "none";
+                //     escaped = true;
+                //     return;
+                // }
+                // if (isVisible(document.getElementById('objSceneOptions'))) {
+                //     document.getElementById('objSceneOptions').style.display = "none";
+                //     escaped = true;
+                // }
                 if (escaped) { return; }
 
                 SendClientMessage('deactivateMode', { mode: "object" });
@@ -1733,7 +1805,7 @@ function ObjectKeys(key, event) {
                     event.preventDefault();
                 }
                 return;
-            case "2":
+            case "1":
                 var focusButton = false;
                 if (isVisible(document.getElementById('objSearchField'))) {
                     document.getElementById('objSearch').focus();
@@ -1747,7 +1819,7 @@ function ObjectKeys(key, event) {
                     document.getElementById('button-spawn').focus();
                 }
                 return;
-            case "3":
+            case "2":
                 var focusButton = false;
                 if (isVisible(document.getElementById('objNearbyRange'))) {
                     document.getElementById('nearbyRange').focus();
@@ -1775,11 +1847,6 @@ function ObjectKeys(key, event) {
                 escaped = true;
                 return;
             }
-            if (isVisible(document.getElementById('objDetails'))) {
-                ToggleObjectDetails("off");
-                escaped = true;
-                return;
-            }
             if (isVisible(document.getElementById('objSpawnOptions'))) {
                 ToggleObjectSpawn("off");
                 escaped = true;
@@ -1790,15 +1857,15 @@ function ObjectKeys(key, event) {
                 escaped = true;
                 return;
             }
-            if (isVisible(document.getElementById('objControlSpawnOptions'))) {
-                document.getElementById('objControlSpawnOptions').style.display = "none";
-                escaped = true;
-                return;
-            }
-            if (isVisible(document.getElementById('objSceneOptions'))) {
-                document.getElementById('objSceneOptions').style.display = "none";
-                escaped = true;
-            }
+            // if (isVisible(document.getElementById('objControlSpawnOptions'))) {
+            //     document.getElementById('objControlSpawnOptions').style.display = "none";
+            //     escaped = true;
+            //     return;
+            // }
+            // if (isVisible(document.getElementById('objSceneOptions'))) {
+            //     document.getElementById('objSceneOptions').style.display = "none";
+            //     escaped = true;
+            // }
             if (escaped) { return; }
 
             SendClientMessage('deactivateMode', { mode: "object" });
@@ -1818,31 +1885,27 @@ function ObjectKeys(key, event) {
                 });
             }
             return;
+        case "!":
         case "1":
-            ToggleObjectDetails("on");
-            document.getElementById('button-objectdetails').focus();
-            return;
-        case "@":
-        case "2":
             ToggleObjectSpawn("on");
             document.getElementById('button-spawn').focus();
             return;
-        case "3":
+        case "2":
             ToggleTrackedList("on");
             document.getElementById('button-trackedobjlist').focus();
             return;
-        case "4":
-            ToggleSceneMove("on");
-            document.getElementById('button-scenecontrol').focus();
-            return;
-        case "5":
-            ToggleSceneTag("on");
-            document.getElementById('button-scenetags').focus();
-            return;
-        case "6":
+        case "3":
             ToggleImportExport("on");
             document.getElementById('button-importexport').focus();
             return;
+        // case "4":
+        //     ToggleSceneMove("on");
+        //     document.getElementById('button-scenecontrol').focus();
+        //     return;
+        // case "5":
+        //     ToggleSceneTag("on");
+        //     document.getElementById('button-scenetags').focus();
+        //     return;
         case "Backspace":
             SendClientMessage('deactivateMode', { mode: "object" });
             return;

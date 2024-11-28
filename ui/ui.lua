@@ -8,7 +8,10 @@ da_ui.callbacks({
     ["initAnims"] = function() return { animations = json.encode(dat.animation) } end,
     ["initAnimFlags"] = function() return { flags = json.encode(dat.flags.anim) } end,
     ["initIKAnimFlags"] = function() return { flags = json.encode(dat.flags.ik) } end,
-    ["initObjSettings"] = function() return { nearby = kvp.rawget("setting:ui:nearby") } end,
+    ["initObjSettings"] = function() return {
+        nearby = kvp.rawget("setting:ui:nearby"),
+        tags = kvp.rawget("setting:ui:tags"),
+    } end,
     ["initObjects"] = function() return {
         peds = json.encode(dat.ped),
         objects = json.encode(dat.object),
@@ -22,7 +25,8 @@ da_ui.events({
     ["activateMode"] = function(data) da_mode.activate(data.mode) end,
     ["deactivateMode"] = function(data) da_mode.deactivate(data.mode) end,
     ["setObjSettings"] = function(data)
-        kvp.rawset("setting:ui:nearby", data.nearby)
+        if data.nearby then kvp.rawset("setting:ui:nearby", data.nearby) end
+        if data.tags then kvp.rawset("setting:ui:tags", data.tags) end
     end,
     ["playAnim"] = function(data)
         local entity = data.entity and tonumber(data.entity) or nil
@@ -132,6 +136,7 @@ end)
 do
     local setting = { ui = {}, }
     setting.ui.nearby = { object = true, ped = true, vehicle = true, other = false, origin = "camera", range = 50, }
+    setting.ui.tags = { sort = "dist" }
 
     -- Init settings
     for k1, category in pairs(setting) do

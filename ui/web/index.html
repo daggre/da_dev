@@ -102,31 +102,21 @@
             <div id="crosshair" class="inactive">+</div>
             <div id="objControlOptions" class="controlGroup dev">
                 <ul class="row">
-                    <li id="objControlSpawnOptions" style="display:none;">
-                        <div id="button-spawn" class="control" tabindex="12" role="button" aria-pressed="false"
-                            onclick="ToggleObjectSpawn('toggle');">󰐫</div>
-                        <div id="button-trackedobjlist" class="control" tabindex="21" role="button" aria-pressed="false"
-                            onclick="ToggleTrackedList('toggle');">󰉺</div>
-                    </li>
-                    <li id="objSceneOptions" style="display:none;">
-                        <div id="button-scenecontrol" class="control" tabindex="31" role="button" aria-pressed="false"
-                            onclick="ToggleSceneMove('toggle');">󱞔</div>
-                        <div id="button-scenetags" class="control" tabindex="32" role="button" aria-pressed="false"
-                            onclick="ToggleSceneTag('toggle');">󰜢</div>
-                        <div id="button-importexport" class="control" tabindex="33" role="button" aria-pressed="false"
-                            onclick="ToggleImportExport('toggle');">󰾛</div>
-                    </li>
                     <li>
-                        <div id="button-objectdetails" class="control" tabindex="1" role="button" aria-pressed="false"
-                            onclick="ToggleObjectDetails('toggle');">󰘱</div>
-                        <div id="button-objectspawn" class="control" tabindex="20" role="button" aria-pressed="false"
-                            onclick="ToggleControlObjectSpawn('toggle');">󰥵</div>
-                        <div id="button-objectscene" class="control" tabindex="40" role="button" aria-pressed="false"
-                            onclick="ToggleControlScene('toggle');">󰷔</div>
+                        <div id="button-spawn" class="control" tabindex="1" role="button" aria-pressed="false"
+                            onclick="ToggleObjectSpawn('toggle');"></div>
+                        <div id="button-trackedobjlist" class="control" tabindex="11" role="button" aria-pressed="false"
+                            onclick="ToggleTrackedList('toggle');">󰹤</div>
+                        <div id="button-importexport" class="control" tabindex="20" role="button" aria-pressed="false"
+                            onclick="ToggleImportExport('toggle');"></div>
+                        <!-- <div id="button-scenecontrol" class="control" tabindex="31" role="button" aria-pressed="false" -->
+                        <!--     onclick="ToggleSceneMove('toggle');">󱞔</div> -->
+                        <!-- <div id="button-scenetags" class="control" tabindex="32" role="button" aria-pressed="false" -->
+                        <!--     onclick="ToggleSceneTag('toggle');">󰜢</div> -->
                     </li>
                 </ul>
             </div>
-            <div id="objDetails" class="dev listGroup">
+            <div id="objDetails" class="dev listGroupRight">
                 <div id="objDetailsList" class="entryList optList" style="background:none; height:fit-content;">
                     <ul>
                         <li>
@@ -143,7 +133,7 @@
                         </li>
                     </ul>
                 </div>
-                <div id="objDetailsOptions" class="inlineControlGroup controlGroup dev">
+                <div id="objDetailsOptions" class="inlineControlGroup controlGroup dev" style="width: fit-content; margin-left: 0.3vw; margin-top: 1px;">
                     <ul class="row">
                         <li>
                             <div id="button-objDetailsPosition" class="control selected" tabindex="14" role="button" aria-pressed="false"
@@ -158,19 +148,24 @@
                         <li>
                             <div class="entryLabel">X</div>
                             <div id="objDetailsEntityPosX" class="entryField" contenteditable="true" tabindex="3">0</div>
-                        </li> <li>
+                        </li>
+                        <li>
                             <div class="entryLabel">Y</div>
                             <div id="objDetailsEntityPosY" class="entryField" contenteditable="true" tabindex="3">0</div>
-                        </li> <li>
+                        </li>
+                        <li>
                             <div class="entryLabel">Z</div>
                             <div id="objDetailsEntityPosZ" class="entryField" contenteditable="true" tabindex="3">0</div>
-                        </li> <li>
+                        </li>
+                        <li>
                             <div class="entryLabel">Pitch</div>
                             <div id="objDetailsEntityRotPitch" class="entryField" contenteditable="true" tabindex="3">0</div>
-                        </li> <li>
+                        </li>
+                        <li>
                             <div class="entryLabel">Roll</div>
                             <div id="objDetailsEntityRotRoll" class="entryField" contenteditable="true" tabindex="3">0</div>
-                        </li> <li>
+                        </li>
+                        <li>
                             <div class="entryLabel">Yaw</div>
                             <div id="objDetailsEntityRotYaw" class="entryField" contenteditable="true" tabindex="3">0</div>
                         </li>
@@ -181,7 +176,8 @@
                         <li>
                             <div class="entryLabel">Frozen</div>
                             <div id="objDetailsEntityFrozen" class="check toggleField" contenteditable="true" tabindex="3"></div>
-                        </li> <li>
+                        </li>
+                        <li>
                             <div class="entryLabel">Collision</div>
                             <div id="objDetailsEntityCollision" class="check toggleField" contenteditable="true" tabindex="3"></div>
                         </li>
@@ -190,22 +186,14 @@
                 <!-- <div id="objData" class="listTop"> -->
                 <!-- </div> -->
             </div>
-            <div id="selectedObjectDetails" class="optList dev">
-                <ul id="selectedObject">
-                    <li>
-                        <div class="entryLabel">spawn</div>
-                        <div id="activeObject" class="entryField"></div>
-                    </li>
-                </ul>
-            </div>
-            <div id="selectedNearbyOriginDisplay" class="optList dev">
-                <ul id="selectedNearbyOrigin">
-                    <li>
-                        <div class="entryLabel">origin</div>
-                        <div id="activeNearbyOrigin" class="entryField">camera</div>
-                    </li>
-                </ul>
-            </div>
+            <!-- <div id="selectedNearbyOriginDisplay" class="optList dev"> -->
+            <!--     <ul id="selectedNearbyOrigin"> -->
+            <!--         <li> -->
+            <!--             <div class="entryLabel">origin</div> -->
+            <!--             <div id="activeNearbyOrigin" class="entryField">camera</div> -->
+            <!--         </li> -->
+            <!--     </ul> -->
+            <!-- </div> -->
             <div id="sceneSelected" class="optList dev">
                 <ul id="sceneSelectedOptions">
                     <li>
@@ -215,6 +203,15 @@
                 </ul>
             </div>
             <div id="objSearchList" class="dev listGroup">
+                <!-- TODO: Rename objSearchList -->
+                <div id="objSearchField" class="dev listEntryField">
+                    <div class="entryLabel" style="width:auto;"></div>
+                    <div id="objSearch" class="entryField" tabindex="2" contenteditable="true"></div>
+                </div>
+                <div id="selectedObjectDetails" class="dev listEntryField">
+                    <div class="entryLabel">spawn</div>
+                    <div id="activeObject" class="entryField"></div>
+                </div>
                 <div id="objSpawnOptions" class="inlineControlGroup controlGroup dev">
                     <ul class="row">
                         <li>
@@ -248,12 +245,16 @@
                                 onclick="SelectNearbyOrigin('player');"></div>
                             <div id="button-nearbyOrigin-raycast" class="control" tabindex="24" role="button" aria-pressed="false"
                                 onclick="SelectNearbyOrigin('raycast');"></div>
-                            <div id="button-nearbyOrigin-pos" class="control" tabindex="25" role="button" aria-pressed="false"
-                                onclick="SelectNearbyOrigin('pos');"></div>
+                            <div id="button-nearbyOrigin-set-position" class="control" tabindex="25" role="button" aria-pressed="false"
+                                onclick="SelectNearbyOrigin('set position');"></div>
                             <div id="button-nearbyOrigin-select" class="control" tabindex="26" role="button" aria-pressed="false"
                                 onclick="SelectNearbyOrigin('select');"></div>
                         </li>
                     </ul>
+                </div>
+                <div id="selectedNearbyOrigin" class="dev listEntryField">
+                    <div class="entryLabel">origin</div>
+                    <div id="activeNearbyOrigin" class="entryField">camera</div>
                 </div>
                 <div id="objNearbyFilter" class="inlineControlGroup controlGroup dev">
                     <ul class="row">
@@ -271,34 +272,30 @@
                         </li>
                     </ul>
                 </div>
-                <div id="objNearbyRange" class="dev" style="flex-shrink: 0;">
+                <div id="objNearbyRange" class="dev listEntryField">
                     <div class="entryLabel">range</div>
                     <div id="nearbyRange" class="entryField" tabindex="40" contenteditable="true">50</div>
                 </div>
                 <div id="objNearbyResults" class="listTop">
                 </div>
+                <div id="objScenesList" class="listTop" style="min-height: 1.3vh; max-height: 9.1vh;">
+                </div>
                 <div id="objSceneTagOptions" class="inlineControlGroup controlGroup dev">
                     <ul class="row">
                         <li>
-                            <div id="button-tagtest" class="control" tabindex="62" role="button" aria-pressed="false"
-                                onclick="">󰑐</div>
+                            <div id="button-tagsortbydist" class="control" tabindex="62" role="button" aria-pressed="false"
+                                onclick="TagSelectSort('dist');">󰣰</div>
+                            <div id="button-tagsortbyname" class="control" tabindex="63" role="button" aria-pressed="false"
+                                onclick="TagSelectSort('name');">󰖽</div>
                         </li>
                     </ul>
                 </div>
-                <div id="objScenesList" class="listTop">
-                    <ul>
-                        <li>test</li>
-                        <li>test</li>
-                    </ul>
+                <div id="objSceneObjectsList" class="listTop">
                 </div>
             </div>
             <div id="sceneData" class="dev listGroup">
                 <div id="sceneResultsOne" class="listTop">
                 </div>
-            </div>
-            <div id="objSearchField" class="searchField dev">
-                <div class="entryLabel" style="width:auto;"></div>
-                <div id="objSearch" class="entryField" tabindex="2" contenteditable="true"></div>
             </div>
         </div>
         <div id="devTreeHUD" class="dev">
