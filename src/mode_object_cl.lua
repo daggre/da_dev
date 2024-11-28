@@ -14,6 +14,7 @@ local UntrackedModels = { [0] = true, }
 local Spawn = nil
 local HitCoords = nil
 local NearbyOriginPos = nil
+local Scenes = {}
 
 local UID = 0
 local _getUID = function()
@@ -354,6 +355,22 @@ da_mode.register({
                 da_ui.send("keyPress", { mode = "object", key = "3" })
             end,
         },
+        {
+            key = "4",
+            event = "justPressed",
+            active = true,
+            fn = function()
+                da_ui.send("keyPress", { mode = "object", key = "4" })
+            end,
+        },
+        {
+            key = "5",
+            event = "justPressed",
+            active = true,
+            fn = function()
+                da_ui.send("keyPress", { mode = "object", key = "5" })
+            end,
+        },
     },
 })
 
@@ -392,7 +409,7 @@ local function GetNearbyObjects(range, origin)
         if not hit then
             pos = GetFinalRenderedCamCoord()
         end
-    elseif origin == "pos" then
+    elseif origin == "set position" then
         pos = NearbyOriginPos ~= nil and NearbyOriginPos or pos
     elseif origin == "select" then
         pos = Select ~= nil and DoesEntityExist(Select) and GetEntityCoords(Select) or pos
@@ -520,16 +537,16 @@ local ControlCheckCursor = function(pressed, justPressed)
 end
 
 local testsceneobjects = {
-    { model = "prop_test1", pos = vector3(1, 2, 3), rot = vector3(4, 5, 6), },
-    { model = "prop_test1", pos = vector3(1, 2, 3), rot = vector3(4, 5, 6), },
-    { model = "prop_test2", pos = vector3(1, 2, 3), rot = vector3(4, 5, 6), },
-    { model = "prop_test2", pos = vector3(0, 0, 0), rot = vector3(0, 0, 0), },
-    { model = "prop_test3", pos = vector3(0, 0, 0), rot = vector3(0, 0, 0), },
+    { model = "prop_test1", pos = vec3(1, 2, 3), rot = vec3(4, 5, 6), },
+    { model = "prop_test1", pos = vec3(1, 1, 1), rot = vec3(1, 1, 1), },
+    { model = "prop_test2", pos = vec3(1, 2, 3), rot = vec3(4, 5, 6), },
+    { model = "prop_test2", pos = vec3(100, 0, 0), rot = vec3(0, 0, 0), },
+    { model = "prop_test3", pos = vec3(0, 0, 0), rot = vec3(0, 0, 0), },
 }
--- kvp.encode("scenes:test_1", { name = "test_1", objects = testsceneobjects })
--- kvp.encode("scenes:test_2", { name = "test_2", objects = testsceneobjects })
--- kvp.encode("scenes:test_3", { name = "test_3", objects = testsceneobjects })
--- kvp.encode("scenes:test_4", { name = "test_4", objects = testsceneobjects })
+kvp.encode("scenes:test_1", { name = "test_1", objects = testsceneobjects })
+kvp.encode("scenes:test_2", { name = "test_2", objects = testsceneobjects })
+kvp.encode("scenes:test_3", { name = "test_3", objects = testsceneobjects })
+kvp.encode("scenes:test_4", { name = "test_4", objects = testsceneobjects })
 
 da_ui.callbacks({
     nearbyObjects = function(data) return {nearbyObjects = GetNearbyObjects(data.range, data.origin)} end,
@@ -537,10 +554,28 @@ da_ui.callbacks({
         local sceneNames = kvp.search("scenes:")
         local scenes = {}
         for _, scene in ipairs(sceneNames) do
+            local sceneName = scene:sub(8)
             local s = kvp.decode(scene)
+            Scenes[sceneName] = s
             table.insert(scenes, s)
         end
         return { scenes = scenes }
+    end,
+    sceneObjects = function(data)
+        local coords = GetEntityCoords(PlayerPedId())
+        local sceneName = data.scene
+        local sceneObjects = {}
+        for _, obj in ipairs(Scenes[sceneName].objects) do
+            table.insert(sceneObjects, {
+                distance = #(coords - vec3(obj.pos.x, obj.pos.y, obj.pos.z)),
+                model = obj.model,
+                handle = 0,
+            })
+            local model = GetHashKey(obj.model)
+            local entity = CreateObject(model, obj.pos.x, obj.pos.y, obj.pos.z, false, false, false)
+            SetEntityRotation(entity, obj.rot.x, obj.rot.y, obj.rot.z)
+        end
+        return { objects = sceneObjects }
     end,
 })
 da_ui.events({
