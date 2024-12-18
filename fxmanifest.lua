@@ -29,6 +29,7 @@ client_scripts {
     '@da_lib/dat/ped.lua',
     '@da_lib/dat/pickup.lua',
     '@da_lib/dat/propset.lua',
+    '@da_lib/dat/taskFilter.lua',
     '@da_lib/dat/vehicle.lua',
 
     '@da_lib/lib/nui_cl.lua',
@@ -78,8 +79,14 @@ files {
     'ui/web/script.js',
     'ui/web/style.css',
     'ui/web/assets/index.js',
-    'ui/web/assets/index.css',
-    'ui/web/assets/LiterationMonoNerd.ttf',
+    'ui/web/assets/fonts/LiterationMonoNerd.ttf',
+    'ui/web/assets/css/index.css',
+    'ui/web/components/anims.js',
+    'ui/web/components/obj.js',
+    'ui/web/components/trie.js',
+    'ui/web/utils/clipboard.js',
+    'ui/web/utils/msg.js',
+    'ui/web/utils/nav.js',
 }
 
 ui_page {

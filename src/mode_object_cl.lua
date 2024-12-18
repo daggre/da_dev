@@ -1,4 +1,4 @@
-SelectMode = false
+SelectMode = "Cursor"
 Hover = nil
 Select = nil
 
@@ -14,7 +14,10 @@ local UntrackedModels = { [0] = true, }
 local Spawn = nil
 local HitCoords = nil
 local NearbyOriginPos = nil
-local Scenes = {}
+local Scenes = {
+    untracked = { objects = {}, },
+}
+local ActiveScene = "untracked"
 
 local UID = 0
 local _getUID = function()
@@ -30,7 +33,8 @@ lazy.uiUpdate = function(select, hover, objData)
     })
 end
 
-local GetSelectedObjData = function(entityHandle)
+
+local GetObjData = function(entityHandle)
     local objData = {}
     if entityHandle == nil then return objData; end
     -- if not DoesEntityExist(entityHandle) then return objData; end
@@ -47,16 +51,12 @@ local GetSelectedObjData = function(entityHandle)
     objData.modelHash = modelHash
     objData.networkID = networkID ~= false and networkID or "-"
     objData.modelName = modelName
-    objData.coords = {
-        x = string.format("%.2f", x),
-        y = string.format("%.2f", y),
-        z = string.format("%.2f", z),
-    }
-    objData.rotation = {
-        pitch = string.format("%.2f", pitch),
-        roll = string.format("%.2f", roll),
-        yaw = string.format("%.2f", yaw),
-    }
+    objData.coords_x = string.format("%.2f", x)
+    objData.coords_y = string.format("%.2f", y)
+    objData.coords_z = string.format("%.2f", z)
+    objData.rotation_pitch = string.format("%.2f", pitch)
+    objData.rotation_roll = string.format("%.2f", roll)
+    objData.rotation_yaw = string.format("%.2f", yaw)
     objData.frozen = frozen
     objData.collision = collision
 
@@ -132,7 +132,7 @@ local SelectModeTick = function()
         {r=80, g=193, b=238, a=255} or -- Blue
         {r=255, g=255, b=255, a=255} -- White (Hovered and Selected)
     )
-    lazy(30).uiUpdate(Select, Hover, GetSelectedObjData(Select))
+    lazy(30).uiUpdate(Select, Hover, GetObjData(Select))
 end
 
 local ObjectModeThread = function()
@@ -149,19 +149,22 @@ local ObjectModeThread = function()
     end)
 end
 
-local objectMCPState = true
+local objectMCPState = false
 
 da_mode.register({
     name = "object",
     priority = 70,
     onActivate = function()
-        SetNuiFocus(true, true)
-        SetNuiFocusKeepInput(false)
         CurrentTree = "objRoot"
-        SelectMode = "Cursor"
-        ObjectModeThread()
+        -- SelectMode = "Cursor"
+        -- objectMCPState = false
+
+        da_mode.deactivate("animation")
         da_mode.activate("freecam")
+        --
+        ObjectModeThread()
         da_ui.send("ui", { mode = "object" })
+        da_ui.send("mcp", { active = objectMCPState, })
         if objectMCPState then
             da_mode.activateMCP("object")
         end
@@ -170,12 +173,12 @@ da_mode.register({
         SetNuiFocus(false, false)
         da_mode.deactivate("freecam")
         da_mode.deactivate("focus")
-        da_ui.send("ui", { mode = "object", state = "off" })
+        ObjectThread = {}
+        da_ui.send("ui", { mode = "object", state = false })
         da_mcp.deactivate()
         if not da_mode.isActive("noclip") then
-            da_ui.send("ui", { mode = "camera", state = "off", })
+            da_ui.send("ui", { mode = "camera", state = false, })
         end
-        SelectMode = false
         CurrentTree = "devRoot"
     end,
     onPrimary = function()
@@ -198,11 +201,10 @@ da_mode.register({
         da_mcp.activate({
             key = dat.keyHash['MouseScrollClick'],
             activate = function()
-                objectMCPState = true
                 log.debug("Activating MCP for object mode")
                 SelectMode = "Crosshair"
-                if not da_mode.isPrimary("object") then return; end
                 objectMCPState = true
+                if not da_mode.isPrimary("object") then return; end
                 SetNuiFocus(true, false)
                 SetNuiFocusKeepInput(true)
             end,
@@ -248,6 +250,10 @@ da_mode.register({
             fn = function()
                 if not Spawn or not HitCoords then return; end
                 local obj = da_obj.create(Spawn, HitCoords, { ground = true, })
+                table.insert(Scenes[ActiveScene].objects, {
+                    model = Spawn,
+                    handle = obj,
+                })
                 Select = obj
             end
         },
@@ -326,7 +332,7 @@ da_mode.register({
             fn = function()
                 da_ui.send("toggleHelp", {
                     mode = "objHelp",
-                    state = "toggle",
+                    state = nil,
                     toggleCursor = true
                 })
             end,
@@ -566,14 +572,13 @@ da_ui.callbacks({
         local sceneName = data.scene
         local sceneObjects = {}
         for _, obj in ipairs(Scenes[sceneName].objects) do
-            table.insert(sceneObjects, {
-                distance = #(coords - vec3(obj.pos.x, obj.pos.y, obj.pos.z)),
-                model = obj.model,
-                handle = 0,
-            })
-            local model = GetHashKey(obj.model)
-            local entity = CreateObject(model, obj.pos.x, obj.pos.y, obj.pos.z, false, false, false)
-            SetEntityRotation(entity, obj.rot.x, obj.rot.y, obj.rot.z)
+            local handle = da_obj.create(obj.model, obj.pos, obj.data)
+            SetEntityRotation(handle, obj.rot.x, obj.rot.y, obj.rot.z)
+
+            -- TODO: clean this up
+            local objData = GetObjData(handle)
+            objData.distance = #(coords - obj.pos)
+            table.insert(sceneObjects, objData)
         end
         return { objects = sceneObjects }
     end,
