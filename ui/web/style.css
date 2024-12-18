@@ -1,7 +1,7 @@
 
 @font-face {
     font-family: 'LiterationMonoNerd';
-    src: url(./assets/LiterationMonoNerd.ttf);
+    src: url(./assets/fonts/LiterationMonoNerd.ttf);
 }
 
 :root {
@@ -13,13 +13,13 @@
     --aux: #ddd; /* white */
 }
 
-:focus {
-    color: var(--aux)!important;
-    outline: none;
-    text-shadow:
-        0 0 0px var(--aux),
-        0 0 14px var(--aux);
-}
+/*:focus {*/
+/*    color: var(--aux)!important;*/
+/*    outline: none;*/
+/*    text-shadow:*/
+/*        0 0 0px var(--aux),*/
+/*        0 0 14px var(--aux);*/
+/*}*/
 
 .dev {
     position: absolute;
@@ -37,7 +37,6 @@
     border-color: var(--style-color);
     color: var(--style-color);
     background: var(--style-bg);
-    display: none;
 }
 
 .help {
@@ -104,7 +103,6 @@
     width: auto;
     right: 50vw;
     bottom: 2vh;
-    /*display: block;*/
     transform: translate(50%);
 }
 
@@ -136,7 +134,7 @@
     padding: 0px;
     margin: 0px;
     transform: translate(50%);
-    display: none;
+    /*display: none;*/
 }
 
 .textEntryField:before {
@@ -151,7 +149,7 @@
 }
 
 .listGroup {
-    color: var(--aux);
+    /*color: var(--aux);*/
     left: 2vh;
     top: 1vh;
     width: 34vw;
@@ -159,11 +157,11 @@
     padding: 0px;
     flex-direction: column;
     background: none;
-    display: none;
+    /*display: none;*/
 }
 
 .listGroupRight {
-    color: var(--aux);
+    /*color: var(--aux);*/
     right: 2vh;
     left: auto;
     top: 1vh;
@@ -172,7 +170,7 @@
     padding: 0px;
     flex-direction: column;
     background: none;
-    display: none;
+    /*display: none;*/
     justify-content: flex-start;
 }
 
@@ -183,7 +181,7 @@
     /*direction: rtl;*/
     overflow-y: auto;
     /*overflow-x: hidden;*/
-    display: none;
+    /*display: none;*/
     border-radius: 8px;
     background: var(--style-bg);
 }
@@ -198,7 +196,7 @@
 }
 
 .listGroup li {
-    color: var(--style-color);
+    /*color: var(--style-color);*/
     text-shadow: none;
     /*overflow-y: hidden;*/
     /* overflow: hidden; */
@@ -206,13 +204,13 @@
     /* text-overflow: ellipsis; */
 }
 
-.listGroup li:hover {
-    color: var(--aux);
-    text-shadow:
-        0 0 8px #444,
-        0 0 10px #777,
-        0 0 14px;
-}
+/*.listGroup li:hover {*/
+/*    color: var(--aux);*/
+/*    text-shadow:*/
+/*        0 0 8px #444,*/
+/*        0 0 10px #777,*/
+/*        0 0 14px;*/
+/*}*/
 
 .listGroup > div {
     margin-bottom: 3px;
@@ -252,10 +250,11 @@
     left: 2vh;
     top: 2vh;
     width: 20vw;
-    max-height: 70vh;
+    max-height: 96vh;
     padding-top: 2px;
     padding-bottom: 2px;
     background: none;
+    overflow-y: auto;
     /*display: flex;*/
 }
 
@@ -386,57 +385,20 @@
     content: "  ";
 }
 
-
-#devTreeHUD {
-    width: 6.0vw;
-    right: 12vw;
-    bottom: 8vh;
-    transform: translate(50%);
-    text-transform: lowercase;
-    flex-direction: column;
-    padding: 2px;
-    /*display: flex;*/
-}
-
-.key {
-    float: right;
-    color: var(--style-bg);
-    background-color: var(--style-color);
-    text-align: center;
-    vertical-align: middle;
-    text-transform: capitalize;
-    padding: 0px;
-    width: 1.1vh;
-    height: 1.1vh;
-    /*border: 0px solid var(--style-color);*/
-    border-radius: 4px;
-    font-weight: 900;
-    font-size: 0.9vh;
-    text-shadow:
-        0 0 1px var(--style-bg);
-}
-
-.value {
-    float: left;
-    width: 80%;
-    font-size: 1.1vh;
-    /*margin-left: 0.3vw;*/
-}
-
 .control {
     margin-left: 0.2vw;
     margin-right: 0.1vw;
     font-size: 2.0vh;
 }
 
-.control.selected {
-    color: var(--aux);
-    text-shadow:
-        0 0 2px #444,
-        0 0 3px #444,
-        0 0 4px,
-        0 0 10px;
-}
+/*.control.selected {*/
+/*    color: var(--aux);*/
+/*    text-shadow:*/
+/*        0 0 2px #444,*/
+/*        0 0 3px #444,*/
+/*        0 0 4px,*/
+/*        0 0 10px;*/
+/*}*/
 
 .controlGroup li, .controlGroup li:hover {
     color: var(--style-color);
@@ -504,11 +466,11 @@ li {
 }
 
 #crosshair.inactive {
-	color: #FFFFFF;
+    color: var(--style-color);
 }
 
 #crosshair.active {
-	color: var(--style-color);
+	color: #FFFFFF;
 }
 
 #crosshair.selected {
@@ -521,10 +483,6 @@ li {
     direction: ltr;
 }
 
-#objNearbyResults li.selected {
-    color: var(--style-aux);
-}
-
-#objNearbyResults li.hover {
-    color: #fff;
-}
+/*#objNearbyResults li.selected {*/
+/*    color: var(--style-aux);*/
+/*}*/

@@ -51,7 +51,7 @@ da_mode.register({
         CamHandle = nil
 
         if not da_mode.isActive("object") and not da_mode.isActive("noclip") then
-            da_ui.send("ui", { mode = "camera", state = "off", })
+            da_ui.send("ui", { mode = "camera", state = false })
         end
     end,
     keymaps = {
@@ -69,6 +69,17 @@ da_mode.register({
             fn = function()
                 da_mode.deactivate("freecam")
             end
+        },
+        {
+            key = "h",
+            event = "justPressed",
+            primary = true,
+            fn = function()
+                da_ui.send("toggleHelp", {
+                    mode = "camHelp",
+                    state = nil,
+                })
+            end,
         },
     }
 })
@@ -99,7 +110,7 @@ da_mode.register({
         Citizen.SetTimeout(5000, function() SetEntityInvincible(playerPedId, false) end)
 
         if not da_mode.isActive("object") and not da_mode.isActive("freecam") then
-            da_ui.send("ui", { mode = "camera", state = "off", })
+            da_ui.send("ui", { mode = "camera", state = false })
         end
     end,
     keymaps = {

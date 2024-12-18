@@ -12,7 +12,7 @@ Citizen.CreateThread(function()
         end,
         onDeactivate = function()
             da_mcp.deactivate()
-            da_ui.send("ui", { mode = "animation", state = "off" })
+            da_ui.send("ui", { mode = "animation", state = false })
             SetNuiFocus(false, false)
             SetNuiFocusKeepInput(false)
         end,

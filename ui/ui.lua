@@ -19,6 +19,7 @@ da_ui.callbacks({
         vehicles = json.encode(dat.vehicle),
         propsets = json.encode(dat.propset),
     } end,
+    ["initTaskFilters"] = function() return { taskFilters = json.encode(dat.taskFilter) } end,
 })
 
 da_ui.events({
@@ -67,12 +68,12 @@ da_ui.events({
     ["stopAnim"] = function(data)
         ClearPedTasksImmediately(data.entity or PlayerPedId())
     end,
-    ["runOption"] = function(data)
+    ["selectTrieOption"] = function(data)
         da_trie.run(data.menu, data.option)
         da_mode.deactivate("devTree")
     end,
-    ["chooseMenu"] = function(data)
-        da_ui.send("ui", { mode = "tree", tree = da_trie.get(data.menu) })
+    ["selectTrieMenu"] = function(data)
+        da_ui.send("ui", { mode = "trie", trie = da_trie.get(data.menu) })
     end,
     ["exit"] = function()
         da_mode.deactivate("animation"); da_mode.deactivate("devTree")
@@ -98,9 +99,10 @@ Citizen.CreateThread(function()
         onActivate = function()
             SetNuiFocus(true, false)
             SetNuiFocusKeepInput(false)
-            da_ui.send("ui", { mode = "tree", tree = da_trie.get(CurrentTree) })
+            da_ui.send("ui", { mode = "trie", trie = da_trie.get(CurrentTree) })
         end,
         onDeactivate = function()
+            da_ui.send("ui", { mode = "trie", state = false })
             if not da_mode.isPrimary("devTree") then return end
             SetNuiFocus(false, false)
             SetNuiFocusKeepInput(false)
@@ -127,7 +129,10 @@ Citizen.CreateThread(function()
                 key = "z",
                 event = "justPressed",
                 active = true,
-                fn = function() SkipNext = true end
+                fn = function()
+                    log.debug("mode devTree SkipNext")
+                    SkipNext = true
+                end
             },
         }
     })

@@ -60,13 +60,13 @@ end
 
 da_trie.addOpt("teleport", "disappear", "0", function()
     local coords = GetEntityCoords(PlayerPedId())
-    da.Fx.New("des_bnk_safe_exp", "ent_ray_bnk_safe_exp_end", {
+    fx.New("des_bnk_safe_exp", "ent_ray_bnk_safe_exp_end", {
         coords = coords,
         networked = true,
     })
     Citizen.Wait(1000)
     da_mode.start("noclip")
-    da.Fx.New("anm_shows", "ent_anim_magician_smoke", {
+    fx.New("anm_shows", "ent_anim_magician_smoke", {
         coords = coords,
         networked = true,
     })
