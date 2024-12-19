@@ -11,7 +11,7 @@ let NearbyOption = {
     range: 50,
 }
 let SceneObjectsLoopRunning = false;
-var SelectedObjectSpawnType = "objects";
+let SelectedObjectSpawnType = "objects";
 let SpawnOption = new Map();
 let TagOption = { sort: "dist", }
 let TrackedObjectsLoopRunning = false;
@@ -30,27 +30,10 @@ export function initObj() {
     sendClientMessage('initObjSettings', {}).then(function(resp) {
         NearbyOption = JSON.parse(resp.nearby);
 
-        if (NearbyOption.object) {
-            document.getElementById('button-nearby-object').classList.add('selected');
-        } else {
-            document.getElementById('button-nearby-object').classList.remove('selected');
-        }
-        if (NearbyOption.ped) {
-            document.getElementById('button-nearby-ped').classList.add('selected');
-        } else {
-            document.getElementById('button-nearby-ped').classList.remove('selected');
-        }
-        if (NearbyOption.vehicle) {
-            document.getElementById('button-nearby-vehicle').classList.add('selected');
-        } else {
-            document.getElementById('button-nearby-vehicle').classList.remove('selected');
-        }
-        if (NearbyOption.other) {
-            document.getElementById('button-nearby-other').classList.add('selected');
-        } else {
-            document.getElementById('button-nearby-other').classList.remove('selected');
-        }
-
+        elementSetClass('button-nearby-object', 'selected', NearbyOption.object);
+        elementSetClass('button-nearby-ped', 'selected', NearbyOption.ped);
+        elementSetClass('button-nearby-vehicle', 'selected', NearbyOption.vehicle);
+        elementSetClass('button-nearby-other', 'selected', NearbyOption.other);
         document.getElementById('nearbyRange').innerHTML = NearbyOption.range;
 
         document.getElementById('button-nearbyOrigin-' + NearbyOption.origin.replace(/ /g, '-')).classList.add('selected');
@@ -60,13 +43,13 @@ export function initObj() {
         document.getElementById('button-tagsortby' + TagOption.sort).classList.add('selected');
     });
 
-    $("div#objSearch.entryField").keydown(function(e) {
-        if (e.code == "Enter") {
-            e.preventDefault();
-            resetListGroup("objData", "flex");
-            searchBasicRedMList(this.innerHTML, SpawnOption.get(SelectedObjectSpawnType), "objData");
-        }
-    });
+    // $("div#objSearch.entryField").keydown(function(e) {
+    //     if (e.code == "Enter") {
+    //         e.preventDefault();
+    //         resetListGroup("objData", "flex");
+    //         searchObjects(this.innerHTML, SpawnOption.get(SelectedObjectSpawnType), "objData");
+    //     }
+    // });
 
     $("div#nearbyRange.entryField").keydown(function(e) {
         if (e.code == "Enter") {
@@ -77,7 +60,14 @@ export function initObj() {
     });
 }
 
-function searchBasicRedMList(searchValue, searchList, elementId) {
+export function searchSpawnObject(event) {
+    resetListGroup("objData", "flex");
+    console.log("objSearch", event);
+    searchObjects(event.target.innerHTML, SpawnOption.get(SelectedObjectSpawnType), "objData");
+}
+
+function searchObjects(searchValue, searchList, elementId) {
+    console.log("searching for", searchValue);
     var el = document.getElementById(elementId);
     el.innerHTML = "";
 

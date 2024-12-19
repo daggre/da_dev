@@ -73,7 +73,7 @@ da_ui.events({
         da_mode.deactivate("devTree")
     end,
     ["selectTrieMenu"] = function(data)
-        da_ui.send("ui", { mode = "trie", trie = da_trie.get(data.menu) })
+        da_ui.send("ui_trie", { trie = da_trie.get(data.menu) })
     end,
     ["exit"] = function()
         da_mode.deactivate("animation"); da_mode.deactivate("devTree")
@@ -99,10 +99,10 @@ Citizen.CreateThread(function()
         onActivate = function()
             SetNuiFocus(true, false)
             SetNuiFocusKeepInput(false)
-            da_ui.send("ui", { mode = "trie", trie = da_trie.get(CurrentTree) })
+            da_ui.send("ui_trie", { trie = da_trie.get(CurrentTree) })
         end,
         onDeactivate = function()
-            da_ui.send("ui", { mode = "trie", state = false })
+            -- da_ui.send("ui_trie", { trie = da_trie.get(CurrentTree) })
             if not da_mode.isPrimary("devTree") then return end
             SetNuiFocus(false, false)
             SetNuiFocusKeepInput(false)

@@ -1,21 +1,20 @@
 import { clipboardCopy } from "./utils/clipboard.js";
 import { sendClientMessage } from "./utils/msg.js";
+import { updateCrosshair } from "./components/crosshair.js";
+import { updateCamera } from "./components/camera.js";
 import {
-    selectOnly,
     elementSetOnlyClass,
     elementSetClass,
     elementHasClass,
     elementSetText,
-    isSelected,
     isVisible,
 } from "./utils/nav.js";
 import { initTrie } from "./components/trie.js";
 import {
     initObj,
     initializeObjectHUD,
+    searchSpawnObject,
     getTrackedObjects,
-    getScenes,
-    getSceneObjects,
     toggleNearbyFilter,
     tagSelectSort,
     selectSpawnType,
@@ -89,7 +88,6 @@ export var KeyActions = {
         'escape': () => { sendClientMessage('deactivateMode', { mode: "gizmo"}); },
     },
     'objectHUD': {
-        'escape': () => {},
         '1': () => { toggleObjectSpawnHUD(); },
         '2': () => { toggleObjectNearbyHUD(); },
         '3': () => { toggleObjectImportExportHUD(); },
@@ -119,7 +117,7 @@ export const EventActions = {
         '#button-objDetailsPosition': () => toggleObjectDetail('button-objDetailsPosition'),
         '#button-objDetailsStatus': () => toggleObjectDetail('button-objDetailsStatus'),
 
-        '#button-spawnfavs': toggleObjectFavsSpawn,
+        '#button-spawnfavs': () => { elementSetClass('button-spawnfavs', 'selected'); },
         '#button-spawnobjects': () => selectSpawnType('objects'),
         '#button-spawnpeds': () => selectSpawnType('peds'),
         '#button-spawnvehicles': () => selectSpawnType('vehicles'),
@@ -155,10 +153,34 @@ export const EventActions = {
         '#button-loop': toggleLoop,
         '#button-torso': toggleTorso,
     },
-    input: {
-        "#objSearch": (value) => searchObjects(value),
-        "#animSearch": (value) => searchAnimations(value),
-    },
+    // input: {
+    //     "#objSearch": searchSpawnObject,
+    //     "#nearbyRange": (event) => {
+    //         if (event.inputType == "insertParagraph") {
+    //             event.preventDefault();
+    //             getTrackedObjects();
+    //         }
+    //     },
+    //     "#animSearch": (event) => {
+    //         if (event.inputType == "insertParagraph") {
+    //             event.preventDefault();
+    //
+    //             const dict = document.getElementById("animDictList");
+    //             const anim = document.getElementById("animList");
+    //             const searchElement = document.getElementById("animSearch");
+    //
+    //             elementSetText(dict, "");
+    //             elementSetText(anim, "");
+    //
+    //             dict.scrollTop = 0;
+    //             dict.scrollLeft = -1000;
+    //             anim.scrollTop = 0;
+    //             anim.scrollLeft = -1000;
+    //
+    //             searchRedMAnims(searchElement.innerHTML);
+    //         }
+    //     },
+    // },
     mousemove: (event) => {
         if (!CursorPosDelay && !MCP && !GizmoActive &&
                 isVisible('objectHUD') &&
@@ -295,17 +317,66 @@ export const EventActions = {
     },
     keydown: (event) => {
         if (MCP) { return; }
-        if (event.key != "Escape" && event.target.getAttribute('contenteditable') == "true") {
-            return;
-        }
-
-        JustPressed[event.key] = true;
+        const isInputField = event.target.getAttribute('contenteditable') == "true"
         Pressed[event.key] = true;
-        handleKeyPress(event.key, getCurrentHUD());
-        event.preventDefault();
+        // Check universal nav keys
+        switch(event.key) {
+            case " ":
+                if (typeof event.target.onclick == "function") {
+                    event.target.onclick.apply();
+                    event.preventDefault();
+                    return;
+                }
+                break;
+            case "Tab":
+                return;
+        }
+        JustPressed[event.key] = true;
+        if (event.key == "Escape" || !isInputField) {
+            handleKeyPress(event.key, getCurrentHUD())
+        } else if (isInputField) {
+            if (event.key == "Enter") {
+                Object.keys(InputFields).forEach((selector) => {
+                    if (event.target.matches(selector)) {
+                        const action = InputFields[selector]
+                        action.length ? action(event) : action();
+                        event.preventDefault();
+                    }
+                });
+            }
+        }
         JustPressed[event.key] = false;
-    },
+    }
 };
+
+const InputFields = {
+    "#objSearch": searchSpawnObject,
+    "#nearbyRange": (event) => {
+        if (event.inputType == "insertParagraph") {
+            event.preventDefault();
+            getTrackedObjects();
+        }
+    },
+    "#animSearch": (event) => {
+        if (event.inputType == "insertParagraph") {
+            event.preventDefault();
+
+            const dict = document.getElementById("animDictList");
+            const anim = document.getElementById("animList");
+            const searchElement = document.getElementById("animSearch");
+
+            elementSetText(dict, "");
+            elementSetText(anim, "");
+
+            dict.scrollTop = 0;
+            dict.scrollLeft = -1000;
+            anim.scrollTop = 0;
+            anim.scrollLeft = -1000;
+
+            searchRedMAnims(searchElement.innerHTML);
+        }
+    },
+}
 
 export function registerListeners() {
     Object.keys(EventActions).forEach((eventType) => {
@@ -322,7 +393,7 @@ export function registerListeners() {
             Object.keys(eventActions).forEach((selector) => {
                 if (event.target.matches(selector)) {
                     const action = eventActions[selector];
-                    action.length ? action(event.target.value) : action();
+                    action.length ? action(event) : action();
                 }
             });
         });
@@ -350,43 +421,34 @@ export function resetListGroup(element, display) {
     el.scrollLeft = -1000;
 }
 
-function updateUI(data) {
-    switch(data.mode) {
-        case "trie":
-            if (data.trie) { initTrie(data.trie); }
-            elementSetClass('devTreeHUD', 'hidden', data.state == false);
-            break;
-        case "animation":
-            setUIAnim(data.state);
-            break;
-        case "object":
-            initializeObjectHUD();
-            toggleObjectHUD(data.state);
-            break;
-        case "camera":
-            elementSetClass('cameraHUD', 'hidden', !data.state);
-            if (data.camera) {
-                elementSetText('cam-speed', data.camera.speed);
-                elementSetText('cam-mode', data.camera.cameraMode);
-                elementSetText('cam-noclip', data.camera.noclip);
-            }
-            break;
-    }
-}
-
 window.onload = function() {
-    registerListeners();
     initAnims();
     initObj();
+    registerListeners();
 
     window.addEventListener('message', function(msg) {
         switch(msg.data.type) {
-            case "ui":
-                updateUI(msg.data);
+            case "ui_trie":
+                console.log("trie", msg.data.trie);
+                if (msg.data.trie) { initTrie(msg.data.trie); }
+                elementSetClass('devTreeHUD', 'hidden', msg.data.state == false);
                 break;
-            case "update":
+            case "ui_animation":
+                setUIAnim(msg.data.state);
+                break;
+            case "ui_object":
+                initializeObjectHUD();
+                toggleObjectHUD(msg.data.state);
+                break;
+            case "ui_camera":
+                elementSetClass('cameraHUD', 'hidden', msg.data.state == false);
+                break;
+            case "updateCrosshair":
                 updateCrosshair(msg.data);
                 updateObjectDetails(msg.data);
+                break;
+            case "updateCamera":
+                updateCamera(msg.data.camera);
                 break;
             case "clipboard":
                 clipboardCopy(msg.data.text);
@@ -401,19 +463,18 @@ window.onload = function() {
                 toggleHelp(msg.data.mode, msg.data.state, msg.data.toggleCursor);
                 break;
             case "keyPress":
-                if (msg.data.mode == "object") {
-                    ObjectKeys(msg.data.key);
-                    break;
-                }
+                handleKeyPress(msg.data.key, msg.data.mode);
+                break;
         }
     })
 }
 
 function handleKeyPress(rawKey, hud) {
     if (!hud) { return; }
-    console.log("handleKeyPress:", rawKey, hud);
+    console.log("handleKey", rawKey, hud);
     const lowercaseKey = rawKey.toLowerCase();
     const key = KeyTranslateMap[lowercaseKey] || lowercaseKey;
+
     const action = KeyActions[hud][key] || KeyActions[hud].default;
     if (action) { action(key); }
 }
@@ -453,10 +514,8 @@ const AnimSubElements = [
 // Animation HUD //
 function setUIAnim(state) {
     state = !!state;
-    console.log("setUIAnim", state);
     AnimSubElements.forEach((el) => { elementSetClass(el, 'hidden', true); });
     AnimElements.forEach((el) => { elementSetClass(el, 'hidden', !state); });
-    console.log("Setting anim hud visible", state);
     elementSetClass('animHUD', 'hidden', state);
 }
 
@@ -581,41 +640,6 @@ function toggleEntity(state) {
     }
 }
 
-function setUITrie(data) {
-    if (data.trie) { initTrie(data.trie); }
-    elementSetClass('devTreeHUD', 'hidden', data.state == false);
-}
-
-function updateUICam(data) {
-    elementSetText('cam-speed', data.speed);
-    elementSetText('cam-mode', data.cameraMode);
-    elementSetText('cam-noclip', data.noclip);
-}
-
-function setUIObj(state) {
-    initializeObjectHUD();
-    toggleObjectHUD(state);
-}
-
-const crosshairElement = document.getElementById("crosshair");
-const CrosshairTypes = new Map([
-    ["hover", "active"],
-    ["select", "selected"],
-    ["none", "inactive"],
-]);
-
-const CrosshairClasses = [...CrosshairTypes.values()];
-
-function updateCrosshair(data) {
-    // Find the first matching crosshair class, default to "inactive"
-    const selectedClass = [...CrosshairTypes].find(([key]) => data[key])?.[1] || "inactive";
-    elementSetOnlyClass(crosshairElement, selectedClass, CrosshairClasses);
-}
-
-function toggleObjectFavsSpawn(state) {
-    elementSetClass('button-spawnfavs', 'selected', state);
-}
-
 const ObjectDetailsFieldElements = [
     'objDetails',
     'objDetailsOptions',
@@ -677,89 +701,6 @@ function updateObjectDetails(data) {
 // DEPRECATE BELOW //
 
 function ObjectKeys(key, event) {
-    if (event) {
-        switch(key) {
-            case "Escape":
-                var escaped = false;
-                event.preventDefault();
-                if (document.activeElement.classList.contains('entryField')) {
-                    document.activeElement.blur();
-                    return;
-                }
-                if (isVisible('objHelp')) {
-                    toggleHelp("objHelp", false, true);
-                    escaped = true;
-                    return;
-                }
-                if (isVisible('objSpawnOptions')) {
-                    toggleObjectSpawnHUD(false);
-                    escaped = true;
-                    return;
-                }
-                if (isVisible('objNearbyOrigin')) {
-                    toggleObjectNearbyHUD(false);
-                    escaped = true;
-                    return;
-                }
-                if (isVisible('objScenesList')) {
-                    toggleImportExport(false);
-                    escaped = true;
-                    return;
-                }
-                // if (isVisible('objControlSpawnOptions')) {
-                //     document.getElementById('objControlSpawnOptions').style.display = "none";
-                //     escaped = true;
-                //     return;
-                // }
-                // if (isVisible('objSceneOptions')) {
-                //     document.getElementById('objSceneOptions').style.display = "none";
-                //     escaped = true;
-                // }
-                if (escaped) { return; }
-
-                sendClientMessage('deactivateMode', { mode: "object" });
-                toggleObjectHUD(false);
-                return;
-            case " ":
-                if (typeof event.target.onclick == "function") {
-                    event.target.onclick.apply();
-                    event.preventDefault();
-                }
-                return;
-            case "1":
-                // var focusButton = false;
-                // if (isVisible('objSearchField')) {
-                //     document.getElementById('objSearch').focus();
-                //     event.preventDefault();
-                //     return;
-                // } else {
-                //     focusButton = true;
-                // }
-                console.log("toggleObjectSpawn client keypress");
-                toggleObjectSpawnHUD();
-                // if (focusButton) {
-                //     document.getElementById('button-spawn').focus();
-                // }
-                return;
-            case "2":
-                var focusButton = false;
-                if (isVisible('objNearbyRange')) {
-                    document.getElementById('nearbyRange').focus();
-                    event.preventDefault();
-                    return;
-                } else {
-                    focusButton = true;
-                }
-                toggleObjectNearbyHUD(true);
-                if (focusButton) {
-                    document.getElementById('button-trackedobjlist').focus();
-                }
-                return;
-            case "3":
-                toggleObjectImportExportHUD();
-                return;
-        }
-    }
     switch(key) {
         case "Escape":
             var escaped = false;
@@ -767,46 +708,11 @@ function ObjectKeys(key, event) {
                 document.activeElement.blur();
                 return;
             }
-            if (isVisible('objHelp')) {
-                toggleHelp("objHelp", false, true);
-                escaped = true;
-                return;
-            }
-            if (isVisible('objSpawnOptions')) {
-                toggleObjectSpawnHUD(false);
-                escaped = true;
-                return;
-            }
-            if (isVisible('objNearbyOrigin')) {
-                toggleObjectNearbyHUD(false);
-                escaped = true;
-                return;
-            }
-            if (isVisible('objScenesList')) {
-                toggleObjectImportExportHUD(false);
-                escaped = true;
-                return;
-            }
-            // if (isVisible('objControlSpawnOptions')) {
-            //     document.getElementById('objControlSpawnOptions').style.display = "none";
-            //     escaped = true;
-            //     return;
-            // }
-            // if (isVisible('objSceneOptions')) {
-            //     document.getElementById('objSceneOptions').style.display = "none";
-            //     escaped = true;
-            // }
             if (escaped) { return; }
 
             sendClientMessage('deactivateMode', { mode: "object" });
             toggleObjectHUD(false);
             return;
-        // case "c":
-        //     if (!document.activeElement.classList.contains('entryField') && !MCP) {
-        //         sendClientMessage('activateMCP', { mode: "object" });
-        //         sendClientMessage('activateMCP', { mode: "gizmo" });
-        //     }
-        //     return;
         case "f":
             if (!document.activeElement.classList.contains('entryField') && !MCP) {
                 sendClientMessage('sendCursorKey', {
@@ -814,27 +720,6 @@ function ObjectKeys(key, event) {
                     justPressed: JustPressed
                 });
             }
-            return;
-        case "!":
-        case "1":
-            console.log("toggleObjectSpawnHUD ObjectKeys");
-            toggleObjectSpawnHUD();
-            // document.getElementById('button-spawn').focus();
-            return;
-        case "2":
-            toggleObjectNearbyHUD();
-            document.getElementById('button-trackedobjlist').focus();
-            return;
-        case "3":
-            toggleObjectImportExportHUD();
-            document.getElementById('button-importexport').focus();
-            return;
-        case "Backspace":
-            sendClientMessage('deactivateMode', { mode: "object" });
-            return;
-        case "?":
-        case "h":
-            toggleHelp("objHelp", NULL, true)
             return;
         case "r":
             sendClientMessage('sendCursorKey', {
@@ -851,20 +736,6 @@ function ObjectKeys(key, event) {
                 sendClientMessage('sendCursorKey', { justPressed: { x: true, } });
             }
             return;
-    }
-}
-
-// Object Keys //
-function HandleKeysObject(event) {
-    if (GizmoActive) {
-        switch(event.key) {
-            case "Escape":
-                event.preventDefault();
-                sendClientMessage('modifyMody', { mode: "gizmo", stop: true, })
-                return;
-        }
-    } else {
-        ObjectKeys(event.key, event);
     }
 }
 

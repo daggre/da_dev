@@ -82,6 +82,8 @@ files {
     'ui/web/assets/fonts/LiterationMonoNerd.ttf',
     'ui/web/assets/css/index.css',
     'ui/web/components/anims.js',
+    'ui/web/components/camera.js',
+    'ui/web/components/crosshair.js',
     'ui/web/components/obj.js',
     'ui/web/components/trie.js',
     'ui/web/utils/clipboard.js',

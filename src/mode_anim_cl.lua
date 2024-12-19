@@ -5,14 +5,14 @@ Citizen.CreateThread(function()
         priority = 70,
         onActivate = function()
             SetNuiFocus(true, true)
-            da_ui.send("ui", { mode = "animation" })
+            da_ui.send("ui_animation", {})
             if animMCPState then
                 da_mode.activateMCP("animation")
             end
         end,
         onDeactivate = function()
             da_mcp.deactivate()
-            da_ui.send("ui", { mode = "animation", state = false })
+            da_ui.send("ui_animation", { state = false })
             SetNuiFocus(false, false)
             SetNuiFocusKeepInput(false)
         end,

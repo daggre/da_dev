@@ -24,7 +24,7 @@ da_mode.register({
         SetNuiFocus(true, false)
         SetNuiFocusKeepInput(true)
 
-        da_ui.send("ui", { mode = "camera" })
+        da_ui.send("ui_camera", {})
 
         local x, y, z = table.unpack(GetGameplayCamCoord())
         local pitch, roll, yaw = table.unpack(GetGameplayCamRot(2))
@@ -51,7 +51,7 @@ da_mode.register({
         CamHandle = nil
 
         if not da_mode.isActive("object") and not da_mode.isActive("noclip") then
-            da_ui.send("ui", { mode = "camera", state = false })
+            da_ui.send("ui_camera", { state = false })
         end
     end,
     keymaps = {
@@ -110,7 +110,7 @@ da_mode.register({
         Citizen.SetTimeout(5000, function() SetEntityInvincible(playerPedId, false) end)
 
         if not da_mode.isActive("object") and not da_mode.isActive("freecam") then
-            da_ui.send("ui", { mode = "camera", state = false })
+            da_ui.send("ui_camera", { state = false })
         end
     end,
     keymaps = {
@@ -133,11 +133,11 @@ da_mode.register({
             log.debug(("Focusing on object %s"):format(trackedObject))
             PointCamAtEntity(CamHandle, trackedObject)
         end
-        da_ui.send("ui", { mode = "camera", focus = true, })
+        da_ui.send("ui_camera", { focus = true, })
     end,
     onDeactivate = function()
         StopCamPointing(CamHandle)
-        da_ui.send("ui", { mode = "camera", focus = false, })
+        da_ui.send("ui_camera", { focus = false, })
     end,
 })
 
@@ -312,8 +312,7 @@ local CheckMovementControls = function(x, y, z, rot_x, rot_y, rot_z, fov)
 end
 
 lazy.camUpdate = function(speed)
-    da_ui.send("ui", {
-        mode = "camera",
+    da_ui.send("updateCamera", {
         camera = {
             speed = ("%.2f"):format(speed),
             cameraMode = da_mode.isActive("focus") and "" or "",
