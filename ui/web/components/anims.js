@@ -1,3 +1,4 @@
+import { KeyActions } from "../script.js";
 import { sendClientMessage } from "../utils/msg.js";
 
 var Animations = {};
@@ -12,6 +13,33 @@ const Flags = {
 var TaskFilter = false;
 
 export function initAnims() {
+    // KeyActions['animHUD'] = {
+    //     'escape': () => {
+    //         elementSetClass('animHUD', 'hidden', true);
+    //         sendClientMessage('deactivateMode', { mode: "animation" });
+    //     },
+    //     'backspace': () => { toggleStop(); },
+    //     ' ': () => { togglePlay(); },
+    //     '?': () => { toggleHelp("animHelp"); },
+    //     '1': () => { toggleSearch(); },
+    //     '2': () => { toggleTimings(); },
+    //     '3': () => { toggleIKFlags(); },
+    //     '4': () => { toggleFlags(); },
+    //     '5': () => { toggleTaskFilters(); },
+    //     '6': () => { toggleEntity(); },
+    //     'c': () => { toggleSettings(); },
+    //     'h': () => { toggleHelp("animHelp"); },
+    //     'i': () => { toggleIKFlags(); },
+    //     'l': () => { toggleLoop(); },
+    //     'o': () => { toggleFlags(); },
+    //     'p': () => { togglePlay(); },
+    //     'q': () => { togglePlay(); },
+    //     'r': () => { togglePlay(); },
+    //     't': () => { toggleTimings(); },
+    //     'u': () => { toggleTorso(); },
+    //     'x': () => {},
+    // }
+
     sendClientMessage('initAnims', {}).then(function(resp) {
         Animations = JSON.parse(resp.animations);
     });

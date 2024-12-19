@@ -26,7 +26,7 @@ local _getUID = function()
 end
 
 lazy.uiUpdate = function(select, hover, objData)
-    da_ui.send("update", {
+    da_ui.send("updateCrosshair", {
         hover = hover ~= nil,
         select = select ~= nil,
         selectData = objData,
@@ -163,7 +163,7 @@ da_mode.register({
         da_mode.activate("freecam")
         --
         ObjectModeThread()
-        da_ui.send("ui", { mode = "object" })
+        da_ui.send("ui_object", {})
         da_ui.send("mcp", { active = objectMCPState, })
         if objectMCPState then
             da_mode.activateMCP("object")
@@ -174,10 +174,10 @@ da_mode.register({
         da_mode.deactivate("freecam")
         da_mode.deactivate("focus")
         ObjectThread = {}
-        da_ui.send("ui", { mode = "object", state = false })
+        da_ui.send("ui_object", { state = false })
         da_mcp.deactivate()
         if not da_mode.isActive("noclip") then
-            da_ui.send("ui", { mode = "camera", state = false, })
+            da_ui.send("ui_camera", { state = false, })
         end
         CurrentTree = "devRoot"
     end,
@@ -342,7 +342,7 @@ da_mode.register({
             event = "justPressed",
             active = true,
             fn = function()
-                da_ui.send("keyPress", { mode = "object", key = "1" })
+                da_ui.send("keyPress", { mode = "objectHUD", key = "1" })
             end,
         },
         {
@@ -350,7 +350,7 @@ da_mode.register({
             event = "justPressed",
             active = true,
             fn = function()
-                da_ui.send("keyPress", { mode = "object", key = "2" })
+                da_ui.send("keyPress", { mode = "objectHUD", key = "2" })
             end,
         },
         {
@@ -358,7 +358,7 @@ da_mode.register({
             event = "justPressed",
             active = true,
             fn = function()
-                da_ui.send("keyPress", { mode = "object", key = "3" })
+                da_ui.send("keyPress", { mode = "objectHUD", key = "3" })
             end,
         },
         {
@@ -366,7 +366,7 @@ da_mode.register({
             event = "justPressed",
             active = true,
             fn = function()
-                da_ui.send("keyPress", { mode = "object", key = "4" })
+                da_ui.send("keyPress", { mode = "objectHUD", key = "4" })
             end,
         },
         {
@@ -374,7 +374,7 @@ da_mode.register({
             event = "justPressed",
             active = true,
             fn = function()
-                da_ui.send("keyPress", { mode = "object", key = "5" })
+                da_ui.send("keyPress", { mode = "objectHUD", key = "5" })
             end,
         },
     },
