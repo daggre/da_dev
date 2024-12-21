@@ -83,7 +83,6 @@ export let KeyActions = {
         'r': () => { togglePlay(); },
         't': () => { toggleTimings(); },
         'u': () => { toggleTorso(); },
-        'x': () => {},
     },
     'gizmo': {
         'escape': () => { sendClientMessage('deactivateMode', { mode: "gizmo"}); },
@@ -96,6 +95,12 @@ export let KeyActions = {
         'f': () => { sendClientMessage('toggleMode', { mode: "focus" }); },
         'h': () => { toggleHelp("objHelp"); },
         'r': () => {sendClientMessage('toggleMode', { mode: "gizmo" })},
+        'x': () => {
+            sendClientMessage('sendCursorKey', {
+                justPressed: { x: true },
+                pressed: Pressed,
+            });
+        },
         'escape': () => { sendClientMessage('deactivateMode', { mode: "object" }); },
     },
     'cameraHUD': {
@@ -149,7 +154,10 @@ export let MouseActions = {
                     event.stopPropagation();
                     return;
                 }
-                sendClientMessage('sendCursorKey', { justPressed: { MouseLeft: true } });
+                sendClientMessage('sendCursorKey', {
+                    justPressed: { MouseLeft: true },
+                    pressed: Pressed,
+                });
             }
         },
         middleClick: (event) => {
@@ -238,95 +246,6 @@ export const EventActions = {
             setTimeout(function() { CursorPosDelay = false; }, CursorUpdateRate);
         }
     },
-    // mousedown: (event) => {
-    //     MouseDown = true;
-    //     switch(event.button) {
-    //         case 0: // Left Click
-    //             LeftClickActive = true;
-    //             break;
-    //     }
-    //     if (isVisible('devTreeHUD')) {
-    //     } else if (isVisible('animHUD')) {
-    //         switch(event.button) {
-    //             case 0: // Left Click
-    //                 if (event.target.id == "activeAnimDict" || event.target.id == "activeAnimName") {
-    //                     if (event.target.innerHTML != "") {
-    //                         clipboardCopy(event.target.innerHTML);
-    //                     }
-    //                 }
-    //                 break;
-    //             case 1: // Middle Click
-    //                 if (MCP) {
-    //                     sendClientMessage('deactivateMCP', {});
-    //                     toggleMCP(false);
-    //                     break;
-    //                 }
-    //                 QuickPress.MiddleMouse.active = true;
-    //                 setTimeout(function() { QuickPress.MiddleMouse.active = false; }, QuickPress.Timeout);
-    //                 sendClientMessage('activateMCP', { mode: "animation" });
-    //                 toggleMCP(true);
-    //                 break;
-    //         }
-    //     } else if (isVisible('objectHUD')) {
-    //         if (GizmoActive) {
-    //             switch(event.button) {
-    //                 case 1: // Middle Click
-    //                     QuickPress.MiddleMouse.active = true;
-    //                     setTimeout(function() { QuickPress.MiddleMouse.active = false; }, QuickPress.Timeout);
-    //                     // if (GizmoActivePassthrough) {
-    //                     //     // sendClientMessage('deactivateMCP', {});
-    //                     //     GizmoActivePassthrough = false
-    //                     // } else {
-    //                     //     sendClientMessage('activateMCP', { mode: "gizmo" });
-    //                     //     GizmoActivePassthrough = true
-    //                     // }
-    //                     sendClientMessage('activateMCP', { mode: "gizmo" });
-    //                     toggleMCP(true);
-    //                     break;
-    //             }
-    //         } else {
-    //             switch(event.button) {
-    //                 case 0: // Left Click
-    //                     // Modify this for objectHUD
-    //                     if (event.target.id == "activeAnimDict" || event.target.id == "activeAnimName") {
-    //                         if (event.target.innerHTML != "") {
-    //                             clipboardCopy(event.target.innerHTML);
-    //                         }
-    //                     }
-    //                     if (!MCP) {
-    //                         // Get the target element that was clicked, and check if we should block the event
-    //                         const target = event.target;
-    //                         const isInterruptingElement = target.classList.contains('entryLabel') ||
-    //                             target.classList.contains('entryField') ||
-    //                             target.classList.contains('control') ||
-    //                             target.closest('.entryLabel') ||
-    //                             target.closest('.entryField') ||
-    //                             target.closest('.control');
-    //
-    //                         // Stop further processing if the clicked element matches any target class
-    //                         if (isInterruptingElement) {
-    //                             // console.log("Clicked on a HUD element, skipping game logic.");
-    //                             event.stopPropagation(); // Prevent event from bubbling up further if necessary
-    //                             return; // Short-circuit the game logic
-    //                         }
-    //                         sendClientMessage('sendCursorKey', { justPressed: { MouseLeft: true, } });
-    //                     }
-    //                     break;
-    //                 case 1: // Middle Click
-    //                     if (MCP) {
-    //                         sendClientMessage('deactivateMCP', {});
-    //                         toggleMCP(true);
-    //                         break;
-    //                     }
-    //                     QuickPress.MiddleMouse.active = true;
-    //                     setTimeout(function() { QuickPress.MiddleMouse.active = false; }, QuickPress.Timeout);
-    //                     sendClientMessage('activateMCP', { mode: "object" });
-    //                     toggleMCP(true);
-    //                     break;
-    //             }
-    //         }
-    //     }
-    // },
     mousedown: (event) => {
         MouseDown = true;
         const currentHUD = getCurrentHUD(); // Assume this function gets the currently active HUD
@@ -529,7 +448,7 @@ window.onload = function() {
 
 function handleKeyPress(rawKey, hud) {
     if (!hud) { return; }
-    console.log("handleKey", rawKey, hud);
+    // console.log("handleKey", rawKey, hud);
     const lowercaseKey = rawKey.toLowerCase();
     const key = KeyTranslateMap[lowercaseKey] || lowercaseKey;
 
