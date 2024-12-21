@@ -172,7 +172,7 @@ end
 local SelectModeTick = function()
     local hit, obj, pos = nil, nil, nil
     if SelectMode == "Cursor" then
-        hit, obj = RaycastCursor(MouseX, MouseY, Distance)
+        hit, obj, pos = RaycastCursor(MouseX, MouseY, Distance)
     elseif SelectMode == "Crosshair" then
         hit, obj, pos = RaycastXhair(Distance, PPID)
     else
@@ -584,15 +584,27 @@ local ControlCheckCursor = function(pressed, justPressed)
     if SelectMode ~= "Cursor" then return; end
     pressed = pressed or {}
     justPressed = justPressed or {}
+    -- TODO: Update this to trigger eventMap and dispatchEvent in Mode Controller
+    -- modifiers = { shift = pressed.Shift, ctrl = pressed.Ctrl, alt = pressed.Alt, }
 
     -- Select Object (MouseLeft)
     if SelectMode == "Cursor" then
         if justPressed.MouseLeft then
-            if Hover then
-                if Hover == Select then
-                    Select = nil
-                else
-                    Select = Hover
+            if pressed.Shift and Spawn and HitCoords then
+                if not ActiveScene then ActiveScene = "default"; end
+                if not Scenes[ActiveScene] then Scenes[ActiveScene] = { objects = {}, }; end
+                local obj = da_obj.create(Spawn, HitCoords, { ground = true, })
+                log.spam("Spawned object", ActiveScene, obj, Spawn, HitCoords)
+                table.insert(Scenes[ActiveScene].objects, GetObjData(obj))
+                Select = obj
+            else
+                -- Select hovered entity
+                if Hover then
+                    if Hover == Select then
+                        Select = nil
+                    else
+                        Select = Hover
+                    end
                 end
             end
         end
@@ -606,7 +618,7 @@ local ControlCheckCursor = function(pressed, justPressed)
         if not Select and Hover then
             Select = Hover
         end
-        if pressed.alt and Hover then
+        if pressed.Alt and Hover then
             Select = Hover
         end
         if Select then
@@ -615,8 +627,15 @@ local ControlCheckCursor = function(pressed, justPressed)
     end
 
     if justPressed.x then
-        Select = nil
-        Hover = nil
+        if pressed.Shift and Select then
+            for i, obj in ipairs(Scenes[ActiveScene].objects) do
+                if obj.handle == Select then
+                    table.remove(Scenes[ActiveScene].objects, i)
+                    break
+                end
+            end
+            DeleteEntity(Select)
+        end
     end
 end
 

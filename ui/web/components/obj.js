@@ -185,7 +185,7 @@ export function getScenes() {
                 const sceneName = this.innerHTML;
                 elementSetText('selectedScene', sceneName);
                 sendClientMessage('loadSceneObjects', { scene: sceneName });
-                trackSceneObjects(sceneName);
+                trackSceneObjects();
             })
             ul.appendChild(li);
         }
@@ -198,7 +198,7 @@ export function getScenes() {
     });
 }
 
-export function trackSceneObjects(sceneName) {
+export function trackSceneObjects() {
     if (SceneObjectsLoopRunning) { return; }
     SceneObjectsLoopRunning = true;
     let el = document.getElementById("objSceneObjectsList");
@@ -206,6 +206,7 @@ export function trackSceneObjects(sceneName) {
     const loopId = setInterval(function() {
         if (isVisible(el)) {
             if (!MouseDown) {
+                let sceneName = document.getElementById('selectedScene').innerHTML;
                 sendClientMessage('getSceneObjects', {
                     scene: sceneName,
                 }).then(function(resp) {
@@ -464,7 +465,7 @@ export function toggleObjectImportExportHUD(state) {
         selectOnly('button-importexport', ['button-spawn','button-trackedobjlist', 'button-importexport']);
         document.getElementById('button-importexport').focus();
         if (document.getElementById('selectedScene').innerHTML != "") {
-            trackSceneObjects(document.getElementById('selectedScene').innerHTML);
+            trackSceneObjects();
         }
     } else {
         elementSetClass('button-importexport', 'selected', state);
