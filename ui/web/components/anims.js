@@ -1,16 +1,16 @@
 import { KeyActions } from "../script.js";
 import { sendClientMessage } from "../utils/msg.js";
 
-var Animations = {};
-var IKFlagTotals = 0;
-var FlagTotals = 0;
+let Animations = {};
+let IKFlagTotals = 0;
+let FlagTotals = 0;
 const Flags = {
     LOOP: 1,
     UPPERBODY: 8,
     SECONDARY: 16,
     TOTAL: 32,
 }
-var TaskFilter = false;
+let TaskFilter = false;
 
 export function initAnims() {
     // KeyActions['animHUD'] = {
@@ -45,17 +45,17 @@ export function initAnims() {
     });
 
     sendClientMessage('initAnimFlags', {}).then(function(resp) {
-        var flagList = document.getElementById('animFlagsOptions');
-        var ul = document.createElement('ul');
+        let flagList = document.getElementById('animFlagsOptions');
+        let ul = document.createElement('ul');
 
-        var flags = JSON.parse(resp.flags);
+        const flags = JSON.parse(resp.flags);
         flags.forEach(flag => {
-            var flagLabel = document.createElement('div');
+            let flagLabel = document.createElement('div');
             flagLabel.classList.add('check');
             flagLabel.classList.add('entryLabel');
             flagLabel.innerHTML = flag.name;
 
-            var flagField = document.createElement('div');
+            let flagField = document.createElement('div');
             flagField.setAttribute('id', "flag-" + flag.value);
             flagField.classList.add('check');
             flagField.classList.add('toggleField');
@@ -64,24 +64,24 @@ export function initAnims() {
             flagField.setAttribute('aria-pressed', "false");
             flagField.setAttribute('onclick', "toggleFlag(" + flag.value + ")");
 
-            var li = document.createElement('li');
+            let li = document.createElement('li');
             li.appendChild(flagLabel);
             li.appendChild(flagField);
             ul.appendChild(li);
         });
 
-        var flagLabel = document.createElement('div');
+        let flagLabel = document.createElement('div');
         flagLabel.classList.add('check');
         flagLabel.classList.add('entryLabel');
         flagLabel.innerHTML = "TOTAL";
 
-        var flagField = document.createElement('div');
+        let flagField = document.createElement('div');
         flagField.setAttribute('id', "flagTotals");
         flagField.classList.add('check');
         flagField.classList.add('entryField');
         flagField.innerHTML = "0";
 
-        var li = document.createElement('li');
+        let li = document.createElement('li');
         li.appendChild(flagLabel);
         li.appendChild(flagField);
         ul.appendChild(li);
@@ -89,17 +89,17 @@ export function initAnims() {
     });
 
     sendClientMessage('initIKAnimFlags', {}).then(function(resp) {
-        var flagList = document.getElementById('animIKFlagsOptions');
-        var ul = document.createElement('ul');
+        let flagList = document.getElementById('animIKFlagsOptions');
+        let ul = document.createElement('ul');
 
-        var flags = JSON.parse(resp.flags);
+        const flags = JSON.parse(resp.flags);
         flags.forEach(flag => {
-            var flagLabel = document.createElement('div');
+            let flagLabel = document.createElement('div');
             flagLabel.classList.add('check');
             flagLabel.classList.add('entryLabel');
             flagLabel.innerHTML = flag.name;
 
-            var flagField = document.createElement('div');
+            let flagField = document.createElement('div');
             flagField.setAttribute('id', "ikflag-" + flag.value);
             flagField.classList.add('check');
             flagField.classList.add('toggleField');
@@ -108,25 +108,25 @@ export function initAnims() {
             flagField.setAttribute('aria-pressed', "false");
             flagField.setAttribute('onclick', "toggleIKFlag(" + flag.value + ")");
 
-            var li = document.createElement('li');
+            let li = document.createElement('li');
             li.appendChild(flagLabel);
             li.appendChild(flagField);
             ul.appendChild(li);
         });
 
 
-        var flagLabel = document.createElement('div');
+        let flagLabel = document.createElement('div');
         flagLabel.classList.add('check');
         flagLabel.classList.add('entryLabel');
         flagLabel.innerHTML = "TOTAL";
 
-        var flagField = document.createElement('div');
+        let flagField = document.createElement('div');
         flagField.setAttribute('id', "IKFlagTotals");
         flagField.classList.add('check');
         flagField.classList.add('entryField');
         flagField.innerHTML = "0";
 
-        var li = document.createElement('li');
+        let li = document.createElement('li');
         li.appendChild(flagLabel);
         li.appendChild(flagField);
         ul.appendChild(li);
@@ -134,17 +134,17 @@ export function initAnims() {
     });
 
     sendClientMessage('initTaskFilters', {}).then(function(resp) {
-        var taskList = document.getElementById('animTaskFilterOptions');
-        var ul = document.createElement('ul');
+        let taskList = document.getElementById('animTaskFilterOptions');
+        let ul = document.createElement('ul');
 
-        var taskFilters = JSON.parse(resp.taskFilters);
+        const taskFilters = JSON.parse(resp.taskFilters);
         taskFilters.forEach((taskFilter, index) => {
-            var taskLabel = document.createElement('div');
+            let taskLabel = document.createElement('div');
             taskLabel.classList.add('check');
             taskLabel.classList.add('entryLabel');
             taskLabel.innerHTML = taskFilter;
 
-            var taskField = document.createElement('div');
+            let taskField = document.createElement('div');
             taskField.setAttribute('id', "task-" + index);
             taskField.classList.add('check');
             taskField.classList.add('toggleField');
@@ -154,7 +154,7 @@ export function initAnims() {
             taskField.setAttribute('aria-pressed', "false");
             taskField.onclick = function() { toggleTaskFilter(index, taskFilter); };
 
-            var li = document.createElement('li');
+            let li = document.createElement('li');
             li.appendChild(taskLabel);
             li.appendChild(taskField);
             ul.appendChild(li);
@@ -165,8 +165,8 @@ export function initAnims() {
     $("div#valueAnimSearch.entryField").keydown(function(e) {
         if (e.code == "Enter") {
             e.preventDefault();
-            var dictList = document.getElementById("animDictList");
-            var animList = document.getElementById("animList");
+            let dictList = document.getElementById("animDictList");
+            let animList = document.getElementById("animList");
             document.getElementById('animDictList').style.display = "flex";
             document.getElementById('animList').style.display = "flex";
             dictList.innerHTML = "";
@@ -182,8 +182,8 @@ export function initAnims() {
 }
 
 function toggleTaskFilter(taskFilterIndex, taskFilter) {
-    var el = document.getElementById("task-" + taskFilterIndex);
-    var selected = el.classList.contains("selected");
+    let el = document.getElementById("task-" + taskFilterIndex);
+    let selected = el.classList.contains("selected");
 
     const allTaskFilters = document.querySelectorAll('.taskFilter');
     allTaskFilters.forEach(filter => filter.classList.remove('selected'));
@@ -197,9 +197,9 @@ function toggleTaskFilter(taskFilterIndex, taskFilter) {
 }
 
 function searchRedMAnims(searchValue) {
-    var el = document.getElementById("animDictList");
-    var maxResults = 10000;
-    var results = [];
+    let el = document.getElementById("animDictList");
+    const maxResults = 10000;
+    let results = [];
 
     el.innerHTML = "";
     if (!searchValue || searchValue == "") { return; }
@@ -229,9 +229,9 @@ function searchRedMAnims(searchValue) {
         return 0;
     });
 
-    var ul = document.createElement('ul');
-    for (var i=0; i < results.length && i < maxResults; ++i) {
-        var li = document.createElement('li');
+    let ul = document.createElement('ul');
+    for (let i=0; i < results.length && i < maxResults; ++i) {
+        let li = document.createElement('li');
         li.addEventListener('click', function() {
             document.getElementById("activeAnimDict").innerHTML = this.innerHTML;
             document.getElementById("activeAnimName").innerHTML = "";
@@ -252,7 +252,7 @@ function searchRedMAnims(searchValue) {
 }
 
 function searchAnims(animDict) {
-    var results = [];
+    let results = [];
     Object.values(Animations[animDict]).forEach(anim => {
         results.push({
             anim: anim,
@@ -266,11 +266,11 @@ function searchAnims(animDict) {
         return 0;
     });
 
-    var animResults = document.getElementById("animList");
+    let animResults = document.getElementById("animList");
     animResults.innerHTML = "";
-    var ul = document.createElement('ul');
-    for (var i=0; i < results.length; ++i) {
-        var li = document.createElement('li');
+    let ul = document.createElement('ul');
+    for (let i=0; i < results.length; ++i) {
+        let li = document.createElement('li');
         li.innerHTML = results[i].anim;
         li.addEventListener('click', function() {
             document.getElementById("activeAnimName").innerHTML = this.innerHTML;
@@ -290,14 +290,14 @@ function searchAnims(animDict) {
 }
 
 export function playAnimation() {
-    var animDict = document.getElementById("activeAnimDict").innerHTML;
-    var anim = document.getElementById("activeAnimName").innerHTML;
+    const animDict = document.getElementById("activeAnimDict").innerHTML;
+    const anim = document.getElementById("activeAnimName").innerHTML;
     if (anim == "" || animDict == "") { return; }
-    var entity = document.getElementById("animEntityField").innerHTML;
-    var blendIn = document.getElementById("timingBlendIn").innerHTML;
-    var blendOut = document.getElementById("timingBlendOut").innerHTML;
-    var playback = document.getElementById("timingPlayback").innerHTML;
-    var duration = document.getElementById("timingDuration").innerHTML;
+    const entity = document.getElementById("animEntityField").innerHTML;
+    const blendIn = document.getElementById("timingBlendIn").innerHTML;
+    const blendOut = document.getElementById("timingBlendOut").innerHTML;
+    const playback = document.getElementById("timingPlayback").innerHTML;
+    const duration = document.getElementById("timingDuration").innerHTML;
     sendClientMessage('playAnim', {
         entity: entity,
         animDict: animDict,
@@ -316,7 +316,7 @@ export function toggleFlag(flag) {
     let flagTotals = 0;
     elementSetClass(`flag-${flag}`, "selected")
 
-    for (var i=0; i < Flags.TOTAL; i++) {
+    for (let i=0; i < Flags.TOTAL; i++) {
         let value = toUint32(1 << i);
         if (isSelected(`flag-${value}`)) {
             flagTotals += value;
@@ -345,11 +345,11 @@ function updateSpecialFlagSelections(flag) {
 }
 
 export function toggleIKFlag(flag) {
-    var el = document.getElementById("ikflag-" + flag);
+    let el = document.getElementById("ikflag-" + flag);
     el.classList.toggle("selected");
 
     IKFlagTotals = 0;
-    for (var i=0; i < 31 ; i++) {
+    for (let i=0; i < 31 ; i++) {
         let v = toUint32(1 << i);
         if (document.getElementById("ikflag-" + v).classList.contains("selected")) {
             IKFlagTotals += v;

@@ -94,21 +94,44 @@ body {
     color: var(--secondary);
 }
 
+.hover {
+    color: var(--highlight);
+}
+
 :hover {
     color: var(--highlight);
 }
 
-:focus {
+.listGroup li:hover {
     color: var(--highlight);
+    text-shadow:
+        0 0 8px #444,
+        0 0 10px #777,
+        0 0 14px;
+}
+
+:focus {
     outline: none;
+    text-shadow:
+        0 0 4px var(--highlight),
+        0 0 5px var(--highlight),
+        0 0 7px var(--highlight),
+        0 0 10px var(--highlight);
 }
 
 .selected:focus {
     text-shadow:
-        0 0 4px,
-        0 0 5px,
-        0 0 7px,
-        0 0 10px;
+        0 0 4px var(--highlight),
+        0 0 5px var(--highlight),
+        0 0 7px var(--highlight),
+        0 0 10px var(--highlight);
+}
+
+.entryField:focus {
+    text-shadow:
+        0 0 8px #444,
+        0 0 10px #777,
+        0 0 14px;
 }
 
 .hidden {

@@ -67,15 +67,15 @@
                         <ul>
                             <li>
                                 <div class="entryLabel">Entity</div>
-                                <div id="objDetailsEntityHandle" class="entryField" contenteditable="true" tabindex="3"></div>
+                                <div id="objDetailsEntityHandle" class="entryField" contenteditable="false"></div>
                             </li>
                             <li>
                                 <div class="entryLabel">Model</div>
-                                <div id="objDetailsEntityModelName" class="entryField" contenteditable="true" tabindex="3"></div>
+                                <div id="objDetailsEntityModelName" class="entryField" contenteditable="false"></div>
                             </li>
                             <li>
                                 <div class="entryLabel">NetId</div>
-                                <div id="objDetailsEntityNetworkId" class="entryField" contenteditable="true" tabindex="3"></div>
+                                <div id="objDetailsEntityNetworkId" class="entryField" contenteditable="false"></div>
                             </li>
                         </ul>
                     </div>
@@ -91,27 +91,27 @@
                         <ul>
                             <li>
                                 <div class="entryLabel">X</div>
-                                <div id="objDetailsEntityPosX" class="entryField" contenteditable="true" tabindex="3">0</div>
+                                <div id="objDetailsEntityPosX" class="entryField" contenteditable="true" tabindex="60">0</div>
                             </li>
                             <li>
                                 <div class="entryLabel">Y</div>
-                                <div id="objDetailsEntityPosY" class="entryField" contenteditable="true" tabindex="3">0</div>
+                                <div id="objDetailsEntityPosY" class="entryField" contenteditable="true" tabindex="61">0</div>
                             </li>
                             <li>
                                 <div class="entryLabel">Z</div>
-                                <div id="objDetailsEntityPosZ" class="entryField" contenteditable="true" tabindex="3">0</div>
+                                <div id="objDetailsEntityPosZ" class="entryField" contenteditable="true" tabindex="62">0</div>
                             </li>
                             <li>
                                 <div class="entryLabel">Pitch</div>
-                                <div id="objDetailsEntityRotPitch" class="entryField" contenteditable="true" tabindex="3">0</div>
+                                <div id="objDetailsEntityRotPitch" class="entryField" contenteditable="true" tabindex="63">0</div>
                             </li>
                             <li>
                                 <div class="entryLabel">Roll</div>
-                                <div id="objDetailsEntityRotRoll" class="entryField" contenteditable="true" tabindex="3">0</div>
+                                <div id="objDetailsEntityRotRoll" class="entryField" contenteditable="true" tabindex="64">0</div>
                             </li>
                             <li>
                                 <div class="entryLabel">Yaw</div>
-                                <div id="objDetailsEntityRotYaw" class="entryField" contenteditable="true" tabindex="3">0</div>
+                                <div id="objDetailsEntityRotYaw" class="entryField" contenteditable="true" tabindex="65">0</div>
                             </li>
                         </ul>
                     </div>
@@ -119,57 +119,41 @@
                         <ul>
                             <li>
                                 <div class="entryLabel">Frozen</div>
-                                <div id="objDetailsEntityFrozen" class="check toggleField" contenteditable="true" tabindex="3"></div>
+                                <div id="objDetailsEntityFrozen" class="check toggleField" contenteditable="true" tabindex="66"></div>
                             </li>
                             <li>
                                 <div class="entryLabel">Collision</div>
-                                <div id="objDetailsEntityCollision" class="check toggleField" contenteditable="true" tabindex="3"></div>
+                                <div id="objDetailsEntityCollision" class="check toggleField" contenteditable="true" tabindex="67"></div>
                             </li>
                         </ul>
                     </div>
-                    <!-- <div id="objData" class="listTop"> -->
-                    <!-- </div> -->
                 </div>
-                <!-- <div id="selectedNearbyOriginDisplay" class="optList dev"> -->
-                <!--     <ul id="selectedNearbyOrigin"> -->
-                <!--         <li> -->
-                <!--             <div class="entryLabel">origin</div> -->
-                <!--             <div id="activeNearbyOrigin" class="entryField">camera</div> -->
-                <!--         </li> -->
-                <!--     </ul> -->
-                <!-- </div> -->
-                <div id="sceneSelected" class="optList dev">
-                    <ul id="sceneSelectedOptions">
-                        <li>
-                            <div class="entryLabel">scene</div>
-                            <div id="selectedScene" class="entryField"></div>
-                        </li>
-                    </ul>
-                </div>
-                <div id="objLeftColumn" class="dev listGroup">
-                    <div id="objSearchField" class="row dev listEntryField">
+                <div id="objSpawnLeftColumn" class="dev listGroup">
+                    <div id="selectedObjectDetails" class="row listEntryField">
+                        <div class="entryLabel">+</div>
+                        <div id="activeObject" class="entryField"></div>
+                    </div>
+                    <div id="objSearchField" class="row listEntryField">
                         <div class="entryLabel" style="width:auto;"></div>
                         <div id="objSearch" class="entryField" tabindex="2" contenteditable="true"></div>
-                    </div>
-                    <div id="selectedObjectDetails" class="row dev listEntryField">
-                        <div class="entryLabel">spawn</div>
-                        <div id="activeObject" class="entryField"></div>
                     </div>
                     <div id="objSpawnOptions" class="inlineControlGroup controlGroup dev">
                         <ul class="row">
                             <li>
-                                <div id="button-spawnfavs" class="control" tabindex="13" role="button" aria-pressed="false" >󰓎</div>
-                                <div id="button-spawnobjects" class="control selected" tabindex="14" role="button" aria-pressed="false" ></div>
-                                <div id="button-spawnpeds" class="control" tabindex="15" role="button" aria-pressed="false" ></div>
-                                <div id="button-spawnvehicles" class="control" tabindex="16" role="button" aria-pressed="false" >󱢑</div>
-                                <div id="button-spawnpropsets" class="control" tabindex="17" role="button" aria-pressed="false" ></div>
-                                <div id="button-spawnpickups" class="control" tabindex="18" role="button" aria-pressed="false" ></div>
-                                <div id="button-spawnother" class="control" tabindex="19" role="button" aria-pressed="false" >󱝤</div>
+                                <div id="button-spawnfavs" class="control" tabindex="3" role="button" aria-pressed="false" >󰓎</div>
+                                <div id="button-spawnobjects" class="control selected" tabindex="4" role="button" aria-pressed="false" ></div>
+                                <div id="button-spawnpeds" class="control" tabindex="5" role="button" aria-pressed="false" ></div>
+                                <div id="button-spawnvehicles" class="control" tabindex="6" role="button" aria-pressed="false" >󱢑</div>
+                                <div id="button-spawnpropsets" class="control" tabindex="7" role="button" aria-pressed="false" ></div>
+                                <div id="button-spawnpickups" class="control" tabindex="8" role="button" aria-pressed="false" ></div>
+                                <div id="button-spawnother" class="control" tabindex="9" role="button" aria-pressed="false" >󱝤</div>
                             </li>
                         </ul>
                     </div>
-                    <div id="objData" class="listTop">
+                    <div id="objSpawnList" class="listElement" tabindex="10">
                     </div>
+                </div>
+                <div id="objNearbyLeftColumn" class="dev listGroup">
                     <div id="objNearbyOrigin" class="inlineControlGroup controlGroup dev">
                         <ul class="row">
                             <li>
@@ -201,9 +185,22 @@
                         <div class="entryLabel">range</div>
                         <div id="nearbyRange" class="entryField" tabindex="40" contenteditable="true">50</div>
                     </div>
-                    <div id="objNearbyResults" class="listTop">
+                    <div id="objNearbyResults" class="listElement">
                     </div>
-                    <div id="objScenesList" class="listTop" style="min-height: 1.3vh; max-height: 9.1vh;">
+                </div>
+                <div id="objScenesLeftColumn" class="dev listGroup">
+                    <div id="objSceneControlOptions" class="inlineControlGroup controlGroup dev">
+                        <ul class="row">
+                            <li>
+                                <div id="button-savescene" class="control" tabindex="100" role="button" aria-pressed="false" >󰆓</div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div id="objScenesList" class="listElement" style="min-height: 1.3vh; max-height: 9.1vh;">
+                    </div>
+                    <div id="sceneSelected" class="row listEntryField">
+                        <div class="entryLabel">scene</div>
+                        <div id="selectedScene" class="entryField"></div>
                     </div>
                     <div id="objSceneTagOptions" class="inlineControlGroup controlGroup dev">
                         <ul class="row">
@@ -213,11 +210,11 @@
                             </li>
                         </ul>
                     </div>
-                    <div id="objSceneObjectsList" class="listTop">
+                    <div id="objSceneObjectsList" class="listElement">
                     </div>
                 </div>
                 <div id="sceneData" class="dev listGroup">
-                    <div id="sceneResultsOne" class="listTop">
+                    <div id="sceneResultsOne" class="listElement">
                     </div>
                 </div>
             </section>

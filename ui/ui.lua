@@ -25,6 +25,7 @@ da_ui.callbacks({
 da_ui.events({
     ["activateMode"] = function(data) da_mode.activate(data.mode) end,
     ["deactivateMode"] = function(data) da_mode.deactivate(data.mode) end,
+    ["toggleMode"] = function(data) da_mode.toggle(data.mode) end,
     ["setObjSettings"] = function(data)
         if data.nearby then kvp.rawset("setting:ui:nearby", data.nearby) end
         if data.tags then kvp.rawset("setting:ui:tags", data.tags) end
@@ -163,6 +164,22 @@ RegisterCommand("dadev_setting_remove", function(source, args, rawCommand)
     local key = "setting:"..args[1]
     if kvp.decode(key) == nil then
         log.error("Setting '" .. key .. "' already clear")
+        return
+    end
+
+    kvp.delete(key)
+    log.info("Cleared setting "..key)
+end, false)
+
+RegisterCommand("dadev_scenes_remove", function(source, args, rawCommand)
+    if not args[1] then
+        log.info("Usage: Remove scenes stored under key 'scenes:<name>'\n\t/dadev_scenes_remove <scene>")
+        return
+    end
+
+    local key = "scene:"..args[1]
+    if kvp.decode(key) == nil then
+        log.error("Scene '" .. key .. "' does not exist")
         return
     end
 
