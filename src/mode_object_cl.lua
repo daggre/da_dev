@@ -14,10 +14,10 @@ local UntrackedModels = { [0] = true, }
 local Spawn = nil
 local HitCoords = nil
 local NearbyOriginPos = nil
+local ActiveScene = "default"
 local Scenes = {
-    untracked = { objects = {}, },
+    default = { name = ActiveScene, objects = {} },
 }
-local ActiveScene = "untracked"
 
 local UID = 0
 local _getUID = function()
@@ -36,7 +36,7 @@ end
 
 local GetObjData = function(entityHandle)
     local objData = {}
-    if entityHandle == nil then return objData; end
+    if entityHandle == nil then return nil; end
     -- if not DoesEntityExist(entityHandle) then return objData; end
 
     local networkID = NetworkGetEntityIsNetworked(entityHandle) and NetworkGetNetworkIdFromEntity(entityHandle) or false
@@ -51,16 +51,85 @@ local GetObjData = function(entityHandle)
     objData.modelHash = modelHash
     objData.networkID = networkID ~= false and networkID or "-"
     objData.modelName = modelName
-    objData.coords_x = string.format("%.2f", x)
-    objData.coords_y = string.format("%.2f", y)
-    objData.coords_z = string.format("%.2f", z)
-    objData.rotation_pitch = string.format("%.2f", pitch)
-    objData.rotation_roll = string.format("%.2f", roll)
-    objData.rotation_yaw = string.format("%.2f", yaw)
+    objData.coords_x = tonumber(string.format("%.2f", x))
+    objData.coords_y = tonumber(string.format("%.2f", y))
+    objData.coords_z = tonumber(string.format("%.2f", z))
+    objData.rotation_pitch = tonumber(string.format("%.2f", pitch))
+    objData.rotation_roll = tonumber(string.format("%.2f", roll))
+    objData.rotation_yaw = tonumber(string.format("%.2f", yaw))
     objData.frozen = frozen
     objData.collision = collision
 
+
+    if entityHandle == Hover then
+        objData.hover = true
+    elseif entityHandle == Select then
+        objData.select = true
+    end
+
     return objData
+end
+
+local function LoadSceneObjects(sceneName)
+    local successfulLoad = true
+    if Scenes[sceneName] == nil then
+        log.error("Scene not found", sceneName)
+        return false
+    end
+    if Scenes[sceneName].loaded then
+        log.debug("Scene already loaded", sceneName)
+        return false
+    end
+    for _, obj in ipairs(Scenes[sceneName].objects) do
+        local handle = da_obj.create(obj.modelHash, vector3(obj.coords_x, obj.coords_y, obj.coords_z), obj.data)
+        obj.handle = handle
+        if handle then
+            SetEntityRotation(handle, obj.rotation_pitch, obj.rotation_roll, obj.rotation_yaw)
+        else
+            log.error("Failed to create object", obj.modelHash, obj.pos)
+            successfulLoad = false
+        end
+    end
+    if successfulLoad then Scenes[sceneName].loaded = true end
+    return successfulLoad
+end
+
+local function GetSceneObjectsData(sceneName)
+    log.spam("Getting scene objects data", sceneName)
+    if not Scenes[sceneName] then
+        log.error("Scene not found", sceneName)
+        return false
+    end
+    ActiveScene = sceneName
+    local sceneObjects = {}
+    local coords = GetEntityCoords(PlayerPedId())
+    local warn = 0
+    for _, obj in ipairs(Scenes[sceneName].objects) do
+        local objData = GetObjData(obj.handle)
+        if objData then
+            local objCoords = vector3(objData.coords_x, objData.coords_y, objData.coords_z)
+            objData.distance = #(coords - objCoords)
+            table.insert(sceneObjects, objData)
+        else
+            warn = warn + 1
+        end
+    end
+    if warn > 0 then
+        log.warn("Failed to get data for " .. warn .. " objects")
+    end
+    return { objects = sceneObjects }
+end
+
+local function SaveScene(sceneName)
+    local storedScene = { name = sceneName, objects = {}, }
+    for _, obj in ipairs(Scenes[sceneName].objects) do
+        local objData = GetObjData(obj.handle)
+        objData.handle = nil
+        objData.networkID = nil
+        objData.modelName = nil
+        table.insert(storedScene.objects, objData)
+    end
+    kvp.encode("scenes:"..sceneName, storedScene)
 end
 
 local RaycastXhair = function(dist, objIgnore)
@@ -127,11 +196,13 @@ local SelectModeTick = function()
         end
     end
 
-    DrawBB(Select, {r=0, g=218, b=175, a=255}) -- Green
-    DrawBB(Hover, Hover ~= Select and
-        {r=80, g=193, b=238, a=255} or -- Blue
-        {r=255, g=255, b=255, a=255} -- White (Hovered and Selected)
-    )
+    -- DrawBB(Select, {r=0, g=218, b=175, a=255}) -- Green
+    -- DrawBB(Hover, Hover ~= Select and
+    --     {r=80, g=193, b=238, a=255} or -- Blue
+    --     {r=255, g=255, b=255, a=255} -- White (Hovered and Selected)
+    -- )
+    DrawBB(Select, {r=80, g=193, b=238, a=255}) -- Blue
+    DrawBB(Hover, {r=255, g=255, b=255, a=255}) -- White
     lazy(30).uiUpdate(Select, Hover, GetObjData(Select))
 end
 
@@ -249,11 +320,11 @@ da_mode.register({
             modifiers = { shift = true, },
             fn = function()
                 if not Spawn or not HitCoords then return; end
+                if not ActiveScene then ActiveScene = "default"; end
+                if not Scenes[ActiveScene] then Scenes[ActiveScene] = { objects = {}, }; end
                 local obj = da_obj.create(Spawn, HitCoords, { ground = true, })
-                table.insert(Scenes[ActiveScene].objects, {
-                    model = Spawn,
-                    handle = obj,
-                })
+                log.spam("Spawned object", ActiveScene, obj, Spawn, HitCoords)
+                table.insert(Scenes[ActiveScene].objects, GetObjData(obj))
                 Select = obj
             end
         },
@@ -309,7 +380,14 @@ da_mode.register({
             fn = function()
                 log.debug("Deleting entity", Select)
                 if not Select then return; end
+                for i, obj in ipairs(Scenes[ActiveScene].objects) do
+                    if obj.handle == Select then
+                        table.remove(Scenes[ActiveScene].objects, i)
+                        break
+                    end
+                end
                 DeleteEntity(Select)
+                Select = nil
             end,
         },
         {
@@ -542,23 +620,30 @@ local ControlCheckCursor = function(pressed, justPressed)
     end
 end
 
-local testsceneobjects = {
-    { model = "prop_test1", pos = vec3(1, 2, 3), rot = vec3(4, 5, 6), },
-    { model = "prop_test1", pos = vec3(1, 1, 1), rot = vec3(1, 1, 1), },
-    { model = "prop_test2", pos = vec3(1, 2, 3), rot = vec3(4, 5, 6), },
-    { model = "prop_test2", pos = vec3(100, 0, 0), rot = vec3(0, 0, 0), },
-    { model = "prop_test3", pos = vec3(0, 0, 0), rot = vec3(0, 0, 0), },
-}
-kvp.encode("scenes:test_1", { name = "test_1", objects = testsceneobjects })
-kvp.encode("scenes:test_2", { name = "test_2", objects = testsceneobjects })
-kvp.encode("scenes:test_3", { name = "test_3", objects = testsceneobjects })
-kvp.encode("scenes:test_4", { name = "test_4", objects = testsceneobjects })
+-- local testSceneObjects = {
+--     {
+--         model = `s_wap_rainsfalls`,
+--         coords_x = -2816.43,
+--         coords_y = -697.29,
+--         coords_z = 268.31,
+--         rotation_pitch = -10.56,
+--         rotation_roll = -4.85,
+--         rotation_yaw = -0.45,
+--         frozen = true,
+--         collision = true,
+--     },
+-- }
+-- kvp.encode("scenes:test_1", { name = "test_1", objects = testSceneObjects })
 
 da_ui.callbacks({
     nearbyObjects = function(data) return {nearbyObjects = GetNearbyObjects(data.range, data.origin)} end,
     scenesList = function()
-        local sceneNames = kvp.search("scenes:")
         local scenes = {}
+        for _, scene in pairs(Scenes) do
+            table.insert(scenes, scene)
+        end
+
+        local sceneNames = kvp.search("scenes:")
         for _, scene in ipairs(sceneNames) do
             local sceneName = scene:sub(8)
             local s = kvp.decode(scene)
@@ -567,21 +652,8 @@ da_ui.callbacks({
         end
         return { scenes = scenes }
     end,
-    sceneObjects = function(data)
-        local coords = GetEntityCoords(PlayerPedId())
-        local sceneName = data.scene
-        local sceneObjects = {}
-        for _, obj in ipairs(Scenes[sceneName].objects) do
-            local handle = da_obj.create(obj.model, obj.pos, obj.data)
-            SetEntityRotation(handle, obj.rot.x, obj.rot.y, obj.rot.z)
-
-            -- TODO: clean this up
-            local objData = GetObjData(handle)
-            objData.distance = #(coords - obj.pos)
-            table.insert(sceneObjects, objData)
-        end
-        return { objects = sceneObjects }
-    end,
+    loadSceneObjects = function(data) return LoadSceneObjects(data.scene) end,
+    getSceneObjects = function(data) return GetSceneObjectsData(data.scene) end,
 })
 da_ui.events({
     sendCursorKey = function(data) ControlCheckCursor(data.pressed, data.justPressed) end,
@@ -589,6 +661,27 @@ da_ui.events({
     selectSpawnObject = function(data) Spawn = GetHashKey(data.name) end,
     trackObject = TrackObject,
     setNearbyOriginPos = SetNearbyOriginPos,
+    saveScene = function(data)
+        if data.scene ~= ActiveScene then
+            log.error("Scene name mismatch", data.scene, ActiveScene)
+            return false
+        end
+        SaveScene(data.scene)
+    end,
+})
+da_net.events({
+    onResourceStop = function(resourceName)
+        if resourceName == GetCurrentResourceName() then
+            for sceneName, scene in pairs(Scenes) do
+                if scene.loaded then
+                    log.debug("Cleaning up loaded scene: "..sceneName.."...")
+                    for _, obj in ipairs(scene.objects) do
+                        DeleteEntity(obj.handle)
+                    end
+                end
+            end
+        end
+    end,
 })
 
 -- UI Tree

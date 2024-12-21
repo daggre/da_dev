@@ -133,3 +133,14 @@ function updateElementVisibility(el, isVisible) {
         if (!el.classList.contains("hidden")) el.classList.add("hidden");
     }
 }
+
+export function resetList(elOrId) {
+    const el = typeof elOrId === 'string' ? document.getElementById(elOrId) : elOrId;
+    if (!el) {
+        console.error(`Element not found: ${elOrId}`);
+        return false; // Return false if the element is not found
+    }
+    el.innerHTML = '';
+    el.scrollTop = 0;
+    el.scrollLeft = 0;
+}

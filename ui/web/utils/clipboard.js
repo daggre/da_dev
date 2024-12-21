@@ -1,5 +1,5 @@
 export function clipboardCopy(val) {
-    var $temp = $("<input>");
+    let $temp = $("<input>");
     $("#copyField").append($temp);
     $temp.val(val).select();
     console.log(val)

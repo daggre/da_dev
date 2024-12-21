@@ -10,6 +10,7 @@
     --style-aux: #00daaf; /* green */
     --style-pur: #bb73eb; /* purple */
     --style-bg: rgba(4, 16, 29, 0.669);
+    --style-bg-t: rgba(4, 16, 29, 0.1);
     --aux: #ddd; /* white */
 }
 
@@ -153,11 +154,9 @@
     left: 2vh;
     top: 1vh;
     width: 34vw;
-    max-height: 70vh;
     padding: 0px;
     flex-direction: column;
     background: none;
-    /*display: none;*/
 }
 
 .listGroupRight {
@@ -183,7 +182,7 @@
     /*overflow-x: hidden;*/
     /*display: none;*/
     border-radius: 8px;
-    background: var(--style-bg);
+    margin-bottom: 3px;
 }
 
 .listTop {
@@ -195,25 +194,25 @@
     flex: 1 1.5 auto;
 }
 
-.listGroup li {
-    /*color: var(--style-color);*/
+.listElement {
+    flex: 1 1.2 auto;
+    min-height: 30vh;
+    max-height: 70vh;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow-x: hidden;
+    overflow-y: auto;
+    border-radius: 8px;
+    /*background: var(--style-bg);*/
+    background: linear-gradient(to right, var(--style-bg), var(--style-bg-t));
+}
+
+.listElement li {
     text-shadow: none;
     /*overflow-y: hidden;*/
     /* overflow: hidden; */
-    /* white-space: nowrap; */
-    /* text-overflow: ellipsis; */
-}
-
-/*.listGroup li:hover {*/
-/*    color: var(--aux);*/
-/*    text-shadow:*/
-/*        0 0 8px #444,*/
-/*        0 0 10px #777,*/
-/*        0 0 14px;*/
-/*}*/
-
-.listGroup > div {
-    margin-bottom: 3px;
+     white-space: nowrap;
+     text-overflow: ellipsis;
 }
 
 .entryList {
@@ -262,7 +261,7 @@
     float: right;
 }
 
-#activeAnimDisplay, #sceneSelected {
+#activeAnimDisplay {
     left: 50vw;
     top: 1vh;
     width: fit-content;
@@ -296,6 +295,7 @@
     border-top-right-radius: 8px;
     border-bottom-right-radius: 8px;
     /*border-left: 1px solid var(--style-color);*/
+    border: none;
     background: var(--style-color);
 }
 

@@ -15,6 +15,7 @@ import {
     initializeObjectHUD,
     searchSpawnObject,
     getTrackedObjects,
+    // updateSceneObjects,
     toggleNearbyFilter,
     tagSelectSort,
     selectSpawnType,
@@ -36,18 +37,18 @@ import {
 } from "./components/anims.js";
 
 const CursorUpdateRate = 30;
-var MCP = false;
-var GizmoActive = false;
-var KeyPressRepeat = false;
-var LeftClickActive = false;
-var CursorPosDelay = false;
+let MCP = false;
+let GizmoActive = false;
+let KeyPressRepeat = false;
+let LeftClickActive = false;
+let CursorPosDelay = false;
 const ResolutionX = window.screen.width;
 const ResolutionY = window.screen.height;
-export var MouseDown = false;
+export let MouseDown = false;
 
-var Pressed = {}
-var JustPressed = {}
-var QuickPress = { Timeout: 400, MiddleMouse: { active: false, }, }
+let Pressed = {}
+let JustPressed = {}
+let QuickPress = { Timeout: 400, MiddleMouse: { active: false, }, }
 
 const KeyTranslateMap = {
     '&': '1',
@@ -56,7 +57,7 @@ const KeyTranslateMap = {
     '\'': '4',
 };
 
-export var KeyActions = {
+export let KeyActions = {
     'devTreeHUD': {},
     'animHUD': {
         'escape': () => {
@@ -88,14 +89,14 @@ export var KeyActions = {
         'escape': () => { sendClientMessage('deactivateMode', { mode: "gizmo"}); },
     },
     'objectHUD': {
+        '?': () => { toggleHelp("objHelp"); },
         '1': () => { toggleObjectSpawnHUD(); },
         '2': () => { toggleObjectNearbyHUD(); },
         '3': () => { toggleObjectImportExportHUD(); },
-        '?': () => { toggleHelp("objHelp"); },
+        'f': () => { sendClientMessage('toggleMode', { mode: "focus" }); },
         'h': () => { toggleHelp("objHelp"); },
-        'escape': () => {
-            sendClientMessage('deactivateMode', { mode: "object" });
-        },
+        'r': () => {sendClientMessage('toggleMode', { mode: "gizmo" })},
+        'escape': () => { sendClientMessage('deactivateMode', { mode: "object" }); },
     },
     'cameraHUD': {
         'escape': () => {
@@ -107,6 +108,71 @@ export var KeyActions = {
         'h': () => { toggleHelp('camHelp', false); },
     },
 }
+
+export let MouseActions = {
+    'devTreeHUD': {
+        leftClick: (event) => { },
+        middleClick: (event) => { },
+    },
+    'animHUD': {
+        leftClick: (event) => {
+            // TODO: cconvert this to EventActions click
+            if (event.target.id === "activeAnimDict" || event.target.id === "activeAnimName") {
+                if (event.target.innerHTML !== "") {
+                    clipboardCopy(event.target.innerHTML);
+                }
+            }
+        },
+        middleClick: (event) => {
+            if (MCP) {
+                sendClientMessage('deactivateMCP', {});
+                toggleMCP(false);
+            } else {
+                QuickPress.MiddleMouse.active = true;
+                setTimeout(() => { QuickPress.MiddleMouse.active = false; }, QuickPress.Timeout);
+                sendClientMessage('activateMCP', { mode: "animation" });
+                toggleMCP(true);
+            }
+        },
+    },
+    'objectHUD': {
+        leftClick: (event) => {
+            if (!MCP) {
+                const isInterruptingElement = event.target.classList.contains('entryLabel') ||
+                    event.target.classList.contains('entryField') ||
+                    event.target.classList.contains('control') ||
+                    event.target.closest('.entryLabel') ||
+                    event.target.closest('.entryField') ||
+                    event.target.closest('.control');
+
+                if (isInterruptingElement) {
+                    event.stopPropagation();
+                    return;
+                }
+                sendClientMessage('sendCursorKey', { justPressed: { MouseLeft: true } });
+            }
+        },
+        middleClick: (event) => {
+            if (MCP) {
+                sendClientMessage('deactivateMCP', {});
+                toggleMCP(true);
+            } else {
+                QuickPress.MiddleMouse.active = true;
+                setTimeout(() => { QuickPress.MiddleMouse.active = false; }, QuickPress.Timeout);
+                sendClientMessage('activateMCP', { mode: "object" });
+                toggleMCP(true);
+            }
+        },
+    },
+    'gizmo': {
+        middleClick: (event) => {
+            QuickPress.MiddleMouse.active = true;
+            setTimeout(() => { QuickPress.MiddleMouse.active = false; }, QuickPress.Timeout);
+            sendClientMessage('activateMCP', { mode: "gizmo" });
+            toggleMCP(true);
+        },
+    },
+};
 
 export const EventActions = {
     click: {
@@ -138,7 +204,12 @@ export const EventActions = {
         // '#button-nearby-propset': () => toggleNearbyFilter('propset'),
         '#button-nearby-other': () => toggleNearbyFilter('other'),
 
-        '#button-tagsortbydistance': () => tagSelectSort('dist'),
+        '#button-savescene': () => {
+            sendClientMessage('saveScene', {
+                scene: document.getElementById('selectedScene').innerHTML
+            });
+        },
+        '#button-tagsortbydist': () => tagSelectSort('dist'),
         '#button-tagsortbyname': () => tagSelectSort('name'),
 
         '#button-search': toggleSearch,
@@ -153,34 +224,7 @@ export const EventActions = {
         '#button-loop': toggleLoop,
         '#button-torso': toggleTorso,
     },
-    // input: {
-    //     "#objSearch": searchSpawnObject,
-    //     "#nearbyRange": (event) => {
-    //         if (event.inputType == "insertParagraph") {
-    //             event.preventDefault();
-    //             getTrackedObjects();
-    //         }
-    //     },
-    //     "#animSearch": (event) => {
-    //         if (event.inputType == "insertParagraph") {
-    //             event.preventDefault();
-    //
-    //             const dict = document.getElementById("animDictList");
-    //             const anim = document.getElementById("animList");
-    //             const searchElement = document.getElementById("animSearch");
-    //
-    //             elementSetText(dict, "");
-    //             elementSetText(anim, "");
-    //
-    //             dict.scrollTop = 0;
-    //             dict.scrollLeft = -1000;
-    //             anim.scrollTop = 0;
-    //             anim.scrollLeft = -1000;
-    //
-    //             searchRedMAnims(searchElement.innerHTML);
-    //         }
-    //     },
-    // },
+    input: {},
     mousemove: (event) => {
         if (!CursorPosDelay && !MCP && !GizmoActive &&
                 isVisible('objectHUD') &&
@@ -194,93 +238,109 @@ export const EventActions = {
             setTimeout(function() { CursorPosDelay = false; }, CursorUpdateRate);
         }
     },
+    // mousedown: (event) => {
+    //     MouseDown = true;
+    //     switch(event.button) {
+    //         case 0: // Left Click
+    //             LeftClickActive = true;
+    //             break;
+    //     }
+    //     if (isVisible('devTreeHUD')) {
+    //     } else if (isVisible('animHUD')) {
+    //         switch(event.button) {
+    //             case 0: // Left Click
+    //                 if (event.target.id == "activeAnimDict" || event.target.id == "activeAnimName") {
+    //                     if (event.target.innerHTML != "") {
+    //                         clipboardCopy(event.target.innerHTML);
+    //                     }
+    //                 }
+    //                 break;
+    //             case 1: // Middle Click
+    //                 if (MCP) {
+    //                     sendClientMessage('deactivateMCP', {});
+    //                     toggleMCP(false);
+    //                     break;
+    //                 }
+    //                 QuickPress.MiddleMouse.active = true;
+    //                 setTimeout(function() { QuickPress.MiddleMouse.active = false; }, QuickPress.Timeout);
+    //                 sendClientMessage('activateMCP', { mode: "animation" });
+    //                 toggleMCP(true);
+    //                 break;
+    //         }
+    //     } else if (isVisible('objectHUD')) {
+    //         if (GizmoActive) {
+    //             switch(event.button) {
+    //                 case 1: // Middle Click
+    //                     QuickPress.MiddleMouse.active = true;
+    //                     setTimeout(function() { QuickPress.MiddleMouse.active = false; }, QuickPress.Timeout);
+    //                     // if (GizmoActivePassthrough) {
+    //                     //     // sendClientMessage('deactivateMCP', {});
+    //                     //     GizmoActivePassthrough = false
+    //                     // } else {
+    //                     //     sendClientMessage('activateMCP', { mode: "gizmo" });
+    //                     //     GizmoActivePassthrough = true
+    //                     // }
+    //                     sendClientMessage('activateMCP', { mode: "gizmo" });
+    //                     toggleMCP(true);
+    //                     break;
+    //             }
+    //         } else {
+    //             switch(event.button) {
+    //                 case 0: // Left Click
+    //                     // Modify this for objectHUD
+    //                     if (event.target.id == "activeAnimDict" || event.target.id == "activeAnimName") {
+    //                         if (event.target.innerHTML != "") {
+    //                             clipboardCopy(event.target.innerHTML);
+    //                         }
+    //                     }
+    //                     if (!MCP) {
+    //                         // Get the target element that was clicked, and check if we should block the event
+    //                         const target = event.target;
+    //                         const isInterruptingElement = target.classList.contains('entryLabel') ||
+    //                             target.classList.contains('entryField') ||
+    //                             target.classList.contains('control') ||
+    //                             target.closest('.entryLabel') ||
+    //                             target.closest('.entryField') ||
+    //                             target.closest('.control');
+    //
+    //                         // Stop further processing if the clicked element matches any target class
+    //                         if (isInterruptingElement) {
+    //                             // console.log("Clicked on a HUD element, skipping game logic.");
+    //                             event.stopPropagation(); // Prevent event from bubbling up further if necessary
+    //                             return; // Short-circuit the game logic
+    //                         }
+    //                         sendClientMessage('sendCursorKey', { justPressed: { MouseLeft: true, } });
+    //                     }
+    //                     break;
+    //                 case 1: // Middle Click
+    //                     if (MCP) {
+    //                         sendClientMessage('deactivateMCP', {});
+    //                         toggleMCP(true);
+    //                         break;
+    //                     }
+    //                     QuickPress.MiddleMouse.active = true;
+    //                     setTimeout(function() { QuickPress.MiddleMouse.active = false; }, QuickPress.Timeout);
+    //                     sendClientMessage('activateMCP', { mode: "object" });
+    //                     toggleMCP(true);
+    //                     break;
+    //             }
+    //         }
+    //     }
+    // },
     mousedown: (event) => {
         MouseDown = true;
-        switch(event.button) {
-            case 0: // Left Click
-                LeftClickActive = true;
-                break;
-        }
-        if (isVisible('devTreeHUD')) {
-        } else if (isVisible('animHUD')) {
-            switch(event.button) {
-                case 0: // Left Click
-                    if (event.target.id == "activeAnimDict" || event.target.id == "activeAnimName") {
-                        if (event.target.innerHTML != "") {
-                            clipboardCopy(event.target.innerHTML);
-                        }
-                    }
-                    break;
-                case 1: // Middle Click
-                    if (MCP) {
-                        sendClientMessage('deactivateMCP', {});
-                        toggleMCP(false);
-                        break;
-                    }
-                    QuickPress.MiddleMouse.active = true;
-                    setTimeout(function() { QuickPress.MiddleMouse.active = false; }, QuickPress.Timeout);
-                    sendClientMessage('activateMCP', { mode: "animation" });
-                    toggleMCP(true);
-                    break;
-            }
-        } else if (isVisible('objectHUD')) {
-            if (GizmoActive) {
-                switch(event.button) {
-                    case 1: // Middle Click
-                        QuickPress.MiddleMouse.active = true;
-                        setTimeout(function() { QuickPress.MiddleMouse.active = false; }, QuickPress.Timeout);
-                        // if (GizmoActivePassthrough) {
-                        //     // sendClientMessage('deactivateMCP', {});
-                        //     GizmoActivePassthrough = false
-                        // } else {
-                        //     sendClientMessage('activateMCP', { mode: "gizmo" });
-                        //     GizmoActivePassthrough = true
-                        // }
-                        sendClientMessage('activateMCP', { mode: "gizmo" });
-                        toggleMCP(true);
-                        break;
-                }
-            } else {
-                switch(event.button) {
-                    case 0: // Left Click
-                        // Modify this for objectHUD
-                        if (event.target.id == "activeAnimDict" || event.target.id == "activeAnimName") {
-                            if (event.target.innerHTML != "") {
-                                clipboardCopy(event.target.innerHTML);
-                            }
-                        }
-                        if (!MCP) {
-                            // Get the target element that was clicked, and check if we should block the event
-                            const target = event.target;
-                            const isInterruptingElement = target.classList.contains('entryLabel') ||
-                                target.classList.contains('entryField') ||
-                                target.classList.contains('control') ||
-                                target.closest('.entryLabel') ||
-                                target.closest('.entryField') ||
-                                target.closest('.control');
+        const currentHUD = getCurrentHUD(); // Assume this function gets the currently active HUD
 
-                            // Stop further processing if the clicked element matches any target class
-                            if (isInterruptingElement) {
-                                // console.log("Clicked on a HUD element, skipping game logic.");
-                                event.stopPropagation(); // Prevent event from bubbling up further if necessary
-                                return; // Short-circuit the game logic
-                            }
-                            sendClientMessage('sendCursorKey', { justPressed: { MouseLeft: true, } });
-                        }
-                        break;
-                    case 1: // Middle Click
-                        if (MCP) {
-                            sendClientMessage('deactivateMCP', {});
-                            toggleMCP(true);
-                            break;
-                        }
-                        QuickPress.MiddleMouse.active = true;
-                        setTimeout(function() { QuickPress.MiddleMouse.active = false; }, QuickPress.Timeout);
-                        sendClientMessage('activateMCP', { mode: "object" });
-                        toggleMCP(true);
-                        break;
-                }
-            }
+        const mouseButtonActions = {
+            0: 'leftClick', // Left Click
+            1: 'middleClick', // Middle Click
+        };
+        const actionType = mouseButtonActions[event.button];
+
+        if (MouseActions[currentHUD] && MouseActions[currentHUD][actionType]) {
+            MouseActions[currentHUD][actionType](event);
+        } else {
+            // Fallback or global behavior if no specific HUD action is defined
         }
     },
     mouseup: (event) => {
@@ -316,7 +376,10 @@ export const EventActions = {
         Pressed[event.key] = false;
     },
     keydown: (event) => {
-        if (MCP) { return; }
+        if (MCP) {
+            event.preventDefault();
+            return;
+        }
         const isInputField = event.target.getAttribute('contenteditable') == "true"
         Pressed[event.key] = true;
         // Check universal nav keys
@@ -350,7 +413,7 @@ export const EventActions = {
 };
 
 const InputFields = {
-    "#objSearch": searchSpawnObject,
+    "#objSearch": (event) => { searchSpawnObject(event.target.innerHTML) },
     "#nearbyRange": (event) => {
         if (event.inputType == "insertParagraph") {
             event.preventDefault();
@@ -413,14 +476,6 @@ function getCurrentHUD() {
     return null;
 }
 
-export function resetListGroup(element, display) {
-    var el = document.getElementById(element);
-    el.style.display = display;
-    el.innerHTML = "";
-    el.scrollTop = 0;
-    el.scrollLeft = -1000;
-}
-
 window.onload = function() {
     initAnims();
     initObj();
@@ -450,6 +505,8 @@ window.onload = function() {
             case "updateCamera":
                 updateCamera(msg.data.camera);
                 break;
+            // case "updateSceneObjects":
+            //     updateSceneObjects(msg.data.objects);
             case "clipboard":
                 clipboardCopy(msg.data.text);
                 break;
@@ -458,6 +515,7 @@ window.onload = function() {
                 break;
             case "setGizmoState":
                 GizmoActive = msg.data.data.shown
+                elementSetClass('gizmo', 'hidden', !GizmoActive);
                 break;
             case "toggleHelp":
                 toggleHelp(msg.data.mode, msg.data.state, msg.data.toggleCursor);
@@ -703,7 +761,7 @@ function updateObjectDetails(data) {
 function ObjectKeys(key, event) {
     switch(key) {
         case "Escape":
-            var escaped = false;
+            let escaped = false;
             if (document.activeElement.classList.contains('entryField')) {
                 document.activeElement.blur();
                 return;
@@ -731,7 +789,7 @@ function ObjectKeys(key, event) {
             elementSetText('activeObject', "");
             if (isVisible('objSearchField')) {
                 elementSetText('objSearch', "");
-                resetListGroup("objData", "flex");
+                resetList("objSpawnList");
             } else if (isVisible('objDetails')) {
                 sendClientMessage('sendCursorKey', { justPressed: { x: true, } });
             }
@@ -742,7 +800,7 @@ function ObjectKeys(key, event) {
 function HandleKeysAnim(event) {
     switch(event.key) {
         case "Escape":
-            var escaped = false;
+            let escaped = false;
             if (isVisible('animHelp')) {
                 toggleHelp("animHelp", false)
                 return;
@@ -804,7 +862,7 @@ function HandleKeysAnim(event) {
                 elementSetText('timingDuration', "-1");
             } else if (isVisible('animFlagsOptions')) {
                 // Clear all flags
-                for (var i=0; i < 32; i++) {
+                for (let i=0; i < 32; i++) {
                     let value = toUint32(1 << i);
                     if (elementHasClass(`flag-${value}`, "selected")) {
                         toggleFlag(value);
@@ -812,7 +870,7 @@ function HandleKeysAnim(event) {
                 }
             } else if (isVisible('animIKFlagsOptions')) {
                 // Clear all ikflags
-                for (var i=0; i < 32 ; i++) {
+                for (let i=0; i < 32 ; i++) {
                     let value = toUint32(1 << i);
                     if (elementHasClass(`flag-${value}`, "selected")) {
                         toggleIKFlag(value);

@@ -1,6 +1,6 @@
-import { resetListGroup, MouseDown } from '../script.js';
+import { MouseDown } from '../script.js';
+import { selectOnly, resetList, isVisible, elementSetClass, elementHasClass, elementSetText, toggleSection } from '../utils/nav.js';
 import { sendClientMessage } from '../utils/msg.js';
-import { isVisible, elementSetClass, elementHasClass, elementSetText, toggleSection } from '../utils/nav.js';
 
 let NearbyOption = {
     object: true,
@@ -43,14 +43,6 @@ export function initObj() {
         document.getElementById('button-tagsortby' + TagOption.sort).classList.add('selected');
     });
 
-    // $("div#objSearch.entryField").keydown(function(e) {
-    //     if (e.code == "Enter") {
-    //         e.preventDefault();
-    //         resetListGroup("objData", "flex");
-    //         searchObjects(this.innerHTML, SpawnOption.get(SelectedObjectSpawnType), "objData");
-    //     }
-    // });
-
     $("div#nearbyRange.entryField").keydown(function(e) {
         if (e.code == "Enter") {
             console.log("setting nearby object range", this.innerHTML);
@@ -58,24 +50,25 @@ export function initObj() {
             getTrackedObjects();
         }
     });
+
+    getScenes();
 }
 
-export function searchSpawnObject(event) {
-    resetListGroup("objData", "flex");
-    console.log("objSearch", event);
-    searchObjects(event.target.innerHTML, SpawnOption.get(SelectedObjectSpawnType), "objData");
+export function searchSpawnObject(searchString) {
+    resetList("objSpawnList");
+    searchObjects(searchString, SpawnOption.get(SelectedObjectSpawnType), "objSpawnList");
 }
 
 function searchObjects(searchValue, searchList, elementId) {
     console.log("searching for", searchValue);
-    var el = document.getElementById(elementId);
+    let el = document.getElementById(elementId);
     el.innerHTML = "";
 
-    var maxResults = 10000;
-    var results = searchList.filter(str => str.toLowerCase().includes(searchValue.toLowerCase()));
-    var ul = document.createElement('ul');
-    for (var i=0; i < results.length && i < maxResults; ++i) {
-        var li = document.createElement('li');
+    const maxResults = 10000;
+    let results = searchList.filter(str => str.toLowerCase().includes(searchValue.toLowerCase()));
+    let ul = document.createElement('ul');
+    for (let i=0; i < results.length && i < maxResults; ++i) {
+        let li = document.createElement('li');
         li.addEventListener('click', function() {
             selectSpawnObject(this.innerHTML)
         })
@@ -92,16 +85,16 @@ function searchObjects(searchValue, searchList, elementId) {
     el.scrollLeft = -1000;
 }
 
+
 export function getTrackedObjects() {
     if (TrackedObjectsLoopRunning) { return; }
     TrackedObjectsLoopRunning = true;
-    var elID = "objNearbyResults";
-    var el = document.getElementById(elID);
-    resetListGroup(elID, "flex");
+    let el = document.getElementById("objNearbyResults");
+    resetList(el);
     const loopId = setInterval(function() {
         if (isVisible(el)) {
             if (!MouseDown) {
-                var currentNearbyRange = document.getElementById('nearbyRange').innerHTML;
+                let currentNearbyRange = document.getElementById('nearbyRange').innerHTML;
                 if (currentNearbyRange != NearbyOption.range) {
                     NearbyOption.range = currentNearbyRange;
                     sendClientMessage('setObjSettings', { nearby: JSON.stringify(NearbyOption) });
@@ -110,18 +103,20 @@ export function getTrackedObjects() {
                     range: currentNearbyRange,
                     origin: NearbyOption.origin,
                 }).then(function(resp) {
-                        var objects = resp.nearbyObjects;
+                        let objects = resp.nearbyObjects;
                         objects.sort((a, b) => a.distance - b.distance);
 
                         el.innerHTML = "";
-                        var ul = document.createElement('ul');
-                        for (var i = 0; i < objects.length; ++i) {
+                        let ul = document.createElement('ul');
+                        let filteredLength = 0;
+                        for (let i = 0; i < objects.length; ++i) {
                             if (objects[i].objType && !NearbyOption[objects[i].objType]) {
                                 continue;
                             }
 
-                            var li = document.createElement('li');
-                            var handle = objects[i].handle;
+                            filteredLength++;
+                            let li = document.createElement('li');
+                            let handle = objects[i].handle;
                             if (objects[i].networkId) {
                                 handle = handle + " [" + objects[i].networkId + "]";
                             }
@@ -154,8 +149,8 @@ export function getTrackedObjects() {
                         ul.appendChild(li);
                     }
                     el.appendChild(ul);
-                    if (objects.length < 15) {
-                        el.style.minHeight = objects.length + ".4vh";
+                    if (filteredLength < 15) {
+                        el.style.minHeight = filteredLength + ".4vh";
                     } else {
                         el.style.minHeight = "15.4vh";
                     }
@@ -169,18 +164,16 @@ export function getTrackedObjects() {
 }
 
 export function getScenes() {
-    var elID = "objScenesList";
-    var el = document.getElementById(elID);
-    resetListGroup(elID, "flex");
+    let el = document.getElementById("objScenesList");
+    resetList(el);
     sendClientMessage('scenesList', {}).then(function(resp) {
-        var sceneList = resp.scenes;
+        let sceneList = resp.scenes;
         // Sort list by names alphabetically
         sceneList.sort((a, b) => a.name.localeCompare(b.name));
 
-        el.innerHTML = "";
-        var ul = document.createElement('ul');
-        for (var i = 0; i < sceneList.length; ++i) {
-            var li = document.createElement('li');
+        let ul = document.createElement('ul');
+        for (let i = 0; i < sceneList.length; ++i) {
+            let li = document.createElement('li');
             li.innerHTML = sceneList[i].name;
             // li.addEventListener('mouseenter', function() {
             //     console.log("hovering over scene", this.innerHTML);
@@ -191,7 +184,8 @@ export function getScenes() {
             li.addEventListener('click', function() {
                 const sceneName = this.innerHTML;
                 elementSetText('selectedScene', sceneName);
-                getSceneObjects(sceneName);
+                sendClientMessage('loadSceneObjects', { scene: sceneName });
+                trackSceneObjects(sceneName);
             })
             ul.appendChild(li);
         }
@@ -204,44 +198,60 @@ export function getScenes() {
     });
 }
 
-export function getSceneObjects(sceneName) {
+export function trackSceneObjects(sceneName) {
     if (SceneObjectsLoopRunning) { return; }
-    SceneObjectsLoopRunning = false;
-    var elID = "objSceneObjectsList";
-    var el = document.getElementById(elID);
-    resetListGroup(elID, "flex");
+    SceneObjectsLoopRunning = true;
+    let el = document.getElementById("objSceneObjectsList");
+    resetList(el);
     const loopId = setInterval(function() {
         if (isVisible(el)) {
             if (!MouseDown) {
-                sendClientMessage('sceneObjects', {
+                sendClientMessage('getSceneObjects', {
                     scene: sceneName,
                 }).then(function(resp) {
-                        var objects = resp.objects;
+                        let objects = resp.objects;
+                        if (!Array.isArray(objects) || objects.length === 0) {
+                            return;
+                        }
                         // This is for objects in the scene
                         if (TagOption.sort == "dist") {
                             objects.sort((a, b) => a.distance - b.distance);
                         } else if (TagOption.sort == "name") {
-                            objects.sort((a, b) => a.model.localeCompare(b.model));
+                            objects.sort((a, b) => a.modelName.localeCompare(b.modelName));
                         }
                         el.innerHTML = "";
-                        var ul = document.createElement('ul');
-                        for (var i = 0; i < objects.length; ++i) {
-                            var li = document.createElement('li');
-                            var handle = objects[i].handle;
+                        let ul = document.createElement('ul');
+                        for (let i = 0; i < objects.length; ++i) {
+                            let li = document.createElement('li');
+                            let handle = objects[i].handle;
                             if (objects[i].networkId) {
                                 handle = handle + " [" + objects[i].networkId + "]";
                             }
-                            li.innerHTML = `${objects[i].distance.toFixed(2)} ${handle} ${objects[i].model}`;
-                            // li.addEventListener('mouseenter', function() {
-                            //     console.log("hovering over object", this.innerHTML);
-                            // })
-                            // li.addEventListener('mouseleave', function() {
-                            //     console.log("leaving object", this.innerHTML);
-                            // })
+                            li.innerHTML = `${objects[i].distance.toFixed(2)} ${handle} ${objects[i].modelName}`;
+                            if (objects[i].select) {
+                                li.classList.add('selected');
+                            } else if (objects[i].hover) {
+                                li.classList.add('hover');
+                            }
+                            li.addEventListener('mouseenter', function() {
+                                sendClientMessage('trackObject', {
+                                    handle: this.innerHTML.split(" ")[1],
+                                    category: "hover",
+                                });
+                            });
+                            li.addEventListener('mouseleave', function() {
+                                sendClientMessage('trackObject', {
+                                    handle: this.innerHTML.split(" ")[1],
+                                    category: "hover",
+                                    remove: true,
+                                });
+                            });
                             li.addEventListener('click', function() {
-                                // TODO: Implement
-                                SelectObject(this.innerHTML.split(" ")[1]);
-                            })
+                                sendClientMessage('trackObject', {
+                                    handle: this.innerHTML.split(" ")[1],
+                                    category: "select",
+                                });
+                            });
                             ul.appendChild(li);
                         }
                         el.appendChild(ul);
@@ -251,25 +261,23 @@ export function getSceneObjects(sceneName) {
                             el.style.minHeight = "4.9vh";
                         }
                     });
-            } else {
-                clearInterval(loopId);
-                SceneObjectsLoopRunning = false;
             }
+        } else {
+            clearInterval(loopId);
+            SceneObjectsLoopRunning = false;
         }
     }, 250);
 }
 
 function selectSpawnObject(object) {
-    setElementText("activeObject", object);
+    elementSetText("activeObject", object);
     sendClientMessage('selectSpawnObject', { name: object });
 }
 
 export function toggleNearbyFilter(type) {
     const selected = elementSetClass(`button-nearby-${type}`, 'selected');
     NearbyOption[type] = selected;
-    console.log("setting nearby object type", type, selected);
     sendClientMessage('setObjSettings', { nearby: JSON.stringify(NearbyOption) });
-    console.log(NearbyOption);
 }
 
 export function tagSelectSort(sortType) {
@@ -295,13 +303,10 @@ export function selectSpawnType(spawn) {
     }
     SelectedObjectSpawnType = spawn;
 
-    elementSetClass(`${PREFIX_OBJ_SPAWN}${prev}`, 'hidden', false);
-    elementSetClass(`${PREFIX_OBJ_SPAWN}${spawn}`, 'hidden', true);
+    elementSetClass(`${PREFIX_OBJ_SPAWN}${prev}`, 'selected', false);
+    elementSetClass(`${PREFIX_OBJ_SPAWN}${spawn}`, 'selected', true);
 
-    resetListGroup("objData", "none");
-
-    elementSetText('objSearch', "");
-    document.getElementById('objSearch').focus();
+    searchSpawnObject(document.getElementById('objSearch').innerHTML);
 }
 
 function formatId(str) { return str.replace(/ /g, '-'); }
@@ -335,23 +340,27 @@ const ObjectHUD_All = [
     "objHelp",
     "objControlOptions",
     "objDetails",
-    "objLeftColumn",
-    "objNearbyResults",
-    "sceneData",
 
+    "objSpawnLeftColumn",
     "objSearchField",
     "selectedObjectDetails",
     "objSpawnOptions",
-    "objData",
+    "objSpawnList",
+
+    "objNearbyLeftColumn",
     "objNearbyOrigin",
     "selectedNearbyOrigin",
     "objNearbyFilter",
     "objNearbyRange",
     "objNearbyResults",
+
+    "objScenesLeftColumn",
     "objScenesList",
     "objSceneTagOptions",
     "objSceneObjectsList",
     "sceneSelected",
+
+    "sceneData",
 ];
 
 const ObjectHUD_Visible = [
@@ -360,24 +369,28 @@ const ObjectHUD_Visible = [
 ];
 
 const ObjectHUD_Spawn = [
+    "objSpawnLeftColumn",
     "objSearchField",
-    "objLeftColumn",
+    "selectedObjectDetails",
+    "objSpawnOptions",
+    "objSpawnList",
 ];
 
 const ObjectHUD_Nearby = [
+    "objNearbyLeftColumn",
     "objNearbyOrigin",
     "selectedNearbyOrigin",
     "objNearbyFilter",
     "objNearbyRange",
     "objNearbyResults",
-    "objLeftColumn",
 ];
 
 const ObjectHUD_ImportExport = [
+    "objScenesLeftColumn",
+    "objSceneControlOptions",
     "objScenesList",
     "objSceneTagOptions",
     "objSceneObjectsList",
-    "objLeftColumn",
     "sceneSelected",
 ];
 
@@ -412,6 +425,12 @@ export function toggleObjectSpawnHUD(state) {
         ObjectHUD_Visible,
         ObjectHUD_All
     );
+    if (state) {
+        selectOnly('button-spawn', ['button-spawn','button-trackedobjlist', 'button-importexport']);
+        document.getElementById('button-spawn').focus();
+    } else {
+        elementSetClass('button-spawn', 'selected', state);
+    }
 }
 
 export function toggleObjectNearbyHUD(state) {
@@ -423,7 +442,13 @@ export function toggleObjectNearbyHUD(state) {
         ObjectHUD_Visible,
         ObjectHUD_All
     );
-    if (state) getTrackedObjects();
+    if (state) {
+        selectOnly('button-trackedobjlist', ['button-spawn','button-trackedobjlist', 'button-importexport']);
+        document.getElementById('button-trackedobjlist').focus();
+        getTrackedObjects();
+    } else {
+        elementSetClass('button-trackedobjlist', 'selected', state);
+    }
 }
 
 export function toggleObjectImportExportHUD(state) {
@@ -435,5 +460,13 @@ export function toggleObjectImportExportHUD(state) {
         ObjectHUD_Visible,
         ObjectHUD_All
     );
-    if (state) getScenes();
+    if (state) {
+        selectOnly('button-importexport', ['button-spawn','button-trackedobjlist', 'button-importexport']);
+        document.getElementById('button-importexport').focus();
+        if (document.getElementById('selectedScene').innerHTML != "") {
+            trackSceneObjects(document.getElementById('selectedScene').innerHTML);
+        }
+    } else {
+        elementSetClass('button-importexport', 'selected', state);
+    }
 }

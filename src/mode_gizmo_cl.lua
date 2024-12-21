@@ -49,12 +49,22 @@ da_mode.register({
     name = "gizmo",
     priority = 100,
     onActivate = function()
+        local entity = Select
+        if not entity then return; end
+        log.debug("Gizmo activated")
         SetNuiFocus(true, true)
         SetNuiFocusKeepInput(true)
         Hover = nil
         SelectMode = "Cursor"
         GizmoThread()
         da_ui.send("setGizmoState", { data = { shown = true }})
+        Citizen.Wait(100)
+        da_ui.send("setGizmoEntity", { data = {
+            name = GetEntityModel(entity),
+            handle = entity,
+            position = GetEntityCoords(entity),
+            rotation = GetEntityRotation(entity) * vec3(1, -1, 1), -- Gizmo is swapping the y rot, so correct for that ahead of time
+        }})
     end,
     onDeactivate = function()
         SetNuiFocus(false, false)
