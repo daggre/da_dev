@@ -42,37 +42,44 @@ export function initObj() {
         TagOption = JSON.parse(resp.tags);
         document.getElementById('button-tagsortby' + TagOption.sort).classList.add('selected');
     });
-
-    $("div#nearbyRange.entryField").keydown(function(e) {
-        if (e.code == "Enter") {
-            console.log("setting nearby object range", this.innerHTML);
-            e.preventDefault();
-            getTrackedObjects();
-        }
-    });
-
-    getScenes();
 }
 
 export function searchSpawnObject(searchString) {
-    resetList("objSpawnList");
-    searchObjects(searchString, SpawnOption.get(SelectedObjectSpawnType), "objSpawnList");
+    resetList('objSpawnList');
+    searchObjects(searchString, SpawnOption.get(SelectedObjectSpawnType), "objSpawnList", 3);
 }
 
-function searchObjects(searchValue, searchList, elementId) {
-    console.log("searching for", searchValue);
+function searchObjects(searchValue, searchList, elementId, tabIndex) {
     let el = document.getElementById(elementId);
-    el.innerHTML = "";
+    el.style.minHeight = "0";
+    if (searchValue == "") return;
+    console.log("Searching", searchList, searchValue);
 
     const maxResults = 10000;
+    const selectedObject = document.getElementById('activeObject').innerHTML;
     let results = searchList.filter(str => str.toLowerCase().includes(searchValue.toLowerCase()));
     let ul = document.createElement('ul');
     for (let i=0; i < results.length && i < maxResults; ++i) {
         let li = document.createElement('li');
+        const name = results[i];
+        if (name == selectedObject) { li.classList.add('liSelect'); }
+        li.addEventListener('mouseenter', function() {
+            li.classList.add('liHover');
+        });
+        li.addEventListener('mouseout', function() {
+            li.classList.remove('liHover');
+        });
         li.addEventListener('click', function() {
-            selectSpawnObject(this.innerHTML)
+            // Remove liSelect class from any li in this element that has liSelect
+            el.querySelectorAll('li').forEach(function(li) {
+                li.classList.remove('liSelect');
+            });
+            li.classList.add('liSelect');
+            selectSpawnObject(this.innerHTML);
         })
-        li.innerHTML = results[i];
+        if (tabIndex)
+            li.setAttribute('tabindex', tabIndex);
+        li.innerHTML = name;
         ul.appendChild(li);
     }
     el.appendChild(ul);
@@ -167,34 +174,42 @@ export function getScenes() {
     let el = document.getElementById("objScenesList");
     resetList(el);
     sendClientMessage('scenesList', {}).then(function(resp) {
-        let sceneList = resp.scenes;
+        let sceneList = JSON.parse(resp.scenes);
         // Sort list by names alphabetically
         sceneList.sort((a, b) => a.name.localeCompare(b.name));
 
         let ul = document.createElement('ul');
         for (let i = 0; i < sceneList.length; ++i) {
             let li = document.createElement('li');
-            li.innerHTML = sceneList[i].name;
-            // li.addEventListener('mouseenter', function() {
-            //     console.log("hovering over scene", this.innerHTML);
-            // })
-            // li.addEventListener('mouseleave', function() {
-            //     console.log("leaving scene", this.innerHTML);
-            // })
+            const name = sceneList[i].name;
+            const selectedScene = document.getElementById('selectedScene').innerHTML;
+            li.innerHTML = name;
+            if (name == selectedScene) { li.classList.add('liSelect'); }
+            li.addEventListener('mouseenter', function() {
+                li.classList.add('liHover');
+            });
+            li.addEventListener('mouseout', function() {
+                li.classList.remove('liHover');
+            });
             li.addEventListener('click', function() {
                 const sceneName = this.innerHTML;
+                el.querySelectorAll('li').forEach(function(li) {
+                    li.classList.remove('liSelect');
+                });
+                li.classList.add('liSelect');
                 elementSetText('selectedScene', sceneName);
                 sendClientMessage('loadSceneObjects', { scene: sceneName });
                 trackSceneObjects();
             })
+            li.setAttribute('tabindex', '23');
             ul.appendChild(li);
         }
         el.appendChild(ul);
-        // if (sceneList.length < 4) {
-        //     el.style.minHeight = sceneList.length + ".3vh";
-        // } else {
-        //     el.style.minHeight = "4.9vh";
-        // }
+        if (sceneList.length < 4) {
+            el.style.minHeight = sceneList.length + ".3vh";
+        } else {
+            el.style.minHeight = "4.9vh";
+        }
     });
 }
 
@@ -344,7 +359,7 @@ const ObjectHUD_All = [
 
     "objSpawnLeftColumn",
     "objSearchField",
-    "selectedObjectDetails",
+    "objSpawnName",
     "objSpawnOptions",
     "objSpawnList",
 
@@ -372,7 +387,7 @@ const ObjectHUD_Visible = [
 const ObjectHUD_Spawn = [
     "objSpawnLeftColumn",
     "objSearchField",
-    "selectedObjectDetails",
+    "objSpawnName",
     "objSpawnOptions",
     "objSpawnList",
 ];
@@ -462,6 +477,7 @@ export function toggleObjectImportExportHUD(state) {
         ObjectHUD_All
     );
     if (state) {
+        getScenes();
         selectOnly('button-importexport', ['button-spawn','button-trackedobjlist', 'button-importexport']);
         document.getElementById('button-importexport').focus();
         if (document.getElementById('selectedScene').innerHTML != "") {

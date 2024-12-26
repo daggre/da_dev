@@ -15,7 +15,6 @@ import {
     initializeObjectHUD,
     searchSpawnObject,
     getTrackedObjects,
-    // updateSceneObjects,
     toggleNearbyFilter,
     tagSelectSort,
     selectSpawnType,
@@ -88,13 +87,19 @@ export let KeyActions = {
         'escape': () => { sendClientMessage('deactivateMode', { mode: "gizmo"}); },
     },
     'objectHUD': {
+        ' ': (event) => {
+            // TODO: Detect if its also a list element with an onclick
+            const eventId = `#${event.target.id}`;
+            if (EventActions.click[eventId])
+                EventActions.click[eventId](event);
+        },
         '?': () => { toggleHelp("objHelp"); },
         '1': () => { toggleObjectSpawnHUD(); },
         '2': () => { toggleObjectNearbyHUD(); },
         '3': () => { toggleObjectImportExportHUD(); },
         'f': () => { sendClientMessage('toggleMode', { mode: "focus" }); },
         'h': () => { toggleHelp("objHelp"); },
-        'r': () => {sendClientMessage('toggleMode', { mode: "gizmo" })},
+        'r': () => { sendClientMessage('toggleMode', { mode: "gizmo" })},
         'x': () => {
             sendClientMessage('sendCursorKey', {
                 justPressed: { x: true },
@@ -143,11 +148,11 @@ export let MouseActions = {
     'objectHUD': {
         leftClick: (event) => {
             if (!MCP) {
-                const isInterruptingElement = event.target.classList.contains('entryLabel') ||
-                    event.target.classList.contains('entryField') ||
+                const isInterruptingElement = event.target.classList.contains('label') ||
+                    event.target.classList.contains('entry') ||
                     event.target.classList.contains('control') ||
-                    event.target.closest('.entryLabel') ||
-                    event.target.closest('.entryField') ||
+                    event.target.closest('.label') ||
+                    event.target.closest('.entry') ||
                     event.target.closest('.control');
 
                 if (isInterruptingElement) {
@@ -236,7 +241,7 @@ export const EventActions = {
     mousemove: (event) => {
         if (!CursorPosDelay && !MCP && !GizmoActive &&
                 isVisible('objectHUD') &&
-                !document.activeElement.classList.contains('entryField')) {
+                !document.activeElement.classList.contains('entry')) {
             CursorPosDelay = true;
             sendClientMessage('sendCursorPos', {
                 x: event.clientX/ResolutionX,
@@ -312,10 +317,41 @@ export const EventActions = {
                 break;
             case "Tab":
                 return;
+            case "Backspace":
+                // Get the current selection and cursor position
+                const bs_selection = window.getSelection();
+                console.log(event, bs_selection);
+                if (bs_selection.rangeCount > 0) {
+                    const cursorAtStart = bs_selection.anchorOffset === 0; // Caret is at the start of the div
+                    const textLength = event.target.textContent.trim().length;
+
+                    // Clear the div only if the cursor is not at the start and it's the last character
+                    console.log(cursorAtStart, textLength);
+                    if (!cursorAtStart && textLength === 1) {
+                        event.target.innerHTML = ''; // Clear the div manually
+                        event.preventDefault(); // Prevent <br> or any default action
+                    }
+                }
+                break;
+
+            case "Delete":
+                // Get the current selection and cursor position
+                const del_selection = window.getSelection();
+                if (del_selection.rangeCount > 0) {
+                    const cursorAtStart = del_selection.anchorOffset === 0; // Caret is at the start
+                    const textLength = event.target.textContent.trim().length;
+
+                    // Clear the div only if the cursor is at the start and its the last char
+                    if (cursorAtStart && textLength === 1) {
+                        event.target.innerHTML = ''; // Clear the div manually
+                        event.preventDefault(); // Prevent <br> or any default action
+                    }
+                }
+                break;
         }
         JustPressed[event.key] = true;
         if (event.key == "Escape" || !isInputField) {
-            handleKeyPress(event.key, getCurrentHUD())
+            handleKeyPress(event, getCurrentHUD())
         } else if (isInputField) {
             if (event.key == "Enter") {
                 Object.keys(InputFields).forEach((selector) => {
@@ -395,12 +431,13 @@ function getCurrentHUD() {
     return null;
 }
 
-window.onload = function() {
+document.addEventListener('DOMContentLoaded', () => {
     initAnims();
     initObj();
     registerListeners();
 
     window.addEventListener('message', function(msg) {
+        console.log("message", msg);
         switch(msg.data.type) {
             case "ui_trie":
                 console.log("trie", msg.data.trie);
@@ -440,20 +477,20 @@ window.onload = function() {
                 toggleHelp(msg.data.mode, msg.data.state, msg.data.toggleCursor);
                 break;
             case "keyPress":
-                handleKeyPress(msg.data.key, msg.data.mode);
+                handleKeyPress({ key: msg.data.key }, msg.data.mode);
                 break;
         }
     })
-}
+});
 
-function handleKeyPress(rawKey, hud) {
+function handleKeyPress(event, hud) {
+    const rawKey = event.key;
     if (!hud) { return; }
-    // console.log("handleKey", rawKey, hud);
     const lowercaseKey = rawKey.toLowerCase();
     const key = KeyTranslateMap[lowercaseKey] || lowercaseKey;
 
     const action = KeyActions[hud][key] || KeyActions[hud].default;
-    if (action) { action(key); }
+    if (action) { action(event); }
 }
 
 // Help HUD //
@@ -541,7 +578,7 @@ function toggleTimings(state) {
         document.getElementById('button-timings').focus();
     } else {
         elementSetClass('animTimingsOptions', 'hidden', true);
-        if (document.activeElement.classList.contains('entryField')) {
+        if (document.activeElement.classList.contains('entry')) {
             document.activeElement.blur();
         }
     }
@@ -560,7 +597,7 @@ function toggleFlags(state) {
         elementSetClass('animFlagsOptions', 'hidden', false);
     } else {
         elementSetClass('animFlagsOptions', 'hidden', true);
-        if (document.activeElement.classList.contains('entryField')) {
+        if (document.activeElement.classList.contains('entry')) {
             document.activeElement.blur();
         }
     }
@@ -579,7 +616,7 @@ function toggleIKFlags(state) {
         elementSetClass('animIKFlagsOptions', 'hidden', false);
     } else {
         elementSetClass('animIKFlagsOptions', 'hidden', true);
-        if (document.activeElement.classList.contains('entryField')) {
+        if (document.activeElement.classList.contains('entry')) {
             document.activeElement.blur();
         }
     }
@@ -630,9 +667,12 @@ const ObjectDetailsCategoryMap = new Map([
     ['button-objDetailsStatus', 'objDetailsListStatus'],
 ]);
 
-function toggleObjectDetail(el, state) {
+function toggleObjectDetail(elId, state) {
+    console.log("toggleObjectDetail", elId, state);
+    const el = document.getElementById(elId);
+    if (state === undefined) { state = !el.classList.contains('selected'); }
     elementSetClass(el, 'selected', state);
-    const listEl = ObjectDetailsCategoryMap.get(el);
+    const listEl = ObjectDetailsCategoryMap.get(elId);
     elementSetClass(listEl, 'hidden', !state);
 }
 
@@ -681,7 +721,7 @@ function ObjectKeys(key, event) {
     switch(key) {
         case "Escape":
             let escaped = false;
-            if (document.activeElement.classList.contains('entryField')) {
+            if (document.activeElement.classList.contains('entry')) {
                 document.activeElement.blur();
                 return;
             }
@@ -691,7 +731,7 @@ function ObjectKeys(key, event) {
             toggleObjectHUD(false);
             return;
         case "f":
-            if (!document.activeElement.classList.contains('entryField') && !MCP) {
+            if (!document.activeElement.classList.contains('entry') && !MCP) {
                 sendClientMessage('sendCursorKey', {
                     pressed: Pressed,
                     justPressed: JustPressed
