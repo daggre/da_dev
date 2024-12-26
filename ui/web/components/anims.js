@@ -51,14 +51,12 @@ export function initAnims() {
         const flags = JSON.parse(resp.flags);
         flags.forEach(flag => {
             let flagLabel = document.createElement('div');
-            flagLabel.classList.add('check');
-            flagLabel.classList.add('entryLabel');
+            flagLabel.classList.add('check', 'label', 'borderright', 'bgi');
             flagLabel.innerHTML = flag.name;
 
             let flagField = document.createElement('div');
+            flagField.classList.add('check', 'entry', 'borderright', 'bgt1');
             flagField.setAttribute('id', "flag-" + flag.value);
-            flagField.classList.add('check');
-            flagField.classList.add('toggleField');
             flagField.setAttribute('tabindex', "5");
             flagField.setAttribute('role', "button");
             flagField.setAttribute('aria-pressed', "false");
@@ -71,14 +69,12 @@ export function initAnims() {
         });
 
         let flagLabel = document.createElement('div');
-        flagLabel.classList.add('check');
-        flagLabel.classList.add('entryLabel');
+        flagLabel.classList.add('check', 'label', 'borderright', 'bgi');
         flagLabel.innerHTML = "TOTAL";
 
         let flagField = document.createElement('div');
+        flagField.classList.add('check', 'entry', 'borderright', 'bgt1');
         flagField.setAttribute('id', "flagTotals");
-        flagField.classList.add('check');
-        flagField.classList.add('entryField');
         flagField.innerHTML = "0";
 
         let li = document.createElement('li');
@@ -95,14 +91,12 @@ export function initAnims() {
         const flags = JSON.parse(resp.flags);
         flags.forEach(flag => {
             let flagLabel = document.createElement('div');
-            flagLabel.classList.add('check');
-            flagLabel.classList.add('entryLabel');
+            flagLabel.classList.add('check', 'label', 'borderright', 'bgi');
             flagLabel.innerHTML = flag.name;
 
             let flagField = document.createElement('div');
+            flagField.classList.add('check', 'entry', 'borderright', 'bgt1');
             flagField.setAttribute('id', "ikflag-" + flag.value);
-            flagField.classList.add('check');
-            flagField.classList.add('toggleField');
             flagField.setAttribute('tabindex', "4");
             flagField.setAttribute('role', "button");
             flagField.setAttribute('aria-pressed', "false");
@@ -116,14 +110,12 @@ export function initAnims() {
 
 
         let flagLabel = document.createElement('div');
-        flagLabel.classList.add('check');
-        flagLabel.classList.add('entryLabel');
+        flagLabel.classList.add('check', 'label', 'borderright', 'bgi');
         flagLabel.innerHTML = "TOTAL";
 
         let flagField = document.createElement('div');
+        flagField.classList.add('check', 'entry', 'borderright', 'bgt1');
         flagField.setAttribute('id', "IKFlagTotals");
-        flagField.classList.add('check');
-        flagField.classList.add('entryField');
         flagField.innerHTML = "0";
 
         let li = document.createElement('li');
@@ -140,15 +132,12 @@ export function initAnims() {
         const taskFilters = JSON.parse(resp.taskFilters);
         taskFilters.forEach((taskFilter, index) => {
             let taskLabel = document.createElement('div');
-            taskLabel.classList.add('check');
-            taskLabel.classList.add('entryLabel');
+            taskLabel.classList.add('check', 'label', 'borderright', 'bgi');
             taskLabel.innerHTML = taskFilter;
 
             let taskField = document.createElement('div');
+            taskField.classList.add('check', 'entry', 'taskFilter', 'borderright', 'bgt1');
             taskField.setAttribute('id', "task-" + index);
-            taskField.classList.add('check');
-            taskField.classList.add('toggleField');
-            taskField.classList.add('taskFilter');
             taskField.setAttribute('tabindex', "5");
             taskField.setAttribute('role', "button");
             taskField.setAttribute('aria-pressed', "false");
@@ -162,7 +151,7 @@ export function initAnims() {
         taskList.appendChild(ul);
     });
 
-    $("div#valueAnimSearch.entryField").keydown(function(e) {
+    $("div#valueAnimSearch.entry").keydown(function(e) {
         if (e.code == "Enter") {
             e.preventDefault();
             let dictList = document.getElementById("animDictList");

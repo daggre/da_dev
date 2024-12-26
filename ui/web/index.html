@@ -1,220 +1,233 @@
 <html>
-
-    <head>
+<head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>da_dev</title>
-        <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet'>
-        <link rel="stylesheet" href="assets/css/index.css">
-        <link rel="stylesheet" href="style.css">
+
+        <!-- Fonts and Stylesheets -->
+        <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+        <link rel="stylesheet" href="assets/css/style.css">
+
+        <!-- External Libraries -->
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
-        <script type="module" crossorigin src="./assets/index.js" defer></script>
+
+        <!-- Your Scripts -->
+        <script type="module" src="./assets/index.js" defer></script>
         <script type="module" src="script.js" defer></script>
+
+        <!-- Development Script Loader -->
+        <script>
+            const isBrowser = typeof window.invokeNative === 'undefined';
+            if (isBrowser) {
+                const script = document.createElement('script');
+                script.src = "dev-mocks.js";
+                document.head.appendChild(script);
+                console.log("Development script loaded.");
+            } else {
+                console.log("Running in RedM environment.");
+            }
+        </script>
     </head>
 
     <body>
         <main>
             <section id="gizmo" class="hud hidden"></section>
             <section id="objectHUD" class="hud hidden">
-                <div id="objHelp" class="help hidden dev">
-                    <div class="helpTitle">Object Mode by daggre_actual</div>
-                    <div class="helpTitle" style="font-size:3vh;"></div>
+                <div id="objHelp" class="center bgt2 pad hidden">
+                    <div class="title">Object Mode by daggre_actual</div>
+                    <div class="bigicon"></div>
                     <ul>
-                        <li><div class="entryLabel">1</div><div class="entryField">View/Edit Selected Object Details</div></li>
-                        <li><div class="entryLabel">2</div><div class="entryField">Search/Select Spawn Objects</div></li>
-                        <li><div class="entryLabel">3</div><div class="entryField">View Nearby Objects</div></li>
-                        <li><div class="entryLabel">4</div><div class="entryField"></div></li>
-                        <li><div class="entryLabel">5</div><div class="entryField">Group Select</div></li>
-                        <li><div class="entryLabel">6</div><div class="entryField">Group Tag Objects</div></li>
-                        <li><div class="entryLabel">7</div><div class="entryField">Group Move</div></li>
+                        <li><div class="label borderleft bgi">LMB</div><div class="entry borderright bgt1">Select Object Under Crosshair</div></li>
+                        <li><div class="label borderleft bgi">MMB (Click)</div><div class="entry borderright bgt1">Toggle Control Passthrough</div></li>
+                        <li><div class="label borderleft bgi">MMB (Hold)</div><div class="entry borderright bgt1">Enable Control Passthrough</div></li>
+                        <li><div class="label borderleft bgi">Shift LMB</div><div class="entry borderright bgt1">Spawn Object</div></li>
                         <li> </li>
-                        <li><div class="entryLabel">c</div><div class="entryField">Toggle Control Passthrough</div></li>
-                        <li><div class="entryLabel">MMB (Click)</div><div class="entryField">Toggle Control Passthrough</div></li>
-                        <li><div class="entryLabel">MMB (Hold)</div><div class="entryField">Enable Control Passthrough</div></li>
+                        <li><div class="label borderleft bgi">1</div><div class="entry borderright bgt1">Switch View to Object Spawn</div></li>
+                        <li><div class="label borderleft bgi">2</div><div class="entry borderright bgt1">Switch View to Nearby Objects</div></li>
+                        <li><div class="label borderleft bgi">3</div><div class="entry borderright bgt1">Switch View to Scene Import/Export</div></li>
                         <li> </li>
-                        <!-- <li><div class="entryLabel">f</div><div class="entryField">(No Selection) Select Object Under Crosshair</div></li> -->
-                        <!-- <li><div class="entryLabel">f</div><div class="entryField">Focus Selected/Hovered Object</div></li> -->
-                        <li><div class="entryLabel">LMB</div><div class="entryField">Select Object Under Crosshair</div></li>
-                        <li><div class="entryLabel">r</div><div class="entryField">Move/Rotate Selected Object</div></li>
-                        <li><div class="entryLabel">Alt r</div><div class="entryField">Move/Rotate Hovered Object</div></li>
-                        <li><div class="entryLabel">g</div><div class="entryField">Spawn Object</div></li>
-                        <li><div class="entryLabel">Shift x</div><div class="entryField">Delete Selected Object</div></li>
-                        <li><div class="entryLabel">Ctrl r</div><div class="entryField">Set Selected to Hovered Object Rotation</div></li>
-                        <li><div class="entryLabel">Ctrl x</div><div class="entryField">Set Selected to Hovered Object Position</div></li>
-                        <li><div class="entryLabel">Ctrl z</div><div class="entryField">Set Selected to Hovered Object Height</div></li>
+                        <li><div class="label borderleft bgi">f</div><div class="entry borderright bgt1">Focus Selected Object</div></li>
+                        <li><div class="label borderleft bgi">h</div><div class="entry borderright bgt1">Toggle Help Panel</div></li>
+                        <li><div class="label borderleft bgi">r</div><div class="entry borderright bgt1">Move/Rotate Selected Object</div></li>
+                        <li><div class="label borderleft bgi">x</div><div class="entry borderright bgt1">Reset Values to Defaults</div></li>
                         <li> </li>
-                        <li><div class="entryLabel">x</div><div class="entryField">Reset Active Menu To Default Values</div></li>
-                        <li><div class="entryLabel">z</div><div class="entryField">Open Dev Tree Menu</div></li>
-                        <li><div class="entryLabel">?</div><div class="entryField">Toggle Help Panel</div></li>
-                        <li><div class="entryLabel">h</div><div class="entryField">Toggle Help Panel</div></li>
-                        <li><div class="entryLabel">Esc</div><div class="entryField">Exit Active Mode/Selection</div></li>
+                        <li><div class="label borderleft bgi">Ctrl r</div><div class="entry borderright bgt1">Set Selected to Hovered Object Rotation</div></li>
+                        <li><div class="label borderleft bgi">Ctrl x</div><div class="entry borderright bgt1">Set Selected to Hovered Object Position</div></li>
+                        <li><div class="label borderleft bgi">Ctrl z</div><div class="entry borderright bgt1">Set Selected to Hovered Object Height</div></li>
+                        <li> </li>
+                        <li><div class="label borderleft bgi">Shift x</div><div class="entry borderright bgt1">Delete Selected Object</div></li>
+                        <li> </li>
+                        <li><div class="label borderleft bgi">?</div><div class="entry borderright bgt1">Toggle Help Panel</div></li>
+                        <li><div class="label borderleft bgi">Esc</div><div class="entry borderright bgt1">Exit</div></li>
+                        <li> </li>
+                        <li><div class="label borderleft bgi">Alt r</div><div class="entry borderright bgt1">Move/Rotate Hovered Object</div></li>
                     </ul>
                 </div>
                 <div id="crosshair" class="inactive hidden">+</div>
-                <div id="objControlOptions" class="controlGroup dev">
+                <div id="objControlOptions" class="bgt1 centerwidth bottom blr">
                     <ul class="row">
                         <li>
-                            <div id="button-spawn" class="control" tabindex="1" role="button" aria-pressed="false" aria-label="Spawn Objects" ></div>
+                            <div id="button-spawn" class="control" tabindex="1" role="button" aria-pressed="false" aria-label="Spawn Objects" >󰒕</div>
                             <div id="button-trackedobjlist" class="control" tabindex="11" role="button" aria-pressed="false" aria-label="Track Objects" >󰹤</div>
-                            <div id="button-importexport" class="control" tabindex="20" role="button" aria-pressed="false" aria-label="Import/Export"></div>
+                            <div id="button-importexport" class="control" tabindex="21" role="button" aria-pressed="false" aria-label="Import/Export"></div>
                             <!-- <div id="button-scenecontrol" class="control" tabindex="31" role="button" aria-pressed="false" >󱞔</div> -->
                             <!-- <div id="button-scenetags" class="control" tabindex="32" role="button" aria-pressed="false" >󰜢</div> -->
                         </li>
                     </ul>
                 </div>
-                <div id="objDetails" class="dev listGroupRight">
-                    <div id="objDetailsList" class="entryList optList" style="background:none; height:fit-content;">
+                <div id="objSpawnLeftColumn" class="listGroup top left">
+                    <div id="objSpawnName" class="row gap listEntryField">
+                        <div class="label borderleft bgi">+</div>
+                        <div id="activeObject" class="entry borderright bgt1"></div>
+                    </div>
+                    <div id="objSearchField" class="row gap listEntryField">
+                        <div class="label borderleft bgi"></div>
+                        <div id="objSearch" class="entry borderright bgt1" tabindex="2" contenteditable="true"></div>
+                    </div>
+                    <div id="objSpawnOptions" class="bgt1 blr gap">
+                        <ul class="row gap">
+                            <li>
+                                <div id="button-spawnfavs" class="control" tabindex="2" role="button" aria-pressed="false" aria-label="Filter Favorites">󰓎</div>
+                                <div id="button-spawnobjects" class="control selected" tabindex="2" role="button" aria-pressed="false" aria-label="Filter Objects">󰠱</div>
+                                <div id="button-spawnpeds" class="control" tabindex="2" role="button" aria-pressed="false" aria-label="Filter Peds"></div>
+                                <div id="button-spawnvehicles" class="control" tabindex="2" role="button" aria-pressed="false" aria-label="Filter Vehicles">󱢑</div>
+                                <div id="button-spawnpropsets" class="control" tabindex="2" role="button" aria-pressed="false" aria-label="Filter Propsets"></div>
+                                <div id="button-spawnpickups" class="control" tabindex="2" role="button" aria-pressed="false" aria-label="Filter Pickups"></div>
+                                <div id="button-spawnother" class="control" tabindex="2" role="button" aria-pressed="false" aria-label="Filter Custom">󱝤</div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div id="objSpawnList" class="list listPrimary bggradient">
+                    </div>
+                </div>
+                <div id="objNearbyLeftColumn" class="listGroup top left">
+                    <div id="objNearbyOrigin" class="bgt1 blr gap">
+                        <ul class="row">
+                            <li>
+                                <div id="button-nearbyOrigin-camera" class="control" tabindex="12" role="button" aria-pressed="false" ></div>
+                                <div id="button-nearbyOrigin-offset" class="control" tabindex="12" role="button" aria-pressed="false" >󱣿</div>
+                                <div id="button-nearbyOrigin-player" class="control" tabindex="12" role="button" aria-pressed="false" ></div>
+                                <div id="button-nearbyOrigin-raycast" class="control" tabindex="12" role="button" aria-pressed="false" ></div>
+                                <div id="button-nearbyOrigin-set-position" class="control" tabindex="12" role="button" aria-pressed="false" ></div>
+                                <div id="button-nearbyOrigin-select" class="control" tabindex="12" role="button" aria-pressed="false" ></div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div id="selectedNearbyOrigin" class="row gap listEntryField">
+                        <div class="label borderleft bgi">origin</div>
+                        <div id="activeNearbyOrigin" class="entry borderright bgt1">camera</div>
+                    </div>
+                    <div id="objNearbyFilter" class="bgt1 blr gap">
+                        <ul class="row">
+                            <li>
+                                <div id="button-nearby-object" class="control selected" tabindex="13" role="button" aria-pressed="false" >󰠱</div>
+                                <div id="button-nearby-ped" class="control selected" tabindex="13" role="button" aria-pressed="false" ></div>
+                                <div id="button-nearby-vehicle" class="control selected" tabindex="13" role="button" aria-pressed="false" >󱢑</div>
+                                <!-- <div id="button-nearbypropset" class="control selected" tabindex="13" role="button" aria-pressed="false" ></div> -->
+                                <div id="button-nearby-other" class="control" tabindex="13" role="button" aria-pressed="false" >󱝤</div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div id="objNearbyRange" class="row gap listEntryField">
+                        <div class="label borderleft bgi">range</div>
+                        <div id="nearbyRange" class="entry borderright bgt1" tabindex="14" contenteditable="true">50</div>
+                    </div>
+                    <div id="objNearbyResults" class="list listPrimary bggradient">
+                    </div>
+                </div>
+                <div id="objScenesLeftColumn" class="listGroup top left">
+                    <div id="objSceneControlOptions" class="bgt1 blr gap">
+                        <ul class="row">
+                            <li>
+                                <div id="button-savescene" class="control" tabindex="22" role="button" aria-pressed="false" >󰆓</div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div id="objScenesList" class="list listPrimary bggradient gap">
+                    </div>
+                    <div id="sceneSelected" class="row listEntryField gap">
+                        <div class="label borderleft bgi">scene</div>
+                        <div id="selectedScene" class="entry borderright bgt1"></div>
+                    </div>
+                    <div id="objSceneTagOptions" class="bgt1 blr gap">
+                        <ul class="row">
+                            <li>
+                                <div id="button-tagsortbydist" class="control" tabindex="24" role="button" aria-pressed="false" >󰣰</div>
+                                <div id="button-tagsortbyname" class="control" tabindex="24" role="button" aria-pressed="false" >󰖽</div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div id="objSceneObjectsList" class="list listPrimary bggradient">
+                    </div>
+                </div>
+                <div id="sceneData" class="listGroup top left">
+                    <div id="sceneResultsOne" class="list listPrimary bggradient">
+                    </div>
+                </div>
+                <div id="objDetails" class="listGroup top right">
+                    <div id="objDetailsList" class="mgb">
                         <ul>
                             <li>
-                                <div class="entryLabel">Entity</div>
-                                <div id="objDetailsEntityHandle" class="entryField" contenteditable="false"></div>
+                                <div class="label borderleft bgi">Entity</div>
+                                <div id="objDetailsEntityHandle" class="entry borderright bgt1" contenteditable="false"></div>
                             </li>
                             <li>
-                                <div class="entryLabel">Model</div>
-                                <div id="objDetailsEntityModelName" class="entryField" contenteditable="false"></div>
+                                <div class="label borderleft bgi">Model</div>
+                                <div id="objDetailsEntityModelName" class="entry borderright bgt1" contenteditable="false"></div>
                             </li>
                             <li>
-                                <div class="entryLabel">NetId</div>
-                                <div id="objDetailsEntityNetworkId" class="entryField" contenteditable="false"></div>
+                                <div class="label borderleft bgi">NetId</div>
+                                <div id="objDetailsEntityNetworkId" class="entry borderright bgt1" contenteditable="false"></div>
                             </li>
                         </ul>
                     </div>
-                    <div id="objDetailsOptions" class="inlineControlGroup controlGroup dev" style="width: fit-content; margin-left: 0.3vw; margin-top: 1px;">
+                    <div id="objDetailsOptions" class="bgt1 blr gap">
                         <ul class="row">
                             <li>
-                                <div id="button-objDetailsPosition" class="control selected" tabindex="14" role="button" aria-pressed="false" >󰍒</div>
-                                <div id="button-objDetailsStatus" class="control" tabindex="15" role="button" aria-pressed="false" >󱖫</div>
+                                <div id="button-objDetailsPosition" class="control selected" tabindex="50" role="button" aria-pressed="false" >󰵉</div>
+                                <div id="button-objDetailsStatus" class="control selected" tabindex="51" role="button" aria-pressed="false" >󱖫</div>
                             </li>
                         </ul>
                     </div>
-                    <div id="objDetailsListPosition" class="entryList optList" style="background:none; height:fit-content;">
+                    <div id="objDetailsListPosition" class="mgb">
                         <ul>
                             <li>
-                                <div class="entryLabel">X</div>
-                                <div id="objDetailsEntityPosX" class="entryField" contenteditable="true" tabindex="60">0</div>
+                                <div class="label borderleft bgi">X</div>
+                                <div id="objDetailsEntityPosX" class="entry borderright bgt1" contenteditable="true" tabindex="60">0</div>
                             </li>
                             <li>
-                                <div class="entryLabel">Y</div>
-                                <div id="objDetailsEntityPosY" class="entryField" contenteditable="true" tabindex="61">0</div>
+                                <div class="label borderleft bgi">Y</div>
+                                <div id="objDetailsEntityPosY" class="entry borderright bgt1" contenteditable="true" tabindex="61">0</div>
                             </li>
                             <li>
-                                <div class="entryLabel">Z</div>
-                                <div id="objDetailsEntityPosZ" class="entryField" contenteditable="true" tabindex="62">0</div>
+                                <div class="label borderleft bgi">Z</div>
+                                <div id="objDetailsEntityPosZ" class="entry borderright bgt1" contenteditable="true" tabindex="62">0</div>
                             </li>
                             <li>
-                                <div class="entryLabel">Pitch</div>
-                                <div id="objDetailsEntityRotPitch" class="entryField" contenteditable="true" tabindex="63">0</div>
+                                <div class="label borderleft bgi">Pitch</div>
+                                <div id="objDetailsEntityRotPitch" class="entry borderright bgt1" contenteditable="true" tabindex="63">0</div>
                             </li>
                             <li>
-                                <div class="entryLabel">Roll</div>
-                                <div id="objDetailsEntityRotRoll" class="entryField" contenteditable="true" tabindex="64">0</div>
+                                <div class="label borderleft bgi">Roll</div>
+                                <div id="objDetailsEntityRotRoll" class="entry borderright bgt1" contenteditable="true" tabindex="64">0</div>
                             </li>
                             <li>
-                                <div class="entryLabel">Yaw</div>
-                                <div id="objDetailsEntityRotYaw" class="entryField" contenteditable="true" tabindex="65">0</div>
+                                <div class="label borderleft bgi">Yaw</div>
+                                <div id="objDetailsEntityRotYaw" class="entry borderright bgt1" contenteditable="true" tabindex="65">0</div>
                             </li>
                         </ul>
                     </div>
-                    <div id="objDetailsListStatus" class="entryList optList" style="background:none; height:fit-content;">
+                    <div id="objDetailsListStatus" class="mgb">
                         <ul>
                             <li>
-                                <div class="entryLabel">Frozen</div>
-                                <div id="objDetailsEntityFrozen" class="check toggleField" contenteditable="true" tabindex="66"></div>
+                                <div class="label borderleft bgi">Frozen</div>
+                                <div id="objDetailsEntityFrozen" class="entry borderright bgt1" contenteditable="true" tabindex="66"></div>
                             </li>
                             <li>
-                                <div class="entryLabel">Collision</div>
-                                <div id="objDetailsEntityCollision" class="check toggleField" contenteditable="true" tabindex="67"></div>
+                                <div class="label borderleft bgi">Collision</div>
+                                <div id="objDetailsEntityCollision" class="entry borderright bgt1" contenteditable="true" tabindex="67"></div>
                             </li>
                         </ul>
-                    </div>
-                </div>
-                <div id="objSpawnLeftColumn" class="dev listGroup">
-                    <div id="selectedObjectDetails" class="row listEntryField">
-                        <div class="entryLabel">+</div>
-                        <div id="activeObject" class="entryField"></div>
-                    </div>
-                    <div id="objSearchField" class="row listEntryField">
-                        <div class="entryLabel" style="width:auto;"></div>
-                        <div id="objSearch" class="entryField" tabindex="2" contenteditable="true"></div>
-                    </div>
-                    <div id="objSpawnOptions" class="inlineControlGroup controlGroup dev">
-                        <ul class="row">
-                            <li>
-                                <div id="button-spawnfavs" class="control" tabindex="3" role="button" aria-pressed="false" >󰓎</div>
-                                <div id="button-spawnobjects" class="control selected" tabindex="4" role="button" aria-pressed="false" ></div>
-                                <div id="button-spawnpeds" class="control" tabindex="5" role="button" aria-pressed="false" ></div>
-                                <div id="button-spawnvehicles" class="control" tabindex="6" role="button" aria-pressed="false" >󱢑</div>
-                                <div id="button-spawnpropsets" class="control" tabindex="7" role="button" aria-pressed="false" ></div>
-                                <div id="button-spawnpickups" class="control" tabindex="8" role="button" aria-pressed="false" ></div>
-                                <div id="button-spawnother" class="control" tabindex="9" role="button" aria-pressed="false" >󱝤</div>
-                            </li>
-                        </ul>
-                    </div>
-                    <div id="objSpawnList" class="listElement" tabindex="10">
-                    </div>
-                </div>
-                <div id="objNearbyLeftColumn" class="dev listGroup">
-                    <div id="objNearbyOrigin" class="inlineControlGroup controlGroup dev">
-                        <ul class="row">
-                            <li>
-                                <div id="button-nearbyOrigin-camera" class="control" tabindex="21" role="button" aria-pressed="false" ></div>
-                                <div id="button-nearbyOrigin-offset" class="control" tabindex="22" role="button" aria-pressed="false" >󱣿</div>
-                                <div id="button-nearbyOrigin-player" class="control" tabindex="23" role="button" aria-pressed="false" ></div>
-                                <div id="button-nearbyOrigin-raycast" class="control" tabindex="24" role="button" aria-pressed="false" ></div>
-                                <div id="button-nearbyOrigin-set-position" class="control" tabindex="25" role="button" aria-pressed="false" ></div>
-                                <div id="button-nearbyOrigin-select" class="control" tabindex="26" role="button" aria-pressed="false" ></div>
-                            </li>
-                        </ul>
-                    </div>
-                    <div id="selectedNearbyOrigin" class="row dev listEntryField">
-                        <div class="entryLabel">origin</div>
-                        <div id="activeNearbyOrigin" class="entryField">camera</div>
-                    </div>
-                    <div id="objNearbyFilter" class="inlineControlGroup controlGroup dev">
-                        <ul class="row">
-                            <li>
-                                <div id="button-nearby-object" class="control selected" tabindex="27" role="button" aria-pressed="false" ></div>
-                                <div id="button-nearby-ped" class="control selected" tabindex="28" role="button" aria-pressed="false" ></div>
-                                <div id="button-nearby-vehicle" class="control selected" tabindex="29" role="button" aria-pressed="false" >󱢑</div>
-                                <!-- <div id="button-nearbypropset" class="control selected" tabindex="27" role="button" aria-pressed="false" ></div> -->
-                                <div id="button-nearby-other" class="control" tabindex="30" role="button" aria-pressed="false" >󱝤</div>
-                            </li>
-                        </ul>
-                    </div>
-                    <div id="objNearbyRange" class="row dev listEntryField">
-                        <div class="entryLabel">range</div>
-                        <div id="nearbyRange" class="entryField" tabindex="40" contenteditable="true">50</div>
-                    </div>
-                    <div id="objNearbyResults" class="listElement">
-                    </div>
-                </div>
-                <div id="objScenesLeftColumn" class="dev listGroup">
-                    <div id="objSceneControlOptions" class="inlineControlGroup controlGroup dev">
-                        <ul class="row">
-                            <li>
-                                <div id="button-savescene" class="control" tabindex="100" role="button" aria-pressed="false" >󰆓</div>
-                            </li>
-                        </ul>
-                    </div>
-                    <div id="objScenesList" class="listElement" style="min-height: 1.3vh; max-height: 9.1vh;">
-                    </div>
-                    <div id="sceneSelected" class="row listEntryField">
-                        <div class="entryLabel">scene</div>
-                        <div id="selectedScene" class="entryField"></div>
-                    </div>
-                    <div id="objSceneTagOptions" class="inlineControlGroup controlGroup dev">
-                        <ul class="row">
-                            <li>
-                                <div id="button-tagsortbydist" class="control" tabindex="62" role="button" aria-pressed="false" >󰣰</div>
-                                <div id="button-tagsortbyname" class="control" tabindex="63" role="button" aria-pressed="false" >󰖽</div>
-                            </li>
-                        </ul>
-                    </div>
-                    <div id="objSceneObjectsList" class="listElement">
-                    </div>
-                </div>
-                <div id="sceneData" class="dev listGroup">
-                    <div id="sceneResultsOne" class="listElement">
                     </div>
                 </div>
             </section>
@@ -227,96 +240,98 @@
                 </div>
             </section>
             <section id="cameraHUD" class="hud hidden">
-                <div id="camHelp" class="help hidden dev">
-                    <div class="helpTitle">FreeCam and NoClip by daggre_actual</div>
-                    <div class="helpTitle" style="font-size:3vh;"> </div>
+                <div id="camHelp" class="center bgt2 pad hidden">
+                    <div class="title">FreeCam and NoClip by daggre_actual</div>
+                    <div class="bigicon"> </div>
                     <ul>
-                        <li><div class="entryLabel">w</div><div class="entryField">Move Forward</div></li>
-                        <li><div class="entryLabel">a</div><div class="entryField">Move Left</div></li>
-                        <li><div class="entryLabel">s</div><div class="entryField">Move Back</div></li>
-                        <li><div class="entryLabel">d</div><div class="entryField">Move Right</div></li>
-                        <li><div class="entryLabel">e</div><div class="entryField">Move Up</div></li>
-                        <li><div class="entryLabel">q</div><div class="entryField">Move Down</div></li>
+                        <li><div class="label borderleft bgi">w</div><div class="entry borderright bgt1">Move Forward</div></li>
+                        <li><div class="label borderleft bgi">a</div><div class="entry borderright bgt1">Move Left</div></li>
+                        <li><div class="label borderleft bgi">s</div><div class="entry borderright bgt1">Move Back</div></li>
+                        <li><div class="label borderleft bgi">d</div><div class="entry borderright bgt1">Move Right</div></li>
+                        <li><div class="label borderleft bgi">e</div><div class="entry borderright bgt1">Move Up</div></li>
+                        <li><div class="label borderleft bgi">q</div><div class="entry borderright bgt1">Move Down</div></li>
                         <li> </li>
-                        <li><div class="entryLabel">Wheel Up</div><div class="entryField">Increase Camera Speed</div></li>
-                        <li><div class="entryLabel">Wheel Down</div><div class="entryField">Decrease Camera Speed</div></li>
-                        <li><div class="entryLabel">Spacebar (HOLD)</div><div class="entryField">Fine Adjustment Speed ( 0.33x )</div></li>
-                        <li><div class="entryLabel">LSHIFT (HOLD)</div><div class="entryField">Quick Adjustment Speed ( 3x )</div></li>
+                        <li><div class="label borderleft bgi">Wheel Up</div><div class="entry borderright bgt1">Increase Camera Speed</div></li>
+                        <li><div class="label borderleft bgi">Wheel Down</div><div class="entry borderright bgt1">Decrease Camera Speed</div></li>
+                        <li><div class="label borderleft bgi">Spacebar (HOLD)</div><div class="entry borderright bgt1">Fine Adjustment Speed ( 0.33x )</div></li>
+                        <li><div class="label borderleft bgi">LSHIFT (HOLD)</div><div class="entry borderright bgt1">Quick Adjustment Speed ( 3x )</div></li>
                         <li> </li>
-                        <li><div class="entryLabel">LSHIFT + Mouse Forward</div><div class="entryField">Move Camera Up</div></li>
-                        <li><div class="entryLabel">LSHIFT + Mouse Back</div><div class="entryField">Move Camera Down</div></li>
-                        <li><div class="entryLabel">LSHIFT + Mouse Left</div><div class="entryField">Move Camera Left</div></li>
-                        <li><div class="entryLabel">LSHIFT + Mouse Right</div><div class="entryField">Move Camera Right</div></li>
+                        <li><div class="label borderleft bgi">LSHIFT + Mouse Forward</div><div class="entry borderright bgt1">Move Camera Up</div></li>
+                        <li><div class="label borderleft bgi">LSHIFT + Mouse Back</div><div class="entry borderright bgt1">Move Camera Down</div></li>
+                        <li><div class="label borderleft bgi">LSHIFT + Mouse Left</div><div class="entry borderright bgt1">Move Camera Left</div></li>
+                        <li><div class="label borderleft bgi">LSHIFT + Mouse Right</div><div class="entry borderright bgt1">Move Camera Right</div></li>
                         <li> </li>
-                        <li><div class="entryLabel">LCTRL + Mouse Forward</div><div class="entryField">Move Camera Forward</div></li>
-                        <li><div class="entryLabel">LCTRL + Mouse Back</div><div class="entryField">Move Camera Backward</div></li>
-                        <li><div class="entryLabel">LCTRL + Mouse Left</div><div class="entryField">Move Camera Left</div></li>
-                        <li><div class="entryLabel">LCTRL + Mouse Right</div><div class="entryField">Move Camera Right</div></li>
+                        <li><div class="label borderleft bgi">LCTRL + Mouse Forward</div><div class="entry borderright bgt1">Move Camera Forward</div></li>
+                        <li><div class="label borderleft bgi">LCTRL + Mouse Back</div><div class="entry borderright bgt1">Move Camera Backward</div></li>
+                        <li><div class="label borderleft bgi">LCTRL + Mouse Left</div><div class="entry borderright bgt1">Move Camera Left</div></li>
+                        <li><div class="label borderleft bgi">LCTRL + Mouse Right</div><div class="entry borderright bgt1">Move Camera Right</div></li>
                         <li> </li>
-                        <li><div class="entryLabel">LALT + Mouse Up</div><div class="entryField">Decrease FreeCam FOV</div></li>
-                        <li><div class="entryLabel">LALT + Mouse Down</div><div class="entryField">Increase FreeCam FOV</div></li>
-                        <li><div class="entryLabel">LALT + x</div><div class="entryField">Reset FOV</div></li>
+                        <li><div class="label borderleft bgi">LALT + Mouse Up</div><div class="entry borderright bgt1">Decrease FreeCam FOV</div></li>
+                        <li><div class="label borderleft bgi">LALT + Mouse Down</div><div class="entry borderright bgt1">Increase FreeCam FOV</div></li>
+                        <li><div class="label borderleft bgi">LALT + x</div><div class="entry borderright bgt1">Reset FOV</div></li>
                         <li> </li>
-                        <li><div class="entryLabel">z</div><div class="entryField">Open Dev Tree Menu</div></li>
-                        <li><div class="entryLabel">?</div><div class="entryField">Toggle Help Panel</div></li>
-                        <li><div class="entryLabel">h</div><div class="entryField">Toggle Help Panel</div></li>
-                        <li><div class="entryLabel">Esc</div><div class="entryField">Exit FreeCam/NoClip</div></li>
+                        <li><div class="label borderleft bgi">z</div><div class="entry borderright bgt1">Open Dev Tree Menu</div></li>
+                        <li><div class="label borderleft bgi">?</div><div class="entry borderright bgt1">Toggle Help Panel</div></li>
+                        <li><div class="label borderleft bgi">h</div><div class="entry borderright bgt1">Toggle Help Panel</div></li>
+                        <li><div class="label borderleft bgi">Esc</div><div class="entry borderright bgt1">Exit FreeCam/NoClip</div></li>
                     </ul>
                 </div>
-                <div id="camStatus" class="dev">
-                    <div id="camStatusSpeed">
-                        <div class="entryLabel">speed</div> <div id="cam-speed" class="entryField"></div>
-                    </div>
-                    <div id="camStatusIcons">
-                        <ul class="row">
-                            <li>
-                                <div id="cam-mode" class="control" role="button" aria-pressed="false"></div>
-                                <div id="cam-noclip" class="control" role="button" aria-pressed="false"></div>
-                            </li>
-                        </ul>
-                    </div>
+                <div id="camStatus" class="top centerwidth">
+                    <ul id="row">
+                        <li>
+                            <div class="label borderleft bgi"></div> <div id="cam-speed" class="entry borderright bgt1"></div>
+                        </li>
+                    </ul>
+                    <!-- <div id="camStatusIcons", class="bgt1 blr"> -->
+                    <!--     <ul class="row"> -->
+                    <!--         <li> -->
+                    <!--             <div id="cam-mode" class="control" role="button" aria-pressed="false"></div> -->
+                    <!--             <div id="cam-noclip" class="control" role="button" aria-pressed="false"></div> -->
+                    <!--         </li> -->
+                    <!--     </ul> -->
+                    <!-- </div> -->
                 </div>
             </section>
             <section id="animHUD" class="hud hidden">
-                <div id="animHelp" class="help hidden dev">
-                    <div class="helpTitle">Animation Dev Kit by daggre_actual</div>
-                    <div class="helpTitle" style="font-size:3vh;"></div>
+                <div id="animHelp" class="center bgt2 pad hidden">
+                    <div class="title">Animation Dev Kit by daggre_actual</div>
+                    <div class="bigicon"></div>
                     <ul>
-                        <li><div class="entryLabel">q</div><div class="entryField">Play/Restart Animation</div></li>
-                        <li><div class="entryLabel">r</div><div class="entryField">Play/Restart Animation</div></li>
-                        <li><div class="entryLabel">s</div><div class="entryField">Stop Animation</div></li>
-                        <li><div class="entryLabel">k</div><div class="entryField">Stop Animation</div></li>
-                        <li><div class="entryLabel">Backspace</div><div class="entryField">Stop Animation</div></li>
-                        <li><div class="entryLabel">MMB (Hold)</div><div class="entryField">Game Control (Keyboard/Mouse)</div></li>
-                        <li><div class="entryLabel">LMB (Click)</div><div class="entryField">Copy Entry To Clipboard</div></li>
+                        <li><div class="label borderleft bgi">q</div><div class="entry borderright bgt1">Play/Restart Animation</div></li>
+                        <li><div class="label borderleft bgi">r</div><div class="entry borderright bgt1">Play/Restart Animation</div></li>
+                        <li><div class="label borderleft bgi">s</div><div class="entry borderright bgt1">Stop Animation</div></li>
+                        <li><div class="label borderleft bgi">k</div><div class="entry borderright bgt1">Stop Animation</div></li>
+                        <li><div class="label borderleft bgi">Backspace</div><div class="entry borderright bgt1">Stop Animation</div></li>
+                        <li><div class="label borderleft bgi">MMB (Hold)</div><div class="entry borderright bgt1">Game Control (Keyboard/Mouse)</div></li>
+                        <li><div class="label borderleft bgi">LMB (Click)</div><div class="entry borderright bgt1">Copy Entry To Clipboard</div></li>
                         <li> </li>
-                        <li><div class="entryLabel">1</div><div class="entryField">Search/Select Animations</div></li>
-                        <li><div class="entryLabel">2</div><div class="entryField">View/Edit Timing Options</div></li>
-                        <li><div class="entryLabel">3</div><div class="entryField">View/Edit Inverse Kinematics Flags</div></li>
-                        <li><div class="entryLabel">4</div><div class="entryField">View/Edit Animation Flags</div></li>
-                        <li><div class="entryLabel">5</div><div class="entryField">View/Edit Entity ID</div></li>
+                        <li><div class="label borderleft bgi">1</div><div class="entry borderright bgt1">Search/Select Animations</div></li>
+                        <li><div class="label borderleft bgi">2</div><div class="entry borderright bgt1">View/Edit Timing Options</div></li>
+                        <li><div class="label borderleft bgi">3</div><div class="entry borderright bgt1">View/Edit Inverse Kinematics Flags</div></li>
+                        <li><div class="label borderleft bgi">4</div><div class="entry borderright bgt1">View/Edit Animation Flags</div></li>
+                        <li><div class="label borderleft bgi">5</div><div class="entry borderright bgt1">View/Edit Entity ID</div></li>
                         <li> </li>
-                        <li><div class="entryLabel">?</div><div class="entryField">Toggle Help Panel</div></li>
-                        <li><div class="entryLabel">h</div><div class="entryField">Toggle Help Panel</div></li>
-                        <li><div class="entryLabel">c</div><div class="entryField">Toggle Anim Control Panel</div></li>
-                        <li><div class="entryLabel">f</div><div class="entryField">Open Search Menu</div></li>
-                        <li><div class="entryLabel">f(x2)</div><div class="entryField">Open Search Menu and Focus Search Field</div></li>
-                        <li><div class="entryLabel">F</div><div class="entryField">Focus Search Field</div></li>
-                        <li><div class="entryLabel">t</div><div class="entryField">View/Edit Timing Options</div></li>
-                        <li><div class="entryLabel">i</div><div class="entryField">View/Edit Inverse Kinematics Flags</div></li>
-                        <li><div class="entryLabel">o</div><div class="entryField">View/Edit Animation Flags</div></li>
-                        <li><div class="entryLabel">e</div><div class="entryField">View/Edit Entity ID</div></li>
-                        <li><div class="entryLabel">l</div><div class="entryField">Quick Toggle Animation Loop</div></li>
-                        <li><div class="entryLabel">u</div><div class="entryField">Quick Toggle Upper Body + Movement Flags</div></li>
-                        <li><div class="entryLabel">x</div><div class="entryField">Reset Active Menu to Default Values</div></li>
+                        <li><div class="label borderleft bgi">?</div><div class="entry borderright bgt1">Toggle Help Panel</div></li>
+                        <li><div class="label borderleft bgi">h</div><div class="entry borderright bgt1">Toggle Help Panel</div></li>
+                        <li><div class="label borderleft bgi">c</div><div class="entry borderright bgt1">Toggle Anim Control Panel</div></li>
+                        <li><div class="label borderleft bgi">f</div><div class="entry borderright bgt1">Open Search Menu</div></li>
+                        <li><div class="label borderleft bgi">f(x2)</div><div class="entry borderright bgt1">Open Search Menu and Focus Search Field</div></li>
+                        <li><div class="label borderleft bgi">F</div><div class="entry borderright bgt1">Focus Search Field</div></li>
+                        <li><div class="label borderleft bgi">t</div><div class="entry borderright bgt1">View/Edit Timing Options</div></li>
+                        <li><div class="label borderleft bgi">i</div><div class="entry borderright bgt1">View/Edit Inverse Kinematics Flags</div></li>
+                        <li><div class="label borderleft bgi">o</div><div class="entry borderright bgt1">View/Edit Animation Flags</div></li>
+                        <li><div class="label borderleft bgi">e</div><div class="entry borderright bgt1">View/Edit Entity ID</div></li>
+                        <li><div class="label borderleft bgi">l</div><div class="entry borderright bgt1">Quick Toggle Animation Loop</div></li>
+                        <li><div class="label borderleft bgi">u</div><div class="entry borderright bgt1">Quick Toggle Upper Body + Movement Flags</div></li>
+                        <li><div class="label borderleft bgi">x</div><div class="entry borderright bgt1">Reset Active Menu to Default Values</div></li>
                         <li> </li>
-                        <li><div class="entryLabel">Esc</div><div class="entryField">Exit Active Menu</div></li>
-                        <li><div class="entryLabel">Tab</div><div class="entryField">Cycle Focused Element</div></li>
-                        <li><div class="entryLabel">Spacebar</div><div class="entryField">Toggle Focused Element</div></li>
-                        <li><div class="entryLabel">Spacebar</div><div class="entryField">Play/Restart Animation (No Focused Element)</div></li>
+                        <li><div class="label borderleft bgi">Esc</div><div class="entry borderright bgt1">Exit Active Menu</div></li>
+                        <li><div class="label borderleft bgi">Tab</div><div class="entry borderright bgt1">Cycle Focused Element</div></li>
+                        <li><div class="label borderleft bgi">Spacebar</div><div class="entry borderright bgt1">Toggle Focused Element</div></li>
+                        <li><div class="label borderleft bgi">Spacebar</div><div class="entry borderright bgt1">Play/Restart Animation (No Focused Element)</div></li>
                     </ul>
                 </div>
-                <div id="animControlOptions" class="controlGroup dev">
+                <div id="animControlOptions" class="bgt1 blr gap">
                     <ul class="row">
                         <li id="animSettings" style="display:none;">
                             <div id="button-search" class="control" tabindex="2" role="button" aria-pressed="false" ></div>
@@ -335,65 +350,66 @@
                         </li>
                     </ul>
                 </div>
-                <div id="animSearchLists" class="dev listGroup">
-                    <div id="animDictList" class="listTop">
+                <div id="animSearchLists" class="listGroup top left">
+                    <div id="animDictList" class="list listPrimary bggradient">
                     </div>
-                    <div id="animList" class="listTwo">
+                    <div id="animList" class="list listSecondary bggradient">
                     </div>
                 </div>
-                <div id="animSearchField" class="searchField dev">
-                    <div class="entryLabel" style="width:auto;"></div>
-                    <div id="valueAnimSearch" class="entryField" tabindex="2" contenteditable="true"></div>
+                <div id="animSearchField" class="searchField">
+                    <div class="label borderleft bgi" style="width:auto;"></div>
+                    <div id="valueAnimSearch" class="entry borderright bgt1" tabindex="2" contenteditable="true"></div>
                 </div>
-                <div id="animTimingsOptions" class="entryList optList dev">
+                <div id="animTimingsOptions">
                     <ul id="animTimings">
                         <li>
-                            <div class="entryLabel">Blend-In</div>
-                            <div id="timingBlendIn" class="entryField" contenteditable="true" tabindex="3">1.0</div>
+                            <div class="label borderleft bgi">Blend-In</div>
+                            <div id="timingBlendIn" class="entry borderright bgt1" contenteditable="true" tabindex="3">1.0</div>
                         </li>
                         <li>
-                            <div class="entryLabel">Blend-Out</div>
-                            <div id="timingBlendOut" class="entryField" contenteditable="true" tabindex="3">1.0</div>
+                            <div class="label borderleft bgi">Blend-Out</div>
+                            <div id="timingBlendOut" class="entry borderright bgt1" contenteditable="true" tabindex="3">1.0</div>
                         </li>
                         <li>
-                            <div class="entryLabel">Playback</div>
-                            <div id="timingPlayback" class="entryField" contenteditable="true" tabindex="3">0</div>
+                            <div class="label borderleft bgi">Playback</div>
+                            <div id="timingPlayback" class="entry borderright bgt1" contenteditable="true" tabindex="3">0</div>
                         </li>
                         <li>
-                            <div class="entryLabel">Duration</div>
-                            <div id="timingDuration" class="entryField" contenteditable="true" tabindex="3">-1</div>
+                            <div class="label borderleft bgi">Duration</div>
+                            <div id="timingDuration" class="entry borderright bgt1" contenteditable="true" tabindex="3">-1</div>
                         </li>
                     </ul>
                 </div>
-                <div id="animFlagsOptions" class="flagList optList dev">
+                <div id="animFlagsOptions" class="flagList">
                 </div>
-                <div id="animIKFlagsOptions" class="flagList optList dev">
+                <div id="animIKFlagsOptions" class="flagList">
                 </div>
-                <div id="animTaskFilterOptions" class="flagList optList dev">
+                <div id="animTaskFilterOptions" class="flagList">
                 </div>
-                <div id="animEntityOptions" class="entryList optList dev">
+                <div id="animEntityOptions" class="">
                     <ul id="animEntity">
                         <li>
-                            <div class="entryLabel">Entity</div>
-                            <div id="animEntityField" class="entryField" contenteditable="true" tabindex="6"></div>
+                            <div class="label borderleft bgi">Entity</div>
+                            <div id="animEntityField" class="entry borderright bgt1" contenteditable="true" tabindex="6"></div>
                         </li>
                     </ul>
                 </div>
-                <div id="activeAnimDisplay" class="optList dev">
+                <div id="activeAnimDisplay" class="">
                     <ul id="animActive">
                         <li>
-                            <div class="entryLabel">animDict</div>
-                            <div id="activeAnimDict" class="entryField"></div>
-                            <div class="entryLabel">anim</div>
-                            <div id="activeAnimName" class="entryField"></div>
+                            <div class="label borderleft bgi">animDict</div>
+                            <div id="activeAnimDict" class="entry borderright bgt1"></div>
+                            <div class="label borderleft bgi">anim</div>
+                            <div id="activeAnimName" class="entry borderright bgt1"></div>
                         </li>
                     </ul>
                 </div>
             </section>
         </main>
-        <div id="copyField">
-            <div id="copyAnimDict" style="display:none;"></div>
-            <div id="copyAnim" style="display:none;"></div>
+        <!-- TODO: Test new copy function and update this -->
+        <div id="copyField" class="hidden">
+            <div id="copyAnimDict"></div>
+            <div id="copyAnim"></div>
         </div>
     </body>
 </html>

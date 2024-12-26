@@ -482,6 +482,7 @@ local function GetObjectTypeStr(entity)
 end
 
 local function GetNearbyObjects(range, origin)
+    -- TODO: Add params to only collect filtered objects data
     local pos = GetFinalRenderedCamCoord()
     if origin == "offset" then
         local rot = GetFinalRenderedCamRot()
@@ -502,6 +503,8 @@ local function GetNearbyObjects(range, origin)
     if not tonumber(range) then range = LastValidRange end
     LastValidRange = range
     local entityData = {}
+
+    -- FIXME: We are overwriting indexes in entityData for different types of objects
 
     local entities = da_util.GetEntitiesNearPoint(pos, range)
     for i, entity in ipairs(entities) do
@@ -639,20 +642,20 @@ local ControlCheckCursor = function(pressed, justPressed)
     end
 end
 
--- local testSceneObjects = {
---     {
---         model = `s_wap_rainsfalls`,
---         coords_x = -2816.43,
---         coords_y = -697.29,
---         coords_z = 268.31,
---         rotation_pitch = -10.56,
---         rotation_roll = -4.85,
---         rotation_yaw = -0.45,
---         frozen = true,
---         collision = true,
---     },
--- }
--- kvp.encode("scenes:test_1", { name = "test_1", objects = testSceneObjects })
+local testSceneObjects = {
+    {
+        model = `s_wap_rainsfalls`,
+        coords_x = -2816.43,
+        coords_y = -697.29,
+        coords_z = 268.31,
+        rotation_pitch = -10.56,
+        rotation_roll = -4.85,
+        rotation_yaw = -0.45,
+        frozen = true,
+        collision = true,
+    },
+}
+kvp.encode("scenes:test_1", { name = "test_1", objects = testSceneObjects })
 
 da_ui.callbacks({
     nearbyObjects = function(data) return {nearbyObjects = GetNearbyObjects(data.range, data.origin)} end,
@@ -669,7 +672,7 @@ da_ui.callbacks({
             Scenes[sceneName] = s
             table.insert(scenes, s)
         end
-        return { scenes = scenes }
+        return { scenes = json.encode(scenes) }
     end,
     loadSceneObjects = function(data) return LoadSceneObjects(data.scene) end,
     getSceneObjects = function(data) return GetSceneObjectsData(data.scene) end,

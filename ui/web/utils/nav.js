@@ -141,6 +141,7 @@ export function resetList(elOrId) {
         return false; // Return false if the element is not found
     }
     el.innerHTML = '';
+    el.style.minHeight = '0';
     el.scrollTop = 0;
     el.scrollLeft = 0;
 }

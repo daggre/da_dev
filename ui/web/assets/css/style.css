@@ -1,0 +1,463 @@
+
+@font-face {
+    font-family: 'LiterationMonoNerd';
+    src: url(../fonts/LiterationMonoNerd.ttf);
+}
+
+.test {
+    border: 1px solid red;
+}
+
+:root {
+    --primary: #aac7ff;
+    --primary-dark: #0a305f;
+    --secondary: #bec6dc;
+    --tertiary: #705575;
+    --tertiary-light: #fad8fd;
+    --tertiary-dark: #573e5c;
+    --highlight: #bec6dc;
+    --bg: #04101D;
+    --bg-t1: #04101DAB;
+    --bg-t2: #04101D75;
+    --bg-t3: #04101D22;
+    --font-size: 16px;
+    --brd-rad: 8px;
+}
+
+html {
+    color-scheme: normal!important
+}
+
+body {
+    color: var(--primary);
+    height: 100vh;
+    margin: 0px;
+    padding: 0px;
+    font-family: LiterationMonoNerd,Menlo,Consolas,monospace;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-size: var(--font-size);
+    user-select: none;
+    overflow: hidden!important;
+}
+
+code {
+    font-family: LiterationMonoNerd,Menlo,Consolas,monospace;
+}
+
+ul {
+    direction: ltr;
+    margin: 0px;
+    padding-inline-start: 0px;
+    padding-inline-end: 0px;
+    list-style-type: none;
+}
+
+ul li {
+    display: flex;
+    align-items: stretch;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    clear: both;
+}
+
+#devTreeHUD {
+    gap: 0.5rem;
+    height: auto;
+    width: 10vh;
+    position: fixed;
+    right: 12vw;
+    bottom: 8vh;
+    text-transform: lowercase;
+}
+
+.bgt1 {
+    border-radius: var(--brd-rad);
+    background: var(--bg-t1);
+    overflow: hidden;
+}
+
+.bgt2 {
+    border-radius: var(--brd-rad);
+    background: var(--bg-t2);
+}
+
+.bggradient {
+    border-radius: var(--brd-rad);
+    background: linear-gradient(to right, var(--bg-t1), var(--bg-t3));
+}
+
+.bgi {
+    color: var(--bg);
+    text-shadow: 0 0 1px, 0 0 1px;
+    border-radius: var(--brd-rad);
+    background: var(--primary);
+}
+
+.borderleft {
+    padding-left: 0.5rem;
+    border-radius: var(--brd-rad) 0px 0px var(--brd-rad);
+}
+
+.borderright {
+    padding-right: 0.5rem;
+    border-radius: 0px var(--brd-rad) var(--brd-rad) 0px;
+}
+
+.blr {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    border-left: 2px solid var(--primary);
+    border-right: 2px solid var(--primary);
+}
+
+.gap {
+    margin-bottom: 0.3rem;
+}
+
+.top {
+    position: absolute;
+    top: 2vh;
+}
+
+.bottom {
+    position: absolute;
+    bottom: 2vh;
+}
+
+.centerwidth {
+    position: absolute;
+    transform: translate(50%);
+    right: 50vw;
+}
+
+.center {
+    text-align: center;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    left: 50vw;
+    top: 50vh;
+}
+
+.right {
+    position: absolute;
+    max-height: 70vh;
+    right: 2vh
+}
+
+.left {
+    position: absolute;
+    max-height: 70vh;
+    left: 2vh;
+}
+
+.pad {
+    padding: 1.0rem;
+}
+
+.listGroup {
+    min-width: 8vw;
+    max-width: 33vw;
+    justify-content: flex-start;
+    flex-direction: column;
+    border-radius: 0px;
+    background: none;
+}
+
+.listGroup > div {
+    width: fit-content;
+    max-width: 100%;
+    overflow-y: auto;
+}
+
+.mgb > ul > li {
+    margin-bottom: 0.3rem;
+}
+
+.title { font-size: 1.5vh; }
+
+.subtitle { font-size: 0.7vh; }
+
+.bigicon {
+    font-size: 4vh;
+    margin-bottom: 1vh;
+}
+
+.list {
+    min-height: 0px;
+    border-left: 2px solid var(--primary);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.list > ul > li {
+    margin: 0 0.3rem 0 0.3rem;
+}
+
+.listSecondary {
+    flex: 1 1.5 auto;
+}
+
+.listPrimary {
+    flex: 1 1.2 auto;
+    min-height: 0vh;
+    max-height: 70vh;
+}
+
+.list li {
+    padding-top: 0.2rem;
+    text-shadow: none;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+/**/
+/*.searchField {*/
+/*    color: var(--highlight);*/
+/*    bottom: 8vh;*/
+/*    right: 50vw;*/
+/*    padding: 0px;*/
+/*    margin: 0px;*/
+/*    transform: translate(50%);*/
+/*}*/
+
+/*.flagList {*/
+/*    left: 2vh;*/
+/*    top: 2vh;*/
+/*    width: 20vw;*/
+/*    max-height: 96vh;*/
+/*    padding-top: 2px;*/
+/*    padding-bottom: 2px;*/
+/*    background: none;*/
+/*    overflow-y: auto;*/
+/*    /*display: flex;*/*/
+/*}*/
+/**/
+/*.flagList > ul > li {*/
+/*    float: right;*/
+/*}*/
+
+/*#activeAnimDisplay {*/
+/*    left: 50vw;*/
+/*    top: 1vh;*/
+/*    width: fit-content;*/
+/*    max-height: 10vh;*/
+/*    padding-top: 2px;*/
+/*    padding-bottom: 2px;*/
+/*    transform: translate(-50%);*/
+/*    background: none;*/
+/*    /*display: flex;*/*/
+/*}*/
+/**/
+/*#animActive li {*/
+/*    display: flex;*/
+/*    justify-content: center;*/
+/*}*/
+/**/
+/*#activeAnimDict {*/
+/*    margin-right: 1vh;*/
+/*}*/
+
+.label {
+}
+
+.entry {
+    width: min-content;
+    min-width: fit-content;
+    overflow-y: hidden;
+}
+
+.entry.borderright::before {
+    content: "  ";
+    color: var(--primary);
+    pointer-events: none;
+    text-shadow:
+        0 0 4px var(--primary),
+        0 0 10px var(--primary),
+        0 0 14px var(--primary),
+        0 0 18px var(--primary);
+}
+
+.entry.borderright::after {
+    color: transparent;
+    pointer-events: none;
+    content: " ";
+}
+
+.check {
+    width: min-content;
+}
+
+.check.borderright.selected::after {
+    content: " ";
+}
+
+.control {
+    margin-left: 0.3rem;
+    margin-right: 0.2rem;
+    font-size: 2.0vh;
+}
+
+::-webkit-scrollbar {
+    display: none;
+    width: 3px;
+    height: 1px;
+}
+
+#crosshair {
+	position: absolute;
+	top: 50vh;
+	left: 50vw;
+	transform: translate(-50%, -50%);
+	font-size: 1.9vh;
+	color: var(--highlight);
+    font-family: LiterationMonoNerd,Menlo,Consolas,monospace;
+}
+
+.listEntryField {
+    overflow: hidden;
+    flex-shrink: 0;
+    position: relative;
+    direction: ltr;
+}
+
+.hud {
+    display: flex;
+    color: var(--primary);
+    background-color: none;
+    flex-direction: column;
+    padding: 0.2rem;
+    border-radius: var(--brd-rad);
+    height: 100vh;
+    width: 100vw;
+}
+
+.options-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#crosshair.inactive {
+    color: var(--primary);
+}
+
+.selected, #crosshair.selected {
+    color: var(--bg-t1);
+}
+
+.selected {
+    color: var(--tertiary-dark);
+    text-shadow:
+        /*0 0 1px var(--bg),*/
+        /*0 0 1px var(--bg),*/
+        0 0 4px var(--tertiary-light),
+        0 0 5px var(--tertiary-light),
+        0 0 7px var(--tertiary-light),
+        0 0 10px var(--tertiary-light);
+}
+
+:hover, .hover, #crosshair.active {
+    color: var(--bg);
+    text-shadow:
+        0 0 4px var(--primary),
+        0 0 5px var(--primary),
+        0 0 7px var(--primary),
+        0 0 10px var(--primary);
+}
+
+.control:hover {
+    color: var(--bg);
+    text-shadow:
+        0 0 4px var(--primary),
+        0 0 5px var(--primary),
+        0 0 7px var(--primary),
+        0 0 10px var(--primary);
+}
+
+:focus {
+    outline: none;
+    color: var(--tertiary-light);
+    text-shadow:
+        0 0 1px var(--bg),
+        0 0 1px var(--bg),
+        0 0 6px var(--primary),
+        0 0 10px var(--primary),
+        0 0 12px var(--tertiary-light),
+        0 0 15px var(--tertiary-light);
+}
+
+.selected:focus {
+    text-shadow:
+        0 0 1px var(--bg),
+        0 0 1px var(--bg),
+        0 0 6px var(--tertiary-light),
+        0 0 10px var(--tertiary-light),
+        0 0 12px var(--tertiary-light),
+        0 0 15px var(--tertiary-light);
+}
+
+.selected:hover {
+    text-shadow:
+        0 0 4px var(--tertiary-light),
+        0 0 5px var(--tertiary-light),
+        0 0 7px var(--tertiary-light),
+        0 0 10px var(--tertiary-light);
+}
+
+.entry:focus, .liHover, .liSelect, .list li:focus  {
+    color: var(--tertiary-light);
+    text-shadow:
+        0 0 3px var(--tertiary-light),
+        0 0 4px var(--tertiary-light);
+}
+
+.entry:focus {
+    border-right: 2px solid var(--tertiary-light);
+}
+
+#button-spawnfavs.selected {
+    color: gold;
+    text-shadow:
+        0 0 15px gold,
+        0 0 17px gold;
+}
+
+#button-spawnfavs.selected:hover {
+    text-shadow:
+        0 0 10px gold,
+        0 0 12px gold,
+        0 0 15px gold,
+        0 0 17px gold;
+}
+
+#button-spawnfavs.selected:focus {
+    outline: none;
+    text-shadow:
+        0 0 1px var(--bg),
+        0 0 1px var(--bg),
+        0 0 6px gold,
+        0 0 10px gold,
+        0 0 12px gold,
+        0 0 15px gold;
+}
+
+#button-spawnfavs:focus {
+    outline: none;
+    color: var(--tertiary-light);
+    text-shadow:
+        0 0 15px gold;
+}
+
+.hidden {
+    display: none;
+}
+
