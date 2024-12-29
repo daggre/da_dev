@@ -197,6 +197,7 @@ export function getScenes() {
                 });
                 li.classList.add('liSelect');
                 elementSetText('selectedScene', sceneName);
+                // elementSetClass('objSceneObjectsListOptions', 'hidden', false);
                 sendClientMessage('loadSceneObjects', { scene: sceneName });
                 trackSceneObjects();
             })
@@ -225,7 +226,14 @@ export function trackSceneObjects() {
                     scene: sceneName,
                 }).then(function(resp) {
                         let objects = resp.objects;
+                        el.innerHTML = "";
+                        let ul = document.createElement('ul');
                         if (!Array.isArray(objects) || objects.length === 0) {
+                            let li = document.createElement('li');
+                            li.innerHTML = "";
+                            ul.appendChild(li);
+                            el.appendChild(ul);
+                            el.style.minHeight = "1.3vh";
                             return;
                         }
                         // This is for objects in the scene
@@ -234,8 +242,7 @@ export function trackSceneObjects() {
                         } else if (TagOption.sort == "name") {
                             objects.sort((a, b) => a.modelName.localeCompare(b.modelName));
                         }
-                        el.innerHTML = "";
-                        let ul = document.createElement('ul');
+
                         for (let i = 0; i < objects.length; ++i) {
                             let li = document.createElement('li');
                             let handle = objects[i].handle;
@@ -371,11 +378,10 @@ const ObjectHUD_All = [
 
     "objScenesLeftColumn",
     "objScenesList",
+    "sceneSelected",
     "objSceneTagOptions",
     "objSceneObjectsList",
-    "sceneSelected",
-
-    "sceneData",
+    // "objSceneObjectsListOptions",
 ];
 
 const ObjectHUD_Visible = [
@@ -404,9 +410,10 @@ const ObjectHUD_ImportExport = [
     "objScenesLeftColumn",
     "objSceneControlOptions",
     "objScenesList",
+    "sceneSelected",
     "objSceneTagOptions",
     "objSceneObjectsList",
-    "sceneSelected",
+    // "objSceneObjectsListOptions",
 ];
 
 export function initializeObjectHUD() {

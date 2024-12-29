@@ -140,14 +140,16 @@
                         <ul class="row">
                             <li>
                                 <div id="button-savescene" class="control" tabindex="22" role="button" aria-pressed="false" >󰆓</div>
+                                <div id="button-import" class="control" tabindex="22" role="button" aria-pressed="false" >󰈠</div>
+                                <div id="button-export" class="control" tabindex="22" role="button" aria-pressed="false" >󰈝</div>
                             </li>
                         </ul>
                     </div>
-                    <div id="objScenesList" class="list listPrimary bggradient gap">
-                    </div>
                     <div id="sceneSelected" class="row listEntryField gap">
                         <div class="label borderleft bgi">scene</div>
-                        <div id="selectedScene" class="entry borderright bgt1"></div>
+                        <div id="selectedScene" class="entry borderright bgt1" tabindex="23" contenteditable="true"></div>
+                    </div>
+                    <div id="objScenesList" class="list listPrimary bggradient gap">
                     </div>
                     <div id="objSceneTagOptions" class="bgt1 blr gap">
                         <ul class="row">
@@ -157,12 +159,14 @@
                             </li>
                         </ul>
                     </div>
-                    <div id="objSceneObjectsList" class="list listPrimary bggradient">
+                    <div id="objSceneObjectsList" class="list listPrimary bggradient gap">
                     </div>
-                </div>
-                <div id="sceneData" class="listGroup top left">
-                    <div id="sceneResultsOne" class="list listPrimary bggradient">
-                    </div>
+                    <!-- <div id="objSceneObjectsListOptions" class="bgt1 blr gap"> -->
+                    <!--     <ul class="row"> -->
+                    <!--         <li> -->
+                    <!--         </li> -->
+                    <!--     </ul> -->
+                    <!-- </div> -->
                 </div>
                 <div id="objDetails" class="listGroup top right">
                     <div id="objDetailsList" class="mgb">
