@@ -437,7 +437,6 @@ document.addEventListener('DOMContentLoaded', () => {
     registerListeners();
 
     window.addEventListener('message', function(msg) {
-        console.log("message", msg);
         switch(msg.data.type) {
             case "ui_trie":
                 console.log("trie", msg.data.trie);

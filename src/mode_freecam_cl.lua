@@ -311,12 +311,14 @@ local CheckMovementControls = function(x, y, z, rot_x, rot_y, rot_z, fov)
     return x, y, z, rot_x, rot_y, rot_z, fov
 end
 
+local lastSpeed = Speed.Current
 lazy.camUpdate = function(speed)
+    if lastSpeed == speed then return; end
     da_ui.send("updateCamera", {
         camera = {
             speed = ("%.2f"):format(speed),
-            cameraMode = da_mode.isActive("focus") and "" or "",
-            noclip = da_mode.isActive("freecam") and "" or da_mode.isActive("noclip") and "" or "",
+            -- cameraMode = da_mode.isActive("focus") and "" or "",
+            -- noclip = da_mode.isActive("freecam") and "" or da_mode.isActive("noclip") and "" or "",
         }
     })
 end

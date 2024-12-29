@@ -53,7 +53,6 @@ function searchObjects(searchValue, searchList, elementId, tabIndex) {
     let el = document.getElementById(elementId);
     el.style.minHeight = "0";
     if (searchValue == "") return;
-    console.log("Searching", searchList, searchValue);
 
     const maxResults = 10000;
     const selectedObject = document.getElementById('activeObject').innerHTML;
