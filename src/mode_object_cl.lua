@@ -14,9 +14,9 @@ local UntrackedModels = { [0] = true, }
 local Spawn = nil
 local HitCoords = nil
 local NearbyOriginPos = nil
-local ActiveScene = "default"
+local ActiveScene = "autosave"
 local Scenes = {
-    default = { name = ActiveScene, objects = {} },
+    autosave = { name = ActiveScene, objects = {} },
 }
 
 local UID = 0

@@ -3,8 +3,8 @@ const testHud = "ui_object";
 const mockResponses = {
     initAnims: () => ({
         animations: JSON.stringify([
-            { "test@test@test": [ "test1", "test2", "test3"]  },
-            { "test@test@test3": [ "test_back", "test_front", "test_left", "test_right"]  },
+            { "test@test@test": [ "test1", "test2", "test3" ] },
+            { "test@test@test3": [ "test_back", "test_front", "test_left", "test_right" ] },
         ]),
     }),
     initAnimFlags: () => ({
@@ -52,8 +52,8 @@ const mockResponses = {
     }),
     scenesList: () => ({
         scenes: JSON.stringify([
-            { name: "default", objects: [], },
-            { name: "test_1", objects: [
+            { name: "autosave", objects: [], },
+            { name: "test", objects: [
                 {
                     model: 0x3DC6147E,
                     coords_x: -2816.43,
@@ -93,7 +93,12 @@ const mockResponses = {
     ]}),
     trackObject: () => ({}),
     loadSceneObjects: () => ({}),
-    getSceneObjects: () => ({}),
+    getSceneObjects: () => ({
+        objects: [
+            // { handle: 12345, model: "101010", modelName: "test_model", distance: 1.0, },
+            // { handle: 999, model: "990099", modelName: "test_model", distance: 123.0, },
+        ],
+    }),
     saveScene: () => ({}),
     sendCursorKey: () => ({}),
     sendCursorPos: () => ({}),
@@ -193,7 +198,7 @@ window.endpointMute = {
 };
 
 document.body.style.backgroundColor = '#333333';
-setTheme('da_bluepurple_light');
+// setTheme('da_bluepurple_light');
 
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
