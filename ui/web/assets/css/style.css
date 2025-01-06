@@ -208,7 +208,6 @@ ul li {
 
 .list li {
     padding-top: 0.2rem;
-    text-shadow: none;
     white-space: nowrap;
     text-overflow: ellipsis;
 }
@@ -350,22 +349,30 @@ ul li {
     color: var(--primary);
 }
 
-.selected, #crosshair.selected {
-    color: var(--bg-t1);
+#crosshair.selected {
+    color: var(--tertiary-light);
+    text-shadow: none;
+}
+
+#crosshair.active {
+    color: var(--tertiary-light);
+    text-shadow:
+        0 0 4px var(--primary),
+        0 0 5px var(--primary),
+        0 0 7px var(--primary),
+        0 0 10px var(--primary);
 }
 
 .selected {
     color: var(--tertiary-dark);
     text-shadow:
-        /*0 0 1px var(--bg),*/
-        /*0 0 1px var(--bg),*/
         0 0 4px var(--tertiary-light),
         0 0 5px var(--tertiary-light),
         0 0 7px var(--tertiary-light),
         0 0 10px var(--tertiary-light);
 }
 
-:hover, .hover, #crosshair.active {
+:hover, .hover {
     color: var(--bg);
     text-shadow:
         0 0 4px var(--primary),
@@ -383,7 +390,7 @@ ul li {
         0 0 10px var(--primary);
 }
 
-:focus {
+:focus, .liPseudoFocus {
     outline: none;
     color: var(--tertiary-light);
     text-shadow:
@@ -396,6 +403,7 @@ ul li {
 }
 
 .selected:focus {
+    outline: none;
     text-shadow:
         0 0 1px var(--bg),
         0 0 1px var(--bg),
@@ -414,6 +422,7 @@ ul li {
 }
 
 .entry:focus, .liHover, .liSelect, .list li:focus  {
+    outline: none;
     color: var(--tertiary-light);
     text-shadow:
         0 0 3px var(--tertiary-light),

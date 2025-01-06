@@ -128,17 +128,20 @@ export function getTrackedObjects() {
                             }
                             li.innerHTML = `${objects[i].distance.toFixed(2)} ${handle} ${objects[i].modelName}`;
                             if (objects[i].select) {
-                                li.classList.add('selected');
+                                li.classList.add('liSelect');
+                                li.classList.add('liPseudoFocus');
                             } else if (objects[i].hover) {
-                                li.classList.add('hover');
+                                // li.classList.add('liHover');
                             }
                             li.addEventListener('mouseenter', function() {
+                                li.classList.add('liHover');
                                 sendClientMessage('trackObject', {
                                     handle: this.innerHTML.split(" ")[1],
                                     category: "hover",
                                 });
                             })
-                            li.addEventListener('mouseleave', function() {
+                            li.addEventListener('mouseout', function() {
+                                li.classList.remove('liHover');
                                 sendClientMessage('trackObject', {
                                     handle: this.innerHTML.split(" ")[1],
                                     category: "hover",
@@ -146,6 +149,7 @@ export function getTrackedObjects() {
                                 });
                             })
                             li.addEventListener('click', function() {
+                                li.classList.add('liSelect');
                                 sendClientMessage('trackObject', {
                                     handle: this.innerHTML.split(" ")[1],
                                     category: "select",
@@ -226,6 +230,8 @@ export function trackSceneObjects() {
                 }).then(function(resp) {
                         let objects = resp.objects;
                         if (!Array.isArray(objects) || objects.length === 0) {
+                            el.innerHTML = "";
+                            el.style.minHeight = 0;
                             return;
                         }
                         // This is for objects in the scene
@@ -244,9 +250,9 @@ export function trackSceneObjects() {
                             }
                             li.innerHTML = `${objects[i].distance.toFixed(2)} ${handle} ${objects[i].modelName}`;
                             if (objects[i].select) {
-                                li.classList.add('selected');
+                                li.classList.add('liSelect');
                             } else if (objects[i].hover) {
-                                li.classList.add('hover');
+                                li.classList.add('liHover');
                             }
                             li.addEventListener('mouseenter', function() {
                                 sendClientMessage('trackObject', {
@@ -254,7 +260,7 @@ export function trackSceneObjects() {
                                     category: "hover",
                                 });
                             });
-                            li.addEventListener('mouseleave', function() {
+                            li.addEventListener('mouseout', function() {
                                 sendClientMessage('trackObject', {
                                     handle: this.innerHTML.split(" ")[1],
                                     category: "hover",
