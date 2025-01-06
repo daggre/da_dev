@@ -71,6 +71,7 @@ local GetObjData = function(entityHandle)
 end
 
 local function LoadSceneObjects(sceneName)
+    log.info("Loading scene objects", sceneName)
     local successfulLoad = true
     if Scenes[sceneName] == nil then
         log.error("Scene not found", sceneName)
@@ -81,6 +82,7 @@ local function LoadSceneObjects(sceneName)
         return false
     end
     for _, obj in ipairs(Scenes[sceneName].objects) do
+        log.spam("Creating object", obj)
         local handle = da_obj.create(obj.modelHash, vector3(obj.coords_x, obj.coords_y, obj.coords_z), obj.data)
         obj.handle = handle
         if handle then
@@ -129,6 +131,7 @@ local function SaveScene(sceneName)
         objData.modelName = nil
         table.insert(storedScene.objects, objData)
     end
+    log.info("Saving scene", sceneName, storedScene)
     kvp.encode("scenes:"..sceneName, storedScene)
 end
 
@@ -507,11 +510,11 @@ local function GetNearbyObjects(range, origin)
     -- FIXME: We are overwriting indexes in entityData for different types of objects
 
     local entities = da_util.GetEntitiesNearPoint(pos, range)
-    for i, entity in ipairs(entities) do
+    for _, entity in ipairs(entities) do
         local model = GetEntityModel(entity)
         local coords = GetEntityCoords(entity)
         local objType = GetObjectTypeStr(entity)
-        entityData[i] = {
+        local data = {
             handle = entity,
             model = model,
             modelName = dat.getName(model),
@@ -520,17 +523,18 @@ local function GetNearbyObjects(range, origin)
             networkId = NetworkGetEntityIsNetworked(entity) and NetworkGetNetworkIdFromEntity(entity) or nil,
         }
         if entity == Hover then
-            entityData[i].hover = true
+            data.hover = true
         elseif entity == Select then
-            entityData[i].select = true
+            data.select = true
         end
+        table.insert(entityData, data)
     end
 
     local peds = da_util.GetPedsNearPoint(pos, range)
-    for i, entity in ipairs(peds) do
+    for _, entity in ipairs(peds) do
         local model = GetEntityModel(entity)
         local coords = GetEntityCoords(entity)
-        entityData[i] = {
+        local data = {
             handle = entity,
             model = model,
             modelName = dat.getName(model),
@@ -539,17 +543,18 @@ local function GetNearbyObjects(range, origin)
             networkId = NetworkGetEntityIsNetworked(entity) and NetworkGetNetworkIdFromEntity(entity) or nil,
         }
         if entity == Hover then
-            entityData[i].hover = true
+            data.hover = true
         elseif entity == Select then
-            entityData[i].select = true
+            data.select = true
         end
+        table.insert(entityData, data)
     end
 
     local vehicles = da_util.GetVehiclesNearPoint(pos, range)
-    for i, entity in ipairs(vehicles) do
+    for _, entity in ipairs(vehicles) do
         local model = GetEntityModel(entity)
         local coords = GetEntityCoords(entity)
-        entityData[i] = {
+        local data = {
             handle = entity,
             model = model,
             modelName = dat.getName(model),
@@ -558,10 +563,11 @@ local function GetNearbyObjects(range, origin)
             networkId = NetworkGetEntityIsNetworked(entity) and NetworkGetNetworkIdFromEntity(entity) or nil,
         }
         if entity == Hover then
-            entityData[i].hover = true
+            data.hover = true
         elseif entity == Select then
-            entityData[i].select = true
+            data.select = true
         end
+        table.insert(entityData, data)
     end
 
     return entityData
@@ -644,7 +650,7 @@ end
 
 local testSceneObjects = {
     {
-        model = `s_wap_rainsfalls`,
+        modelHash = `s_wap_rainsfalls`,
         coords_x = -2816.43,
         coords_y = -697.29,
         coords_z = 268.31,
@@ -655,7 +661,7 @@ local testSceneObjects = {
         collision = true,
     },
 }
-kvp.encode("scenes:test_1", { name = "test_1", objects = testSceneObjects })
+-- kvp.encode("scenes:test_1", { name = "test_1", objects = testSceneObjects })
 
 da_ui.callbacks({
     nearbyObjects = function(data) return {nearbyObjects = GetNearbyObjects(data.range, data.origin)} end,
@@ -663,14 +669,18 @@ da_ui.callbacks({
         local scenes = {}
         for _, scene in pairs(Scenes) do
             table.insert(scenes, scene)
+            log.debug("Adding cached scene", _)
         end
 
         local sceneNames = kvp.search("scenes:")
         for _, scene in ipairs(sceneNames) do
             local sceneName = scene:sub(8)
-            local s = kvp.decode(scene)
-            Scenes[sceneName] = s
-            table.insert(scenes, s)
+            if not Scenes[sceneName] then
+                local s = kvp.decode(scene)
+                Scenes[sceneName] = s
+                table.insert(scenes, s)
+                log.debug("Loading scene from kvp", sceneName)
+            end
         end
         return { scenes = json.encode(scenes) }
     end,
