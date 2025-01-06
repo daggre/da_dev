@@ -311,7 +311,7 @@ local CheckMovementControls = function(x, y, z, rot_x, rot_y, rot_z, fov)
     return x, y, z, rot_x, rot_y, rot_z, fov
 end
 
-local lastSpeed = Speed.Current
+local lastSpeed = nil
 lazy.camUpdate = function(speed)
     if lastSpeed == speed then return; end
     da_ui.send("updateCamera", {
