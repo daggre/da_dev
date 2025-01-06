@@ -314,6 +314,7 @@ end
 local lastSpeed = nil
 lazy.camUpdate = function(speed)
     if lastSpeed == speed then return; end
+    lastSpeed = speed
     da_ui.send("updateCamera", {
         camera = {
             speed = ("%.2f"):format(speed),
