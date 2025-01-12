@@ -1,22 +1,11 @@
 // dev-mocks.js
 // const testHud = "ui_object";
 const testHud = "ui_animation";
+const jsonString = `{"test":["a","b"], "vest":["c","d"]}`
+// INFO: Issue with the @ symbol
+// const jsonString = `{"test@test@test": ["test1", "test2", "test3" ], "test@test@test3": [ "test_back", "test_front", "test_left", "test_right" ],}`
 const mockResponses = {
-    initAnims: () => ({
-        animations: JSON.stringify([
-            { "test@test@test": [
-                "test1",
-                "test2",
-                "test3"
-            ] },
-            { "test@test@test3": [
-                "test_back",
-                "test_front",
-                "test_left",
-                "test_right"
-            ] },
-        ]),
-    }),
+    initAnims: () => ({ animations: jsonString, }),
     initAnimFlags: () => ({
         flags: JSON.stringify([
             { name: "Loop", value: 1 },

@@ -261,7 +261,6 @@ export function searchAnimDicts(searchValue) {
         if (animDict.toLowerCase().includes(searchValue)) {
             results.push({ animDict: animDict });
         } else {
-            console.log('searching', Animations, animDict);
             Animations[animDict].every(animName => {
                 if (animName.toLowerCase().includes(searchValue)) {
                     results.push({ animDict: animDict });
