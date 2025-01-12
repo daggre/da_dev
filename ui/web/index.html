@@ -31,7 +31,23 @@
 
     <body>
         <main>
+            <!-- TODO: Complete this -->
+            <section id="infoHUD" class="hud hidden">
+                <div id="infoHelp" class="pad center blr bgt2">
+                    <div class="bigicon"></div>
+                    <div id="infoDescription" class="">Are you sure?</div>
+                    <ul class="row rowpad gap"><li class="blr bgt2">Yes</li><li class="blr bgt2">No</li></ul>
+                </div>
+            </section>
             <section id="gizmo" class="hud hidden"></section>
+            <section id="devTreeHUD" class="hud blr bgt1 hidden">
+                <div id="menuOptionsContainer">
+                    <ul id="menuOptions" class="options-list"> </ul>
+                </div>
+                <div id="devOptionsContainer">
+                    <ul id="devOptions" class="options-list"> </ul>
+                </div>
+            </section>
             <section id="objectHUD" class="hud hidden">
                 <div id="objHelp" class="center bgt2 pad hidden">
                     <div class="title">Object Mode by daggre_actual</div>
@@ -64,7 +80,7 @@
                     </ul>
                 </div>
                 <div id="crosshair" class="inactive hidden">+</div>
-                <div id="objControlOptions" class="bgt1 centerwidth bottom blr">
+                <div id="objControlOptions" class="bgt1 centerwidth top blr">
                     <ul class="row">
                         <li>
                             <div id="button-spawn" class="control" tabindex="1" role="button" aria-pressed="false" aria-label="Spawn Objects" >󰒕</div>
@@ -76,11 +92,11 @@
                     </ul>
                 </div>
                 <div id="objSpawnLeftColumn" class="listGroup top left">
-                    <div id="objSpawnName" class="row gap listEntryField">
+                    <div id="objSpawnName" class="row gap noflex listEntryField">
                         <div class="label borderleft bgi">+</div>
                         <div id="activeObject" class="entry borderright bgt1"></div>
                     </div>
-                    <div id="objSearchField" class="row gap listEntryField">
+                    <div id="objSearchField" class="row gap noflex listEntryField">
                         <div class="label borderleft bgi"></div>
                         <div id="objSearch" class="entry borderright bgt1" tabindex="2" contenteditable="true"></div>
                     </div>
@@ -101,7 +117,7 @@
                     </div>
                 </div>
                 <div id="objNearbyLeftColumn" class="listGroup top left">
-                    <div id="objNearbyOrigin" class="bgt1 blr gap">
+                    <div id="objNearbyOrigin" class="bgt1 blr gap noflex">
                         <ul class="row">
                             <li>
                                 <div id="button-nearbyOrigin-camera" class="control" tabindex="12" role="button" aria-pressed="false" ></div>
@@ -113,11 +129,11 @@
                             </li>
                         </ul>
                     </div>
-                    <div id="selectedNearbyOrigin" class="row gap listEntryField">
+                    <div id="selectedNearbyOrigin" class="row gap noflex listEntryField">
                         <div class="label borderleft bgi">origin</div>
                         <div id="activeNearbyOrigin" class="entry borderright bgt1">camera</div>
                     </div>
-                    <div id="objNearbyFilter" class="bgt1 blr gap">
+                    <div id="objNearbyFilter" class="bgt1 blr gap noflex">
                         <ul class="row">
                             <li>
                                 <div id="button-nearby-object" class="control selected" tabindex="13" role="button" aria-pressed="false" >󰠱</div>
@@ -128,7 +144,7 @@
                             </li>
                         </ul>
                     </div>
-                    <div id="objNearbyRange" class="row gap listEntryField">
+                    <div id="objNearbyRange" class="row gap noflex listEntryField">
                         <div class="label borderleft bgi">range</div>
                         <div id="nearbyRange" class="entry borderright bgt1" tabindex="14" contenteditable="true">50</div>
                     </div>
@@ -140,14 +156,16 @@
                         <ul class="row">
                             <li>
                                 <div id="button-savescene" class="control" tabindex="22" role="button" aria-pressed="false" >󰆓</div>
+                                <div id="button-clearscene" class="control" tabindex="22" role="button" aria-pressed="false" >󰕑</div>
+                                <div id="button-deletescene" class="control" tabindex="22" role="button" aria-pressed="false" >󰗨</div>
                                 <div id="button-import" class="control" tabindex="22" role="button" aria-pressed="false" >󰈠</div>
                                 <div id="button-export" class="control" tabindex="22" role="button" aria-pressed="false" >󰈝</div>
                             </li>
                         </ul>
                     </div>
-                    <div id="sceneSelected" class="row listEntryField gap">
+                    <div id="sceneSelected" class="row gap noflex listEntryField">
                         <div class="label borderleft bgi">scene</div>
-                        <div id="selectedScene" class="entry borderright bgt1" tabindex="23" contenteditable="true"></div>
+                        <div id="selectedScene" class="entry borderright bgt1" tabindex="23" contenteditable="true">autosave</div>
                     </div>
                     <div id="objScenesList" class="list listPrimary bggradient gap">
                     </div>
@@ -235,14 +253,6 @@
                     </div>
                 </div>
             </section>
-            <section id="devTreeHUD" class="hud hidden">
-                <div id="menuOptionsContainer">
-                    <ul id="menuOptions" class="options-list"> </ul>
-                </div>
-                <div id="devOptionsContainer">
-                    <ul id="devOptions" class="options-list"> </ul>
-                </div>
-            </section>
             <section id="cameraHUD" class="hud hidden">
                 <div id="camHelp" class="center bgt2 pad hidden">
                     <div class="title">FreeCam and NoClip by daggre_actual</div>
@@ -280,7 +290,7 @@
                         <li><div class="label borderleft bgi">Esc</div><div class="entry borderright bgt1">Exit FreeCam/NoClip</div></li>
                     </ul>
                 </div>
-                <div id="camStatus" class="top centerwidth">
+                <div id="camStatus" class="toplow centerwidth">
                     <ul id="row">
                         <li>
                             <div class="label borderleft bgi"></div> <div id="cam-speed" class="entry borderright bgt1"></div>
@@ -335,6 +345,55 @@
                         <li><div class="label borderleft bgi">Spacebar</div><div class="entry borderright bgt1">Play/Restart Animation (No Focused Element)</div></li>
                     </ul>
                 </div>
+                <div id="animHUDControls" class="bgt1 centerwidth top blr">
+                    <ul class="row">
+                        <li>
+                            <div id="button-animsearch" class="control" tabindex="1" role="button" aria-pressed="false" aria-label="Search Animations">󰑮</div>
+                            <div id="button-animconfigure" class="control" tabindex="11" role="button" aria-pressed="false" aria-label="Configure Animation">󱉯</div>
+                        </li>
+                    </ul>
+                </div>
+                <div id="animSearchLeftColumn" class="listGroup top left">
+                    <div id="animSearchDict" class="row gap noflex listEntryField">
+                        <div class="label borderleft bgi">dict</div>
+                        <div id="animSelectedDict" class="entry borderright bgt1"></div>
+                    </div>
+                    <div id="animSearchName" class="row gap noflex listEntryField">
+                        <div class="label borderleft bgi">name</div>
+                        <div id="animSelectedName" class="entry borderright bgt1"></div>
+                    </div>
+                    <div id="animSearchField" class="row gap noflex listEntryField">
+                        <div class="label borderleft bgi"></div>
+                        <div id="animSearch" class="entry borderright bgt1" tabindex="2" contenteditable="true"></div>
+                    </div>
+                    <div id="animDictList" class="list listPrimary bggradient">
+                    </div>
+                    <div id="animNameList" class="list listSecondary bggradient">
+                    </div>
+                </div>
+                <div id="animConfigureLeftColumn" class="listGroup top left">
+                    <div id="animConfigureOptions" class="bgt1 blr gap">
+                        <ul class="row">
+                            <li>
+                                <div id="button-animconfadd" class="control" tabindex="12" role="button" aria-pressed="false">󰺫</div>
+                                <div id="button-animconfremove" class="control" tabindex="12" role="button" aria-pressed="false">󰺩</div>
+                                <div id="button-animconfclear" class="control" tabindex="12" role="button" aria-pressed="false">󰗨</div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div id="animConfigureList" class="list listPrimary bggradient">
+                    </div>
+                    <div id="animConfigureDict" class="row gap noflex listEntryField">
+                        <div class="label borderleft bgi">dict</div>
+                        <div id="animSelectedDict" class="entry borderright bgt1"></div>
+                    </div>
+                    <div id="animConfigureName" class="row gap noflex listEntryField">
+                        <div class="label borderleft bgi">name</div>
+                        <div id="animSelectedName" class="entry borderright bgt1"></div>
+                    </div>
+                </div>
+            </section>
+            <section id="animHUD2" class="hud hidden">
                 <div id="animControlOptions" class="bgt1 blr gap">
                     <ul class="row">
                         <li id="animSettings" style="display:none;">
@@ -384,12 +443,9 @@
                         </li>
                     </ul>
                 </div>
-                <div id="animFlagsOptions" class="flagList">
-                </div>
-                <div id="animIKFlagsOptions" class="flagList">
-                </div>
-                <div id="animTaskFilterOptions" class="flagList">
-                </div>
+                <div id="animFlagsOptions" class="flagList"></div>
+                <div id="animIKFlagsOptions" class="flagList"></div>
+                <div id="animTaskFilterOptions" class="flagList"></div>
                 <div id="animEntityOptions" class="">
                     <ul id="animEntity">
                         <li>

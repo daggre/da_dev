@@ -813,4 +813,4 @@ function StartKeyDiscovery(state)
     end
 end
 
-da_trie.addOpt("menu", "keylog", "k", function() StartKeyDiscovery() end)
+da_trie.addOpt("misc", "keylog", "k", function() StartKeyDiscovery() end)

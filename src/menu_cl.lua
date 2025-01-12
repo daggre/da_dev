@@ -37,9 +37,9 @@ da_trie.addOpt("pos", "cpy vec4", "4", function()
     da_ui.send("clipboard", { text = ("vector4(%.3f, %.3f, %.3f, %.3f)"):format(coords.x, coords.y, coords.z, heading)})
 end)
 
-da_trie.add("devRoot", "menu", "m")
--- da_trie.addOpt("menu", "clothing", "c", function() TriggerEvent('clothing:openMenu', true, false, true) end) -- Barber disabled
--- da_trie.addOpt("menu", "horsetack", "h", function()
+da_trie.add("devRoot", "misc", "m")
+-- da_trie.addOpt("misc", "clothing", "c", function() TriggerEvent('clothing:openMenu', true, false, true) end) -- Barber disabled
+-- da_trie.addOpt("misc", "horsetack", "h", function()
 --     local horseEntity, dist = TMC.Functions.GetClosestHorse()
 --     if dist > 25 or not horseEntity or not Entity(horseEntity) or not Entity(horseEntity).state then
 --         log.debug("No horse close enough")
