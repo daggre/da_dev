@@ -502,6 +502,7 @@ function handleKeyPress(event, hud) {
     const key = KeyTranslateMap[lowercaseKey] || lowercaseKey;
 
     const action = KeyActions[hud][key] || KeyActions[hud].default;
+    console.log("handleKeyPress", hud, key, action);
     if (action) { action(event); }
 }
 

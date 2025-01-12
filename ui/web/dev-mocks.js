@@ -1,10 +1,20 @@
 // dev-mocks.js
-const testHud = "ui_object";
+// const testHud = "ui_object";
+const testHud = "ui_animation";
 const mockResponses = {
     initAnims: () => ({
         animations: JSON.stringify([
-            { "test@test@test": [ "test1", "test2", "test3" ] },
-            { "test@test@test3": [ "test_back", "test_front", "test_left", "test_right" ] },
+            { "test@test@test": [
+                "test1",
+                "test2",
+                "test3"
+            ] },
+            { "test@test@test3": [
+                "test_back",
+                "test_front",
+                "test_left",
+                "test_right"
+            ] },
         ]),
     }),
     initAnimFlags: () => ({
