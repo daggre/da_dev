@@ -16,7 +16,7 @@ local HitCoords = nil
 local NearbyOriginPos = nil
 local ActiveScene = "autosave"
 local Scenes = {
-    autosave = { name = ActiveScene, objects = {} },
+    [ActiveScene] = { name = ActiveScene, objects = {} },
 }
 
 local UID = 0
@@ -323,7 +323,7 @@ da_mode.register({
             modifiers = { shift = true, },
             fn = function()
                 if not Spawn or not HitCoords then return; end
-                if not ActiveScene then ActiveScene = "default"; end
+                if not ActiveScene then ActiveScene = "autosave"; end
                 if not Scenes[ActiveScene] then Scenes[ActiveScene] = { objects = {}, }; end
                 local obj = da_obj.create(Spawn, HitCoords, { ground = true, })
                 log.spam("Spawned object", ActiveScene, obj, Spawn, HitCoords)
@@ -600,7 +600,7 @@ local ControlCheckCursor = function(pressed, justPressed)
     if SelectMode == "Cursor" then
         if justPressed.MouseLeft then
             if pressed.Shift and Spawn and HitCoords then
-                if not ActiveScene then ActiveScene = "default"; end
+                if not ActiveScene then ActiveScene = "autosave"; end
                 if not Scenes[ActiveScene] then Scenes[ActiveScene] = { objects = {}, }; end
                 local obj = da_obj.create(Spawn, HitCoords, { ground = true, })
                 log.spam("Spawned object", ActiveScene, obj, Spawn, HitCoords)
@@ -695,10 +695,16 @@ da_ui.events({
     setNearbyOriginPos = SetNearbyOriginPos,
     saveScene = function(data)
         if data.scene ~= ActiveScene then
-            log.error("Scene name mismatch", data.scene, ActiveScene)
-            return false
+            newScene = { name = data.scene, objects = {} }
+            for _, obj in ipairs(Scenes[ActiveScene].objects) do
+                table.insert(newScene.objects, GetObjData(obj.handle))
+                log.info("Copying object", obj.handle)
+            end
+            Scenes[data.scene] = newScene
+            log.info("Copying scene", data.scene, ActiveScene)
+            ActiveScene = data.scene
         end
-        SaveScene(data.scene)
+        SaveScene(ActiveScene)
     end,
 })
 da_net.events({
@@ -718,11 +724,11 @@ da_net.events({
 
 -- UI Tree
 
-da_trie.addOpt("devRoot", "mode:edit", "e",
+da_trie.addOpt("devRoot", "obj mode", "e",
     function() da_mode.activate("object") end,
     function() return not da_mode.isActive("object") end)
 
-da_trie.addOpt("objRoot", "mode:edit", "e",
+da_trie.addOpt("objRoot", "exit obj mode", "e",
     function() da_mode.deactivate("object") end,
     function() return da_mode.isActive("object") end)
 
@@ -756,9 +762,9 @@ da_trie.addOpt("objRoot", "unfrz", "f",
     end)
 
 
-da_trie.add("objRoot", "obj clipboard", "q")
+da_trie.add("objRoot", "clip", "q")
 
-da_trie.addOpt("obj clipboard", "pos v3", "3",
+da_trie.addOpt("clip", "pos v3", "3",
     function()
         local v3 = GetEntityCoords(Select)
         da_ui.send("clipboard", {
@@ -767,7 +773,7 @@ da_trie.addOpt("obj clipboard", "pos v3", "3",
     end,
     function() return Select ~= nil end)
 
-da_trie.addOpt("obj clipboard", "pos v4", "4",
+da_trie.addOpt("clip", "pos v4", "4",
     function()
         local v3 = GetEntityCoords(Select)
         local hdg = GetEntityHeading(Select)
@@ -777,7 +783,7 @@ da_trie.addOpt("obj clipboard", "pos v4", "4",
     end,
     function() return Select ~= nil end)
 
-da_trie.addOpt("obj clipboard", "rot v3", "5",
+da_trie.addOpt("clip", "rot v3", "5",
     function()
         local v3 = GetEntityRotation(Select)
         da_ui.send("clipboard", {
@@ -786,12 +792,16 @@ da_trie.addOpt("obj clipboard", "rot v3", "5",
     end,
     function() return Select ~= nil end)
 
-da_trie.addOpt("obj clipboard", "entity id", "e",
+da_trie.addOpt("clip", "entity id", "e",
     function() da_ui.send("clipboard", { text = Select }) end,
     function() return Select ~= nil end)
 
-da_trie.addOpt("obj clipboard", "model hash", "m",
+da_trie.addOpt("clip", "model hash", "m",
     function() da_ui.send("clipboard", { text = GetEntityModel(Select) }) end,
+    function() return Select ~= nil end)
+
+da_trie.addOpt("clip", "model name", "n",
+    function() da_ui.send("clipboard", { text = dat.getName(GetEntityModel(Select)) }) end,
     function() return Select ~= nil end)
 
 

@@ -141,7 +141,7 @@ da_mode.register({
     end,
 })
 
-da_trie.addOpt("devRoot", "mode:freecam", "c", function() da_mode.toggle("freecam") end)
+da_trie.addOpt("devRoot", "cam mode", "c", function() da_mode.toggle("freecam") end)
 da_trie.addOpt("devRoot", "noclip", "z", function() da_mode.toggle("noclip") end)
 da_trie.addOpt("objRoot", "noclip", "z", function() da_mode.toggle("noclip") end)
 

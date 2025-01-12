@@ -120,6 +120,11 @@ ul li {
     top: 2vh;
 }
 
+.toplow {
+    position: absolute;
+    top: 5vh;
+}
+
 .bottom {
     position: absolute;
     bottom: 2vh;
@@ -147,7 +152,7 @@ ul li {
 
 .left {
     position: absolute;
-    max-height: 70vh;
+    max-height: 95vh;
     left: 2vh;
 }
 
@@ -156,12 +161,14 @@ ul li {
 }
 
 .listGroup {
+    display: flex;
+    justify-content: flex-start;
     min-width: 8vw;
     max-width: 33vw;
-    justify-content: flex-start;
     flex-direction: column;
     border-radius: 0px;
     background: none;
+    max-height: 95vh;
 }
 
 .listGroup > div {
@@ -197,19 +204,31 @@ ul li {
 }
 
 .listSecondary {
+    margin-top: 0.3rem;
     flex: 1 1.5 auto;
 }
 
 .listPrimary {
     flex: 1 1.2 auto;
     min-height: 0vh;
-    max-height: 70vh;
 }
 
 .list li {
     padding-top: 0.2rem;
     white-space: nowrap;
     text-overflow: ellipsis;
+}
+
+#infoDescription {
+    margin-bottom: 1rem;
+}
+
+.rowpad li {
+    margin: 1rem 1rem 1rem 1rem;
+}
+
+.noflex {
+    flex-shrink: 0;
 }
 
 /**/
@@ -317,7 +336,6 @@ ul li {
 
 .listEntryField {
     overflow: hidden;
-    flex-shrink: 0;
     position: relative;
     direction: ltr;
 }
@@ -325,7 +343,6 @@ ul li {
 .hud {
     display: flex;
     color: var(--primary);
-    background-color: none;
     flex-direction: column;
     padding: 0.2rem;
     border-radius: var(--brd-rad);

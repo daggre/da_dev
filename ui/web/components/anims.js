@@ -1,5 +1,6 @@
-import { KeyActions } from "../script.js";
-import { sendClientMessage } from "../utils/msg.js";
+import { KeyActions } from '../script.js';
+import { sendClientMessage } from '../utils/msg.js';
+import { selectOnly, resetList, isVisible, elementSetClass, elementHasClass, elementSetText, toggleSection } from '../utils/nav.js';
 
 let Animations = {};
 let IKFlagTotals = 0;
@@ -12,34 +13,108 @@ const Flags = {
 }
 let TaskFilter = false;
 
-export function initAnims() {
-    // KeyActions['animHUD'] = {
-    //     'escape': () => {
-    //         elementSetClass('animHUD', 'hidden', true);
-    //         sendClientMessage('deactivateMode', { mode: "animation" });
-    //     },
-    //     'backspace': () => { toggleStop(); },
-    //     ' ': () => { togglePlay(); },
-    //     '?': () => { toggleHelp("animHelp"); },
-    //     '1': () => { toggleSearch(); },
-    //     '2': () => { toggleTimings(); },
-    //     '3': () => { toggleIKFlags(); },
-    //     '4': () => { toggleFlags(); },
-    //     '5': () => { toggleTaskFilters(); },
-    //     '6': () => { toggleEntity(); },
-    //     'c': () => { toggleSettings(); },
-    //     'h': () => { toggleHelp("animHelp"); },
-    //     'i': () => { toggleIKFlags(); },
-    //     'l': () => { toggleLoop(); },
-    //     'o': () => { toggleFlags(); },
-    //     'p': () => { togglePlay(); },
-    //     'q': () => { togglePlay(); },
-    //     'r': () => { togglePlay(); },
-    //     't': () => { toggleTimings(); },
-    //     'u': () => { toggleTorso(); },
-    //     'x': () => {},
-    // }
+const AnimHUD_All = [
+    'animHelp',
+    'animHUDControls',
 
+    'animSearchLeftColumn',
+    'animSearchDict',
+    'animSearchName',
+    'animSearchField',
+    'animDictList',
+    'animNameList',
+
+    'animConfigureLeftColumn',
+    'animConfigureOptions',
+    'animConfigureList',
+    'animConfigureDict',
+    'animConfigureName',
+];
+
+const AnimHUD_Visible = [
+    'animHUDControls',
+];
+
+const AnimHUD_Buttons = [
+    'button-animsearch',
+    'button-animconfigure',
+];
+
+const AnimHUD_Search = [
+    'animSearchLeftColumn',
+    'animSearchDict',
+    'animSearchName',
+    'animSearchField',
+    'animDictList',
+    'animNameList',
+];
+
+const AnimHUD_Configure = [
+    'animConfigureLeftColumn',
+    'animConfigureOptions',
+    'animConfigureList',
+    'animConfigureDict',
+    'animConfigureName',
+];
+
+export function initializeAnimationHUD() {
+    toggleSection(
+        false,
+        [],
+        AnimHUD_Visible,
+        AnimHUD_All
+    );
+    elementSetClass('animHUD', 'hidden', true);
+}
+
+export function toggleAnimationHUD(state) {
+    if (state == undefined)
+        state = elementHasClass('animHUD', 'hidden');
+    toggleSection(
+        state,
+        AnimHUD_Visible, // Elements to show
+        [],
+        AnimHUD_All, // All elements
+    );
+    elementSetClass('animHUD', 'hidden', !state);
+}
+
+export function toggleAnimationSearchHUD(state) {
+    if (state == undefined)
+        state = elementHasClass(AnimHUD_Search[0], 'hidden');
+    console.log('toggleAnimationSearchHUD', state);
+    toggleSection(
+        state,
+        AnimHUD_Search, // Elements to show
+        AnimHUD_Visible, // All visible elements
+        AnimHUD_All, // All elements
+    );
+    if (state) {
+        selectOnly('button-animsearch', AnimHUD_Buttons);
+        document.getElementById('animSearchField').focus();
+    } else {
+        elementSetClass('button-animsearch', 'selected', state);
+    }
+}
+
+export function toggleAnimationConfigureHUD(state) {
+    if (state == undefined)
+        state = elementHasClass(AnimHUD_Configure[0], 'hidden');
+    toggleSection(
+        state,
+        AnimHUD_Configure, // Elements to show
+        AnimHUD_Visible, // All visible elements
+        AnimHUD_All, // All elements
+    );
+    if (state) {
+        selectOnly('button-animconfigure', AnimHUD_Buttons);
+        // document.getElementById('animSearchField').focus();
+    } else {
+        elementSetClass('button-animconfigure', 'selected', state);
+    }
+}
+
+export function initAnims() {
     sendClientMessage('initAnims', {}).then(function(resp) {
         Animations = JSON.parse(resp.animations);
     });
@@ -56,11 +131,11 @@ export function initAnims() {
 
             let flagField = document.createElement('div');
             flagField.classList.add('check', 'entry', 'borderright', 'bgt1');
-            flagField.setAttribute('id', "flag-" + flag.value);
-            flagField.setAttribute('tabindex', "5");
-            flagField.setAttribute('role', "button");
-            flagField.setAttribute('aria-pressed', "false");
-            flagField.setAttribute('onclick', "toggleFlag(" + flag.value + ")");
+            flagField.setAttribute('id', 'flag-' + flag.value);
+            flagField.setAttribute('tabindex', '5');
+            flagField.setAttribute('role', 'button');
+            flagField.setAttribute('aria-pressed', 'false');
+            flagField.setAttribute('onclick', 'toggleFlag(' + flag.value + ')');
 
             let li = document.createElement('li');
             li.appendChild(flagLabel);
@@ -70,12 +145,12 @@ export function initAnims() {
 
         let flagLabel = document.createElement('div');
         flagLabel.classList.add('check', 'label', 'borderright', 'bgi');
-        flagLabel.innerHTML = "TOTAL";
+        flagLabel.innerHTML = 'TOTAL';
 
         let flagField = document.createElement('div');
         flagField.classList.add('check', 'entry', 'borderright', 'bgt1');
-        flagField.setAttribute('id', "flagTotals");
-        flagField.innerHTML = "0";
+        flagField.setAttribute('id', 'flagTotals');
+        flagField.innerHTML = '0';
 
         let li = document.createElement('li');
         li.appendChild(flagLabel);
@@ -96,11 +171,11 @@ export function initAnims() {
 
             let flagField = document.createElement('div');
             flagField.classList.add('check', 'entry', 'borderright', 'bgt1');
-            flagField.setAttribute('id', "ikflag-" + flag.value);
-            flagField.setAttribute('tabindex', "4");
-            flagField.setAttribute('role', "button");
-            flagField.setAttribute('aria-pressed', "false");
-            flagField.setAttribute('onclick', "toggleIKFlag(" + flag.value + ")");
+            flagField.setAttribute('id', 'ikflag-' + flag.value);
+            flagField.setAttribute('tabindex', '4');
+            flagField.setAttribute('role', 'button');
+            flagField.setAttribute('aria-pressed', 'false');
+            flagField.setAttribute('onclick', 'toggleIKFlag(' + flag.value + ')');
 
             let li = document.createElement('li');
             li.appendChild(flagLabel);
@@ -111,12 +186,12 @@ export function initAnims() {
 
         let flagLabel = document.createElement('div');
         flagLabel.classList.add('check', 'label', 'borderright', 'bgi');
-        flagLabel.innerHTML = "TOTAL";
+        flagLabel.innerHTML = 'TOTAL';
 
         let flagField = document.createElement('div');
         flagField.classList.add('check', 'entry', 'borderright', 'bgt1');
-        flagField.setAttribute('id', "IKFlagTotals");
-        flagField.innerHTML = "0";
+        flagField.setAttribute('id', 'IKFlagTotals');
+        flagField.innerHTML = '0';
 
         let li = document.createElement('li');
         li.appendChild(flagLabel);
@@ -137,10 +212,10 @@ export function initAnims() {
 
             let taskField = document.createElement('div');
             taskField.classList.add('check', 'entry', 'taskFilter', 'borderright', 'bgt1');
-            taskField.setAttribute('id', "task-" + index);
-            taskField.setAttribute('tabindex', "5");
-            taskField.setAttribute('role', "button");
-            taskField.setAttribute('aria-pressed', "false");
+            taskField.setAttribute('id', 'task-' + index);
+            taskField.setAttribute('tabindex', '5');
+            taskField.setAttribute('role', 'button');
+            taskField.setAttribute('aria-pressed', 'false');
             taskField.onclick = function() { toggleTaskFilter(index, taskFilter); };
 
             let li = document.createElement('li');
@@ -150,49 +225,37 @@ export function initAnims() {
         });
         taskList.appendChild(ul);
     });
-
-    $("div#valueAnimSearch.entry").keydown(function(e) {
-        if (e.code == "Enter") {
-            e.preventDefault();
-            let dictList = document.getElementById("animDictList");
-            let animList = document.getElementById("animList");
-            document.getElementById('animDictList').style.display = "flex";
-            document.getElementById('animList').style.display = "flex";
-            dictList.innerHTML = "";
-            dictList.scrollTop = 0;
-            dictList.scrollLeft = -1000;
-            animList.innerHTML = "";
-            animList.scrollTop = 0;
-            animList.scrollLeft = -1000;
-            searchRedMAnims(this.innerHTML);
-        }
-    });
-
 }
 
 function toggleTaskFilter(taskFilterIndex, taskFilter) {
-    let el = document.getElementById("task-" + taskFilterIndex);
-    let selected = el.classList.contains("selected");
+    let el = document.getElementById('task-' + taskFilterIndex);
+    let selected = el.classList.contains('selected');
 
     const allTaskFilters = document.querySelectorAll('.taskFilter');
     allTaskFilters.forEach(filter => filter.classList.remove('selected'));
 
     if (!selected) {
-        el.classList.add("selected");
+        el.classList.add('selected');
         TaskFilter = taskFilter;
     } else {
         TaskFilter = false;
     }
 }
 
-function searchRedMAnims(searchValue) {
-    let el = document.getElementById("animDictList");
+export function searchAnimDicts(searchValue) {
+    searchValue = searchValue.trim().toLowerCase();
+
     const maxResults = 10000;
     let results = [];
+    let el = document.getElementById('animDictList');
+    el.innerHTML = '';
+    el.style.minHeight = 0;
 
-    el.innerHTML = "";
-    if (!searchValue || searchValue == "") { return; }
-    searchValue = searchValue.trim().toLowerCase();
+    let nameListEl = document.getElementById('animNameList');
+    nameListEl.innerHTML = '';
+    nameListEl.style.minHeight = 0;
+
+    if (!searchValue || searchValue == '') return;
 
     Object.keys(Animations).forEach(animDict => {
         if (animDict.toLowerCase().includes(searchValue)) {
@@ -220,27 +283,28 @@ function searchRedMAnims(searchValue) {
 
     let ul = document.createElement('ul');
     for (let i=0; i < results.length && i < maxResults; ++i) {
+        const animDict = results[i].animDict;
         let li = document.createElement('li');
         li.addEventListener('click', function() {
-            document.getElementById("activeAnimDict").innerHTML = this.innerHTML;
-            document.getElementById("activeAnimName").innerHTML = "";
-            searchAnims(this.innerHTML)
+            elementSetText('animSelectedDict', animDict);
+            elementSetText('animSelectedName', '');
+            selectAnimDict(animDict);
         })
-        li.innerHTML = results[i].animDict;
+        li.innerHTML = animDict;
         ul.appendChild(li);
     }
     el.appendChild(ul);
     if (results.length < 30) {
-        el.style.minHeight = results.length + ".4vh";
+        el.style.minHeight = results.length + '.4vh';
     } else {
-        el.style.minHeight = "30vh";
+        el.style.minHeight = '30vh';
     }
     el.scrollTop = 0;
     el.scrollLeft = -1000;
-    console.log("searched for", searchValue, "found results", results.length);
+    console.log('searched for', searchValue, 'found results', results.length);
 }
 
-function searchAnims(animDict) {
+function selectAnimDict(animDict) {
     let results = [];
     Object.values(Animations[animDict]).forEach(anim => {
         results.push({
@@ -255,38 +319,40 @@ function searchAnims(animDict) {
         return 0;
     });
 
-    let animResults = document.getElementById("animList");
-    animResults.innerHTML = "";
+    let animResults = document.getElementById('animNameList');
+    animResults.innerHTML = '';
     let ul = document.createElement('ul');
     for (let i=0; i < results.length; ++i) {
+        const anim = results[i].anim;
         let li = document.createElement('li');
-        li.innerHTML = results[i].anim;
+        elementSetText(li, animDict);
+        li.innerHTML = anim;
         li.addEventListener('click', function() {
-            document.getElementById("activeAnimName").innerHTML = this.innerHTML;
+            elementSetText('animSelectedName', anim);
+            document.getElementById('activeAnimName').innerHTML = anim;
             togglePlay(true);
         });
         ul.appendChild(li);
     }
     animResults.appendChild(ul);
     if (results.length < 15) {
-        animResults.style.minHeight = results.length + ".4vh";
+        animResults.style.minHeight = results.length + '.4vh';
     } else {
-        animResults.style.minHeight = "15.4vh";
+        animResults.style.minHeight = '15.4vh';
     }
     animResults.scrollTop = 0;
     animResults.scrollLeft = -1000;
-
 }
 
 export function playAnimation() {
-    const animDict = document.getElementById("activeAnimDict").innerHTML;
-    const anim = document.getElementById("activeAnimName").innerHTML;
-    if (anim == "" || animDict == "") { return; }
-    const entity = document.getElementById("animEntityField").innerHTML;
-    const blendIn = document.getElementById("timingBlendIn").innerHTML;
-    const blendOut = document.getElementById("timingBlendOut").innerHTML;
-    const playback = document.getElementById("timingPlayback").innerHTML;
-    const duration = document.getElementById("timingDuration").innerHTML;
+    const animDict = document.getElementById('activeAnimDict').innerHTML;
+    const anim = document.getElementById('activeAnimName').innerHTML;
+    if (anim == '' || animDict == '') { return; }
+    const entity = document.getElementById('animEntityField').innerHTML;
+    const blendIn = document.getElementById('timingBlendIn').innerHTML;
+    const blendOut = document.getElementById('timingBlendOut').innerHTML;
+    const playback = document.getElementById('timingPlayback').innerHTML;
+    const duration = document.getElementById('timingDuration').innerHTML;
     sendClientMessage('playAnim', {
         entity: entity,
         animDict: animDict,
@@ -303,7 +369,7 @@ export function playAnimation() {
 
 export function toggleFlag(flag) {
     let flagTotals = 0;
-    elementSetClass(`flag-${flag}`, "selected")
+    elementSetClass(`flag-${flag}`, 'selected')
 
     for (let i=0; i < Flags.TOTAL; i++) {
         let value = toUint32(1 << i);
@@ -312,7 +378,7 @@ export function toggleFlag(flag) {
         }
     }
     FlagTotals = flagTotals;
-    const flagTotalsElement = document.getElementById("flagTotals");
+    const flagTotalsElement = document.getElementById('flagTotals');
     if (flagTotalsElement) { flagTotalsElement.innerHTML = flagTotals; }
 
     updateSpecialFlagSelections(flag);
@@ -334,23 +400,23 @@ function updateSpecialFlagSelections(flag) {
 }
 
 export function toggleIKFlag(flag) {
-    let el = document.getElementById("ikflag-" + flag);
-    el.classList.toggle("selected");
+    let el = document.getElementById('ikflag-' + flag);
+    el.classList.toggle('selected');
 
     IKFlagTotals = 0;
     for (let i=0; i < 31 ; i++) {
         let v = toUint32(1 << i);
-        if (document.getElementById("ikflag-" + v).classList.contains("selected")) {
+        if (document.getElementById('ikflag-' + v).classList.contains('selected')) {
             IKFlagTotals += v;
         }
     }
-    document.getElementById("IKFlagTotals").innerHTML = IKFlagTotals;
+    document.getElementById('IKFlagTotals').innerHTML = IKFlagTotals;
 }
 
 export function togglePlay(state) {
-    if (elementSetClass('button-play', 'selected', state)) {
-        setTimeout(function() { elementSetClass('button-play', 'selected', false); }, 200);
-    } else { return; }
+    // if (elementSetClass('button-play', 'selected', state)) {
+    //     setTimeout(function() { elementSetClass('button-play', 'selected', false); }, 200);
+    // } else { return; }
     playAnimation();
 }
 

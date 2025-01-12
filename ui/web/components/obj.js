@@ -2,6 +2,7 @@ import { MouseDown } from '../script.js';
 import { selectOnly, resetList, isVisible, elementSetClass, elementHasClass, elementSetText, toggleSection } from '../utils/nav.js';
 import { sendClientMessage } from '../utils/msg.js';
 
+let ActiveScene = "autosave";
 let NearbyOption = {
     object: true,
     ped: true,
@@ -42,6 +43,22 @@ export function initObj() {
         TagOption = JSON.parse(resp.tags);
         document.getElementById('button-tagsortby' + TagOption.sort).classList.add('selected');
     });
+}
+
+export function copyScene() {
+    const newSceneName = document.getElementById('selectedScene').innerHTML;
+    console.log("Copy scene", ActiveScene, newSceneName);
+    sendClientMessage('saveScene', { scene: newSceneName, });
+    ActiveScene = newSceneName;
+    getScenes();
+}
+
+export function clearScene() {
+    // ALL UNSAVED CHANGES WILL BE LOST
+}
+
+export function deleteScene() {
+    // CONFIRM YOU ARE DELETING THE SCENE
 }
 
 export function searchSpawnObject(searchString) {
@@ -185,9 +202,8 @@ export function getScenes() {
         for (let i = 0; i < sceneList.length; ++i) {
             let li = document.createElement('li');
             const name = sceneList[i].name;
-            const selectedScene = document.getElementById('selectedScene').innerHTML;
             li.innerHTML = name;
-            if (name == selectedScene) { li.classList.add('liSelect'); }
+            if (name == ActiveScene) { li.classList.add('liSelect'); }
             li.addEventListener('mouseenter', function() {
                 li.classList.add('liHover');
             });
@@ -195,14 +211,14 @@ export function getScenes() {
                 li.classList.remove('liHover');
             });
             li.addEventListener('click', function() {
-                const sceneName = this.innerHTML;
+                ActiveScene = this.innerHTML;
                 el.querySelectorAll('li').forEach(function(li) {
                     li.classList.remove('liSelect');
                 });
                 li.classList.add('liSelect');
-                elementSetText('selectedScene', sceneName);
+                elementSetText('selectedScene', ActiveScene);
                 // elementSetClass('objSceneObjectsListOptions', 'hidden', false);
-                sendClientMessage('loadSceneObjects', { scene: sceneName });
+                sendClientMessage('loadSceneObjects', { scene: ActiveScene });
                 trackSceneObjects();
             })
             li.setAttribute('tabindex', '23');
@@ -225,9 +241,8 @@ export function trackSceneObjects() {
     const loopId = setInterval(function() {
         if (isVisible(el)) {
             if (!MouseDown) {
-                let sceneName = document.getElementById('selectedScene').innerHTML;
                 sendClientMessage('getSceneObjects', {
-                    scene: sceneName,
+                    scene: ActiveScene,
                 }).then(function(resp) {
                         let objects = resp.objects;
                         el.innerHTML = "";
@@ -385,12 +400,17 @@ const ObjectHUD_All = [
     "sceneSelected",
     "objSceneTagOptions",
     "objSceneObjectsList",
-    // "objSceneObjectsListOptions",
 ];
 
 const ObjectHUD_Visible = [
     "objControlOptions",
     "objDetails",
+];
+
+const ObjectHUD_Buttons = [
+    "button-spawn",
+    "button-trackedobjlist",
+    "button-importexport",
 ];
 
 const ObjectHUD_Spawn = [
@@ -417,7 +437,6 @@ const ObjectHUD_ImportExport = [
     "sceneSelected",
     "objSceneTagOptions",
     "objSceneObjectsList",
-    // "objSceneObjectsListOptions",
 ];
 
 export function initializeObjectHUD() {
@@ -452,7 +471,7 @@ export function toggleObjectSpawnHUD(state) {
         ObjectHUD_All
     );
     if (state) {
-        selectOnly('button-spawn', ['button-spawn','button-trackedobjlist', 'button-importexport']);
+        selectOnly('button-spawn', ObjectHUD_Buttons);
         document.getElementById('button-spawn').focus();
     } else {
         elementSetClass('button-spawn', 'selected', state);
@@ -469,7 +488,7 @@ export function toggleObjectNearbyHUD(state) {
         ObjectHUD_All
     );
     if (state) {
-        selectOnly('button-trackedobjlist', ['button-spawn','button-trackedobjlist', 'button-importexport']);
+        selectOnly('button-trackedobjlist', ObjectHUD_Buttons);
         document.getElementById('button-trackedobjlist').focus();
         getTrackedObjects();
     } else {
@@ -488,11 +507,9 @@ export function toggleObjectImportExportHUD(state) {
     );
     if (state) {
         getScenes();
-        selectOnly('button-importexport', ['button-spawn','button-trackedobjlist', 'button-importexport']);
+        selectOnly('button-importexport', ObjectHUD_Buttons);
         document.getElementById('button-importexport').focus();
-        if (document.getElementById('selectedScene').innerHTML != "") {
-            trackSceneObjects();
-        }
+        trackSceneObjects();
     } else {
         elementSetClass('button-importexport', 'selected', state);
     }

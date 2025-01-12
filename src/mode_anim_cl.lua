@@ -71,6 +71,4 @@ da_ui.events({
     end,
 })
 
-da_trie.addOpt("devRoot", "devkit:anim", "a", function()
-    da_mode.toggle("animation")
-end)
+da_trie.addOpt("devRoot", "anim mode", "a", function() da_mode.toggle("animation") end)
