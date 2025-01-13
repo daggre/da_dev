@@ -288,6 +288,7 @@ export function searchAnimDicts(searchValue) {
         li.addEventListener('click', function() {
             elementSetText('animSelectedDict', animDict);
             elementSetText('animSelectedName', '');
+            console.log('Setting animConfSelectedDict', animDict);
             elementSetText('animConfSelectedDict', animDict);
             elementSetText('animConfSelectedName', '');
             selectAnimDict(animDict);
