@@ -288,6 +288,8 @@ export function searchAnimDicts(searchValue) {
         li.addEventListener('click', function() {
             elementSetText('animSelectedDict', animDict);
             elementSetText('animSelectedName', '');
+            elementSetText('animConfSelectedDict', animDict);
+            elementSetText('animConfSelectedName', '');
             selectAnimDict(animDict);
         })
         li.innerHTML = animDict;
@@ -329,7 +331,7 @@ function selectAnimDict(animDict) {
         li.innerHTML = anim;
         li.addEventListener('click', function() {
             elementSetText('animSelectedName', anim);
-            document.getElementById('activeAnimName').innerHTML = anim;
+            elementSetText('animConfSelectedName', anim);
             togglePlay(true);
         });
         ul.appendChild(li);
