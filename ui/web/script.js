@@ -8,6 +8,7 @@ import {
     elementHasClass,
     elementSetText,
     isVisible,
+    resetList,
 } from "./utils/nav.js";
 import { initTrie } from "./components/trie.js";
 import {
@@ -32,6 +33,8 @@ import {
     toggleAnimationSearchHUD,
     toggleAnimationConfigureHUD,
     searchAnimDicts,
+    addAnimation,
+    clearAnimations,
     playAnimation,
     togglePlay,
     toggleStop,
@@ -205,6 +208,9 @@ export const EventActions = {
         '#button-animsearch': () => toggleAnimationSearchHUD(),
         '#button-animconfigure': () => toggleAnimationConfigureHUD(),
 
+        '#button-animconfadd': () => { addAnimation(); },
+        '#button-animconfclear': () => { clearAnimations(); },
+
         // Object HUD
         '#button-spawn': () => toggleObjectSpawnHUD(),
         '#button-trackedobjlist': () => toggleObjectNearbyHUD(),
@@ -323,19 +329,31 @@ export const EventActions = {
             case "Tab":
                 return;
             case "Backspace":
-                // Get the current selection and cursor position
-                const bs_selection = window.getSelection();
-                // console.log(event, bs_selection);
-                if (bs_selection.rangeCount > 0) {
-                    const cursorAtStart = bs_selection.anchorOffset === 0; // Caret is at the start of the div
-                    const textLength = event.target.textContent.trim().length;
+            case "Delete":
+                const selection = window.getSelection();
+                // console.log(event, selection);
+                if (!selection.rangeCount) break;
 
-                    // Clear the div only if the cursor is not at the start and it's the last character
-                    // console.log(cursorAtStart, textLength);
-                    if (!cursorAtStart && textLength === 1) {
-                        event.target.innerHTML = ''; // Clear the div manually
-                        event.preventDefault(); // Prevent <br> or any default action
+                const selectedText = selection.toString();
+                const textLength = event.target.textContent.length;
+                let shouldClear = false;
+
+                if (selectedText.length > 0) {
+                    if (textLength - selectedText.length === 0) {
+                        shouldClear = true;
                     }
+                } else if (textLength === 1) {
+                    // No text is selected
+                    const cursorAtStart = selection.anchorOffset === 0; // Caret is at the start of the div
+                    if ((event.key === "Backspace" && !cursorAtStart) ||
+                        (event.key === "Delete" && cursorAtStart)) {
+                        shouldClear = true;
+                    }
+                }
+
+                if (shouldClear) {
+                    event.target.innerHTML = ''; // Clear the div manually
+                    event.preventDefault(); // Prevent <br> or any default action
                 }
                 break;
 
@@ -344,7 +362,7 @@ export const EventActions = {
                 const del_selection = window.getSelection();
                 if (del_selection.rangeCount > 0) {
                     const cursorAtStart = del_selection.anchorOffset === 0; // Caret is at the start
-                    const textLength = event.target.textContent.trim().length;
+                    const textLength = event.target.textContent.length;
 
                     // Clear the div only if the cursor is at the start and its the last char
                     if (cursorAtStart && textLength === 1) {
@@ -728,6 +746,39 @@ function updateObjectDetails(data) {
     });
 }
 
+export function showConfirm(msg = "Are you sure?", yes = "Yes", no = "No") {
+    return new Promise((resolve, reject) => {
+        const infoHUD = document.getElementById('infoHUD');
+        const message = document.getElementById('infoDescription');
+        const yesButton = document.getElementById('yesOption');
+        const noButton = document.getElementById('noOption');
+
+        message.innerHTML = msg;
+        yesButton.innerHTML = yes;
+        noButton.innerHTML = no;
+
+        infoHUD.classList.remove('hidden');
+
+        function handleYes() {
+            cleanup();
+            resolve(true);
+        }
+
+        function handleNo() {
+            cleanup();
+            resolve(false);
+        }
+
+        function cleanup() {
+            yesButton.removeEventListener('click', handleYes);
+            noButton.removeEventListener('click', handleNo);
+            infoHUD.classList.add('hidden');
+        }
+
+        yesButton.addEventListener('click', handleYes);
+        noButton.addEventListener('click', handleNo);
+    });
+}
 
 // DEPRECATE BELOW //
 

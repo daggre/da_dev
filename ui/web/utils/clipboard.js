@@ -7,7 +7,7 @@ export function clipboardCopy(val) {
     console.log(val)
 }
 
-// TODO: Test new implemented clipboardCopy function
+// TODO: Test this new implemented clipboardCopy function
 // export function clipboardCopy(val) {
 //     if (navigator.clipboard) {
 //         navigator.clipboard.writeText(val)

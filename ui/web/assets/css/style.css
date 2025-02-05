@@ -443,7 +443,7 @@ ul li {
     color: var(--tertiary-light);
     text-shadow:
         0 0 3px var(--tertiary-light),
-        0 0 4px var(--tertiary-light);
+        0 0 9px var(--tertiary-light);
 }
 
 .entry:focus {

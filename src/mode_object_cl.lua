@@ -695,7 +695,7 @@ da_ui.events({
     setNearbyOriginPos = SetNearbyOriginPos,
     saveScene = function(data)
         if data.scene ~= ActiveScene then
-            newScene = { name = data.scene, objects = {} }
+            local newScene = { name = data.scene, objects = {} }
             for _, obj in ipairs(Scenes[ActiveScene].objects) do
                 table.insert(newScene.objects, GetObjData(obj.handle))
                 log.info("Copying object", obj.handle)

@@ -1,4 +1,4 @@
-import { KeyActions } from '../script.js';
+import { KeyActions, showConfirm } from '../script.js';
 import { sendClientMessage } from '../utils/msg.js';
 import { selectOnly, resetList, isVisible, elementSetClass, elementHasClass, elementSetText, toggleSection } from '../utils/nav.js';
 
@@ -91,7 +91,7 @@ export function toggleAnimationSearchHUD(state) {
     );
     if (state) {
         selectOnly('button-animsearch', AnimHUD_Buttons);
-        document.getElementById('animSearchField').focus();
+        document.getElementById('button-animsearch').focus();
     } else {
         elementSetClass('button-animsearch', 'selected', state);
     }
@@ -108,7 +108,7 @@ export function toggleAnimationConfigureHUD(state) {
     );
     if (state) {
         selectOnly('button-animconfigure', AnimHUD_Buttons);
-        // document.getElementById('animSearchField').focus();
+        document.getElementById('button-animconfigure').focus();
     } else {
         elementSetClass('button-animconfigure', 'selected', state);
     }
@@ -285,14 +285,24 @@ export function searchAnimDicts(searchValue) {
     for (let i=0; i < results.length && i < maxResults; ++i) {
         const animDict = results[i].animDict;
         let li = document.createElement('li');
-        li.addEventListener('click', function() {
-            elementSetText('animSelectedDict', animDict);
-            elementSetText('animSelectedName', '');
-            console.log('Setting animConfSelectedDict', animDict);
-            elementSetText('animConfSelectedDict', animDict);
-            elementSetText('animConfSelectedName', '');
-            selectAnimDict(animDict);
+        li.addEventListener('click', function(event) {
+            if (event.ctrlKey) {
+                ul.removeChild(li);
+            } else {
+                elementSetText('animSelectedDict', animDict);
+                elementSetText('animSelectedName', '');
+                elementSetText('animConfSelectedDict', animDict);
+                elementSetText('animConfSelectedName', '');
+                selectAnimDict(animDict);
+            }
+
         })
+        li.addEventListener('mouseenter', function() {
+            li.classList.add('liHover');
+        });
+        li.addEventListener('mouseout', function() {
+            li.classList.remove('liHover');
+        });
         li.innerHTML = animDict;
         ul.appendChild(li);
     }
@@ -330,10 +340,26 @@ function selectAnimDict(animDict) {
         let li = document.createElement('li');
         elementSetText(li, animDict);
         li.innerHTML = anim;
-        li.addEventListener('click', function() {
-            elementSetText('animSelectedName', anim);
-            elementSetText('animConfSelectedName', anim);
-            togglePlay(true);
+        li.addEventListener('click', function(event) {
+            let updateAnim = true
+            if (event.shiftKey) {
+                addAnimation();
+            } else if (event.ctrlKey) {
+                updateAnim = false;
+                ul.removeChild(li);
+            } else {
+                togglePlay(true);
+            }
+            if (updateAnim) {
+                elementSetText('animSelectedName', anim);
+                elementSetText('animConfSelectedName', anim);
+            }
+        });
+        li.addEventListener('mouseenter', function() {
+            li.classList.add('liHover');
+        });
+        li.addEventListener('mouseout', function() {
+            li.classList.remove('liHover');
         });
         ul.appendChild(li);
     }
@@ -345,6 +371,45 @@ function selectAnimDict(animDict) {
     }
     animResults.scrollTop = 0;
     animResults.scrollLeft = -1000;
+}
+
+export function addAnimation() {
+    const animDict = document.getElementById('animSelectedDict').innerHTML;
+    const animName = document.getElementById('animSelectedName').innerHTML;
+    if (animDict == '' || animName == '') { return; }
+
+    let el = document.getElementById('animConfigureList');
+    let ul = document.getElementById('animConfigureListUl');
+    if (!ul) {
+        ul = document.createElement('ul');
+        ul.setAttribute('id', 'animConfigureListUl');
+        el.appendChild(ul);
+    }
+    let li = document.createElement('li');
+    li.innerHTML = animDict + ' - ' + animName;
+    li.setAttribute('id', 'anim-' + animDict + '-' + animName);
+    li.addEventListener('click', function(event) {
+        // TODO: Store and track animation info
+        console.log('clicked', animDict, animName);
+        if (event.ctrlKey) { ul.removeChild(li); }
+    });
+    ul.appendChild(li);
+    li.addEventListener('mouseenter', function() {
+        li.classList.add('liHover');
+    });
+    li.addEventListener('mouseout', function() {
+        li.classList.remove('liHover');
+    });
+}
+
+export function clearAnimations() {
+    showConfirm("Clear all animations?").then(confirm => {
+        if (confirm) {
+            resetList('animConfigureList');
+        } else {
+            console.log("Canceled clear animations.")
+        }
+    })
 }
 
 export function playAnimation() {
