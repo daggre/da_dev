@@ -67,19 +67,22 @@ const KeyTranslateMap = {
 
 export let KeyActions = {
     'infoHUD': {
-        'escape': () => {
-            console.log("Escape infoHUD");
-            elementSetClass('infoHUD', 'hidden', true);
-        },
+        'y': () => { elementSetClass('infoHUD', 'clear', true); },
+        'n': () => { elementSetClass('infoHUD', 'hidden', true); },
+        'enter': () => { elementSetClass('infoHUD', 'clear', true); },
+        'escape': () => { elementSetClass('infoHUD', 'hidden', true); },
     },
     'devTreeHUD': {},
     'animHUD': {
-        'escape': () => {
-            console.log("Escape animHUD");
-            sendClientMessage('deactivateMode', { mode: "animation" });
+        ' ': (event) => {
+            // TODO: Detect if its also a list element with an onclick
+            const eventId = `#${event.target.id}`;
+            if (EventActions.click[eventId])
+                EventActions.click[eventId](event);
         },
+        'escape': () => { sendClientMessage('deactivateMode', { mode: "animation" }); },
         'backspace': () => { toggleStop(); },
-        ' ': () => { togglePlay(); },
+        // ' ': () => { togglePlay(); },
         '?': () => { toggleHelp("animHelp"); },
         '1': () => { toggleAnimationSearchHUD(); },
         '2': () => { toggleAnimationConfigureHUD(); },
@@ -759,6 +762,21 @@ export function showConfirm(msg = "Are you sure?", yes = "Yes", no = "No") {
 
         infoHUD.classList.remove('hidden');
 
+        // Create a MutationObserver to monitor if the popup becomes hidden
+        const observer = new MutationObserver((mutationsList) => {
+            if (infoHUD.classList.contains('hidden')) {
+                cleanup();
+                resolve(false);
+            } else if (infoHUD.classList.contains('clear')) {
+                cleanup();
+                resolve(true);
+            }
+        });
+        observer.observe(infoHUD, {
+            attributes: true,
+            attributeFilter: ['class']
+        });
+
         function handleYes() {
             cleanup();
             resolve(true);
@@ -772,6 +790,8 @@ export function showConfirm(msg = "Are you sure?", yes = "Yes", no = "No") {
         function cleanup() {
             yesButton.removeEventListener('click', handleYes);
             noButton.removeEventListener('click', handleNo);
+            observer.disconnect();
+            infoHUD.classList.remove('clear');
             infoHUD.classList.add('hidden');
         }
 
@@ -782,86 +802,8 @@ export function showConfirm(msg = "Are you sure?", yes = "Yes", no = "No") {
 
 // DEPRECATE BELOW //
 
-function ObjectKeys(key, event) {
-    switch(key) {
-        case "Escape":
-            let escaped = false;
-            if (document.activeElement.classList.contains('entry')) {
-                document.activeElement.blur();
-                return;
-            }
-            if (escaped) { return; }
-
-            sendClientMessage('deactivateMode', { mode: "object" });
-            toggleObjectHUD(false);
-            return;
-        case "f":
-            if (!document.activeElement.classList.contains('entry') && !MCP) {
-                sendClientMessage('sendCursorKey', {
-                    pressed: Pressed,
-                    justPressed: JustPressed
-                });
-            }
-            return;
-        case "r":
-            sendClientMessage('sendCursorKey', {
-                pressed: Pressed,
-                justPressed: JustPressed
-            });
-            return;
-        case "x":
-            elementSetText('activeObject', "");
-            if (isVisible('objSearchField')) {
-                elementSetText('objSearch', "");
-                resetList("objSpawnList");
-            } else if (isVisible('objDetails')) {
-                sendClientMessage('sendCursorKey', { justPressed: { x: true, } });
-            }
-            return;
-    }
-}
-
 function HandleKeysAnim(event) {
     switch(event.key) {
-        case "Escape":
-            let escaped = false;
-            if (isVisible('animHelp')) {
-                toggleHelp("animHelp", false)
-                return;
-            }
-            if (isVisible('animSearchField')) {
-                toggleSearch(false);
-                escaped = true;
-            }
-            if (isVisible('animTimingsOptions')) {
-                toggleTimings(false);
-                escaped = true;
-            }
-            if (isVisible('animFlagsOptions')) {
-                toggleFlags(false);
-                escaped = true;
-            }
-            if (isVisible('animIKFlagsOptions')) {
-                toggleIKFlags(false);
-                escaped = true;
-            }
-            if (isVisible('animEntityOptions')) {
-                toggleEntity(false);
-                escaped = true;
-            }
-            if (escaped == true) { return; }
-
-            if (isVisible('animHUD')) {
-                //     setUIAnim(false);
-                //     sendClientMessage('deactivateMode', { mode: "animation" });
-                return;
-            }
-
-            if (isVisible('devTreeHUD')) {
-                elementSetClass('devTreeHUD', 'hidden', true);
-                sendClientMessage('deactivateMode', { mode: "devTree" });
-            }
-            return;
         case " ":
             if (typeof event.target.onclick == "function") {
                 event.target.onclick.apply();
