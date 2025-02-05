@@ -341,18 +341,16 @@ function selectAnimDict(animDict) {
         elementSetText(li, animDict);
         li.innerHTML = anim;
         li.addEventListener('click', function(event) {
-            let updateAnim = true
             if (event.shiftKey) {
-                addAnimation();
-            } else if (event.ctrlKey) {
-                updateAnim = false;
-                ul.removeChild(li);
-            } else {
-                togglePlay(true);
-            }
-            if (updateAnim) {
                 elementSetText('animSelectedName', anim);
                 elementSetText('animConfSelectedName', anim);
+                addAnimation();
+            } else if (event.ctrlKey) {
+                ul.removeChild(li);
+            } else {
+                elementSetText('animSelectedName', anim);
+                elementSetText('animConfSelectedName', anim);
+                togglePlay(true);
             }
         });
         li.addEventListener('mouseenter', function() {
