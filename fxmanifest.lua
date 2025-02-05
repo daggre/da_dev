@@ -52,14 +52,15 @@ client_scripts {
 
     '@da_lib/lib/trie_cl.lua',
     'ui/ui.lua',
-    'ui/map.lua',
 
     'src/menu_cl.lua',
     'src/keys_cl.lua',
     -- 'src/kinematics_cl.lua',
     'src/environment_cl.lua',
     'src/fx_cl.lua',
+    -- 'src/heritage_cl.lua',
     'src/mode_anim_cl.lua',
+    'src/mode_devtree_cl.lua',
     'src/mode_freecam_cl.lua',
     'src/mode_gizmo_cl.lua',
     'src/mode_object_cl.lua',

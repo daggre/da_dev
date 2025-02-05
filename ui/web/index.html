@@ -36,7 +36,10 @@
                 <div id="infoHelp" class="pad center blr bgt2">
                     <div class="bigicon"></div>
                     <div id="infoDescription" class="">Are you sure?</div>
-                    <ul class="row rowpad gap"><li class="blr bgt2">Yes</li><li class="blr bgt2">No</li></ul>
+                    <ul class="row rowpad gap">
+                        <li id="yesOption" class="blr bgt2">Yes</li>
+                        <li id="noOption" class="blr bgt2">No</li>
+                    </ul>
                 </div>
             </section>
             <section id="gizmo" class="hud hidden"></section>
@@ -330,13 +333,14 @@
                     <div id="animConfigureOptions" class="bgt1 blr gap">
                         <ul class="row">
                             <li>
-                                <div id="button-animconfadd" class="control" tabindex="12" role="button" aria-pressed="false">󰺫</div>
-                                <div id="button-animconfremove" class="control" tabindex="12" role="button" aria-pressed="false">󰺩</div>
+                                <div id="button-animconfadd" class="control" tabindex="12" role="button" aria-pressed="false">󱜇</div>
                                 <div id="button-animconfclear" class="control" tabindex="12" role="button" aria-pressed="false">󰗨</div>
+                                <!-- <div id="button-animconfremove" class="control" tabindex="12" role="button" aria-pressed="false">󱜁</div> -->
                             </li>
                         </ul>
                     </div>
                     <div id="animConfigureList" class="list listPrimary bggradient">
+                        <ul id="animConfigureListUl"></ul>
                     </div>
                 </div>
             </section>

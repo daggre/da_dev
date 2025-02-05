@@ -1,6 +1,3 @@
-local SkipNext = false
-CurrentTree = "devRoot"
-
 da_trie.addRoot("devRoot")
 da_trie.addRoot("objRoot")
 
@@ -81,65 +78,7 @@ da_ui.events({
     end,
 })
 
-da_net.events({
-    ["onResourceStop"] = function(resourceName)
-        if resourceName == GetCurrentResourceName() then
-            da_mode.deactivate("devTree")
-            da_mode.unregister("devTree")
-            SetNuiFocus(false, false)
-            SetNuiFocusKeepInput(false)
-            da_controlpass:set(false)
-        end
-    end,
-})
-
 Citizen.CreateThread(function()
-    da_mode.register({
-        name = "devTree",
-        priority = 80,
-        onActivate = function()
-            SetNuiFocus(true, false)
-            SetNuiFocusKeepInput(false)
-            da_ui.send("ui_trie", { trie = da_trie.get(CurrentTree) })
-        end,
-        onDeactivate = function()
-            -- da_ui.send("ui_trie", { trie = da_trie.get(CurrentTree) })
-            if not da_mode.isPrimary("devTree") then return end
-            SetNuiFocus(false, false)
-            SetNuiFocusKeepInput(false)
-        end,
-        onPrimary = function()
-            SetNuiFocus(true, false)
-            SetNuiFocusKeepInput(false)
-        end,
-        keymaps = {
-            {
-                key = "z",
-                event = "justReleased",
-                modifiers = { ctrl = false },
-                fn = function()
-                    if SkipNext then
-                        SkipNext = false
-                        return
-                    end
-                    if da_mode.isActive("gizmo") then return end
-                    da_mode.activate("devTree")
-                end
-            },
-            {
-                key = "z",
-                event = "justPressed",
-                active = true,
-                fn = function()
-                    log.debug("mode devTree SkipNext")
-                    SkipNext = true
-                end
-            },
-        }
-    })
-end)
-
-do
     local setting = { ui = {}, }
     setting.ui.nearby = { object = true, ped = true, vehicle = true, other = false, origin = "camera", range = 50, }
     setting.ui.tags = { sort = "dist" }
@@ -153,37 +92,5 @@ do
             end
         end
     end
-end
 
-RegisterCommand("dadev_setting_remove", function(source, args, rawCommand)
-    if not args[1] then
-        log.info("Usage: Remove setting stored under key 'setting:<setting>'\n\t/dadev_setting_clear <setting>")
-        return
-    end
-
-    local key = "setting:"..args[1]
-    if kvp.decode(key) == nil then
-        log.error("Setting '" .. key .. "' already clear")
-        return
-    end
-
-    kvp.delete(key)
-    log.info("Cleared setting "..key)
-end, false)
-
-RegisterCommand("dadev_scenes_remove", function(source, args, rawCommand)
-    if not args[1] then
-        log.info("Usage: Remove scenes stored under key 'scenes:<name>'\n\t/dadev_scenes_remove <scene>")
-        return
-    end
-
-    local key = "scene:"..args[1]
-    if kvp.decode(key) == nil then
-        log.error("Scene '" .. key .. "' does not exist")
-        return
-    end
-
-    kvp.delete(key)
-    log.info("Cleared setting "..key)
-end, false)
-
+end)
