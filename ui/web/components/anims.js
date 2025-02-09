@@ -1,6 +1,14 @@
 import { KeyActions, showConfirm } from '../script.js';
 import { sendClientMessage } from '../utils/msg.js';
-import { selectOnly, resetList, isVisible, elementSetClass, elementHasClass, elementSetText, toggleSection } from '../utils/nav.js';
+import {
+    selectOnly,
+    resetList,
+    isVisible,
+    elementSetClass,
+    elementHasClass,
+    elementSetText,
+    toggleSection
+} from '../utils/nav.js';
 
 let Animations = {};
 let IKFlagTotals = 0;
@@ -285,7 +293,9 @@ export function searchAnimDicts(searchValue) {
     for (let i=0; i < results.length && i < maxResults; ++i) {
         const animDict = results[i].animDict;
         let li = document.createElement('li');
+        li.setAttribute('tabindex', '3');
         li.addEventListener('click', function(event) {
+            console.log('clicked', animDict, event);
             if (event.ctrlKey) {
                 ul.removeChild(li);
             } else {
@@ -340,6 +350,7 @@ function selectAnimDict(animDict) {
         let li = document.createElement('li');
         elementSetText(li, animDict);
         li.innerHTML = anim;
+        li.setAttribute('tabindex', '4');
         li.addEventListener('click', function(event) {
             if (event.shiftKey) {
                 elementSetText('animSelectedName', anim);
@@ -385,7 +396,9 @@ export function addAnimation() {
     }
     let li = document.createElement('li');
     li.innerHTML = animDict + ' - ' + animName;
+    li.setAttribute('tabindex', '13');
     li.setAttribute('id', 'anim-' + animDict + '-' + animName);
+    // TODO: Make this flex box so we can have the animation settings underneath it
     li.addEventListener('click', function(event) {
         // TODO: Store and track animation info
         console.log('clicked', animDict, animName);
