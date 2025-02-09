@@ -1,6 +1,6 @@
 // dev-mocks.js
-// const testHud = "ui_object";
-const testHud = "ui_animation";
+const testHud = "ui_object";
+// const testHud = "ui_animation";
 const jsonString = `{"test":["a","b"], "vest":["c","d"]}`
 // INFO: Issue with the @ symbol
 // const jsonString = `{"test@test@test": ["test1", "test2", "test3" ], "test@test@test3": [ "test_back", "test_front", "test_left", "test_right" ],}`
@@ -143,6 +143,15 @@ const themes = {
         ['highlight', '#bec6dc'],
         ['bg', '#04101D'],
     ],
+    da_discord: [
+        ['primary', '#fad8fd'],
+        ['primary-dark', '#cdbcf5'],
+        // ['secondary', '#bec6dc'],
+        ['tertiary', '#aac7ff'],
+        ['tertiary-dark', '#0a305f'],
+        ['highlight', '#bec6dc'],
+        ['bg', '#05213a'],
+    ],
     da_grayscale: [
         ['primary', '#ffffff'],
         ['primary-dark', '#000000'],
@@ -197,7 +206,7 @@ window.endpointMute = {
 };
 
 document.body.style.backgroundColor = '#333333';
-// setTheme('da_bluepurple_light');
+setTheme('da_discord');
 
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {

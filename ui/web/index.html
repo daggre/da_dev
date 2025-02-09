@@ -23,6 +23,12 @@
                 script.src = "dev-mocks.js";
                 document.head.appendChild(script);
                 console.log("Development script loaded.");
+                // Create a link element for the favicon with a Data URL
+                const favicon = document.createElement('link');
+                favicon.rel = "icon";
+                // This is a minimal, empty favicon as a Data URL
+                favicon.href = "data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAGAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//wAA//8AAP//AAD//wAA";
+                document.head.appendChild(favicon);
             } else {
                 console.log("Running in RedM environment.");
             }
@@ -37,8 +43,8 @@
                     <div class="bigicon"></div>
                     <div id="infoDescription" class="">Are you sure?</div>
                     <ul class="row rowpad gap">
-                        <li id="yesOption" class="control blr bgt2">Yes</li>
-                        <li id="noOption" class="control blr bgt2">No</li>
+                        <li id="yesOption" tabindex="99" class="control blr bgt2">Yes</li>
+                        <li id="noOption" tabindex="99" class="control blr bgt2">No</li>
                     </ul>
                 </div>
             </section>
@@ -53,7 +59,7 @@
             </section>
             <section id="objectHUD" class="hud hidden">
                 <div id="objHelp" class="center bgt2 pad hidden">
-                    <div class="title">Object Mode by daggre_actual</div>
+                    <div class="title">Object Mode</div>
                     <div class="bigicon"></div>
                     <ul>
                         <li><div class="label borderleft bgi">LMB</div><div class="entry borderright bgt1">Select Object Under Crosshair</div></li>
@@ -104,7 +110,7 @@
                         <div id="objSearch" class="entry borderright bgt1" tabindex="2" contenteditable="true"></div>
                     </div>
                     <div id="objSpawnOptions" class="bgt1 blr gap">
-                        <ul class="row gap">
+                        <ul class="row">
                             <li>
                                 <div id="button-spawnfavs" class="control" tabindex="2" role="button" aria-pressed="false" aria-label="Filter Favorites">󰓎</div>
                                 <div id="button-spawnobjects" class="control selected" tabindex="2" role="button" aria-pressed="false" aria-label="Filter Objects">󰠱</div>
@@ -258,7 +264,7 @@
             </section>
             <section id="animHUD" class="hud hidden">
                 <div id="animHelp" class="center bgt2 pad hidden">
-                    <div class="title">Animation Dev Kit by daggre_actual</div>
+                    <div class="title">Animation Developer Kit</div>
                     <div class="bigicon"></div>
                     <ul>
                         <li><div class="label borderleft bgi">q</div><div class="entry borderright bgt1">Play/Restart Animation</div></li>
@@ -333,7 +339,7 @@
                     <div id="animConfigureOptions" class="bgt1 blr gap">
                         <ul class="row">
                             <li>
-                                <div id="button-animconfadd" class="control" tabindex="12" role="button" aria-pressed="false">󱜇</div>
+                                <div id="button-animconfadd" class="control" tabindex="12" role="button" aria-pressed="false">󰜄</div>
                                 <div id="button-animconfclear" class="control" tabindex="12" role="button" aria-pressed="false">󰗨</div>
                                 <!-- <div id="button-animconfremove" class="control" tabindex="12" role="button" aria-pressed="false">󱜁</div> -->
                             </li>
@@ -418,7 +424,7 @@
             </section>
             <section id="cameraHUD" class="hud hidden">
                 <div id="camHelp" class="center bgt2 pad hidden">
-                    <div class="title">FreeCam and NoClip by daggre_actual</div>
+                    <div class="title">FreeCam and NoClip</div>
                     <div class="bigicon"> </div>
                     <ul>
                         <li><div class="label borderleft bgi">w</div><div class="entry borderright bgt1">Move Forward</div></li>

@@ -1,4 +1,4 @@
-import { MouseDown } from '../script.js';
+import { MouseDown, showConfirm } from '../script.js';
 import { selectOnly, resetList, isVisible, elementSetClass, elementHasClass, elementSetText, toggleSection } from '../utils/nav.js';
 import { sendClientMessage } from '../utils/msg.js';
 
@@ -54,11 +54,31 @@ export function copyScene() {
 }
 
 export function clearScene() {
-    // ALL UNSAVED CHANGES WILL BE LOST
+    const sceneName = ActiveScene;
+    showConfirm(`Unsaved changes will be lost.<br><br>Remove scene '${sceneName}' objects?`).then(confirm => {
+        if (confirm) {
+            // TODO: implement clearScene
+            sendClientMessage('clearScene', { scene: sceneName });
+            trackSceneObjects();
+        } else {
+            console.log("Clear scene cancelled");
+        }
+    });
 }
 
 export function deleteScene() {
     // CONFIRM YOU ARE DELETING THE SCENE
+    const sceneName = ActiveScene;
+    showConfirm(`This action cannot be undone!<br><br>Delete scene '${sceneName}'?`).then(confirm => {
+        if (confirm) {
+            // TODO: implement deleteScene
+            sendClientMessage('deleteScene', { scene: sceneName });
+            ActiveScene = "autosave";
+            getScenes();
+        } else {
+            console.log("Delete scene cancelled");
+        }
+    });
 }
 
 export function searchSpawnObject(searchString) {

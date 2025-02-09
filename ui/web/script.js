@@ -3,6 +3,7 @@ import { sendClientMessage } from "./utils/msg.js";
 import { updateCrosshair } from "./components/crosshair.js";
 import { updateCamera } from "./components/camera.js";
 import {
+    clickElement,
     elementSetOnlyClass,
     elementSetClass,
     elementHasClass,
@@ -16,6 +17,8 @@ import {
     initializeObjectHUD,
     searchSpawnObject,
     getTrackedObjects,
+    clearScene,
+    deleteScene,
     copyScene,
     toggleNearbyFilter,
     tagSelectSort,
@@ -67,6 +70,7 @@ const KeyTranslateMap = {
 
 export let KeyActions = {
     'infoHUD': {
+        ' ': (event) => { clickElement(event); },
         'y': () => { elementSetClass('infoHUD', 'clear', true); },
         'n': () => { elementSetClass('infoHUD', 'hidden', true); },
         'enter': () => { elementSetClass('infoHUD', 'clear', true); },
@@ -74,12 +78,7 @@ export let KeyActions = {
     },
     'devTreeHUD': {},
     'animHUD': {
-        ' ': (event) => {
-            // TODO: Detect if its also a list element with an onclick
-            const eventId = `#${event.target.id}`;
-            if (EventActions.click[eventId])
-                EventActions.click[eventId](event);
-        },
+        ' ': (event) => { clickElement(event); },
         'escape': () => { sendClientMessage('deactivateMode', { mode: "animation" }); },
         'backspace': () => { toggleStop(); },
         // ' ': () => { togglePlay(); },
@@ -91,7 +90,7 @@ export let KeyActions = {
         // '5': () => { toggleTaskFilters(); },
         // '6': () => { toggleEntity(); },
         // 'c': () => { toggleSettings(); },
-        // 'h': () => { toggleHelp("animHelp"); },
+        'h': () => { toggleHelp("animHelp"); },
         // 'i': () => { toggleIKFlags(); },
         // 'l': () => { toggleLoop(); },
         // 'o': () => { toggleFlags(); },
@@ -523,7 +522,7 @@ function handleKeyPress(event, hud) {
     const key = KeyTranslateMap[lowercaseKey] || lowercaseKey;
 
     const action = KeyActions[hud][key] || KeyActions[hud].default;
-    console.log("handleKeyPress", hud, key, action);
+    // console.log("handleKeyPress", hud, key, event);
     if (action) { action(event); }
 }
 
@@ -749,18 +748,27 @@ function updateObjectDetails(data) {
     });
 }
 
+/**
+ * Popup a confirmation dialog with a message and two options.
+ * @param {string} msg - The message to display in the dialog.
+ * @param {string} yes - The text to display on the "Yes" button.
+ * @param {string} no - The text to display on the "No" button.
+ */
 export function showConfirm(msg = "Are you sure?", yes = "Yes", no = "No") {
     return new Promise((resolve, reject) => {
         const infoHUD = document.getElementById('infoHUD');
         const message = document.getElementById('infoDescription');
         const yesButton = document.getElementById('yesOption');
         const noButton = document.getElementById('noOption');
+        const lastFocusedElement = document.activeElement;
+
 
         message.innerHTML = msg;
         yesButton.innerHTML = yes;
         noButton.innerHTML = no;
 
         infoHUD.classList.remove('hidden');
+        noButton.focus();
 
         // Create a MutationObserver to monitor if the popup becomes hidden
         const observer = new MutationObserver((mutationsList) => {
@@ -793,6 +801,9 @@ export function showConfirm(msg = "Are you sure?", yes = "Yes", no = "No") {
             observer.disconnect();
             infoHUD.classList.remove('clear');
             infoHUD.classList.add('hidden');
+            if (lastFocusedElement) {
+                lastFocusedElement.focus();
+            }
         }
 
         yesButton.addEventListener('click', handleYes);
