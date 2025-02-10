@@ -70,33 +70,47 @@ local GetObjData = function(entityHandle)
     return objData
 end
 
-local function LoadSceneObjects(sceneName)
+local function LoadScene(sceneName)
     log.info("Loading scene objects", sceneName)
     local successfulLoad = true
-    if Scenes[sceneName] == nil then
-        log.error("Scene not found", sceneName)
-        return false
+    if Scenes[sceneName] == nil or Scenes[sceneName].objects == nil or not next(Scenes[sceneName].objects) then
+        log.debug("Loading scene " .. sceneName .. " from kvp")
+        Scenes[sceneName] = kvp.decode("scenes:"..sceneName)
     end
     if Scenes[sceneName].loaded then
         log.debug("Scene already loaded", sceneName)
         return false
     end
     for _, obj in ipairs(Scenes[sceneName].objects) do
-        log.spam("Creating object", obj)
-        local handle = da_obj.create(obj.modelHash, vector3(obj.coords_x, obj.coords_y, obj.coords_z), obj.data)
+        log.spam("Creating object", handle, obj.data)
+        local handle = da_obj.create(
+            obj.modelHash,
+            vector3(obj.coords_x, obj.coords_y, obj.coords_z),
+            {
+                collision = obj.collision,
+                frozen = obj.frozen,
+                rotation = {
+                    x = obj.rotation_pitch,
+                    y = obj.rotation_roll,
+                    z = obj.rotation_yaw,
+                },
+            }
+        )
         obj.handle = handle
-        if handle then
-            SetEntityRotation(handle, obj.rotation_pitch, obj.rotation_roll, obj.rotation_yaw)
-        else
+        if not handle then
             log.error("Failed to create object", obj.modelHash, obj.pos)
             successfulLoad = false
         end
     end
-    if successfulLoad then Scenes[sceneName].loaded = true end
+    if successfulLoad then
+        Scenes[sceneName].loaded = true
+    else
+        ClearScene(sceneName, true)
+    end
     return successfulLoad
 end
 
-local function GetSceneObjectsData(sceneName)
+local function GetScene(sceneName)
     log.spam("Getting scene objects data", sceneName)
     if not Scenes[sceneName] then
         log.error("Scene not found", sceneName)
@@ -113,11 +127,12 @@ local function GetSceneObjectsData(sceneName)
             objData.distance = #(coords - objCoords)
             table.insert(sceneObjects, objData)
         else
+            log.spam("Failed to get data for " .. obj.handle)
             warn = warn + 1
         end
     end
     if warn > 0 then
-        log.warn("Failed to get data for " .. warn .. " objects")
+        log.warn("Failed to get data for " .. warn .. " objects in scene " .. sceneName)
     end
     return { objects = sceneObjects }
 end
@@ -130,6 +145,11 @@ local function SaveScene(sceneName)
         objData.networkID = nil
         objData.modelName = nil
         table.insert(storedScene.objects, objData)
+        for key in pairs(obj) do
+            if objData[key] then
+                obj[key] = objData[key]
+            end
+        end
     end
     log.info("Saving scene", sceneName, storedScene)
     kvp.encode("scenes:"..sceneName, storedScene)
@@ -155,6 +175,37 @@ local RaycastXhair = function(dist, objIgnore)
         )
     )
     return hit, obj, endPos
+end
+
+local function ClearScene(sceneName, force)
+    log.info("Clearing scene", sceneName)
+    if not force and not Scenes[sceneName].loaded then return false; end
+    for _, obj in ipairs(Scenes[sceneName].objects) do
+        if DoesEntityExist(obj.handle) then
+            log.spam("Deleting object", obj.handle)
+            DeleteEntity(obj.handle)
+        else
+            log.spam("Object does not exist", obj.handle)
+        end
+    end
+    Scenes[sceneName].objects = {}
+    Scenes[sceneName].loaded = false
+    return true
+end
+
+local function DeleteScene(sceneName)
+    if not sceneName then return false; end
+    ClearScene(sceneName, true)
+    kvp.delete("scenes:"..sceneName)
+    Scenes[sceneName] = nil
+    log.info("Deleted scene", sceneName)
+    return true
+end
+
+local function ReloadScene(sceneName)
+    ClearScene(sceneName, true)
+    Scenes[sceneName] = kvp.decode("scenes:"..sceneName)
+    return LoadScene(sceneName)
 end
 
 local RaycastCursor = function(x, y, dist)
@@ -507,8 +558,6 @@ local function GetNearbyObjects(range, origin)
     LastValidRange = range
     local entityData = {}
 
-    -- FIXME: We are overwriting indexes in entityData for different types of objects
-
     local entities = da_util.GetEntitiesNearPoint(pos, range)
     for _, entity in ipairs(entities) do
         local model = GetEntityModel(entity)
@@ -648,27 +697,23 @@ local ControlCheckCursor = function(pressed, justPressed)
     end
 end
 
-local testSceneObjects = {
-    {
-        modelHash = `s_wap_rainsfalls`,
-        coords_x = -2816.43,
-        coords_y = -697.29,
-        coords_z = 268.31,
-        rotation_pitch = -10.56,
-        rotation_roll = -4.85,
-        rotation_yaw = -0.45,
-        frozen = true,
-        collision = true,
-    },
-}
--- kvp.encode("scenes:test_1", { name = "test_1", objects = testSceneObjects })
+local function SetFrozen(data)
+    local entityHandle = tonumber(data.handle)
+    da_obj.set(entityHandle, { frozen = data.state })
+    return true
+end
+
+local function SetCollision(data)
+    local entityHandle = tonumber(data.handle)
+    da_obj.set(entityHandle, { collision = data.state })
+end
 
 da_ui.callbacks({
     nearbyObjects = function(data) return {nearbyObjects = GetNearbyObjects(data.range, data.origin)} end,
     scenesList = function()
         local scenes = {}
-        for _, scene in pairs(Scenes) do
-            table.insert(scenes, scene)
+        for sceneName in pairs(Scenes) do
+            table.insert(scenes, { name = sceneName })
             log.debug("Adding cached scene", _)
         end
 
@@ -676,16 +721,18 @@ da_ui.callbacks({
         for _, scene in ipairs(sceneNames) do
             local sceneName = scene:sub(8)
             if not Scenes[sceneName] then
-                local s = kvp.decode(scene)
-                Scenes[sceneName] = s
-                table.insert(scenes, s)
-                log.debug("Loading scene from kvp", sceneName)
+                table.insert(scenes, { name = sceneName })
             end
         end
         return { scenes = json.encode(scenes) }
     end,
-    loadSceneObjects = function(data) return LoadSceneObjects(data.scene) end,
-    getSceneObjects = function(data) return GetSceneObjectsData(data.scene) end,
+    getScene = function(data) return GetScene(data.scene) end,
+    loadScene = function(data) return LoadScene(data.scene) end,
+    clearScene = function(data) return ClearScene(data.scene) end,
+    reloadScene = function(data) return ReloadScene(data.scene) end,
+    deleteScene = function(data) return DeleteScene(data.scene) end,
+    setFrozen = function(data) return SetFrozen(data) end,
+    setCollision = function(data) return SetCollision(data) end,
 })
 da_ui.events({
     sendCursorKey = function(data) ControlCheckCursor(data.pressed, data.justPressed) end,

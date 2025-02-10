@@ -17,9 +17,10 @@ import {
     initializeObjectHUD,
     searchSpawnObject,
     getTrackedObjects,
+    saveScene,
     clearScene,
+    reloadScene,
     deleteScene,
-    copyScene,
     toggleNearbyFilter,
     tagSelectSort,
     selectSpawnType,
@@ -28,6 +29,8 @@ import {
     toggleObjectSpawnHUD,
     toggleObjectNearbyHUD,
     toggleObjectImportExportHUD,
+    toggleFrozen,
+    toggleCollision,
 } from "./components/obj.js";
 import {
     initAnims,
@@ -81,22 +84,21 @@ export let KeyActions = {
         ' ': (event) => { clickElement(event); },
         'escape': () => { sendClientMessage('deactivateMode', { mode: "animation" }); },
         'backspace': () => { toggleStop(); },
-        // ' ': () => { togglePlay(); },
         '?': () => { toggleHelp("animHelp"); },
         '1': () => { toggleAnimationSearchHUD(); },
         '2': () => { toggleAnimationConfigureHUD(); },
+        'h': () => { toggleHelp("animHelp"); },
+        'p': () => { togglePlay(); },
+        'r': () => { togglePlay(); },
         // '3': () => { toggleIKFlags(); },
         // '4': () => { toggleFlags(); },
         // '5': () => { toggleTaskFilters(); },
         // '6': () => { toggleEntity(); },
         // 'c': () => { toggleSettings(); },
-        'h': () => { toggleHelp("animHelp"); },
         // 'i': () => { toggleIKFlags(); },
         // 'l': () => { toggleLoop(); },
         // 'o': () => { toggleFlags(); },
-        'p': () => { togglePlay(); },
         // 'q': () => { togglePlay(); },
-        'r': () => { togglePlay(); },
         // 't': () => { toggleTimings(); },
         // 'u': () => { toggleTorso(); },
     },
@@ -104,19 +106,18 @@ export let KeyActions = {
         'escape': () => { sendClientMessage('deactivateMode', { mode: "gizmo"}); },
     },
     'objectHUD': {
-        ' ': (event) => {
-            // TODO: Detect if its also a list element with an onclick
-            const eventId = `#${event.target.id}`;
-            if (EventActions.click[eventId])
-                EventActions.click[eventId](event);
-        },
+        ' ': (event) => { clickElement(event); },
         '?': () => { toggleHelp("objHelp"); },
         '1': () => { toggleObjectSpawnHUD(); },
         '2': () => { toggleObjectNearbyHUD(); },
         '3': () => { toggleObjectImportExportHUD(); },
         'f': () => { sendClientMessage('toggleMode', { mode: "focus" }); },
         'h': () => { toggleHelp("objHelp"); },
-        'r': () => { sendClientMessage('toggleMode', { mode: "gizmo" })},
+        'r': () => {
+            if (Pressed.Control) { reloadScene(); }
+            else { sendClientMessage('toggleMode', { mode: "gizmo" })}
+        },
+        's': () => { if (Pressed.Control) { saveScene(); } },
         'x': () => {
             sendClientMessage('sendCursorKey', {
                 justPressed: { x: true },
@@ -242,11 +243,15 @@ export const EventActions = {
         // '#button-nearby-propset': () => toggleNearbyFilter('propset'),
         '#button-nearby-other': () => toggleNearbyFilter('other'),
 
-        '#button-savescene': () => copyScene(),
+        '#button-savescene': () => saveScene(),
         '#button-clearscene': () => clearScene(),
+        '#button-reloadscene': () => reloadScene(),
         '#button-deletescene': () => deleteScene(),
         '#button-tagsortbydist': () => tagSelectSort('dist'),
         '#button-tagsortbyname': () => tagSelectSort('name'),
+
+        '#objDetailsEntityFrozen': () => toggleFrozen(),
+        '#objDetailsEntityCollision': () => toggleCollision(),
 
         '#button-search': toggleSearch,
         '#button-timings': toggleTimings,
@@ -398,7 +403,7 @@ const InputFields = {
         console.log("selectedScene event triggered", event);
         if (event.key == "Enter" || event.inputType == "insertParagraph") {
             event.preventDefault();
-            copyScene();
+            saveScene();
         }
     },
     "#nearbyRange": (event) => {

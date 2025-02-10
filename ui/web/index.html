@@ -109,7 +109,7 @@
                         <div class="label borderleft bgi"></div>
                         <div id="objSearch" class="entry borderright bgt1" tabindex="2" contenteditable="true"></div>
                     </div>
-                    <div id="objSpawnOptions" class="bgt1 blr gap">
+                    <div id="objSpawnOptions" class="bgt1 blr gap noflex">
                         <ul class="row">
                             <li>
                                 <div id="button-spawnfavs" class="control" tabindex="2" role="button" aria-pressed="false" aria-label="Filter Favorites">󰓎</div>
@@ -165,10 +165,11 @@
                         <ul class="row">
                             <li>
                                 <div id="button-savescene" class="control" tabindex="22" role="button" aria-pressed="false" >󰆓</div>
-                                <div id="button-clearscene" class="control" tabindex="22" role="button" aria-pressed="false" >󰕑</div>
-                                <div id="button-deletescene" class="control" tabindex="22" role="button" aria-pressed="false" >󰗨</div>
+                                <div id="button-reloadscene" class="control" tabindex="22" role="button" aria-pressed="false" ></div>
+                                <div id="button-clearscene" class="control" tabindex="22" role="button" aria-pressed="false" >󱋽</div>
                                 <div id="button-import" class="control" tabindex="22" role="button" aria-pressed="false" >󰈠</div>
                                 <div id="button-export" class="control" tabindex="22" role="button" aria-pressed="false" >󰈝</div>
+                                <div id="button-deletescene" class="control" tabindex="22" role="button" aria-pressed="false" >󰗨</div>
                             </li>
                         </ul>
                     </div>
@@ -196,6 +197,14 @@
                     <!-- </div> -->
                 </div>
                 <div id="objDetails" class="listGroup top right">
+                    <div id="objDetailsOptions" class="bgt1 blr gap">
+                        <ul class="row">
+                            <li>
+                                <div id="button-objDetailsPosition" class="control selected" tabindex="50" role="button" aria-pressed="false" >󰵉</div>
+                                <div id="button-objDetailsStatus" class="control selected" tabindex="51" role="button" aria-pressed="false" >󱖫</div>
+                            </li>
+                        </ul>
+                    </div>
                     <div id="objDetailsList" class="mgb">
                         <ul>
                             <li>
@@ -209,14 +218,6 @@
                             <li>
                                 <div class="label borderleft bgi">NetId</div>
                                 <div id="objDetailsEntityNetworkId" class="entry borderright bgt1" contenteditable="false"></div>
-                            </li>
-                        </ul>
-                    </div>
-                    <div id="objDetailsOptions" class="bgt1 blr gap">
-                        <ul class="row">
-                            <li>
-                                <div id="button-objDetailsPosition" class="control selected" tabindex="50" role="button" aria-pressed="false" >󰵉</div>
-                                <div id="button-objDetailsStatus" class="control selected" tabindex="51" role="button" aria-pressed="false" >󱖫</div>
                             </li>
                         </ul>
                     </div>
@@ -252,11 +253,11 @@
                         <ul>
                             <li>
                                 <div class="label borderleft bgi">Frozen</div>
-                                <div id="objDetailsEntityFrozen" class="entry borderright bgt1" contenteditable="true" tabindex="66"></div>
+                                <div id="objDetailsEntityFrozen" class="entry check borderright bgt1" tabindex="66"></div>
                             </li>
                             <li>
                                 <div class="label borderleft bgi">Collision</div>
-                                <div id="objDetailsEntityCollision" class="entry borderright bgt1" contenteditable="true" tabindex="67"></div>
+                                <div id="objDetailsEntityCollision" class="entry check borderright bgt1" tabindex="67"></div>
                             </li>
                         </ul>
                     </div>

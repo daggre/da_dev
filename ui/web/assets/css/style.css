@@ -316,6 +316,7 @@ ul li {
 
 .check.borderright.selected::after {
     content: " ";
+    color: var(--primary);
 }
 
 .control {
