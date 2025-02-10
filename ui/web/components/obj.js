@@ -45,9 +45,8 @@ export function initObj() {
     });
 }
 
-export function copyScene() {
+export function saveScene() {
     const newSceneName = document.getElementById('selectedScene').innerHTML;
-    console.log("Copy scene", ActiveScene, newSceneName);
     sendClientMessage('saveScene', { scene: newSceneName, });
     ActiveScene = newSceneName;
     getScenes();
@@ -66,12 +65,15 @@ export function clearScene() {
     });
 }
 
+export function reloadScene() {
+    const sceneName = ActiveScene;
+    sendClientMessage('reloadScene', { scene: sceneName });
+}
+
 export function deleteScene() {
-    // CONFIRM YOU ARE DELETING THE SCENE
     const sceneName = ActiveScene;
     showConfirm(`This action cannot be undone!<br><br>Delete scene '${sceneName}'?`).then(confirm => {
         if (confirm) {
-            // TODO: implement deleteScene
             sendClientMessage('deleteScene', { scene: sceneName });
             ActiveScene = "autosave";
             getScenes();
@@ -238,7 +240,7 @@ export function getScenes() {
                 li.classList.add('liSelect');
                 elementSetText('selectedScene', ActiveScene);
                 // elementSetClass('objSceneObjectsListOptions', 'hidden', false);
-                sendClientMessage('loadSceneObjects', { scene: ActiveScene });
+                sendClientMessage('loadScene', { scene: ActiveScene });
                 trackSceneObjects();
             })
             li.setAttribute('tabindex', '23');
@@ -261,7 +263,7 @@ export function trackSceneObjects() {
     const loopId = setInterval(function() {
         if (isVisible(el)) {
             if (!MouseDown) {
-                sendClientMessage('getSceneObjects', {
+                sendClientMessage('getScene', {
                     scene: ActiveScene,
                 }).then(function(resp) {
                         let objects = resp.objects;
@@ -533,4 +535,16 @@ export function toggleObjectImportExportHUD(state) {
     } else {
         elementSetClass('button-importexport', 'selected', state);
     }
+}
+
+export function toggleFrozen() {
+    const handle = document.getElementById('objDetailsEntityHandle').innerHTML;
+    const state = elementHasClass('objDetailsEntityFrozen', 'selected');
+    sendClientMessage('setFrozen', { handle: handle, state: !state });
+}
+
+export function toggleCollision() {
+    const handle = document.getElementById('objDetailsEntityHandle').innerHTML;
+    const state = elementHasClass('objDetailsEntityCollision', 'selected');
+    sendClientMessage('setCollision', { handle: handle, state: !state });
 }

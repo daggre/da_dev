@@ -91,8 +91,8 @@ const mockResponses = {
         },
     ]}),
     trackObject: () => ({}),
-    loadSceneObjects: () => ({}),
-    getSceneObjects: () => ({
+    loadScene: () => ({}),
+    getScene: () => ({
         objects: [
             // { handle: 12345, model: "101010", modelName: "test_model", distance: 1.0, },
             // { handle: 999, model: "990099", modelName: "test_model", distance: 123.0, },
@@ -202,7 +202,7 @@ window.getMockResponse = getMockResponse;
 window.endpointMute = {
     sendCursorPos: true,
     nearbyObjects: true,
-    getSceneObjects: true,
+    getScene: true,
 };
 
 document.body.style.backgroundColor = '#333333';
