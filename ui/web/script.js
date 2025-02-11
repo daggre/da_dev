@@ -49,6 +49,9 @@ import {
     toggleFlag,
     toggleIKFlag
 } from "./components/anims.js";
+import {
+    setTheme,
+} from "./components/theme.js";
 
 const CursorUpdateRate = 30;
 let MCP = false;
@@ -472,6 +475,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initAnims();
     initObj();
     registerListeners();
+    setTheme("da_grayscale");
 
     window.addEventListener('message', function(msg) {
         switch(msg.data.type) {
