@@ -638,6 +638,13 @@ local SetNearbyOriginPos = function(data)
     return NearbyOriginPos ~= nil
 end
 
+local GetRaycast = function(data)
+    hit, obj, pos = RaycastCursor(data.x, data.y, Distance)
+    if not hit then return {}; end
+    log.debug("Raycast hit", hit, obj, pos)
+    return { handle = obj }
+end
+
 local ControlCheckCursor = function(pressed, justPressed)
     if SelectMode ~= "Cursor" then return; end
     pressed = pressed or {}
@@ -733,6 +740,7 @@ da_ui.callbacks({
     deleteScene = function(data) return DeleteScene(data.scene) end,
     setFrozen = function(data) return SetFrozen(data) end,
     setCollision = function(data) return SetCollision(data) end,
+    getRaycast = function(data) return GetRaycast(data) end,
 })
 da_ui.events({
     sendCursorKey = function(data) ControlCheckCursor(data.pressed, data.justPressed) end,

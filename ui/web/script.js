@@ -10,6 +10,7 @@ import {
     elementSetText,
     isVisible,
     resetList,
+    isInterruptingElement,
 } from "./utils/nav.js";
 import { initTrie } from "./components/trie.js";
 import {
@@ -169,20 +170,32 @@ export let MouseActions = {
     'objectHUD': {
         leftClick: (event) => {
             if (!MCP) {
-                const isInterruptingElement = event.target.classList.contains('label') ||
-                    event.target.classList.contains('entry') ||
-                    event.target.classList.contains('control') ||
-                    event.target.closest('.label') ||
-                    event.target.closest('.entry') ||
-                    event.target.closest('.control');
-
-                if (isInterruptingElement) {
+                if (isInterruptingElement(event.target)) {
                     event.stopPropagation();
                     return;
                 }
                 sendClientMessage('sendCursorKey', {
                     justPressed: { MouseLeft: true },
                     pressed: Pressed,
+                });
+            }
+        },
+        contextMenu: (event) => {
+            if (!MCP) {
+                if (isInterruptingElement(event.target)) {
+                    event.stopPropagation();
+                    return;
+                }
+                event.preventDefault();
+                let x = event.pageX;
+                let y = event.pageY;
+                sendClientMessage('getRaycast', { x: x, y: y }).then((data) => {
+                    console.log("gotRaycast", data)
+                    if (!data.entityHandle) { return; }
+                    showContextMenu(ObjectContextOptions, x, y).then((option) => {
+                        if (!option) { return; }
+                        ObjectContextActions[option](data.handle);
+                    });
                 });
             }
         },
@@ -820,8 +833,94 @@ export function showConfirm(msg = "Are you sure?", yes = "Yes", no = "No") {
     });
 }
 
-// DEPRECATE BELOW //
+/**
+ * Show a right-click popup with a list of options.
+ * @param {Array<string>} options - The list of options to display.
+ * @param {number} x - The X coordinate for the popup position.
+ * @param {number} y - The Y coordinate for the popup position.
+ * @returns {Promise<string | null>} Resolves with the selected option, or null if dismissed.
+ */
+export function showContextMenu(options, x, y) {
+    return new Promise((resolve) => {
+        const menu = document.createElement("div");
+        menu.classList.add("context-menu");
+        menu.style.top = `${y}px`;
+        menu.style.left = `${x}px`;
 
+        const lastFocusedElement = document.activeElement;
+
+        options.forEach((option) => {
+            const item = document.createElement("div");
+            item.classList.add("context-menu-item");
+            item.textContent = option;
+            item.addEventListener("click", () => {
+                cleanup();
+                resolve(option);
+            });
+            menu.appendChild(item);
+        });
+
+        document.body.appendChild(menu);
+
+        function cleanup() {
+            menu.remove();
+            document.removeEventListener("click", handleClickOutside);
+            document.removeEventListener("contextmenu", handleRightClick);
+            document.removeEventListener("keydown", handleKeyPress);
+            if (lastFocusedElement) {
+                lastFocusedElement.focus();
+            }
+        }
+
+        function handleClickOutside(event) {
+            if (!menu.contains(event.target)) {
+                cleanup();
+                resolve(null);
+            }
+        }
+
+        function handleRightClick(event) {
+            cleanup();
+            resolve(null);
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === "Escape") {
+                cleanup();
+                resolve(null);
+            }
+        }
+
+        document.addEventListener("click", handleClickOutside);
+        document.addEventListener("contextmenu", handleRightClick);
+        document.addEventListener("keydown", handleKeyPress);
+    });
+}
+
+let ContextOptions = {
+    'Save': (msg) => { console.log("save", msg); },
+    'Open': (msg) => { console.log("open", msg); },
+    'Delete': (msg) => { console.log("delete", msg); },
+}
+
+// Example usage
+document.addEventListener("contextmenu", (event) => {
+    event.preventDefault();
+    showContextMenu(Object.keys(ContextOptions), event.pageX, event.pageY).then((option) => {
+        if (!option) { return; }
+        ContextOptions[option]("maintest");
+    });
+});
+
+function showContextMenu(contextOptions, x, y) {
+    event.preventDefault();
+    showContextMenu(Object.keys(contextOptions), event.pageX, event.pageY).then((option) => {
+        if (!option) { return; }
+        ContextOptions[option]("maintest");
+    });
+}
+
+// DEPRECATE BELOW //
 function HandleKeysAnim(event) {
     switch(event.key) {
         case " ":
