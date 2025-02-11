@@ -167,3 +167,12 @@ export function resetList(elOrId) {
     el.scrollTop = 0;
     el.scrollLeft = 0;
 }
+
+export function isInterruptingElement(target) {
+    return target.classList.contains('entry') ||
+        target.classList.contains('control') ||
+        target.classList.contains('label') ||
+        target.closest('.label') ||
+        target.closest('.entry') ||
+        target.closest('.control');
+}
