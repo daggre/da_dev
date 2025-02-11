@@ -18,6 +18,15 @@ const themes = {
         ['highlight', '#bec6dc'],
         ['bg', '#04101D'],
     ],
+    da_discord: [
+        ['primary', '#fad8fd'],
+        ['primary-dark', '#cdbcf5'],
+        // ['secondary', '#bec6dc'],
+        ['tertiary', '#aac7ff'],
+        ['tertiary-dark', '#0a305f'],
+        ['highlight', '#bec6dc'],
+        ['bg', '#05213a'],
+    ],
     da_grayscale: [
         ['primary', '#ffffff'],
         ['primary-dark', '#000000'],
@@ -40,7 +49,7 @@ const themes = {
     ],
 };
 
-function setTheme(theme) {
+export function setTheme(theme) {
     if (!themes[theme]) {
         console.error(`Theme not found: ${theme}`);
         return;
