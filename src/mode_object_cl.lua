@@ -18,6 +18,7 @@ local ActiveScene = "autosave"
 local Scenes = {
     [ActiveScene] = { name = ActiveScene, objects = {} },
 }
+local PreviewObject = nil
 
 local UID = 0
 local _getUID = function()
@@ -726,6 +727,21 @@ local function PlaceOnGround(data)
     da_obj.set(entityHandle, { ground = true })
 end
 
+
+local function RemovePreviewObject()
+    local lastObj = PreviewObject
+    if lastObj then da_obj.delete(lastObj); end
+end
+
+local function SpawnPreviewObject(name)
+    local hit, _, pos = RaycastXhair(1000.0, PlayerPedId())
+    if not hit then return; end
+    local obj = da_obj.create(GetHashKey(name), pos, {})
+    local lastObj = PreviewObject
+    PreviewObject = obj
+    if lastObj then da_obj.delete(lastObj); end
+end
+
 da_ui.callbacks({
     nearbyObjects = function(data) return {nearbyObjects = GetNearbyObjects(data.range, data.origin)} end,
     scenesList = function()
@@ -756,6 +772,8 @@ da_ui.callbacks({
     getRaycast = function(data) return GetRaycast(data) end,
 })
 da_ui.events({
+    spawnPreviewObject = function(data) SpawnPreviewObject(data.name) end,
+    removePreviewObject = function() RemovePreviewObject() end,
     sendCursorKey = function(data) ControlCheckCursor(data.pressed, data.justPressed) end,
     sendCursorPos = function(data) MouseX = data.x; MouseY = data.y end,
     selectSpawnObject = function(data) Spawn = GetHashKey(data.name) end,
