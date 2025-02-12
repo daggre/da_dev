@@ -92,6 +92,8 @@ ul li {
     text-shadow: 0 0 1px, 0 0 1px;
     border-radius: var(--brd-rad);
     background: var(--primary);
+    margin-right: -1px;
+    padding-right: 2px;
 }
 
 .borderleft {
