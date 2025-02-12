@@ -733,6 +733,7 @@ local function RemovePreviewObject()
     if lastObj then da_obj.delete(lastObj); end
 end
 
+-- TODO: Handle peds versus objects
 local function SpawnPreviewObject(name)
     local hit, _, pos = RaycastXhair(1000.0, PlayerPedId())
     if not hit then return; end
