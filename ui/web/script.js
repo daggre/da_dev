@@ -80,6 +80,10 @@ const KeyTranslateMap = {
 const ObjectContextOptions = {
     // 'Info': (data) => { console.log("Info", data.handle); },
     // 'Clone': (data) => { console.log("Clone", data.handle); },
+    'Move': (data) => {
+        sendClientMessage('trackObject', { handle: data.handle, category: "select" });
+        sendClientMessage('toggleMode', { mode: "gizmo" });
+    },
     'Reset Rotation': (data) => { setRotation(data.handle, 0, 0, 0); },
     'Place on Ground': (data) => { placeOnGround(data.handle); },
 }
@@ -245,6 +249,7 @@ export const EventActions = {
         '#button-objDetailsPosition': () => toggleObjectDetail('button-objDetailsPosition'),
         '#button-objDetailsStatus': () => toggleObjectDetail('button-objDetailsStatus'),
 
+        '#button-spawnpreview': () => { elementSetClass('button-spawnpreview', 'selected'); },
         '#button-spawnfavs': () => { elementSetClass('button-spawnfavs', 'selected'); },
         '#button-spawnobjects': () => selectSpawnType('objects'),
         '#button-spawnpeds': () => selectSpawnType('peds'),
