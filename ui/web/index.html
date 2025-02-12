@@ -93,8 +93,8 @@
                     <ul class="row">
                         <li>
                             <div id="button-spawn" class="control" tabindex="1" role="button" aria-pressed="false" aria-label="Spawn Objects" >󰒕</div>
-                            <div id="button-trackedobjlist" class="control" tabindex="11" role="button" aria-pressed="false" aria-label="Track Objects" >󰹤</div>
-                            <div id="button-importexport" class="control" tabindex="21" role="button" aria-pressed="false" aria-label="Import/Export"></div>
+                            <div id="button-importexport" class="control" tabindex="11" role="button" aria-pressed="false" aria-label="Import/Export"></div>
+                            <div id="button-trackedobjlist" class="control" tabindex="21" role="button" aria-pressed="false" aria-label="Track Objects" >󰹤</div>
                             <!-- <div id="button-scenecontrol" class="control" tabindex="31" role="button" aria-pressed="false" >󱞔</div> -->
                             <!-- <div id="button-scenetags" class="control" tabindex="32" role="button" aria-pressed="false" >󰜢</div> -->
                         </li>
@@ -126,16 +126,46 @@
                     <div id="objSpawnList" class="list listPrimary bggradient">
                     </div>
                 </div>
+                <div id="objScenesLeftColumn" class="listGroup top left">
+                    <div id="objSceneControlOptions" class="bgt1 blr gap">
+                        <ul class="row">
+                            <li>
+                                <div id="button-savescene" class="control" tabindex="12" role="button" aria-pressed="false" >󰆓</div>
+                                <div id="button-reloadscene" class="control" tabindex="12" role="button" aria-pressed="false" ></div>
+                                <div id="button-clearscene" class="control" tabindex="12" role="button" aria-pressed="false" >󱋽</div>
+                                <div id="button-export" class="control" tabindex="12" role="button" aria-pressed="false" >󰈝</div>
+                                <div id="button-import" class="control" tabindex="12" role="button" aria-pressed="false" >󰈠</div>
+                                <div id="button-deletescene" class="control" tabindex="12" role="button" aria-pressed="false" >󰗨</div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div id="sceneSelected" class="row gap noflex listEntryField">
+                        <div class="label borderleft bgi">scene</div>
+                        <div id="selectedScene" class="entry borderright bgt1" tabindex="13" contenteditable="true">autosave</div>
+                    </div>
+                    <div id="objScenesList" class="list listPrimary bggradient gap">
+                    </div>
+                    <div id="objSceneTagOptions" class="bgt1 blr gap">
+                        <ul class="row">
+                            <li>
+                                <div id="button-tagsortbydist" class="control" tabindex="14" role="button" aria-pressed="false" >󰣰</div>
+                                <div id="button-tagsortbyname" class="control" tabindex="14" role="button" aria-pressed="false" >󰖽</div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div id="objSceneObjectsList" class="list listPrimary bggradient gap">
+                    </div>
+                </div>
                 <div id="objNearbyLeftColumn" class="listGroup top left">
                     <div id="objNearbyOrigin" class="bgt1 blr gap noflex">
                         <ul class="row">
                             <li>
-                                <div id="button-nearbyOrigin-camera" class="control" tabindex="12" role="button" aria-pressed="false" ></div>
-                                <div id="button-nearbyOrigin-offset" class="control" tabindex="12" role="button" aria-pressed="false" >󱣿</div>
-                                <div id="button-nearbyOrigin-player" class="control" tabindex="12" role="button" aria-pressed="false" ></div>
-                                <div id="button-nearbyOrigin-raycast" class="control" tabindex="12" role="button" aria-pressed="false" ></div>
-                                <div id="button-nearbyOrigin-set-position" class="control" tabindex="12" role="button" aria-pressed="false" ></div>
-                                <div id="button-nearbyOrigin-select" class="control" tabindex="12" role="button" aria-pressed="false" ></div>
+                                <div id="button-nearbyOrigin-camera" class="control" tabindex="22" role="button" aria-pressed="false" ></div>
+                                <div id="button-nearbyOrigin-offset" class="control" tabindex="22" role="button" aria-pressed="false" >󱣿</div>
+                                <div id="button-nearbyOrigin-player" class="control" tabindex="22" role="button" aria-pressed="false" ></div>
+                                <div id="button-nearbyOrigin-raycast" class="control" tabindex="22" role="button" aria-pressed="false" ></div>
+                                <div id="button-nearbyOrigin-set-position" class="control" tabindex="22" role="button" aria-pressed="false" ></div>
+                                <div id="button-nearbyOrigin-select" class="control" tabindex="22" role="button" aria-pressed="false" ></div>
                             </li>
                         </ul>
                     </div>
@@ -146,56 +176,20 @@
                     <div id="objNearbyFilter" class="bgt1 blr gap noflex">
                         <ul class="row">
                             <li>
-                                <div id="button-nearby-object" class="control selected" tabindex="13" role="button" aria-pressed="false" >󰠱</div>
-                                <div id="button-nearby-ped" class="control selected" tabindex="13" role="button" aria-pressed="false" ></div>
-                                <div id="button-nearby-vehicle" class="control selected" tabindex="13" role="button" aria-pressed="false" >󱢑</div>
+                                <div id="button-nearby-object" class="control selected" tabindex="23" role="button" aria-pressed="false" >󰠱</div>
+                                <div id="button-nearby-ped" class="control selected" tabindex="23" role="button" aria-pressed="false" ></div>
+                                <div id="button-nearby-vehicle" class="control selected" tabindex="23" role="button" aria-pressed="false" >󱢑</div>
                                 <!-- <div id="button-nearbypropset" class="control selected" tabindex="13" role="button" aria-pressed="false" ></div> -->
-                                <div id="button-nearby-other" class="control" tabindex="13" role="button" aria-pressed="false" >󱝤</div>
+                                <div id="button-nearby-other" class="control" tabindex="23" role="button" aria-pressed="false" >󱝤</div>
                             </li>
                         </ul>
                     </div>
                     <div id="objNearbyRange" class="row gap noflex listEntryField">
                         <div class="label borderleft bgi">range</div>
-                        <div id="nearbyRange" class="entry borderright bgt1" tabindex="14" contenteditable="true">50</div>
+                        <div id="nearbyRange" class="entry borderright bgt1" tabindex="24" contenteditable="true">50</div>
                     </div>
                     <div id="objNearbyResults" class="list listPrimary bggradient">
                     </div>
-                </div>
-                <div id="objScenesLeftColumn" class="listGroup top left">
-                    <div id="objSceneControlOptions" class="bgt1 blr gap">
-                        <ul class="row">
-                            <li>
-                                <div id="button-savescene" class="control" tabindex="22" role="button" aria-pressed="false" >󰆓</div>
-                                <div id="button-reloadscene" class="control" tabindex="22" role="button" aria-pressed="false" ></div>
-                                <div id="button-clearscene" class="control" tabindex="22" role="button" aria-pressed="false" >󱋽</div>
-                                <div id="button-import" class="control" tabindex="22" role="button" aria-pressed="false" >󰈠</div>
-                                <div id="button-export" class="control" tabindex="22" role="button" aria-pressed="false" >󰈝</div>
-                                <div id="button-deletescene" class="control" tabindex="22" role="button" aria-pressed="false" >󰗨</div>
-                            </li>
-                        </ul>
-                    </div>
-                    <div id="sceneSelected" class="row gap noflex listEntryField">
-                        <div class="label borderleft bgi">scene</div>
-                        <div id="selectedScene" class="entry borderright bgt1" tabindex="23" contenteditable="true">autosave</div>
-                    </div>
-                    <div id="objScenesList" class="list listPrimary bggradient gap">
-                    </div>
-                    <div id="objSceneTagOptions" class="bgt1 blr gap">
-                        <ul class="row">
-                            <li>
-                                <div id="button-tagsortbydist" class="control" tabindex="24" role="button" aria-pressed="false" >󰣰</div>
-                                <div id="button-tagsortbyname" class="control" tabindex="24" role="button" aria-pressed="false" >󰖽</div>
-                            </li>
-                        </ul>
-                    </div>
-                    <div id="objSceneObjectsList" class="list listPrimary bggradient gap">
-                    </div>
-                    <!-- <div id="objSceneObjectsListOptions" class="bgt1 blr gap"> -->
-                    <!--     <ul class="row"> -->
-                    <!--         <li> -->
-                    <!--         </li> -->
-                    <!--     </ul> -->
-                    <!-- </div> -->
                 </div>
                 <div id="objDetails" class="listGroup top right">
                     <div id="objDetailsOptions" class="bgt1 blr gap">

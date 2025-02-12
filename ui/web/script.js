@@ -126,8 +126,8 @@ export let KeyActions = {
         ' ': (event) => { clickElement(event); },
         '?': () => { toggleHelp("objHelp"); },
         '1': () => { toggleObjectSpawnHUD(); },
-        '2': () => { toggleObjectNearbyHUD(); },
-        '3': () => { toggleObjectImportExportHUD(); },
+        '2': () => { toggleObjectImportExportHUD(); },
+        '3': () => { toggleObjectNearbyHUD(); },
         'f': () => {
             if (Pressed.Control) { toggleFrozen(); }
             else { sendClientMessage('toggleMode', { mode: "focus" }); }

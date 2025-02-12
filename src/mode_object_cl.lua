@@ -71,6 +71,43 @@ local GetObjData = function(entityHandle)
     return objData
 end
 
+local RaycastXhair = function(dist, objIgnore)
+    local pos = GetFinalRenderedCamCoord()
+    local rot = GetFinalRenderedCamRot()
+    local yaw = rot.z * RCF
+    local pitch = rot.x * RCF
+    local hdg = {
+        x = -math.sin(yaw) * math.abs(math.cos(pitch)),
+        y = math.cos(yaw) * math.abs(math.cos(pitch)),
+        z = math.sin(pitch),
+    }
+    local _, hit, endPos, _, obj = GetShapeTestResult(
+        StartShapeTestRay(
+            pos.x, pos.y, pos.z,
+            pos.x + hdg.x * dist,
+            pos.y + hdg.y * dist,
+            pos.z + hdg.z * dist,
+            -1, objIgnore, 0
+        )
+    )
+    return hit, obj, endPos
+end
+
+local RaycastCursor = function(x, y, dist)
+    local _, normal = GetWorldCoordFromScreenCoord(x, y)
+    local pos = GetFinalRenderedCamCoord()
+    local _, hit, endPos, _, obj = GetShapeTestResult(
+        StartShapeTestRay(
+            pos.x, pos.y, pos.z,
+            pos.x + normal.x * dist,
+            pos.y + normal.y * dist,
+            pos.z + normal.z * dist,
+            -1, nil, 0
+        )
+    )
+    return hit, obj, endPos
+end
+
 local function LoadScene(sceneName)
     log.info("Loading scene objects", sceneName)
     local successfulLoad = true
@@ -111,6 +148,23 @@ local function LoadScene(sceneName)
     return successfulLoad
 end
 
+local function GetScenesList()
+        local scenes = {}
+        for sceneName in pairs(Scenes) do
+            table.insert(scenes, { name = sceneName })
+            log.debug("Adding cached scene", _)
+        end
+
+        local sceneNames = kvp.search("scenes:")
+        for _, scene in ipairs(sceneNames) do
+            local sceneName = scene:sub(8)
+            if not Scenes[sceneName] then
+                table.insert(scenes, { name = sceneName })
+            end
+        end
+        return { scenes = json.encode(scenes) }
+end
+
 local function GetScene(sceneName)
     log.spam("Getting scene objects data", sceneName)
     if not Scenes[sceneName] then
@@ -128,7 +182,7 @@ local function GetScene(sceneName)
             objData.distance = #(coords - objCoords)
             table.insert(sceneObjects, objData)
         else
-            log.spam("Failed to get data for " .. obj.handle)
+            log.error("Failed to get data for " .. obj)
             warn = warn + 1
         end
     end
@@ -136,6 +190,19 @@ local function GetScene(sceneName)
         log.warn("Failed to get data for " .. warn .. " objects in scene " .. sceneName)
     end
     return { objects = sceneObjects }
+end
+
+local function CheckRename(sceneName)
+        if sceneName ~= ActiveScene then
+            local newScene = { name = sceneName, objects = {} }
+            for _, obj in ipairs(Scenes[ActiveScene].objects) do
+                table.insert(newScene.objects, GetObjData(obj.handle))
+                log.info("Copying object", obj.handle)
+            end
+            Scenes[sceneName] = newScene
+            log.info("Copying scene", sceneName, ActiveScene)
+            ActiveScene = sceneName
+        end
 end
 
 local function SaveScene(sceneName)
@@ -147,35 +214,13 @@ local function SaveScene(sceneName)
         objData.modelName = nil
         table.insert(storedScene.objects, objData)
         for key in pairs(obj) do
-            if objData[key] then
+            if objData and objData[key] then
                 obj[key] = objData[key]
             end
         end
     end
     log.info("Saving scene", sceneName, storedScene)
     kvp.encode("scenes:"..sceneName, storedScene)
-end
-
-local RaycastXhair = function(dist, objIgnore)
-    local pos = GetFinalRenderedCamCoord()
-    local rot = GetFinalRenderedCamRot()
-    local yaw = rot.z * RCF
-    local pitch = rot.x * RCF
-    local hdg = {
-        x = -math.sin(yaw) * math.abs(math.cos(pitch)),
-        y = math.cos(yaw) * math.abs(math.cos(pitch)),
-        z = math.sin(pitch),
-    }
-    local _, hit, endPos, _, obj = GetShapeTestResult(
-        StartShapeTestRay(
-            pos.x, pos.y, pos.z,
-            pos.x + hdg.x * dist,
-            pos.y + hdg.y * dist,
-            pos.z + hdg.z * dist,
-            -1, objIgnore, 0
-        )
-    )
-    return hit, obj, endPos
 end
 
 local function ClearScene(sceneName, force)
@@ -207,21 +252,6 @@ local function ReloadScene(sceneName)
     ClearScene(sceneName, true)
     Scenes[sceneName] = kvp.decode("scenes:"..sceneName)
     return LoadScene(sceneName)
-end
-
-local RaycastCursor = function(x, y, dist)
-    local _, normal = GetWorldCoordFromScreenCoord(x, y)
-    local pos = GetFinalRenderedCamCoord()
-    local _, hit, endPos, _, obj = GetShapeTestResult(
-        StartShapeTestRay(
-            pos.x, pos.y, pos.z,
-            pos.x + normal.x * dist,
-            pos.y + normal.y * dist,
-            pos.z + normal.z * dist,
-            -1, nil, 0
-        )
-    )
-    return hit, obj, endPos
 end
 
 local SelectModeTick = function()
@@ -644,7 +674,6 @@ local GetRaycast = function(data)
     if not hit then return {}; end
     local model = GetEntityModel(obj)
     if not model or UntrackedModels[model] then return {}; end
-    log.debug("Raycast hit", hit, obj, pos, data)
     return { handle = obj }
 end
 
@@ -727,7 +756,6 @@ local function PlaceOnGround(data)
     da_obj.set(entityHandle, { ground = true })
 end
 
-
 local function RemovePreviewObject()
     local lastObj = PreviewObject
     if lastObj then da_obj.delete(lastObj); end
@@ -744,23 +772,8 @@ local function SpawnPreviewObject(name)
 end
 
 da_ui.callbacks({
-    nearbyObjects = function(data) return {nearbyObjects = GetNearbyObjects(data.range, data.origin)} end,
-    scenesList = function()
-        local scenes = {}
-        for sceneName in pairs(Scenes) do
-            table.insert(scenes, { name = sceneName })
-            log.debug("Adding cached scene", _)
-        end
-
-        local sceneNames = kvp.search("scenes:")
-        for _, scene in ipairs(sceneNames) do
-            local sceneName = scene:sub(8)
-            if not Scenes[sceneName] then
-                table.insert(scenes, { name = sceneName })
-            end
-        end
-        return { scenes = json.encode(scenes) }
-    end,
+    nearbyObjects = function(data) return { nearbyObjects = GetNearbyObjects(data.range, data.origin) } end,
+    scenesList = function(data) return GetScenesList() end,
     getScene = function(data) return GetScene(data.scene) end,
     loadScene = function(data) return LoadScene(data.scene) end,
     clearScene = function(data) return ClearScene(data.scene) end,
@@ -780,19 +793,7 @@ da_ui.events({
     selectSpawnObject = function(data) Spawn = GetHashKey(data.name) end,
     trackObject = TrackObject,
     setNearbyOriginPos = SetNearbyOriginPos,
-    saveScene = function(data)
-        if data.scene ~= ActiveScene then
-            local newScene = { name = data.scene, objects = {} }
-            for _, obj in ipairs(Scenes[ActiveScene].objects) do
-                table.insert(newScene.objects, GetObjData(obj.handle))
-                log.info("Copying object", obj.handle)
-            end
-            Scenes[data.scene] = newScene
-            log.info("Copying scene", data.scene, ActiveScene)
-            ActiveScene = data.scene
-        end
-        SaveScene(ActiveScene)
-    end,
+    saveScene = function(data) CheckRename(data.scene); SaveScene(data.scene) end,
 })
 da_net.events({
     onResourceStop = function(resourceName)
