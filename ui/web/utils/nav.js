@@ -172,6 +172,7 @@ export function isInterruptingElement(target) {
     return target.classList.contains('entry') ||
         target.classList.contains('control') ||
         target.classList.contains('label') ||
+        target.closest('.context-menu') ||
         target.closest('.label') ||
         target.closest('.entry') ||
         target.closest('.control');
