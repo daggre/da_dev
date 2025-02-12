@@ -510,6 +510,7 @@ ul li {
 
 .context-menu-item:hover {
     color: var(--bg);
+    text-shadow: 0 0 1px, 0 0 1px;
     background: var(--primary);
 }
 
