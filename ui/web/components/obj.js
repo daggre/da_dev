@@ -103,7 +103,6 @@ function searchObjects(searchValue, searchList, elementId, tabIndex) {
         if (name == selectedObject) { li.classList.add('liSelect'); }
         li.addEventListener('mouseenter', function() {
             li.classList.add('liHover');
-            // Check if button-spawnpreview is selected and if it is sendClientMessage to spawn a preview object
             if (elementHasClass('button-spawnpreview', 'selected')) {
                 sendClientMessage('spawnPreviewObject', { name: name });
             }
