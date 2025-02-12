@@ -32,6 +32,8 @@ import {
     toggleObjectImportExportHUD,
     toggleFrozen,
     toggleCollision,
+    setRotation,
+    placeOnGround,
 } from "./components/obj.js";
 import {
     initAnims,
@@ -75,6 +77,13 @@ const KeyTranslateMap = {
     '\'': '4',
 };
 
+const ObjectContextOptions = {
+    // 'Info': (data) => { console.log("Info", data.handle); },
+    // 'Clone': (data) => { console.log("Clone", data.handle); },
+    'Reset Rotation': (data) => { setRotation(data.handle, 0, 0, 0); },
+    'Place on Ground': (data) => { placeOnGround(data.handle); },
+}
+
 export let KeyActions = {
     'infoHUD': {
         ' ': (event) => { clickElement(event); },
@@ -115,19 +124,18 @@ export let KeyActions = {
         '1': () => { toggleObjectSpawnHUD(); },
         '2': () => { toggleObjectNearbyHUD(); },
         '3': () => { toggleObjectImportExportHUD(); },
-        'f': () => { sendClientMessage('toggleMode', { mode: "focus" }); },
+        'f': () => {
+            if (Pressed.Control) { toggleFrozen(); }
+            else { sendClientMessage('toggleMode', { mode: "focus" }); }
+        },
+        'g': () => { if (Pressed.Control) { placeOnGround(); }},
         'h': () => { toggleHelp("objHelp"); },
         'r': () => {
             if (Pressed.Control) { reloadScene(); }
             else { sendClientMessage('toggleMode', { mode: "gizmo" })}
         },
         's': () => { if (Pressed.Control) { saveScene(); } },
-        'x': () => {
-            sendClientMessage('sendCursorKey', {
-                justPressed: { x: true },
-                pressed: Pressed,
-            });
-        },
+        'x': () => { sendClientMessage('sendCursorKey', { justPressed: { x: true }, pressed: Pressed, }); },
         'escape': () => { sendClientMessage('deactivateMode', { mode: "object" }); },
     },
     'cameraHUD': {
@@ -148,7 +156,7 @@ export let MouseActions = {
     },
     'animHUD': {
         leftClick: (event) => {
-            // TODO: cconvert this to EventActions click
+            // TODO: convert this to EventActions click
             if (event.target.id === "activeAnimDict" || event.target.id === "activeAnimName") {
                 if (event.target.innerHTML !== "") {
                     clipboardCopy(event.target.innerHTML);
@@ -180,7 +188,7 @@ export let MouseActions = {
                 });
             }
         },
-        contextMenu: (event) => {
+        rightClick: (event) => {
             if (!MCP) {
                 if (isInterruptingElement(event.target)) {
                     event.stopPropagation();
@@ -189,12 +197,11 @@ export let MouseActions = {
                 event.preventDefault();
                 let x = event.pageX;
                 let y = event.pageY;
-                sendClientMessage('getRaycast', { x: x, y: y }).then((data) => {
-                    console.log("gotRaycast", data)
-                    if (!data.entityHandle) { return; }
-                    showContextMenu(ObjectContextOptions, x, y).then((option) => {
+                sendClientMessage('getRaycast', { x: x/ResolutionX, y: y/ResolutionY }).then((data) => {
+                    if (!data.handle) { return; }
+                    showContextMenu(Object.keys(ObjectContextOptions), x, y).then((option) => {
                         if (!option) { return; }
-                        ObjectContextActions[option](data.handle);
+                        ObjectContextOptions[option](data);
                     });
                 });
             }
@@ -302,6 +309,7 @@ export const EventActions = {
         const mouseButtonActions = {
             0: 'leftClick', // Left Click
             1: 'middleClick', // Middle Click
+            2: 'rightClick',
         };
         const actionType = mouseButtonActions[event.button];
 
@@ -880,6 +888,7 @@ export function showContextMenu(options, x, y) {
         }
 
         function handleRightClick(event) {
+            if (event.button != 2) return;
             cleanup();
             resolve(null);
         }
@@ -892,31 +901,8 @@ export function showContextMenu(options, x, y) {
         }
 
         document.addEventListener("click", handleClickOutside);
-        document.addEventListener("contextmenu", handleRightClick);
+        document.addEventListener("pointerdown", handleRightClick);
         document.addEventListener("keydown", handleKeyPress);
-    });
-}
-
-let ContextOptions = {
-    'Save': (msg) => { console.log("save", msg); },
-    'Open': (msg) => { console.log("open", msg); },
-    'Delete': (msg) => { console.log("delete", msg); },
-}
-
-// Example usage
-document.addEventListener("contextmenu", (event) => {
-    event.preventDefault();
-    showContextMenu(Object.keys(ContextOptions), event.pageX, event.pageY).then((option) => {
-        if (!option) { return; }
-        ContextOptions[option]("maintest");
-    });
-});
-
-function showContextMenu(contextOptions, x, y) {
-    event.preventDefault();
-    showContextMenu(Object.keys(contextOptions), event.pageX, event.pageY).then((option) => {
-        if (!option) { return; }
-        ContextOptions[option]("maintest");
     });
 }
 

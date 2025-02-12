@@ -639,9 +639,11 @@ local SetNearbyOriginPos = function(data)
 end
 
 local GetRaycast = function(data)
-    hit, obj, pos = RaycastCursor(data.x, data.y, Distance)
+    local hit, obj, pos = RaycastCursor(data.x, data.y, Distance)
     if not hit then return {}; end
-    log.debug("Raycast hit", hit, obj, pos)
+    local model = GetEntityModel(obj)
+    if not model or UntrackedModels[model] then return {}; end
+    log.debug("Raycast hit", hit, obj, pos, data)
     return { handle = obj }
 end
 
@@ -707,12 +709,21 @@ end
 local function SetFrozen(data)
     local entityHandle = tonumber(data.handle)
     da_obj.set(entityHandle, { frozen = data.state })
-    return true
 end
 
 local function SetCollision(data)
     local entityHandle = tonumber(data.handle)
     da_obj.set(entityHandle, { collision = data.state })
+end
+
+local function SetRotation(data)
+    local entityHandle = tonumber(data.handle)
+    da_obj.set(entityHandle, { rotation = { data.x, data.y, data.z }})
+end
+
+local function PlaceOnGround(data)
+    local entityHandle = tonumber(data.handle)
+    da_obj.set(entityHandle, { ground = true })
 end
 
 da_ui.callbacks({
@@ -740,6 +751,8 @@ da_ui.callbacks({
     deleteScene = function(data) return DeleteScene(data.scene) end,
     setFrozen = function(data) return SetFrozen(data) end,
     setCollision = function(data) return SetCollision(data) end,
+    setRotation = function(data) return SetRotation(data) end,
+    placeOnGround = function(data) return PlaceOnGround(data) end,
     getRaycast = function(data) return GetRaycast(data) end,
 })
 da_ui.events({

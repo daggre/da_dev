@@ -537,14 +537,20 @@ export function toggleObjectImportExportHUD(state) {
     }
 }
 
-export function toggleFrozen() {
-    const handle = document.getElementById('objDetailsEntityHandle').innerHTML;
+export function toggleFrozen(handle = document.getElementById('objDetailsEntityHandle')?.innerHTML) {
     const state = elementHasClass('objDetailsEntityFrozen', 'selected');
     sendClientMessage('setFrozen', { handle: handle, state: !state });
 }
 
-export function toggleCollision() {
-    const handle = document.getElementById('objDetailsEntityHandle').innerHTML;
+export function toggleCollision(handle = document.getElementById('objDetailsEntityHandle')?.innerHTML) {
     const state = elementHasClass('objDetailsEntityCollision', 'selected');
     sendClientMessage('setCollision', { handle: handle, state: !state });
+}
+
+export function setRotation(handle = document.getElementById('objDetailsEntityHandle')?.innerHTML, x, y, z) {
+    sendClientMessage('setRotation', { handle: handle, x: x, y: y, z: z })
+}
+
+export function placeOnGround(handle = document.getElementById('objDetailsEntityHandle')?.innerHTML) {
+    sendClientMessage('placeOnGround', { handle: handle, });
 }
