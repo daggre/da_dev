@@ -2,32 +2,32 @@ da_trie.addRoot("devRoot")
 da_trie.addRoot("objRoot")
 
 da_ui.callbacks({
-    ["initAnims"] = function() return { animations = json.encode(dat.animation) } end,
-    ["initAnimFlags"] = function() return { flags = json.encode(dat.flags.anim) } end,
-    ["initIKAnimFlags"] = function() return { flags = json.encode(dat.flags.ik) } end,
-    ["initObjSettings"] = function() return {
+    initAnims = function() return { animations = json.encode(dat.animation) } end,
+    initAnimFlags = function() return { flags = json.encode(dat.flags.anim) } end,
+    initIKAnimFlags = function() return { flags = json.encode(dat.flags.ik) } end,
+    initObjSettings = function() return {
         nearby = kvp.rawget("setting:ui:nearby"),
         tags = kvp.rawget("setting:ui:tags"),
     } end,
-    ["initObjects"] = function() return {
+    initObjects = function() return {
         peds = json.encode(dat.ped),
         objects = json.encode(dat.object),
         pickups = json.encode(dat.pickup),
         vehicles = json.encode(dat.vehicle),
         propsets = json.encode(dat.propset),
     } end,
-    ["initTaskFilters"] = function() return { taskFilters = json.encode(dat.taskFilter) } end,
+    initTaskFilters = function() return { taskFilters = json.encode(dat.taskFilter) } end,
 })
 
 da_ui.events({
-    ["activateMode"] = function(data) da_mode.activate(data.mode) end,
-    ["deactivateMode"] = function(data) da_mode.deactivate(data.mode) end,
-    ["toggleMode"] = function(data) da_mode.toggle(data.mode) end,
-    ["setObjSettings"] = function(data)
+    activateMode = function(data) da_mode.activate(data.mode) end,
+    deactivateMode = function(data) da_mode.deactivate(data.mode) end,
+    toggleMode = function(data) da_mode.toggle(data.mode) end,
+    setObjSettings = function(data)
         if data.nearby then kvp.rawset("setting:ui:nearby", data.nearby) end
         if data.tags then kvp.rawset("setting:ui:tags", data.tags) end
     end,
-    ["playAnim"] = function(data)
+    playAnim = function(data)
         local entity = data.entity and tonumber(data.entity) or nil
         if data.entity and IsEntityAnObject(entity) and not IsEntityAPed(entity) then
             da_anim.object(
@@ -63,17 +63,17 @@ da_ui.events({
                 data.taskFilter)
         end
     end,
-    ["stopAnim"] = function(data)
+    stopAnim = function(data)
         ClearPedTasksImmediately(data.entity or PlayerPedId())
     end,
-    ["selectTrieOption"] = function(data)
+    selectTrieOption = function(data)
         da_trie.run(data.menu, data.option)
         da_mode.deactivate("devTree")
     end,
-    ["selectTrieMenu"] = function(data)
+    selectTrieMenu = function(data)
         da_ui.send("ui_trie", { trie = da_trie.get(data.menu) })
     end,
-    ["exit"] = function()
+    exit = function()
         da_mode.deactivate("animation"); da_mode.deactivate("devTree")
     end,
 })
