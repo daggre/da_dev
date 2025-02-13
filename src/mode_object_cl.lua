@@ -35,6 +35,10 @@ lazy.uiUpdate = function(select, hover, objData)
 end
 
 
+-- TODO: Find a way to cache this information and utilize cache on frozen or
+-- objects that haven't moved, maybe we invalidate cache for objects when making
+-- changes
+-- TODO: Alternatively, if this isn't a constantly called code, then dont worry about it
 local GetObjData = function(entityHandle)
     local objData = {}
     if entityHandle == nil then return nil; end
@@ -298,7 +302,7 @@ local SelectModeTick = function()
     -- )
     DrawBB(Select, {r=80, g=193, b=238, a=255}) -- Blue
     DrawBB(Hover, {r=255, g=255, b=255, a=255}) -- White
-    lazy(30).uiUpdate(Select, Hover, GetObjData(Select))
+    lazy(30).uiUpdate(Select, Hover, GetObjData(Select)) -- TODO: Optimize
 end
 
 local ObjectModeThread = function()
