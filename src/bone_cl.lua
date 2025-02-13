@@ -1,6 +1,10 @@
 local BoneIndexes = {}
 local BoneEdges = {}
 local ThreadActive = false
+local White = {r = 255, g = 255, b = 255, a = 255}
+local SphereSize = 0.003
+local TextSize = 0.1
+local Alpha = 150
 
 local CacheBoneIndexes = function(entity)
     local boneList = bones.human_skel
@@ -42,8 +46,8 @@ local DrawAllBones = function(entity, text)
         local boneCoords = GetWorldPositionOfEntityBone(entity, boneIndex)
         if boneCoords then
             boneCoordCache[bone] = boneCoords
-            if text then DrawText(bone, boneCoords.xyz, {r = 255, g = 255, b = 255, a = 200}, 0.1) end
-            DrawSphere(boneCoords.xyz, 0.003, {r = 255, g = 255, b = 255, a = 255})
+            if text then DrawText(bone, boneCoords.xyz, White, TextSize) end
+            DrawSphere(boneCoords.xyz, SphereSize, White)
         end
     end
 
@@ -51,7 +55,7 @@ local DrawAllBones = function(entity, text)
         local bone1 = boneCoordCache[bone[1]]
         local bone2 = boneCoordCache[bone[2]]
         if bone1 and bone2 then
-            DrawLine(bone1.xyz, bone2.xyz, 255, 255, 255, 255)
+            DrawLine(bone1.xyz, bone2.xyz, White.r, White.g, White.b, White.a)
         end
     end
 end
@@ -61,7 +65,7 @@ local DrawBoneThread = function(entity, text)
     ThreadActive = true
     Citizen.CreateThread(function()
         while ThreadActive do
-            SetEntityAlpha(entity, 150, false)
+            SetEntityAlpha(entity, Alpha, false)
             DrawAllBones(entity, text)
             Citizen.Wait(0)
         end
