@@ -99,7 +99,7 @@ const mockResponses = {
         ],
     }),
     saveScene: () => ({}),
-    sendCursorKey: () => ({}),
+    dispatchKeyEvents: () => ({}),
     sendCursorPos: () => ({}),
     playAnim: () => ({}),
     stopAnim: () => ({}),

@@ -249,9 +249,19 @@ local function DeleteScene(sceneName)
 end
 
 local function ReloadScene(sceneName)
+    if not sceneName then return; end
     ClearScene(sceneName, true)
     Scenes[sceneName] = kvp.decode("scenes:"..sceneName)
     return LoadScene(sceneName)
+end
+
+local function SetAlpha(handle)
+    if not handle or not DoesEntityExist(handle) then return; end
+    if GetEntityAlpha(handle) == 255 then
+        SetEntityAlpha(handle, 90)
+    else
+        ResetEntityAlpha(handle)
+    end
 end
 
 local SelectModeTick = function()
@@ -414,6 +424,29 @@ da_mode.register({
             end
         },
         {
+            key = "f",
+            event = "justPressed",
+            primary = true,
+            modifiers = { ctrl = true, },
+            fn = function()
+                -- Toggle Frozen
+                if not Select then return; end
+                da_obj.set(Select, { frozen = IsEntityFrozen(Select) == 0 })
+            end
+        },
+        {
+            key = "h",
+            event = "justPressed",
+            primary = true,
+            fn = function()
+                da_ui.send("toggleHelp", {
+                    mode = "objHelp",
+                    state = nil,
+                    toggleCursor = true
+                })
+            end,
+        },
+        {
             key = "r",
             event = "justPressed",
             primary = true,
@@ -438,10 +471,25 @@ da_mode.register({
             primary = true,
             modifiers = { ctrl = true },
             fn = function()
-                if Hover and Select then
-                    local hPos = GetEntityRotation(Hover)
-                    SetEntityRotation(Select, hPos.x, hPos.y, hPos.z)
-                end
+                ReloadScene(ActiveScene)
+            end,
+        },
+        {
+            key = "s",
+            event = "justPressed",
+            primary = true,
+            modifiers = { ctrl = true },
+            fn = function()
+                if ActiveScene then SaveScene(ActiveScene) end
+            end,
+        },
+        {
+            key = "t",
+            event = "justPressed",
+            primary = true,
+            modifiers = { ctrl = true },
+            fn = function()
+                if Select then SetAlpha(Select) end
             end,
         },
         {
@@ -489,18 +537,6 @@ da_mode.register({
             end,
         },
         {
-            key = "h",
-            event = "justPressed",
-            primary = true,
-            fn = function()
-                da_ui.send("toggleHelp", {
-                    mode = "objHelp",
-                    state = nil,
-                    toggleCursor = true
-                })
-            end,
-        },
-        {
             key = "1",
             event = "justPressed",
             active = true,
@@ -522,22 +558,6 @@ da_mode.register({
             active = true,
             fn = function()
                 da_ui.send("keyPress", { mode = "objectHUD", key = "3" })
-            end,
-        },
-        {
-            key = "4",
-            event = "justPressed",
-            active = true,
-            fn = function()
-                da_ui.send("keyPress", { mode = "objectHUD", key = "4" })
-            end,
-        },
-        {
-            key = "5",
-            event = "justPressed",
-            active = true,
-            fn = function()
-                da_ui.send("keyPress", { mode = "objectHUD", key = "5" })
             end,
         },
     },
@@ -677,63 +697,24 @@ local GetRaycast = function(data)
     return { handle = obj }
 end
 
-local ControlCheckCursor = function(pressed, justPressed)
-    if SelectMode ~= "Cursor" then return; end
-    pressed = pressed or {}
-    justPressed = justPressed or {}
-    -- TODO: Update this to trigger eventMap and dispatchEvent in Mode Controller
-    -- modifiers = { shift = pressed.Shift, ctrl = pressed.Ctrl, alt = pressed.Alt, }
+local DispatchKeyEvents = function(data)
+    local pressed = data.pressed or {}
+    local justPressed = data.justPressed or {}
+    local released = data.released or {}
+    local justReleased = data.justReleased or {}
+    local modifiers = {
+        shift = pressed.Shift,
+        ctrl = pressed.Control,
+        alt = pressed.Alt
+    }
 
-    -- Select Object (MouseLeft)
-    if SelectMode == "Cursor" then
-        if justPressed.MouseLeft then
-            if pressed.Shift and Spawn and HitCoords then
-                if not ActiveScene then ActiveScene = "autosave"; end
-                if not Scenes[ActiveScene] then Scenes[ActiveScene] = { objects = {}, }; end
-                local obj = da_obj.create(Spawn, HitCoords, { ground = true, })
-                log.spam("Spawned object", ActiveScene, obj, Spawn, HitCoords)
-                table.insert(Scenes[ActiveScene].objects, GetObjData(obj))
-                Select = obj
-            else
-                -- Select hovered entity
-                if Hover then
-                    if Hover == Select then
-                        Select = nil
-                    else
-                        Select = Hover
-                    end
-                end
-            end
-        end
-    end
-
-    if justPressed.f then
-        da_mode.toggle("focus")
-    end
-
-    if justPressed.r then
-        if not Select and Hover then
-            Select = Hover
-        end
-        if pressed.Alt and Hover then
-            Select = Hover
-        end
-        if Select then
-            StartGizmo(Select)
-        end
-    end
-
-    if justPressed.x then
-        if pressed.Shift and Select then
-            for i, obj in ipairs(Scenes[ActiveScene].objects) do
-                if obj.handle == Select then
-                    table.remove(Scenes[ActiveScene].objects, i)
-                    break
-                end
-            end
-            DeleteEntity(Select)
-        end
-    end
+    da_mode.triggerEvents({
+        modifiers = modifiers,
+        pressed = pressed,
+        justPressed = justPressed,
+        released = released,
+        justReleased = justReleased,
+    })
 end
 
 local function SetFrozen(data)
@@ -788,7 +769,7 @@ da_ui.callbacks({
 da_ui.events({
     spawnPreviewObject = function(data) SpawnPreviewObject(data.name) end,
     removePreviewObject = function() RemovePreviewObject() end,
-    sendCursorKey = function(data) ControlCheckCursor(data.pressed, data.justPressed) end,
+    dispatchKeyEvents = function(data) DispatchKeyEvents(data) end,
     sendCursorPos = function(data) MouseX = data.x; MouseY = data.y end,
     selectSpawnObject = function(data) Spawn = GetHashKey(data.name) end,
     trackObject = TrackObject,

@@ -128,18 +128,13 @@ export let KeyActions = {
         '1': () => { toggleObjectSpawnHUD(); },
         '2': () => { toggleObjectImportExportHUD(); },
         '3': () => { toggleObjectNearbyHUD(); },
-        'f': () => {
-            if (Pressed.Control) { toggleFrozen(); }
-            else { sendClientMessage('toggleMode', { mode: "focus" }); }
-        },
-        'g': () => { if (Pressed.Control) { placeOnGround(); }},
+        'f': () => { sendKey('f'); },
+        'g': () => { sendKey('g'); },
         'h': () => { toggleHelp("objHelp"); },
-        'r': () => {
-            if (Pressed.Control) { reloadScene(); }
-            else { sendClientMessage('toggleMode', { mode: "gizmo" })}
-        },
+        'r': () => { sendKey('r'); },
         's': () => { if (Pressed.Control) { saveScene(); } },
-        'x': () => { sendClientMessage('sendCursorKey', { justPressed: { x: true }, pressed: Pressed, }); },
+        't': () => { sendKey('t'); },
+        'x': () => { sendKey('x'); },
         'escape': () => { sendClientMessage('deactivateMode', { mode: "object" }); },
     },
     'cameraHUD': {
@@ -186,10 +181,7 @@ export let MouseActions = {
                     event.stopPropagation();
                     return;
                 }
-                sendClientMessage('sendCursorKey', {
-                    justPressed: { MouseLeft: true },
-                    pressed: Pressed,
-                });
+                sendKey('MouseLeft');
             }
         },
         rightClick: (event) => {
@@ -911,57 +903,9 @@ export function showContextMenu(options, x, y) {
     });
 }
 
-// DEPRECATE BELOW //
-function HandleKeysAnim(event) {
-    switch(event.key) {
-        case " ":
-            if (typeof event.target.onclick == "function") {
-                event.target.onclick.apply();
-            } else {
-                togglePlay();
-            }
-            break;
-        case "?":
-        case "1":
-        case "x":
-            if (isVisible('animSearchField')) {
-                // Clear search
-                elementSetText('animDictList', "");
-                elementSetText('animList', "");
-                elementSetText('valueAnimSearch', "");
-                document.getElementById('valueAnimSearch').focus();
-            } else if (isVisible('animTimingsOptions')) {
-                // Reset timings to defaults
-                elementSetText('timingBlendIn', "1.0");
-                elementSetText('timingBlendOut', "1.0");
-                elementSetText('timingPlayback', "0");
-                elementSetText('timingDuration', "-1");
-            } else if (isVisible('animFlagsOptions')) {
-                // Clear all flags
-                for (let i=0; i < 32; i++) {
-                    let value = toUint32(1 << i);
-                    if (elementHasClass(`flag-${value}`, "selected")) {
-                        toggleFlag(value);
-                    }
-                }
-            } else if (isVisible('animIKFlagsOptions')) {
-                // Clear all ikflags
-                for (let i=0; i < 32 ; i++) {
-                    let value = toUint32(1 << i);
-                    if (elementHasClass(`flag-${value}`, "selected")) {
-                        toggleIKFlag(value);
-                    }
-                }
-            } else if (isVisible('animEntityOptions')) {
-                // Reset entity to player
-                elementSetText('animEntityField', "");
-            } else {
-                // Clear the selected animDict and animName
-                elementSetText('activeAnimDict', "");
-                elementSetText('activeAnimName', "");
-            }
-            event.preventDefault();
-            break;
-    }
+function sendKey(key) {
+    sendClientMessage('dispatchKeyEvents', {
+        justPressed: { [key]: true, },
+        pressed: Pressed
+    });
 }
-

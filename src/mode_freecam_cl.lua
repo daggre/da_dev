@@ -59,6 +59,7 @@ da_mode.register({
             key = "f",
             event = "justPressed",
             active = true,
+            modifier = { ctrl = false, shift = false },
             fn = function()
                 da_mode.toggle("focus")
             end
