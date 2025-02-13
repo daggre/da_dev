@@ -62,7 +62,13 @@ Citizen.CreateThread(function()
     })
 end)
 
+local PlayAnimation = function(data)
+    local entity = data.entity or PlayerPedId()
+    da_anim.ped(entity, data.animDict, data.anim)
+end
+
 da_ui.events({
+    playAnimation = function(data) PlayAnimation(data) end,
     activateMCP = function(data)
         da_mode.activateMCP(data.mode)
     end,

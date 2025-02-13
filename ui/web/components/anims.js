@@ -359,9 +359,10 @@ function selectAnimDict(animDict) {
             } else if (event.ctrlKey) {
                 ul.removeChild(li);
             } else {
+                console.log("choose anim", animDict, anim);
                 elementSetText('animSelectedName', anim);
                 elementSetText('animConfSelectedName', anim);
-                togglePlay(true);
+                previewAnimation(animDict, anim);
             }
         });
         li.addEventListener('mouseenter', function() {
@@ -492,6 +493,10 @@ export function toggleIKFlag(flag) {
     document.getElementById('IKFlagTotals').innerHTML = IKFlagTotals;
 }
 
+function previewAnimation(animDict, anim) {
+    sendClientMessage('playAnimation', { animDict: animDict, anim: anim, });
+}
+
 export function togglePlay(state) {
     // if (elementSetClass('button-play', 'selected', state)) {
     //     setTimeout(function() { elementSetClass('button-play', 'selected', false); }, 200);
@@ -522,3 +527,58 @@ export function toggleTorso(state) {
     }
 }
 
+
+// DEPRECATE BELOW //
+// function HandleKeysAnim(event) {
+//     switch(event.key) {
+//         case " ":
+//             if (typeof event.target.onclick == "function") {
+//                 event.target.onclick.apply();
+//             } else {
+//                 togglePlay();
+//             }
+//             break;
+//         case "?":
+//         case "1":
+//         case "x":
+//             if (isVisible('animSearchField')) {
+//                 // Clear search
+//                 elementSetText('animDictList', "");
+//                 elementSetText('animList', "");
+//                 elementSetText('valueAnimSearch', "");
+//                 document.getElementById('valueAnimSearch').focus();
+//             } else if (isVisible('animTimingsOptions')) {
+//                 // Reset timings to defaults
+//                 elementSetText('timingBlendIn', "1.0");
+//                 elementSetText('timingBlendOut', "1.0");
+//                 elementSetText('timingPlayback', "0");
+//                 elementSetText('timingDuration', "-1");
+//             } else if (isVisible('animFlagsOptions')) {
+//                 // Clear all flags
+//                 for (let i=0; i < 32; i++) {
+//                     let value = toUint32(1 << i);
+//                     if (elementHasClass(`flag-${value}`, "selected")) {
+//                         toggleFlag(value);
+//                     }
+//                 }
+//             } else if (isVisible('animIKFlagsOptions')) {
+//                 // Clear all ikflags
+//                 for (let i=0; i < 32 ; i++) {
+//                     let value = toUint32(1 << i);
+//                     if (elementHasClass(`flag-${value}`, "selected")) {
+//                         toggleIKFlag(value);
+//                     }
+//                 }
+//             } else if (isVisible('animEntityOptions')) {
+//                 // Reset entity to player
+//                 elementSetText('animEntityField', "");
+//             } else {
+//                 // Clear the selected animDict and animName
+//                 elementSetText('activeAnimDict', "");
+//                 elementSetText('activeAnimName', "");
+//             }
+//             event.preventDefault();
+//             break;
+//     }
+// }
+//
