@@ -101,10 +101,10 @@ export let KeyActions = {
         ' ': (event) => { clickElement(event); },
         'escape': () => { sendClientMessage('deactivateMode', { mode: "animation" }); },
         'backspace': () => { toggleStop(); },
-        '?': () => { toggleHelp("animHelp"); },
         '1': () => { toggleAnimationSearchHUD(); },
         '2': () => { toggleAnimationConfigureHUD(); },
         'h': () => { toggleHelp("animHelp"); },
+        '?': () => { toggleHelp("animHelp"); },
         'p': () => { togglePlay(); },
         'r': () => { togglePlay(); },
         // '3': () => { toggleIKFlags(); },
@@ -124,13 +124,13 @@ export let KeyActions = {
     },
     'objectHUD': {
         ' ': (event) => { clickElement(event); },
-        '?': () => { toggleHelp("objHelp"); },
         '1': () => { toggleObjectSpawnHUD(); },
         '2': () => { toggleObjectImportExportHUD(); },
         '3': () => { toggleObjectNearbyHUD(); },
         'f': () => { sendKey('f'); },
         'g': () => { sendKey('g'); },
         'h': () => { toggleHelp("objHelp"); },
+        '?': () => { toggleHelp("objHelp"); },
         'r': () => { sendKey('r'); },
         's': () => { if (Pressed.Control) { saveScene(); } },
         't': () => { sendKey('t'); },
@@ -164,13 +164,13 @@ export let MouseActions = {
         },
         middleClick: (event) => {
             if (MCP) {
-                sendClientMessage('deactivateMCP', {});
-                toggleMCP(false);
+                sendClientMessage('deactivateMCP', {}).then((mcpState) => { toggleMCP(mcpState); });
             } else {
                 QuickPress.MiddleMouse.active = true;
                 setTimeout(() => { QuickPress.MiddleMouse.active = false; }, QuickPress.Timeout);
-                sendClientMessage('activateMCP', { mode: "animation" });
-                toggleMCP(true);
+                sendClientMessage('activateMCP', { mode: "animation" }).then((mcpState) => {
+                    toggleMCP(mcpState);
+                });
             }
         },
     },
@@ -204,13 +204,17 @@ export let MouseActions = {
         },
         middleClick: (event) => {
             if (MCP) {
-                sendClientMessage('deactivateMCP', {});
-                toggleMCP(true);
+                sendClientMessage('deactivateMCP', {}).then((mcpState) => {
+                    console.log("deactivateMCP", mcpState);
+                    toggleMCP(mcpState);
+                });
             } else {
                 QuickPress.MiddleMouse.active = true;
                 setTimeout(() => { QuickPress.MiddleMouse.active = false; }, QuickPress.Timeout);
-                sendClientMessage('activateMCP', { mode: "object" });
-                toggleMCP(true);
+                sendClientMessage('activateMCP', { mode: "object" }).then((mcpState) => {
+                    console.log("activateMCP", mcpState);
+                    toggleMCP(mcpState);
+                });
             }
         },
     },
@@ -218,8 +222,9 @@ export let MouseActions = {
         middleClick: (event) => {
             QuickPress.MiddleMouse.active = true;
             setTimeout(() => { QuickPress.MiddleMouse.active = false; }, QuickPress.Timeout);
-            sendClientMessage('activateMCP', { mode: "gizmo" });
-            toggleMCP(true);
+            sendClientMessage('activateMCP', { mode: "gizmo" }).then((mcpState) => {
+                toggleMCP(mcpState);
+            });
         },
     },
 };
@@ -327,8 +332,7 @@ export const EventActions = {
             switch(event.button) {
                 case 1: // Middle Click
                     if (!QuickPress.MiddleMouse.active) {
-                        sendClientMessage('deactivateMCP', {});
-                        toggleMCP(false);
+                        sendClientMessage('deactivateMCP', {}).then((mcpState) => { toggleMCP(mcpState); });
                     }
                     break;
             }

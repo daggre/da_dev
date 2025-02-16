@@ -75,7 +75,7 @@ da_mode.register({
     end,
     activateMCP = function()
         if da_mcp.active then return; end
-        da_mcp.activate({
+        return da_mcp.activate({
             key = dat.keyHash['MouseScrollClick'],
             activate = function()
                 SelectMode = "Crosshair"
@@ -93,7 +93,7 @@ da_mode.register({
         })
     end,
     deactivateMCP = function()
-        da_mcp.deactivate()
+        return da_mcp.deactivate()
     end,
     keymaps = {
         {

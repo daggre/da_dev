@@ -326,12 +326,8 @@ da_mode.register({
     priority = 70,
     onActivate = function()
         CurrentTree = "objRoot"
-        -- SelectMode = "Cursor"
-        -- objectMCPState = false
-
         da_mode.deactivate("animation")
         da_mode.activate("freecam")
-        --
         ObjectModeThread()
         da_ui.send("ui_object", {})
         da_ui.send("mcp", { active = objectMCPState, })
@@ -368,7 +364,7 @@ da_mode.register({
     end,
     activateMCP = function()
         if da_mcp.active then return; end
-        da_mcp.activate({
+        return da_mcp.activate({
             key = dat.keyHash['MouseScrollClick'],
             activate = function()
                 log.debug("Activating MCP for object mode")
@@ -712,7 +708,7 @@ local DispatchKeyEvents = function(data)
         alt = pressed.Alt
     }
 
-    da_mode.triggerEvents({
+    da_mode.dispatchEvents({
         modifiers = modifiers,
         pressed = pressed,
         justPressed = justPressed,
