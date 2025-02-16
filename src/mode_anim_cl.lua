@@ -30,7 +30,7 @@ Citizen.CreateThread(function()
         end,
         activateMCP = function()
             if da_mcp.active then return; end
-            da_mcp.activate({
+            return da_mcp.activate({
                 key = dat.keyHash['MouseScrollClick'],
                 activate = function()
                     da_ui.send("mcp", { active = true, })
@@ -67,13 +67,19 @@ local PlayAnimation = function(data)
     da_anim.ped(entity, data.animDict, data.anim)
 end
 
-da_ui.events({
+da_ui.callbacks({
     playAnimation = function(data) PlayAnimation(data) end,
     activateMCP = function(data)
-        da_mode.activateMCP(data.mode)
+        log.debug("da_ui.events activateMCP", data)
+        local retval = da_mode.activateMCP(data.mode)
+        log.debug("da_ui.events activateMCP retval", retval)
+        return retval
     end,
     deactivateMCP = function(data)
-        da_mcp.deactivate()
+        log.debug("da_ui.events deactivateMCP", data)
+        local retval = da_mcp.deactivate()
+        log.debug("da_ui.events deactivateMCP retval", retval)
+        return retval
     end,
 })
 
