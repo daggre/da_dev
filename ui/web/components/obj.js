@@ -54,7 +54,7 @@ export function saveScene() {
 
 export function clearScene() {
     const sceneName = ActiveScene;
-    showConfirm(`Unsaved changes will be lost.<br><br>Remove scene '${sceneName}' objects?`).then(confirm => {
+    showConfirm(`Unsaved changes will be lost.<br>Remove scene '${sceneName}' objects?`).then(confirm => {
         if (confirm) {
             // TODO: implement clearScene
             sendClientMessage('clearScene', { scene: sceneName });
@@ -72,7 +72,7 @@ export function reloadScene() {
 
 export function deleteScene() {
     const sceneName = ActiveScene;
-    showConfirm(`This action cannot be undone!<br><br>Delete scene '${sceneName}'?`).then(confirm => {
+    showConfirm(`This action cannot be undone!<br>Delete scene '${sceneName}'?`).then(confirm => {
         if (confirm) {
             sendClientMessage('deleteScene', { scene: sceneName });
             ActiveScene = "autosave";
@@ -429,6 +429,8 @@ const ObjectHUD_All = [
     "sceneSelected",
     "objSceneTagOptions",
     "objSceneObjectsList",
+
+    "objSettings",
 ];
 
 const ObjectHUD_Visible = [
@@ -440,6 +442,7 @@ const ObjectHUD_Buttons = [
     "button-spawn",
     "button-trackedobjlist",
     "button-importexport",
+    "button-objsettings",
 ];
 
 const ObjectHUD_Spawn = [
@@ -466,6 +469,10 @@ const ObjectHUD_ImportExport = [
     "sceneSelected",
     "objSceneTagOptions",
     "objSceneObjectsList",
+];
+
+const ObjectHUD_Settings = [
+    "objSettings",
 ];
 
 export function initializeObjectHUD() {
@@ -541,6 +548,23 @@ export function toggleObjectImportExportHUD(state) {
         trackSceneObjects();
     } else {
         elementSetClass('button-importexport', 'selected', state);
+    }
+}
+
+export function toggleObjectSettingsHUD(state) {
+    if (state == undefined)
+        state = elementHasClass(ObjectHUD_Settings[0], 'hidden');
+    toggleSection(
+        state,
+        ObjectHUD_Settings,
+        ObjectHUD_Visible,
+        ObjectHUD_All
+    );
+    if (state) {
+        selectOnly('button-objsettings', ObjectHUD_Buttons);
+        document.getElementById('button-objsettings').focus();
+    } else {
+        elementSetClass('button-objsettings', 'selected', state);
     }
 }
 

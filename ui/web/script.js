@@ -30,6 +30,7 @@ import {
     toggleObjectSpawnHUD,
     toggleObjectNearbyHUD,
     toggleObjectImportExportHUD,
+    toggleObjectSettingsHUD,
     toggleFrozen,
     toggleCollision,
     setRotation,
@@ -127,6 +128,7 @@ export let KeyActions = {
         '1': () => { toggleObjectSpawnHUD(); },
         '2': () => { toggleObjectImportExportHUD(); },
         '3': () => { toggleObjectNearbyHUD(); },
+        '4': () => { toggleObjectSettingsHUD(); },
         'f': () => { sendKey('f'); },
         'g': () => { sendKey('g'); },
         'h': () => { toggleHelp("objHelp"); },
@@ -242,6 +244,7 @@ export const EventActions = {
         '#button-spawn': () => toggleObjectSpawnHUD(),
         '#button-trackedobjlist': () => toggleObjectNearbyHUD(),
         '#button-importexport': () => toggleObjectImportExportHUD(),
+        '#button-objsettings': () => toggleObjectSettingsHUD(),
 
         '#button-objDetailsPosition': () => toggleObjectDetail('button-objDetailsPosition'),
         '#button-objDetailsStatus': () => toggleObjectDetail('button-objDetailsStatus'),
