@@ -474,6 +474,7 @@ const ObjectHUD_ImportExport = [
 
 const ObjectHUD_Settings = [
     "objSettings",
+    "objSettingsOptions",
 ];
 
 export function initializeObjectHUD() {

@@ -1,7 +1,10 @@
 import { clipboardCopy } from "./utils/clipboard.js";
 import { sendClientMessage } from "./utils/msg.js";
 import { updateCrosshair } from "./components/crosshair.js";
-import { updateCamera } from "./components/camera.js";
+import {
+    updateCamera,
+    toggleHideCamera,
+} from "./components/camera.js";
 import {
     clickElement,
     elementSetOnlyClass,
@@ -53,10 +56,13 @@ import {
     toggleLoop,
     toggleTorso,
     toggleFlag,
-    toggleIKFlag
+    toggleIKFlag,
 } from "./components/anims.js";
 import { setTheme, } from "./components/theme.js";
-import { tooltipListener } from "./components/tooltip.js";
+import {
+    tooltipListener,
+    setTooltips,
+} from "./components/tooltip.js";
 
 const CursorUpdateRate = 30;
 let MCP = false;
@@ -291,6 +297,11 @@ export const EventActions = {
         '#objDetailsEntityFrozen': () => toggleFrozen(),
         '#objDetailsEntityCollision': () => toggleCollision(),
 
+        '#objSettingsTooltip': () => setTooltips(),
+        '#objSettingsBorder': () => toggleBorder(),
+        '#objSettingsCurvedBorder': () => toggleCurvedBorder(),
+        '#objSettingsHideCamera': () => toggleHideCamera(),
+
         '#button-search': toggleSearch,
         '#button-timings': toggleTimings,
         '#button-flags': toggleFlags,
@@ -471,8 +482,37 @@ const InputFields = {
     },
 }
 
+
+const DropDownOptions = {
+    'objSettingsTheme': {
+        'BlueGreen': () => setTheme("da_bluegreen_vibrant"),
+        'BluePurple': () => setTheme("da_bluepurple_light"),
+        'Discord': () => setTheme("da_discord"),
+        'SkyBlue': () => setTheme("da_catppuccino"),
+        'Grayscale': () => setTheme("da_grayscale"),
+        'Hotdog': () => setTheme("da_hotdog"),
+    },
+}
+
+export function dropdownListeners() {
+    document.querySelectorAll(".entry.dropdown").forEach(dropdown => {
+        console.log("Adding dropdown listener", dropdown.id, Object.keys(DropDownOptions[dropdown.id]));
+        dropdown.addEventListener("click", event => {
+            console.log("Clicked", dropdown.id);
+            let x = event.pageX;
+            let y = event.pageY;
+            showContextMenu(Object.keys(DropDownOptions[dropdown.id]), x, y).then(option => {
+                if (option === null) { return; }
+                elementSetText(dropdown.id, option);
+                DropDownOptions[dropdown.id][option]();
+            });
+        });
+    });
+}
+
 export function registerListeners() {
     tooltipListener();
+    dropdownListeners();
     Object.keys(EventActions).forEach((eventType) => {
         document.body.addEventListener(eventType, (event) => {
             const eventActions = EventActions[eventType];
@@ -788,6 +828,26 @@ function updateObjectDetails(data) {
     elementSetClass('objDetails', 'hidden', false);
 }
 
+function toggleBorder() {
+    // Toggle var(--brd-size) if #objSettingsBorder is selected
+    const selected = elementSetClass('objSettingsBorder', 'selected');
+    if (selected) {
+        document.documentElement.style.setProperty('--brd-size', '2px');
+    } else {
+        document.documentElement.style.setProperty('--brd-size', '0px');
+    }
+}
+
+function toggleCurvedBorder() {
+    // Toggle var(--brd-rad) if #button-objSettingsCurvedBorder is selected
+    const selected = elementSetClass('objSettingsCurvedBorder', 'selected');
+    if (selected) {
+        document.documentElement.style.setProperty('--brd-rad', '8px');
+    } else {
+        document.documentElement.style.setProperty('--brd-rad', '0px');
+    }
+}
+
 /**
  * Popup a confirmation dialog with a message and two options.
  * @param {string} msg - The message to display in the dialog.
@@ -910,9 +970,12 @@ export function showContextMenu(options, x, y) {
             }
         }
 
-        document.addEventListener("click", handleClickOutside);
-        document.addEventListener("pointerdown", handleRightClick);
-        document.addEventListener("keydown", handleKeyPress);
+        // Ensure the events are added following the event that adds the menu
+        setTimeout(() => {
+            document.addEventListener("click", handleClickOutside);
+            document.addEventListener("pointerdown", handleRightClick);
+            document.addEventListener("keydown", handleKeyPress);
+        }, 0);
     });
 }
 

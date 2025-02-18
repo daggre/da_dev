@@ -105,7 +105,7 @@
                             <div id="button-spawn" class="control" tabindex="1" role="button" aria-pressed="false" aria-label="Spawn Objects" >󰒕</div>
                             <div id="button-importexport" class="control" tabindex="11" role="button" aria-pressed="false" aria-label="Import/Export"></div>
                             <div id="button-trackedobjlist" class="control" tabindex="21" role="button" aria-pressed="false" aria-label="Track Objects" >󰹤</div>
-                            <div id="button-objsettings" class="control" tabindex="31" role="button" aria-pressed="false" aria-label="Settings" ></div>
+                            <div id="button-objsettings" class="control" tabindex="91" role="button" aria-pressed="false" aria-label="Settings" ></div>
                             <!-- <div id="button-scenecontrol" class="control" tabindex="31" role="button" aria-pressed="false" >󱞔</div> -->
                             <!-- <div id="button-scenetags" class="control" tabindex="32" role="button" aria-pressed="false" >󰜢</div> -->
                         </li>
@@ -118,18 +118,18 @@
                     </div>
                     <div id="objSearchField" class="row gap noflex listEntryField">
                         <div class="label borderleft bgi"></div>
-                        <div id="objSearch" class="entry borderright bgt1" tabindex="2" contenteditable="true" aria-label="Object Search"></div>
+                        <div id="objSearch" class="entry borderright bgt1" tabindex="2" contenteditable="true" aria-label="Spawn Object Search"></div>
                     </div>
                     <div id="objSpawnOptions" class="bgt1 blr gap noflex">
                         <ul class="row">
                             <li>
-                                <div id="button-spawnpreview" class="control selected" tabindex="2" role="button" aria-pressed="false" aria-label="Preview">󰈈</div>
+                                <div id="button-spawnpreview" class="control selected" tabindex="2" role="button" aria-pressed="false" aria-label="Preview Spawn Object">󰈈</div>
                                 <div id="button-spawnobjects" class="control selected" tabindex="2" role="button" aria-pressed="false" aria-label="Search Objects">󰠱</div>
                                 <div id="button-spawnpeds" class="control" tabindex="2" role="button" aria-pressed="false" aria-label="Search Peds"></div>
                                 <div id="button-spawnvehicles" class="control" tabindex="2" role="button" aria-pressed="false" aria-label="Search Vehicles">󱢑</div>
                                 <div id="button-spawnpropsets" class="control" tabindex="2" role="button" aria-pressed="false" aria-label="Search Propsets"></div>
                                 <div id="button-spawnpickups" class="control" tabindex="2" role="button" aria-pressed="false" aria-label="Search Pickups"></div>
-                                <div id="button-spawnother" class="control" tabindex="2" role="button" aria-pressed="false" aria-label="Search Custom">󱝤</div>
+                                <div id="button-spawnother" class="control" tabindex="2" role="button" aria-pressed="false" aria-label="Search Custom Entities">󱝤</div>
                                 <div id="button-spawnfavs" class="control" tabindex="2" role="button" aria-pressed="false" aria-label="Filter Favorites">󰓎</div>
                             </li>
                         </ul>
@@ -269,6 +269,31 @@
                     </div>
                 </div>
                 <div id="objSettings" class="listGroup top left">
+                    <div id="objSettingsOptions" class="mgb">
+                        <ul>
+                            <li>
+                                <div class="label borderleft bgi">Tooltips</div>
+                                <div id="objSettingsTooltip" class="entry check borderright bgt1 selected" tabindex="92" aria-label="Enable Tooltips"></div>
+                            </li>
+                            <li>
+                                <div class="label borderleft bgi">Border</div>
+                                <div id="objSettingsBorder" class="entry check borderright bgt1 selected" tabindex="92" aria-label="Enable UI Borders"></div>
+                            </li>
+                            <li>
+                                <div class="label borderleft bgi">Curved Border</div>
+                                <div id="objSettingsCurvedBorder" class="entry check borderright bgt1 selected" tabindex="92" aria-label="Enable UI Curved Borders"></div>
+                            </li>
+                            <li>
+                                <div class="label borderleft bgi">Autohide Camera Speed</div>
+                                <div id="objSettingsHideCamera" class="entry check borderright bgt1 selected" tabindex="92" aria-label="Toggle Autohidden Camera Speed"></div>
+                            </li>
+
+                            <li>
+                                <div class="label borderleft bgi">Graphics Preset</div>
+                                <div id="objSettingsTheme" class="entry dropdown borderright bgt1" tabindex="92" aria-label="Select Graphics Preset">SkyBlue</div>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </section>
             <section id="animHUD" class="hud hidden">
@@ -412,7 +437,7 @@
                 <div id="animFlagsOptions" class="flagList"></div>
                 <div id="animIKFlagsOptions" class="flagList"></div>
                 <div id="animTaskFilterOptions" class="flagList"></div>
-                <div id="animEntityOptions" class="">
+                <div id="animEntityOptions">
                     <ul id="animEntity">
                         <li>
                             <div class="label borderleft bgi">Entity</div>
@@ -420,7 +445,7 @@
                         </li>
                     </ul>
                 </div>
-                <div id="activeAnimDisplay" class="">
+                <div id="activeAnimDisplay">
                     <ul id="animActive">
                         <li>
                             <div class="label borderleft bgi">animDict</div>
