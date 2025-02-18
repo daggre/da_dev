@@ -35,6 +35,8 @@ import {
     toggleCollision,
     setRotation,
     placeOnGround,
+    exportScene,
+    importScene,
 } from "./components/obj.js";
 import {
     initAnims,
@@ -53,9 +55,8 @@ import {
     toggleFlag,
     toggleIKFlag
 } from "./components/anims.js";
-import {
-    setTheme,
-} from "./components/theme.js";
+import { setTheme, } from "./components/theme.js";
+import { tooltipListener } from "./components/tooltip.js";
 
 const CursorUpdateRate = 30;
 let MCP = false;
@@ -138,6 +139,13 @@ export let KeyActions = {
         't': () => { sendKey('t'); },
         'x': () => { sendKey('x'); },
         'escape': () => { sendClientMessage('deactivateMode', { mode: "object" }); },
+    },
+    'exportHUD': {
+        ' ': (event) => { clickElement(event); },
+        'y': () => { elementSetClass('exportHUD', 'clear', true); },
+        'n': () => { elementSetClass('exportHUD', 'hidden', true); },
+        'enter': () => { elementSetClass('exportHUD', 'clear', true); },
+        'escape': () => { elementSetClass('exportHUD', 'hidden', true); },
     },
     'cameraHUD': {
         'escape': () => {
@@ -269,10 +277,12 @@ export const EventActions = {
         '#button-nearby-ped': () => toggleNearbyFilter('ped'),
         '#button-nearby-vehicle': () => toggleNearbyFilter('vehicle'),
         // '#button-nearby-propset': () => toggleNearbyFilter('propset'),
-        '#button-nearby-other': () => toggleNearbyFilter('other'),
+        '#button-nearby-scene': () => toggleNearbyFilter('scene'),
 
         '#button-savescene': () => saveScene(),
         '#button-clearscene': () => clearScene(),
+        '#button-export': () => exportScene(),
+        '#button-import': () => importScene(),
         '#button-reloadscene': () => reloadScene(),
         '#button-deletescene': () => deleteScene(),
         '#button-tagsortbydist': () => tagSelectSort('dist'),
@@ -462,6 +472,7 @@ const InputFields = {
 }
 
 export function registerListeners() {
+    tooltipListener();
     Object.keys(EventActions).forEach((eventType) => {
         document.body.addEventListener(eventType, (event) => {
             const eventActions = EventActions[eventType];
@@ -500,6 +511,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initAnims();
     initObj();
     registerListeners();
+
     setTheme("da_catppuccino");
 
     window.addEventListener('message', function(msg) {

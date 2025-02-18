@@ -48,6 +48,16 @@
                     </ul>
                 </div>
             </section>
+            <section id="exportHUD" class="hud hidden">
+                <div class="pad center blr bgt2">
+                    <div id="exportIcon" class="bigicon"></div>
+                    <div id="exportDescription" class="">Are you sure?</div>
+                    <ul class="row rowpad gap">
+                        <li id="exportYesOption" tabindex="99" class="control blr bgt2">Yes</li>
+                        <li id="exportNoOption" tabindex="99" class="control blr bgt2">No</li>
+                    </ul>
+                </div>
+            </section>
             <section id="gizmo" class="hud hidden"></section>
             <section id="devTreeHUD" class="hud blr bgt1 hidden">
                 <div id="menuOptionsContainer">
@@ -104,22 +114,22 @@
                 <div id="objSpawnLeftColumn" class="listGroup top left">
                     <div id="objSpawnName" class="row gap noflex listEntryField">
                         <div class="label borderleft bgi">+</div>
-                        <div id="activeObject" class="entry borderright bgt1"></div>
+                        <div id="activeObject" class="entry borderright bgt1" aria-label="Selected Spawn Object"></div>
                     </div>
                     <div id="objSearchField" class="row gap noflex listEntryField">
                         <div class="label borderleft bgi"></div>
-                        <div id="objSearch" class="entry borderright bgt1" tabindex="2" contenteditable="true"></div>
+                        <div id="objSearch" class="entry borderright bgt1" tabindex="2" contenteditable="true" aria-label="Object Search"></div>
                     </div>
                     <div id="objSpawnOptions" class="bgt1 blr gap noflex">
                         <ul class="row">
                             <li>
                                 <div id="button-spawnpreview" class="control selected" tabindex="2" role="button" aria-pressed="false" aria-label="Preview">󰈈</div>
-                                <div id="button-spawnobjects" class="control selected" tabindex="2" role="button" aria-pressed="false" aria-label="Filter Objects">󰠱</div>
-                                <div id="button-spawnpeds" class="control" tabindex="2" role="button" aria-pressed="false" aria-label="Filter Peds"></div>
-                                <div id="button-spawnvehicles" class="control" tabindex="2" role="button" aria-pressed="false" aria-label="Filter Vehicles">󱢑</div>
-                                <div id="button-spawnpropsets" class="control" tabindex="2" role="button" aria-pressed="false" aria-label="Filter Propsets"></div>
-                                <div id="button-spawnpickups" class="control" tabindex="2" role="button" aria-pressed="false" aria-label="Filter Pickups"></div>
-                                <div id="button-spawnother" class="control" tabindex="2" role="button" aria-pressed="false" aria-label="Filter Custom">󱝤</div>
+                                <div id="button-spawnobjects" class="control selected" tabindex="2" role="button" aria-pressed="false" aria-label="Search Objects">󰠱</div>
+                                <div id="button-spawnpeds" class="control" tabindex="2" role="button" aria-pressed="false" aria-label="Search Peds"></div>
+                                <div id="button-spawnvehicles" class="control" tabindex="2" role="button" aria-pressed="false" aria-label="Search Vehicles">󱢑</div>
+                                <div id="button-spawnpropsets" class="control" tabindex="2" role="button" aria-pressed="false" aria-label="Search Propsets"></div>
+                                <div id="button-spawnpickups" class="control" tabindex="2" role="button" aria-pressed="false" aria-label="Search Pickups"></div>
+                                <div id="button-spawnother" class="control" tabindex="2" role="button" aria-pressed="false" aria-label="Search Custom">󱝤</div>
                                 <div id="button-spawnfavs" class="control" tabindex="2" role="button" aria-pressed="false" aria-label="Filter Favorites">󰓎</div>
                             </li>
                         </ul>
@@ -131,26 +141,26 @@
                     <div id="objSceneControlOptions" class="bgt1 blr gap">
                         <ul class="row">
                             <li>
-                                <div id="button-savescene" class="control" tabindex="12" role="button" aria-pressed="false" >󰆓</div>
-                                <div id="button-reloadscene" class="control" tabindex="12" role="button" aria-pressed="false" ></div>
-                                <div id="button-clearscene" class="control" tabindex="12" role="button" aria-pressed="false" >󱋽</div>
-                                <div id="button-export" class="control" tabindex="12" role="button" aria-pressed="false" >󰈝</div>
-                                <div id="button-import" class="control" tabindex="12" role="button" aria-pressed="false" >󰈠</div>
-                                <div id="button-deletescene" class="control" tabindex="12" role="button" aria-pressed="false" >󰗨</div>
+                                <div id="button-savescene" class="control" tabindex="12" role="button" aria-pressed="false" aria-label="Save Scene">󰆓</div>
+                                <div id="button-reloadscene" class="control" tabindex="12" role="button" aria-pressed="false" aria-label="Reload Scene"></div>
+                                <div id="button-clearscene" class="control" tabindex="12" role="button" aria-pressed="false" aria-label="Unload Scene">󱋽</div>
+                                <div id="button-export" class="control" tabindex="12" role="button" aria-pressed="false" aria-label="Export Scene">󰈝</div>
+                                <div id="button-import" class="control" tabindex="12" role="button" aria-pressed="false" aria-label="Import Scene">󰈠</div>
+                                <div id="button-deletescene" class="control" tabindex="12" role="button" aria-pressed="false" aria-label="Permanently Delete Scene">󰗨</div>
                             </li>
                         </ul>
                     </div>
                     <div id="sceneSelected" class="row gap noflex listEntryField">
                         <div class="label borderleft bgi">scene</div>
-                        <div id="selectedScene" class="entry borderright bgt1" tabindex="13" contenteditable="true">autosave</div>
+                        <div id="selectedScene" class="entry borderright bgt1" tabindex="13" contenteditable="true" aria-label="Selected Scene">autosave</div>
                     </div>
                     <div id="objScenesList" class="list listPrimary bggradient gap">
                     </div>
                     <div id="objSceneTagOptions" class="bgt1 blr gap">
                         <ul class="row">
                             <li>
-                                <div id="button-tagsortbydist" class="control" tabindex="14" role="button" aria-pressed="false" >󰣰</div>
-                                <div id="button-tagsortbyname" class="control" tabindex="14" role="button" aria-pressed="false" >󰖽</div>
+                                <div id="button-tagsortbydist" class="control" tabindex="14" role="button" aria-pressed="false" aria-label="Sort Scene Objects By Distance">󰣰</div>
+                                <div id="button-tagsortbyname" class="control" tabindex="14" role="button" aria-pressed="false" aria-label="Sort Scene Objects Alphabetically">󰖽</div>
                             </li>
                         </ul>
                     </div>
@@ -161,33 +171,33 @@
                     <div id="objNearbyOrigin" class="bgt1 blr gap noflex">
                         <ul class="row">
                             <li>
-                                <div id="button-nearbyOrigin-camera" class="control" tabindex="22" role="button" aria-pressed="false" ></div>
-                                <div id="button-nearbyOrigin-offset" class="control" tabindex="22" role="button" aria-pressed="false" >󱣿</div>
-                                <div id="button-nearbyOrigin-player" class="control" tabindex="22" role="button" aria-pressed="false" ></div>
-                                <div id="button-nearbyOrigin-raycast" class="control" tabindex="22" role="button" aria-pressed="false" ></div>
-                                <div id="button-nearbyOrigin-set-position" class="control" tabindex="22" role="button" aria-pressed="false" ></div>
-                                <div id="button-nearbyOrigin-select" class="control" tabindex="22" role="button" aria-pressed="false" ></div>
+                                <div id="button-nearbyOrigin-camera" class="control" tabindex="22" role="button" aria-pressed="false" aria-label="Set Origin to Camera"></div>
+                                <div id="button-nearbyOrigin-offset" class="control" tabindex="22" role="button" aria-pressed="false" aria-label="Set Origin Offset Forward of Camera">󱣿</div>
+                                <div id="button-nearbyOrigin-player" class="control" tabindex="22" role="button" aria-pressed="false" aria-label="Set Origin to Player"></div>
+                                <div id="button-nearbyOrigin-raycast" class="control" tabindex="22" role="button" aria-pressed="false" aria-label="Set Origin to Crosshair"></div>
+                                <div id="button-nearbyOrigin-set-position" class="control" tabindex="22" role="button" aria-pressed="false" aria-label="Set Origin to Position at Current Crosshair"></div>
+                                <div id="button-nearbyOrigin-select" class="control" tabindex="22" role="button" aria-pressed="false" aria-label="Set Origin to Selected Object"></div>
                             </li>
                         </ul>
                     </div>
                     <div id="selectedNearbyOrigin" class="row gap noflex listEntryField">
                         <div class="label borderleft bgi">origin</div>
-                        <div id="activeNearbyOrigin" class="entry borderright bgt1">camera</div>
+                        <div id="activeNearbyOrigin" class="entry borderright bgt1" aria-label="Current Origin Setting">camera</div>
                     </div>
                     <div id="objNearbyFilter" class="bgt1 blr gap noflex">
                         <ul class="row">
                             <li>
-                                <div id="button-nearby-object" class="control selected" tabindex="23" role="button" aria-pressed="false" >󰠱</div>
-                                <div id="button-nearby-ped" class="control selected" tabindex="23" role="button" aria-pressed="false" ></div>
-                                <div id="button-nearby-vehicle" class="control selected" tabindex="23" role="button" aria-pressed="false" >󱢑</div>
-                                <!-- <div id="button-nearbypropset" class="control selected" tabindex="13" role="button" aria-pressed="false" ></div> -->
-                                <div id="button-nearby-other" class="control" tabindex="23" role="button" aria-pressed="false" >󱝤</div>
+                                <div id="button-nearby-object" class="control selected" tabindex="23" role="button" aria-pressed="false" aria-label="Filter Objects">󰠱</div>
+                                <div id="button-nearby-ped" class="control selected" tabindex="23" role="button" aria-pressed="false" aria-label="Filter Peds"></div>
+                                <div id="button-nearby-vehicle" class="control selected" tabindex="23" role="button" aria-pressed="false" aria-label="Filter Vehicles">󱢑</div>
+                                <!-- <div id="button-nearbypropset" class="control selected" tabindex="13" role="button" aria-pressed="false" aria-label="Filter Propsets"></div> -->
+                                <div id="button-nearby-scene" class="control" tabindex="23" role="button" aria-pressed="false" aria-label="Filter Scene Objects">󱝤</div>
                             </li>
                         </ul>
                     </div>
                     <div id="objNearbyRange" class="row gap noflex listEntryField">
                         <div class="label borderleft bgi">range</div>
-                        <div id="nearbyRange" class="entry borderright bgt1" tabindex="24" contenteditable="true">50</div>
+                        <div id="nearbyRange" class="entry borderright bgt1" tabindex="24" contenteditable="true" aria-label="Distance Limit">50</div>
                     </div>
                     <div id="objNearbyResults" class="list listPrimary bggradient">
                     </div>
@@ -196,8 +206,8 @@
                     <div id="objDetailsOptions" class="bgt1 blr gap">
                         <ul class="row">
                             <li>
-                                <div id="button-objDetailsPosition" class="control selected" tabindex="50" role="button" aria-pressed="false" >󰵉</div>
-                                <div id="button-objDetailsStatus" class="control selected" tabindex="51" role="button" aria-pressed="false" >󱖫</div>
+                                <div id="button-objDetailsPosition" class="control selected" tabindex="50" role="button" aria-pressed="false" aria-label="Toggle Entity Position">󰵉</div>
+                                <div id="button-objDetailsStatus" class="control selected" tabindex="51" role="button" aria-pressed="false" aria-label="Toggle Entity Attributes">󱖫</div>
                             </li>
                         </ul>
                     </div>
@@ -205,15 +215,15 @@
                         <ul>
                             <li>
                                 <div class="label borderleft bgi">Entity</div>
-                                <div id="objDetailsEntityHandle" class="entry borderright bgt1" contenteditable="false"></div>
+                                <div id="objDetailsEntityHandle" class="entry borderright bgt1" contenteditable="false" aria-label="Entity Handle"></div>
                             </li>
                             <li>
                                 <div class="label borderleft bgi">Model</div>
-                                <div id="objDetailsEntityModelName" class="entry borderright bgt1" contenteditable="false"></div>
+                                <div id="objDetailsEntityModelName" class="entry borderright bgt1" contenteditable="false" aria-label="Entity Model Name"></div>
                             </li>
                             <li>
                                 <div class="label borderleft bgi">NetId</div>
-                                <div id="objDetailsEntityNetworkId" class="entry borderright bgt1" contenteditable="false"></div>
+                                <div id="objDetailsEntityNetworkId" class="entry borderright bgt1" contenteditable="false" aria-label="Entity Network ID"></div>
                             </li>
                         </ul>
                     </div>
@@ -221,27 +231,27 @@
                         <ul>
                             <li>
                                 <div class="label borderleft bgi">X</div>
-                                <div id="objDetailsEntityPosX" class="entry borderright bgt1" contenteditable="true" tabindex="60">0</div>
+                                <div id="objDetailsEntityPosX" class="entry borderright bgt1" contenteditable="true" tabindex="60" aria-label="Entity X Coordinate">0</div>
                             </li>
                             <li>
                                 <div class="label borderleft bgi">Y</div>
-                                <div id="objDetailsEntityPosY" class="entry borderright bgt1" contenteditable="true" tabindex="61">0</div>
+                                <div id="objDetailsEntityPosY" class="entry borderright bgt1" contenteditable="true" tabindex="61" aria-label="Entity Y Coordinate">0</div>
                             </li>
                             <li>
                                 <div class="label borderleft bgi">Z</div>
-                                <div id="objDetailsEntityPosZ" class="entry borderright bgt1" contenteditable="true" tabindex="62">0</div>
+                                <div id="objDetailsEntityPosZ" class="entry borderright bgt1" contenteditable="true" tabindex="62" aria-label="Entity Z Coordinate">0</div>
                             </li>
                             <li>
                                 <div class="label borderleft bgi">Pitch</div>
-                                <div id="objDetailsEntityRotPitch" class="entry borderright bgt1" contenteditable="true" tabindex="63">0</div>
+                                <div id="objDetailsEntityRotPitch" class="entry borderright bgt1" contenteditable="true" tabindex="63" aria-label="Entity Pitch">0</div>
                             </li>
                             <li>
                                 <div class="label borderleft bgi">Roll</div>
-                                <div id="objDetailsEntityRotRoll" class="entry borderright bgt1" contenteditable="true" tabindex="64">0</div>
+                                <div id="objDetailsEntityRotRoll" class="entry borderright bgt1" contenteditable="true" tabindex="64" aria-label="Entity Roll">0</div>
                             </li>
                             <li>
                                 <div class="label borderleft bgi">Yaw</div>
-                                <div id="objDetailsEntityRotYaw" class="entry borderright bgt1" contenteditable="true" tabindex="65">0</div>
+                                <div id="objDetailsEntityRotYaw" class="entry borderright bgt1" contenteditable="true" tabindex="65" aria-label="Entity Yaw">0</div>
                             </li>
                         </ul>
                     </div>
@@ -249,11 +259,11 @@
                         <ul>
                             <li>
                                 <div class="label borderleft bgi">Frozen</div>
-                                <div id="objDetailsEntityFrozen" class="entry check borderright bgt1" tabindex="66"></div>
+                                <div id="objDetailsEntityFrozen" class="entry check borderright bgt1" tabindex="66" aria-label="Freeze Entity Enabled"></div>
                             </li>
                             <li>
                                 <div class="label borderleft bgi">Collision</div>
-                                <div id="objDetailsEntityCollision" class="entry check borderright bgt1" tabindex="67"></div>
+                                <div id="objDetailsEntityCollision" class="entry check borderright bgt1" tabindex="67" aria-label="Entity Collision Enabled"></div>
                             </li>
                         </ul>
                     </div>
@@ -272,7 +282,7 @@
                         <li><div class="label borderleft bgi">k</div><div class="entry borderright bgt1">Stop Animation</div></li>
                         <li><div class="label borderleft bgi">Backspace</div><div class="entry borderright bgt1">Stop Animation</div></li>
                         <li><div class="label borderleft bgi">MMB (Hold)</div><div class="entry borderright bgt1">Game Control (Keyboard/Mouse)</div></li>
-                        <li><div class="label borderleft bgi">LMB (Click)</div><div class="entry borderright bgt1">Copy Entry To Clipboard</div></li>
+                        <li><div class="label borderleft bgi">LMB (Click)</div><div class="entry borderright bgt1">Copy Entry to Clipboard</div></li>
                         <li> </li>
                         <li><div class="label borderleft bgi">1</div><div class="entry borderright bgt1">Search/Select Animations</div></li>
                         <li><div class="label borderleft bgi">2</div><div class="entry borderright bgt1">View/Edit Timing Options</div></li>
