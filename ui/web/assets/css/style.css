@@ -510,6 +510,19 @@ ul li {
     background: var(--primary);
 }
 
+#tooltip {
+    position: fixed;
+    left: 5px;
+    bottom: 5px;
+    background-color: var(--bg-t3);
+    color: var(--primary);
+    padding: 3px 5px;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: opacity 0.2s ease-in-out;
+    pointer-events: none;
+}
+
 .hidden {
     display: none;
 }

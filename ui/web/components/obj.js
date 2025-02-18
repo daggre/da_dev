@@ -35,7 +35,7 @@ export function initObj() {
         elementSetClass('button-nearby-object', 'selected', NearbyOption.object);
         elementSetClass('button-nearby-ped', 'selected', NearbyOption.ped);
         elementSetClass('button-nearby-vehicle', 'selected', NearbyOption.vehicle);
-        elementSetClass('button-nearby-other', 'selected', NearbyOption.other);
+        elementSetClass('button-nearby-scene', 'selected', NearbyOption.scene);
         document.getElementById('nearbyRange').innerHTML = NearbyOption.range;
 
         document.getElementById('button-nearbyOrigin-' + NearbyOption.origin.replace(/ /g, '-')).classList.add('selected');
@@ -585,4 +585,79 @@ export function setRotation(handle = document.getElementById('objDetailsEntityHa
 
 export function placeOnGround(handle = document.getElementById('objDetailsEntityHandle')?.innerHTML) {
     sendClientMessage('placeOnGround', { handle: handle, });
+}
+
+export function importScene() {
+    showExport("󰈠").then(response => {
+        console.log(response);
+    });
+}
+
+export function exportScene() {
+    showExport("󰈝").then(response => {
+        console.log(response);
+    });
+}
+
+/**
+ * Popup dialog with export options
+ */
+function showExport(icon = "") {
+    return new Promise((resolve, reject) => {
+        // TODO: implement export
+        const exportHUD = document.getElementById('exportHUD');
+        const bigIcon = document.getElementById('exportIcon');
+        const message = document.getElementById('exportDescription');
+        const yesButton = document.getElementById('exportYesOption');
+        const noButton = document.getElementById('exportNoOption');
+        const lastFocusedElement = document.activeElement;
+
+
+        bigIcon.innerHTML = icon;
+        message.innerHTML = "test message";
+        yesButton.innerHTML = "yes";
+        noButton.innerHTML = "no";
+
+        exportHUD.classList.remove('hidden');
+        noButton.focus();
+
+        // Create a MutationObserver to monitor if the popup becomes hidden
+        const observer = new MutationObserver((mutationsList) => {
+            if (exportHUD.classList.contains('hidden')) {
+                cleanup();
+                resolve(false);
+            } else if (exportHUD.classList.contains('clear')) {
+                cleanup();
+                resolve(true);
+            }
+        });
+        observer.observe(exportHUD, {
+            attributes: true,
+            attributeFilter: ['class']
+        });
+
+        function handleYes() {
+            cleanup();
+            resolve(true);
+        }
+
+        function handleNo() {
+            cleanup();
+            resolve(false);
+        }
+
+        function cleanup() {
+            yesButton.removeEventListener('click', handleYes);
+            noButton.removeEventListener('click', handleNo);
+            observer.disconnect();
+            exportHUD.classList.remove('clear');
+            exportHUD.classList.add('hidden');
+            if (lastFocusedElement) {
+                lastFocusedElement.focus();
+            }
+        }
+
+        yesButton.addEventListener('click', handleYes);
+        noButton.addEventListener('click', handleNo);
+    });
 }
