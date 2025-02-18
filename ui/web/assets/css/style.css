@@ -18,6 +18,7 @@
     --bg-t3: #04101D22;
     --font-size: 16px;
     --brd-rad: 8px;
+    --brd-size: 2px;
 }
 
 html {
@@ -105,8 +106,8 @@ ul li {
 .blr {
     padding-left: 0.5rem;
     padding-right: 0.5rem;
-    border-left: 2px solid var(--primary);
-    border-right: 2px solid var(--primary);
+    border-left: var(--brd-size) solid var(--primary);
+    border-right: var(--brd-size) solid var(--primary);
 }
 
 .gap {
@@ -190,7 +191,7 @@ ul li {
 
 .list {
     min-height: 0px;
-    border-left: 2px solid var(--primary);
+    border-left: var(--brd-size) solid var(--primary);
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow-x: hidden;
@@ -452,7 +453,7 @@ ul li {
 }
 
 .entry:focus {
-    border-right: 2px solid var(--secondary-light);
+    border-right: var(--brd-size) solid var(--secondary-light);
 }
 
 #button-spawnfavs.selected {
@@ -491,11 +492,11 @@ ul li {
 .context-menu {
     position: absolute;
     background: var(--bg-t1);
-    border-left: 2px solid var(--primary);
-    border-right: 2px solid var(--primary);
+    border-left: var(--brd-size) solid var(--primary);
+    border-right: var(--brd-size) solid var(--primary);
     box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
     z-index: 1000;
-    border-radius: 5px;
+    border-radius: var(--brd-rad);
 }
 
 .context-menu-item {
@@ -517,7 +518,7 @@ ul li {
     background-color: var(--bg-t3);
     color: var(--primary);
     padding: 3px 5px;
-    border-radius: 8px;
+    border-radius: var(--brd-rad);
     font-size: 14px;
     transition: opacity 0.2s ease-in-out;
     pointer-events: none;

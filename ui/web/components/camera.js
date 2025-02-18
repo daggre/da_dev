@@ -4,6 +4,7 @@ import {
 } from '../utils/nav.js';
 
 let cameraHUDTimeout = null;
+let hideCamera = true;
 
 export function updateCamera(camera) {
     elementSetClass('cameraHUD', 'hidden', false)
@@ -11,6 +12,12 @@ export function updateCamera(camera) {
     // Set update time and then hide it
     clearTimeout(cameraHUDTimeout)
     cameraHUDTimeout = setTimeout(() => {
-        elementSetClass('cameraHUD', 'hidden', true)
+        if (!hideCamera) { elementSetClass('cameraHUD', 'hidden', true); }
     }, 2000);
+}
+
+export function toggleHideCamera() {
+    const selected = elementSetClass('objSettingsHideCamera', 'selected');
+    hideCamera = selected;
+    elementSetClass('cameraHUD', 'hidden', hideCamera);
 }

@@ -197,9 +197,5 @@ document.addEventListener('DOMContentLoaded', () => {
             type: testHud,
             state: true,
         });
-        sendMockEvent('message', {
-            type: "ui_camera",
-            state: true,
-        });
     }, 100);
 });
