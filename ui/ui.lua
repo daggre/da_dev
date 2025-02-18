@@ -80,7 +80,14 @@ da_ui.events({
 
 Citizen.CreateThread(function()
     local setting = { ui = {}, }
-    setting.ui.nearby = { object = true, ped = true, vehicle = true, other = false, origin = "camera", range = 50, }
+    setting.ui.nearby = {
+        object = true,
+        ped = true,
+        vehicle = true,
+        other = false,
+        origin = "camera",
+        range = 50,
+    }
     setting.ui.tags = { sort = "dist" }
 
     -- Init settings

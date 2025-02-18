@@ -2,7 +2,8 @@ import { MouseDown, showConfirm } from '../script.js';
 import { selectOnly, resetList, isVisible, elementSetClass, elementHasClass, elementSetText, toggleSection } from '../utils/nav.js';
 import { sendClientMessage } from '../utils/msg.js';
 
-let ActiveScene = "autosave";
+let DefaultScene = "default"
+let ActiveScene = DefaultScene;
 let NearbyOption = {
     object: true,
     ped: true,
@@ -75,7 +76,7 @@ export function deleteScene() {
     showConfirm(`This action cannot be undone!<br>Delete scene '${sceneName}'?`).then(confirm => {
         if (confirm) {
             sendClientMessage('deleteScene', { scene: sceneName });
-            ActiveScene = "autosave";
+            ActiveScene = DefaultScene;
             getScenes();
         } else {
             console.log("Delete scene cancelled");
@@ -435,7 +436,7 @@ const ObjectHUD_All = [
 
 const ObjectHUD_Visible = [
     "objControlOptions",
-    "objDetails",
+    // "objDetails",
 ];
 
 const ObjectHUD_Buttons = [

@@ -500,7 +500,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initAnims();
     initObj();
     registerListeners();
-    setTheme("da_grayscale");
+    setTheme("da_catppuccino");
 
     window.addEventListener('message', function(msg) {
         switch(msg.data.type) {
@@ -722,14 +722,6 @@ function toggleEntity(state) {
     }
 }
 
-const ObjectDetailsFieldElements = [
-    'objDetails',
-    'objDetailsOptions',
-    'objDetailsList',
-    'objDetailsListPosition',
-    'objDetailsListStatus',
-];
-
 const ObjectDetailsCategoryMap = new Map([
     ['button-objDetailsPosition', 'objDetailsListPosition'],
     ['button-objDetailsStatus', 'objDetailsListStatus'],
@@ -771,6 +763,7 @@ function clearObjectDetails() {
 function updateObjectDetails(data) {
     if (!data.select) {
         clearObjectDetails();
+        elementSetClass('objDetails', 'hidden', true);
         return;
     }
 
@@ -780,6 +773,7 @@ function updateObjectDetails(data) {
     ObjectDetailsOptions.forEach((value, key) => {
         elementSetClass(key, "selected", data.selectData[value]);
     });
+    elementSetClass('objDetails', 'hidden', false);
 }
 
 /**

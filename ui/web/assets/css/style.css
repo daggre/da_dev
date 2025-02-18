@@ -10,12 +10,8 @@
 
 :root {
     --primary: #aac7ff;
-    --primary-dark: #0a305f;
-    --secondary: #bec6dc;
-    --tertiary: #705575;
-    --tertiary-light: #fad8fd;
-    --tertiary-dark: #573e5c;
-    --highlight: #bec6dc;
+    --secondary: #705575;
+    --secondary-light: #fad8fd;
     --bg: #04101D;
     --bg-t1: #04101DAB;
     --bg-t2: #04101D75;
@@ -339,7 +335,7 @@ ul li {
 	left: 50vw;
 	transform: translate(-50%, -50%);
 	font-size: 1.9vh;
-	color: var(--highlight);
+	color: var(--primary);
     font-family: LiterationMonoNerd,Menlo,Consolas,monospace;
 }
 
@@ -376,12 +372,12 @@ ul li {
 }
 
 #crosshair.selected {
-    color: var(--tertiary-light);
+    color: var(--secondary-light);
     text-shadow: none;
 }
 
 #crosshair.active {
-    color: var(--tertiary-light);
+    color: var(--secondary-light);
     text-shadow:
         0 0 4px var(--primary),
         0 0 5px var(--primary),
@@ -390,12 +386,12 @@ ul li {
 }
 
 .selected {
-    color: var(--tertiary-dark);
+    color: var(--secondary);
     text-shadow:
-        0 0 4px var(--tertiary-light),
-        0 0 5px var(--tertiary-light),
-        0 0 7px var(--tertiary-light),
-        0 0 10px var(--tertiary-light);
+        0 0 4px var(--primary),
+        0 0 5px var(--primary),
+        0 0 7px var(--primary),
+        0 0 10px var(--primary);
 }
 
 :hover, .hover {
@@ -418,14 +414,14 @@ ul li {
 
 :focus, .liPseudoFocus {
     outline: none;
-    color: var(--tertiary-light);
+    color: var(--secondary-light);
     text-shadow:
         0 0 1px var(--bg),
         0 0 1px var(--bg),
         0 0 6px var(--primary),
         0 0 10px var(--primary),
-        0 0 12px var(--tertiary-light),
-        0 0 15px var(--tertiary-light);
+        0 0 12px var(--secondary-light),
+        0 0 15px var(--secondary-light);
 }
 
 .selected:focus {
@@ -433,30 +429,30 @@ ul li {
     text-shadow:
         0 0 1px var(--bg),
         0 0 1px var(--bg),
-        0 0 6px var(--tertiary-light),
-        0 0 10px var(--tertiary-light),
-        0 0 12px var(--tertiary-light),
-        0 0 15px var(--tertiary-light);
+        0 0 6px var(--secondary-light),
+        0 0 10px var(--secondary-light),
+        0 0 12px var(--secondary-light),
+        0 0 15px var(--secondary-light);
 }
 
 .selected:hover {
     text-shadow:
-        0 0 4px var(--tertiary-light),
-        0 0 5px var(--tertiary-light),
-        0 0 7px var(--tertiary-light),
-        0 0 10px var(--tertiary-light);
+        0 0 4px var(--secondary-light),
+        0 0 5px var(--secondary-light),
+        0 0 7px var(--secondary-light),
+        0 0 10px var(--secondary-light);
 }
 
 .entry:focus, .liHover, .liSelect, .list li:focus  {
     outline: none;
-    color: var(--tertiary-light);
+    color: var(--secondary-light);
     text-shadow:
-        0 0 3px var(--tertiary-light),
-        0 0 9px var(--tertiary-light);
+        0 0 3px var(--secondary-light),
+        0 0 9px var(--secondary-light);
 }
 
 .entry:focus {
-    border-right: 2px solid var(--tertiary-light);
+    border-right: 2px solid var(--secondary-light);
 }
 
 #button-spawnfavs.selected {
@@ -487,7 +483,7 @@ ul li {
 
 #button-spawnfavs:focus {
     outline: none;
-    color: var(--tertiary-light);
+    color: var(--secondary-light);
     text-shadow:
         0 0 15px gold;
 }
