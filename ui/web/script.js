@@ -58,7 +58,10 @@ import {
     toggleFlag,
     toggleIKFlag,
 } from "./components/anims.js";
-import { setTheme, } from "./components/theme.js";
+import {
+    setTheme,
+    setDividerStyle,
+} from "./components/theme.js";
 import {
     tooltipListener,
     setTooltips,
@@ -485,12 +488,42 @@ const InputFields = {
 
 const DropDownOptions = {
     'objSettingsTheme': {
-        'Blue Green': () => setTheme("da_bluegreen_vibrant"),
-        'Blue Purple': () => setTheme("da_bluepurple_light"),
-        'Discord': () => setTheme("da_discord"),
-        'Sky Blue': () => setTheme("da_catppuccino"),
-        'Grayscale': () => setTheme("da_grayscale"),
-        'Hotdog': () => setTheme("da_hotdog"),
+        'arctic ice': () => setTheme("arctic_ice"),
+        'blueberry night': () => setTheme("blueberry_night"),
+        'cherry blossom': () => setTheme("cherry_blossom"),
+        'dark cherry': () => setTheme("dark_cherry"),
+        'electric sunset': () => setTheme("electric_sunset"),
+        'emerald dream': () => setTheme("emerald_dream"),
+        'giedi prime': () => setTheme("grayscale"),
+        'hotdog': () => setTheme("hotdog"),
+        'moonlit orchid': () => setTheme("moonlit_orchid"),
+        'mystic grove': () => setTheme("mystic_grove"),
+        'neon sunset': () => setTheme("neon_sunset"),
+        'netrunner': () => setTheme("netrunner"),
+        'night king': () => setTheme("arctic_blue"),
+        'oasis': () => setTheme("oasis"),
+        'oceanic': () => setTheme("oceanic"),
+        'overcast': () => setTheme("overcast"),
+        'retro wave': () => setTheme("retro_wave"),
+        'rose': () => setTheme("noir_rose"),
+        'solarized night': () => setTheme("solarized_night"),
+        'verdant steel': () => setTheme("verdant_steel"),
+        'wisteria': () => setTheme("wisteria"),
+    },
+    'objSettingsDividerStyle': {
+        'angle down': () => { setDividerStyle(""); },
+        'angle up': () => { setDividerStyle(""); },
+        'chevron': () => { setDividerStyle(""); },
+        'flame': () => { setDividerStyle(""); },
+        // 'honeycomb': () => { setDividerStyle(""); },
+        'inverted chevron': () => { setDividerStyle(""); },
+        'pixelated': () => { setDividerStyle(""); },
+        'quadrant top': () => { setDividerStyle("▛"); },
+        'quadrant bottom': () => { setDividerStyle("▙"); },
+        'round': () => { setDividerStyle(""); },
+        // 'trapezoid': () => { setDividerStyle(""); },
+        'vertical': () => { setDividerStyle("▌"); },
+        'waveform': () => { setDividerStyle(""); },
     },
     'activeNearbyOrigin': {
         'camera': () => selectNearbyOrigin('camera'),
@@ -558,7 +591,9 @@ document.addEventListener('DOMContentLoaded', () => {
     initObj();
     registerListeners();
 
-    setTheme("da_catppuccino");
+    setTheme("retro_wave");
+    setDividerStyle("");
+    toggleCurvedBorder();
 
     window.addEventListener('message', function(msg) {
         switch(msg.data.type) {

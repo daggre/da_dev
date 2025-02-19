@@ -104,6 +104,8 @@ const mockResponses = {
     playAnim: () => ({}),
     stopAnim: () => ({}),
     gizmoStop: () => ({}),
+    spawnPreviewObject: () => ({}),
+    removePreviewObject: () => ({}),
 };
 
 function getMockResponse(endpoint) {
@@ -122,62 +124,6 @@ function sendMockEvent(message, data) {
     console.log(`[Mock][Client Send] Dispatched mock event '${message}' with data: `, data);
 }
 
-
-const themes = {
-    da_bluegreen_vibrant: [
-        ['primary', '#50c1ee'],
-        ['secondary', '#00daaf'],
-        ['secondary-light', '#c2f0e7'],
-        ['bg', '#04101D'],
-    ],
-    da_bluepurple_light: [
-        ['primary', '#aac7ff'],
-        ['secondary', '#705575'],
-        ['secondary-light', '#fad8fd'],
-        ['bg', '#04101D'],
-    ],
-    da_discord: [
-        ['primary', '#fad8fd'],
-        ['secondary', '#0a305f'],
-        ['secondary-light', '#bec6dc'],
-        ['bg', '#05213a'],
-    ],
-    da_grayscale: [
-        ['primary', '#ffffff'],
-        ['secondary', '#111111'],
-        ['secondary-light', '#ffffff'],
-        ['bg', '#111111'],
-    ],
-    da_hotdog: [
-        ['primary', '#ff0000'],
-        ['secondary', '#660000'],
-        ['secondary-light', '#ff0000'],
-        ['bg', '#ffff00'],
-    ],
-};
-
-function setTheme(theme) {
-    if (!themes[theme]) {
-        console.error(`Theme not found: ${theme}`);
-        return;
-    }
-    const root = document.documentElement;
-    const t = themes[theme];
-    const themeSetting = document.getElementById('objSettingsTheme');
-
-    console.log(t);
-
-    t.forEach(([key, value]) => {
-        console.log(`Setting --${key} to ${value}`);
-        root.style.setProperty(`--${key}`, value);
-        if (key === 'bg') {
-            root.style.setProperty('--bg-t1', `${value}AB`);
-            root.style.setProperty('--bg-t2', `${value}75`);
-            root.style.setProperty('--bg-t3', `${value}22`);
-        }
-    });
-}
-
 console.log("Running dev-mocks");
 
 // Expose the function globally so it can be accessed in other scripts
@@ -186,10 +132,12 @@ window.endpointMute = {
     sendCursorPos: true,
     nearbyObjects: true,
     getScene: true,
+    trackObject: true,
+    spawnPreviewObject: true,
+    removePreviewObject: true,
 };
 
 document.body.style.backgroundColor = '#333333';
-setTheme('da_discord');
 
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
@@ -198,5 +146,12 @@ document.addEventListener('DOMContentLoaded', () => {
             type: testHud,
             state: true,
         });
+
+        setTimeout(() => {
+            sendMockEvent('message', {
+                type: "updateCamera",
+                camera: { speed: "0.20" },
+            });
+        }, 1000);
     }, 100);
 });
