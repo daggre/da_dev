@@ -163,6 +163,7 @@ function setTheme(theme) {
     }
     const root = document.documentElement;
     const t = themes[theme];
+    const themeSetting = document.getElementById('objSettingsTheme');
 
     console.log(t);
 
