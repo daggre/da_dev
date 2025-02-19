@@ -485,20 +485,26 @@ const InputFields = {
 
 const DropDownOptions = {
     'objSettingsTheme': {
-        'BlueGreen': () => setTheme("da_bluegreen_vibrant"),
-        'BluePurple': () => setTheme("da_bluepurple_light"),
+        'Blue Green': () => setTheme("da_bluegreen_vibrant"),
+        'Blue Purple': () => setTheme("da_bluepurple_light"),
         'Discord': () => setTheme("da_discord"),
-        'SkyBlue': () => setTheme("da_catppuccino"),
+        'Sky Blue': () => setTheme("da_catppuccino"),
         'Grayscale': () => setTheme("da_grayscale"),
         'Hotdog': () => setTheme("da_hotdog"),
+    },
+    'activeNearbyOrigin': {
+        'camera': () => selectNearbyOrigin('camera'),
+        'offset': () => selectNearbyOrigin('offset'),
+        'player': () => selectNearbyOrigin('player'),
+        'raycast': () => selectNearbyOrigin('raycast'),
+        'set position': () => selectNearbyOrigin('set position'),
+        'select': () => selectNearbyOrigin('select'),
     },
 }
 
 export function dropdownListeners() {
     document.querySelectorAll(".entry.dropdown").forEach(dropdown => {
-        console.log("Adding dropdown listener", dropdown.id, Object.keys(DropDownOptions[dropdown.id]));
         dropdown.addEventListener("click", event => {
-            console.log("Clicked", dropdown.id);
             let x = event.pageX;
             let y = event.pageY;
             showContextMenu(Object.keys(DropDownOptions[dropdown.id]), x, y).then(option => {
