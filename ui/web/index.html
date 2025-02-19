@@ -12,7 +12,7 @@
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
 
         <!-- Your Scripts -->
-        <script type="module" src="./assets/index.js" defer></script>
+        <script type="module" src="./assets/gizmo.js" defer></script>
         <script type="module" src="script.js" defer></script>
 
         <!-- Development Script Loader -->
@@ -68,7 +68,7 @@
                 </div>
             </section>
             <section id="objectHUD" class="hud hidden">
-                <div id="objHelp" class="center bgt2 pad blr hidden">
+                <div id="objHelp" class="center bgt2 pad blr hidden mgb">
                     <div class="title">Object Editor</div>
                     <div class="bigicon"></div>
                     <ul>
@@ -272,31 +272,36 @@
                     <div id="objSettingsOptions" class="mgb">
                         <ul>
                             <li>
-                                <div class="label borderleft bgi">Tooltips</div>
+                                <div class="label borderleft bgi">tooltips</div>
                                 <div id="objSettingsTooltip" class="entry check borderright bgt1 selected" tabindex="92" aria-label="Enable Tooltips"></div>
                             </li>
                             <li>
-                                <div class="label borderleft bgi">Border</div>
+                                <div class="label borderleft bgi">autohide camera speed</div>
+                                <div id="objSettingsHideCamera" class="entry check borderright bgt1 selected" tabindex="92" aria-label="Toggle Autohidden Camera Speed"></div>
+                            </li>
+                            <li> </li>
+                            <li>
+                                <div class="label borderleft bgi">rounded edges</div>
+                                <div id="objSettingsCurvedBorder" class="entry check borderright bgt1 selected" tabindex="92" aria-label="Enable UI Rounded Edges"></div>
+                            </li>
+                            <li>
+                                <div class="label borderleft bgi">left/right border</div>
                                 <div id="objSettingsBorder" class="entry check borderright bgt1 selected" tabindex="92" aria-label="Enable UI Borders"></div>
                             </li>
                             <li>
-                                <div class="label borderleft bgi">Curved Border</div>
-                                <div id="objSettingsCurvedBorder" class="entry check borderright bgt1 selected" tabindex="92" aria-label="Enable UI Curved Borders"></div>
+                                <div class="label borderleft bgi">theme</div>
+                                <div id="objSettingsTheme" class="entry dropdown borderright bgt1" tabindex="92" aria-label="Change Color Theme">default</div>
                             </li>
                             <li>
-                                <div class="label borderleft bgi">Autohide Camera Speed</div>
-                                <div id="objSettingsHideCamera" class="entry check borderright bgt1 selected" tabindex="92" aria-label="Toggle Autohidden Camera Speed"></div>
-                            </li>
-                            <li>
-                                <div class="label borderleft bgi">Theme</div>
-                                <div id="objSettingsTheme" class="entry dropdown borderright bgt1" tabindex="92" aria-label="Select Graphics Preset">Default</div>
+                                <div class="label borderleft bgi">divider</div>
+                                <div id="objSettingsDividerStyle" class="entry dropdown borderright bgt1" tabindex="92" aria-label="Change UI Divider Style">chevron</div>
                             </li>
                         </ul>
                     </div>
                 </div>
             </section>
             <section id="animHUD" class="hud hidden">
-                <div id="animHelp" class="center bgt2 pad blr hidden">
+                <div id="animHelp" class="center bgt2 pad blr hidden mgb">
                     <div class="title">Animation Developer Kit</div>
                     <div class="bigicon"></div>
                     <ul>
@@ -456,7 +461,7 @@
                 </div>
             </section>
             <section id="cameraHUD" class="hud hidden">
-                <div id="camHelp" class="center bgt2 pad blr hidden">
+                <div id="camHelp" class="center bgt2 pad blr hidden mgb">
                     <div class="title">FreeCam and NoClip</div>
                     <div class="bigicon"> </div>
                     <ul>

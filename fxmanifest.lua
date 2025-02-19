@@ -78,7 +78,7 @@ client_scripts {
 files {
     'ui/web/index.html',
     'ui/web/script.js',
-    'ui/web/assets/index.js',
+    'ui/web/assets/gizmo.js',
     'ui/web/assets/fonts/LiterationMonoNerd.ttf',
     'ui/web/assets/css/style.css',
     'ui/web/components/anims.js',
@@ -86,6 +86,7 @@ files {
     'ui/web/components/crosshair.js',
     'ui/web/components/obj.js',
     'ui/web/components/theme.js',
+    'ui/web/components/tooltip.js',
     'ui/web/components/trie.js',
     'ui/web/utils/clipboard.js',
     'ui/web/utils/msg.js',

@@ -19,6 +19,7 @@
     --font-size: 16px;
     --brd-rad: 8px;
     --brd-size: 2px;
+    --divider: " ";
 }
 
 html {
@@ -283,9 +284,6 @@ ul li {
 /*    margin-right: 1vh;*/
 /*}*/
 
-.label {
-}
-
 .entry {
     /*width: min-content;*/
     min-width: fit-content;
@@ -293,7 +291,7 @@ ul li {
 }
 
 .entry.borderright::before {
-    content: " ";
+    content: var(--divider, "|");
     color: var(--primary);
     pointer-events: none;
     text-shadow:
@@ -314,7 +312,12 @@ ul li {
 }
 
 .check.borderright.selected::after {
-    content: " ";
+    content: "";
+    color: var(--primary)
+}
+
+.check.borderright::after {
+    content: "";
     color: var(--primary);
 }
 
@@ -453,7 +456,7 @@ ul li {
 }
 
 .entry:focus {
-    border-right: var(--brd-size) solid var(--secondary-light);
+    border-right: 2px solid var(--secondary-light);
 }
 
 #button-spawnfavs.selected {
@@ -497,6 +500,7 @@ ul li {
     box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
     z-index: 1000;
     border-radius: var(--brd-rad);
+    overflow: hidden;
 }
 
 .context-menu-item {
@@ -508,20 +512,17 @@ ul li {
 .context-menu-item:hover {
     color: var(--bg);
     text-shadow: 0 0 1px, 0 0 1px;
-    background: var(--primary);
+    background: var(--secondary-light);
 }
 
 #tooltip {
     position: fixed;
     left: 5px;
     bottom: 5px;
-    background-color: var(--bg-t3);
-    color: var(--primary);
     padding: 3px 5px;
-    border-radius: var(--brd-rad);
-    font-size: 14px;
-    transition: opacity 0.2s ease-in-out;
     pointer-events: none;
+    background-color: var(--bg-t3);
+    border-radius: var(--brd-rad);
 }
 
 .hidden {

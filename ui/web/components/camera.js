@@ -12,7 +12,7 @@ export function updateCamera(camera) {
     // Set update time and then hide it
     clearTimeout(cameraHUDTimeout)
     cameraHUDTimeout = setTimeout(() => {
-        if (!hideCamera) { elementSetClass('cameraHUD', 'hidden', true); }
+        if (hideCamera) { elementSetClass('cameraHUD', 'hidden', true); }
     }, 2000);
 }
 
