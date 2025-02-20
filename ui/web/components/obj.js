@@ -573,6 +573,11 @@ export function toggleObjectSettingsHUD(state) {
     }
 }
 
+export function toggleVisible(handle = document.getElementById('objDetailsEntityHandle')?.innerHTML) {
+    const state = elementHasClass('objDetailsEntityVisible', 'selected');
+    sendClientMessage('setVisible', { handle: handle, state: !state });
+}
+
 export function toggleFrozen(handle = document.getElementById('objDetailsEntityHandle')?.innerHTML) {
     const state = elementHasClass('objDetailsEntityFrozen', 'selected');
     sendClientMessage('setFrozen', { handle: handle, state: !state });

@@ -1,7 +1,7 @@
 // dev-mocks.js
 
-const testHud = "ui_object";
-// const testHud = "ui_animation";
+// const testHud = "ui_object";
+const testHud = "ui_animation";
 const jsonString = `{"test":["a","b"], "vest":["c","d"]}`
 // INFO: Issue with the @ symbol
 // const jsonString = `{"test@test@test": ["test1", "test2", "test3" ], "test@test@test3": [ "test_back", "test_front", "test_left", "test_right" ],}`
@@ -26,15 +26,24 @@ const mockData = {
 const mockResponses = {
     initAnims: () => ({ animations: jsonString, }),
     initAnimFlags: () => ({
-        flags: JSON.stringify([
+        animflags: JSON.stringify([
             { name: "Loop", value: 1 },
             { name: "Stop", value: 2 },
         ]),
     }),
     initIKAnimFlags: () => ({
-        flags: JSON.stringify([
+        animikflags: JSON.stringify([
             { name: "IK_Head", value: 1 },
             { name: "IK_Hand", value: 2 },
+        ]),
+    }),
+    initTaskFilters: () => ({
+        taskfilters: JSON.stringify([
+            "",
+            "accessoriesonly_filter",
+            "allfingers_and_hand_helpers_filter",
+            "allfingers_and_hand_helpers_no_ch_filter",
+            "allfingers_and_toes_and_hand_helpers_filter",
         ]),
     }),
     initObjSettings: () => ({
@@ -56,15 +65,6 @@ const mockResponses = {
         pickups: JSON.stringify(mockData.pickups),
         vehicles: JSON.stringify(mockData.vehicles),
         propsets: JSON.stringify(mockData.propsets),
-    }),
-    initTaskFilters: () => ({
-        taskFilters: JSON.stringify([
-            "",
-            "accessoriesonly_filter",
-            "allfingers_and_hand_helpers_filter",
-            "allfingers_and_hand_helpers_no_ch_filter",
-            "allfingers_and_toes_and_hand_helpers_filter",
-        ]),
     }),
     scenesList: () => ({
         scenes: JSON.stringify([

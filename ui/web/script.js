@@ -34,6 +34,7 @@ import {
     toggleObjectNearbyHUD,
     toggleObjectImportExportHUD,
     toggleObjectSettingsHUD,
+    toggleVisible,
     toggleFrozen,
     toggleCollision,
     setRotation,
@@ -44,7 +45,6 @@ import {
     showImport,
 } from "./components/obj.js";
 import {
-    initAnims,
     initializeAnimationHUD,
     toggleAnimationHUD,
     toggleAnimationSearchHUD,
@@ -59,6 +59,13 @@ import {
     toggleTorso,
     toggleFlag,
     toggleIKFlag,
+    getTaskfilterDropdowns,
+    getAnimFlagsDropdowns,
+    getAnimIKFlagsDropdowns,
+    getAnimations,
+    getAnimFlags,
+    getAnimIKFlags,
+    getTaskFilters,
 } from "./components/anims.js";
 import {
     setTheme,
@@ -304,6 +311,7 @@ export const EventActions = {
         '#button-tagsortbydist': () => tagSelectSort('dist'),
         '#button-tagsortbyname': () => tagSelectSort('name'),
 
+        '#objDetailsEntityVisible': () => toggleVisibility(),
         '#objDetailsEntityFrozen': () => toggleFrozen(),
         '#objDetailsEntityCollision': () => toggleCollision(),
 
@@ -323,6 +331,9 @@ export const EventActions = {
         '#button-stop': toggleStop,
         '#button-loop': toggleLoop,
         '#button-torso': toggleTorso,
+
+        '#button-animTimings': () => toggleAnimDetail('button-animTimings'),
+        '#button-animFlags': () => toggleAnimDetail('button-animFlags'),
     },
     input: {},
     mousemove: (event) => {
@@ -493,7 +504,7 @@ const InputFields = {
 }
 
 
-const DropDownOptions = {
+let DropDownOptions = {
     'objSettingsTheme': {
         'arctic ice': () => setTheme("arctic_ice"),
         'blueberry night': () => setTheme("blueberry_night"),
@@ -552,6 +563,12 @@ const DropDownOptions = {
         'SpoonerDB': () => exportScene('SpoonerDB', ActiveScene),
         'YMAP': () => exportScene('YMAP', ActiveScene),
     },
+    'animConfigureTaskfilter': await getTaskfilterDropdowns(),
+}
+
+let DropDownMultiOptions = {
+    'animConfigureAnimFlags': await getAnimFlagsDropdowns(),
+    'animConfigureIKFlags': await getAnimIKFlagsDropdowns(),
 }
 
 export function dropdownListeners() {
@@ -566,6 +583,21 @@ export function dropdownListeners() {
             });
         });
     });
+    document.querySelectorAll(".entry.dropdown-multi").forEach(dropdown => {
+        dropdown.addEventListener("click", event => {
+            let x = event.pageX;
+            let y = event.pageY;
+            console.log(DropDownMultiOptions[dropdown.id]);
+            showContextMenu(Object.values(DropDownMultiOptions[dropdown.id]), x, y).then(option => {
+                if (option === null) { return; }
+                console.log("settingtext", dropdown.id);
+                elementSetText(dropdown.id, DropDownMultiOptions[dropdown.id][option].fn());
+            });
+        });
+    });
+}
+
+export function dropdownMultiListeners() {
 }
 
 export function registerListeners() {
@@ -592,7 +624,7 @@ export function registerListeners() {
     });
 }
 
-function toUint32(value) { return value >>> 0; }
+export function toUint32(value) { return value >>> 0; }
 
 function getCurrentHUD() {
     // TODO: cache in appState, dont always query DOM
@@ -606,7 +638,6 @@ function getCurrentHUD() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    initAnims();
     initObj();
     registerListeners();
 
@@ -864,6 +895,7 @@ const ObjectDetailsFields = new Map([
 ]);
 
 const ObjectDetailsOptions = new Map([
+    ["objDetailsEntityVisible", "visible"],
     ["objDetailsEntityFrozen", "frozen"],
     ["objDetailsEntityCollision", "collision"],
 
@@ -888,6 +920,20 @@ function updateObjectDetails(data) {
         elementSetClass(key, "selected", data.selectData[value]);
     });
     elementSetClass('objDetails', 'hidden', false);
+}
+
+const AnimConfigureCategoryMap = new Map([
+    ['button-animTimings', 'animConfigureTimings'],
+    ['button-animFlags', 'animConfigureFlags'],
+]);
+
+function toggleAnimDetail(elId, state) {
+    console.log("toggleAnimConfigureCategory", elId, state);
+    const el = document.getElementById(elId);
+    if (state === undefined) { state = !el.classList.contains('selected'); }
+    elementSetClass(el, 'selected', state);
+    const listEl = AnimConfigureCategoryMap.get(elId);
+    elementSetClass(listEl, 'hidden', !state);
 }
 
 function toggleBorder() {

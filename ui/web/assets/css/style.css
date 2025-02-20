@@ -550,6 +550,10 @@ ul li {
     justify-content: left;
 }
 
+.fit {
+    width: fit-content;
+}
+
 .hidden {
     display: none;
 }
