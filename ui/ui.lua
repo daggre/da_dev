@@ -3,8 +3,9 @@ da_trie.addRoot("objRoot")
 
 da_ui.callbacks({
     initAnims = function() return { animations = json.encode(dat.animation) } end,
-    initAnimFlags = function() return { flags = json.encode(dat.flags.anim) } end,
-    initIKAnimFlags = function() return { flags = json.encode(dat.flags.ik) } end,
+    initAnimFlags = function() return { animflags = json.encode(dat.flags.anim) } end,
+    initIKAnimFlags = function() return { animikflags = json.encode(dat.flags.ik) } end,
+    initTaskFilters = function() return { taskfilters = json.encode(dat.taskFilter) } end,
     initObjSettings = function() return {
         nearby = kvp.rawget("setting:ui:nearby"),
         tags = kvp.rawget("setting:ui:tags"),
@@ -16,7 +17,6 @@ da_ui.callbacks({
         vehicles = json.encode(dat.vehicle),
         propsets = json.encode(dat.propset),
     } end,
-    initTaskFilters = function() return { taskFilters = json.encode(dat.taskFilter) } end,
 })
 
 da_ui.events({

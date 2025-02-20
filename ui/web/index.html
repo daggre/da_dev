@@ -285,6 +285,10 @@
                     <div id="objDetailsListStatus" class="mgb">
                         <ul>
                             <li>
+                                <div class="label borderleft bgi">Visible</div>
+                                <div id="objDetailsEntityVisible" class="entry check borderright bgt1" tabindex="66" aria-label="Entity Visibility Enabled"></div>
+                            </li>
+                            <li>
                                 <div class="label borderleft bgi">Frozen</div>
                                 <div id="objDetailsEntityFrozen" class="entry check borderright bgt1" tabindex="66" aria-label="Freeze Entity Enabled"></div>
                             </li>
@@ -299,12 +303,12 @@
                     <div id="objSettingsOptions" class="mgb">
                         <ul>
                             <li>
-                                <div class="label borderleft bgi">tooltips</div>
+                                <!-- <div class="label borderleft bgi">tooltips</div> -->
                                 <div id="objSettingsTooltip" class="entry check borderright bgt1 selected" tabindex="92" aria-label="Enable Tooltips"></div>
                             </li>
                             <li>
                                 <div class="label borderleft bgi">autohide camera speed</div>
-                                <div id="objSettingsHideCamera" class="entry check borderright bgt1 selected" tabindex="92" aria-label="Toggle Autohidden Camera Speed"></div>
+                                <div id="objSettingsHideCamera" class="entry check borderright bgt1 selected" tabindex="92" aria-label="Toggle Autohide on Camera Speed UI"></div>
                             </li>
                             <li> </li>
                             <li>
@@ -392,16 +396,16 @@
                     <div id="animNameList" class="list listSecondary bggradient">
                     </div>
                 </div>
-                <div id="animConfigureLeftColumn" class="listGroup top left">
-                    <div id="animConfigureDict" class="row gap noflex listEntryField">
+                <div id="animListConfigureLeftColumn" class="listGroup top left">
+                    <div id="animListConfigureDict" class="row gap noflex listEntryField">
                         <div class="label borderleft bgi">dict</div>
                         <div id="animConfSelectedDict" class="entry borderright bgt1"></div>
                     </div>
-                    <div id="animConfigureName" class="row gap noflex listEntryField">
+                    <div id="animListConfigureName" class="row gap noflex listEntryField">
                         <div class="label borderleft bgi">name</div>
                         <div id="animConfSelectedName" class="entry borderright bgt1"></div>
                     </div>
-                    <div id="animConfigureOptions" class="bgt1 blr gap">
+                    <div id="animListConfigureOptions" class="bgt1 blr gap">
                         <ul class="row">
                             <li>
                                 <div id="button-animconfadd" class="control" tabindex="12" role="button" aria-pressed="false">󰜄</div>
@@ -410,8 +414,78 @@
                             </li>
                         </ul>
                     </div>
-                    <div id="animConfigureList" class="list listPrimary bggradient">
+                    <div id="animListConfigureList" class="list listPrimary bggradient gap">
                         <ul id="animConfigureListUl"></ul>
+                    </div>
+                    <div id="animConfigureRightColumn" class="">
+                        <div id="animConfigureButtons" class="bgt1 blr gap fit">
+                            <ul class="row">
+                                <li>
+                                    <div id="button-animTimings" class="control selected" tabindex="51" role="button" aria-pressed="false" aria-label="Animation Timings">󱎫</div>
+                                    <div id="button-animFlags" class="control selected" tabindex="50" role="button" aria-pressed="false" aria-label="Animation Flags"></div>
+                                </li>
+                            </ul>
+                        </div>
+                        <div id="animConfigureNames" class="mgb">
+                            <ul>
+                                <li>
+                                    <div class="label borderleft bgi">entity</div>
+                                    <div id="animConfigureEntity" class="entry borderright bgt1" contenteditable="false" aria-label="Entity Handle"></div>
+                                </li>
+                                <li>
+                                    <div class="label borderleft bgi">dict</div>
+                                    <div id="animConfigureDict" class="entry borderright bgt1" contenteditable="false" aria-label="Animation Dictionary Name"></div>
+                                </li>
+                                <li>
+                                    <div class="label borderleft bgi">name</div>
+                                    <div id="animConfigureName" class="entry borderright bgt1" contenteditable="false" aria-label="Animation Name"></div>
+                                </li>
+                            </ul>
+                        </div>
+                        <div id="animConfigureTimings" class="mgb">
+                            <ul>
+                                <li>
+                                    <div class="label borderleft bgi">blend-in</div>
+                                    <div id="animConfigureBlendIn" class="entry borderright bgt1" contenteditable="true" tabindex="60" aria-label="Blend In Speed">0.0</div>
+                                </li>
+                                <li>
+                                    <div class="label borderleft bgi">blend-out</div>
+                                    <div id="animConfigureBlendOut" class="entry borderright bgt1" contenteditable="true" tabindex="61" aria-label="Blend Out Speed">0.0</div>
+                                </li>
+                                <li>
+                                    <div class="label borderleft bgi">duration</div>
+                                    <div id="animConfigureDuration" class="entry borderright bgt1" contenteditable="true" tabindex="62" aria-label="Animation Duration">0</div>
+                                </li>
+                                <li>
+                                    <div class="label borderleft bgi">rate</div>
+                                    <div id="animConfigureRate" class="entry borderright bgt1" contenteditable="true" tabindex="63" aria-label="Animation Rate">0</div>
+                                </li>
+                            </ul>
+                        </div>
+                        <div id="animConfigureFlags" class="mgb">
+                            <ul>
+                                <li>
+                                    <div class="label borderleft bgi">flags</div>
+                                    <div id="animConfigureAnimFlags" class="entry dropdown-multi borderright bgt1" tabindex="66" aria-label="Animation Flags">0</div>
+                                </li>
+                                <li>
+                                    <div class="label borderleft bgi">ik-flags</div>
+                                    <div id="animConfigureIKFlags" class="entry dropdown-multi borderright bgt1" tabindex="66" aria-label="Animation Inverse Kinematics Flags">0</div>
+                                </li>
+                                <li>
+                                    <div class="label borderleft bgi">taskfilter</div>
+                                    <div id="animConfigureTaskfilter" class="entry dropdown borderright bgt1" tabindex="67" aria-label="Animation Taskfilter">None</div>
+                                </li>
+                            </ul>
+                        </div>
+                        <div id="animConfigureAdditional">
+                            <ul>
+                                <li>
+                                    <div class="label borderleft bgi">delay</div>
+                                    <div id="animConfigureBlendIn" class="entry borderright bgt1" contenteditable="true" tabindex="60" aria-label="Start Delay">0</div>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </section>

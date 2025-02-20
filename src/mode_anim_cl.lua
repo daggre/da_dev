@@ -54,9 +54,7 @@ Citizen.CreateThread(function()
                 key = "Escape3",
                 event = "justPressed",
                 primary = true,
-                fn = function()
-                    da_mode.deactivate("animation")
-                end,
+                fn = function() da_mode.deactivate("animation") end,
             },
         }
     })

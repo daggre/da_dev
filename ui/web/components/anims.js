@@ -1,4 +1,8 @@
-import { KeyActions, showConfirm } from '../script.js';
+import {
+    KeyActions,
+    showConfirm,
+    toUint32,
+} from '../script.js';
 import { sendClientMessage } from '../utils/msg.js';
 import {
     selectOnly,
@@ -10,16 +14,33 @@ import {
     toggleSection
 } from '../utils/nav.js';
 
-let Animations = {};
-let IKFlagTotals = 0;
+let Animations;
+let AnimFlags;
+let AnimIKFlags;
+let TaskFilters;
 let FlagTotals = 0;
-const Flags = {
-    LOOP: 1,
-    UPPERBODY: 8,
-    SECONDARY: 16,
-    TOTAL: 32,
+let IKFlagTotals = 0;
+
+async function fetchData(key, messageType) {
+    if (!globalThis[key]) {
+        const resp = await sendClientMessage(messageType, {});
+        globalThis[key] = JSON.parse(resp[key.toLowerCase()]);
+    }
+    return globalThis[key];
 }
-let TaskFilter = false;
+
+export function getAnimations() { return fetchData('Animations', 'initAnims'); }
+export function getAnimFlags() { return fetchData('AnimFlags', 'initAnimFlags'); }
+export function getAnimIKFlags() { return fetchData('AnimIKFlags', 'initIKAnimFlags'); }
+export function getTaskFilters() { return fetchData('TaskFilters', 'initTaskFilters'); }
+
+// const Flags = {
+//     LOOP: 1,
+//     UPPERBODY: 8,
+//     SECONDARY: 16,
+//     TOTAL: 32,
+// }
+// let TaskFilter = false;
 
 const AnimHUD_All = [
     'animHelp',
@@ -32,11 +53,11 @@ const AnimHUD_All = [
     'animDictList',
     'animNameList',
 
-    'animConfigureLeftColumn',
-    'animConfigureOptions',
-    'animConfigureList',
-    'animConfigureDict',
-    'animConfigureName',
+    'animListConfigureLeftColumn',
+    'animListConfigureOptions',
+    'animListConfigureList',
+    'animListConfigureDict',
+    'animListConfigureName',
 ];
 
 const AnimHUD_Visible = [
@@ -58,11 +79,11 @@ const AnimHUD_Search = [
 ];
 
 const AnimHUD_Configure = [
-    'animConfigureLeftColumn',
-    'animConfigureOptions',
-    'animConfigureList',
-    'animConfigureDict',
-    'animConfigureName',
+    'animListConfigureLeftColumn',
+    'animListConfigureOptions',
+    'animListConfigureList',
+    'animListConfigureDict',
+    'animListConfigureName',
 ];
 
 export function initializeAnimationHUD() {
@@ -120,119 +141,6 @@ export function toggleAnimationConfigureHUD(state) {
     } else {
         elementSetClass('button-animconfigure', 'selected', state);
     }
-}
-
-export function initAnims() {
-    sendClientMessage('initAnims', {}).then(function(resp) {
-        Animations = JSON.parse(resp.animations);
-    });
-
-    sendClientMessage('initAnimFlags', {}).then(function(resp) {
-        let flagList = document.getElementById('animFlagsOptions');
-        let ul = document.createElement('ul');
-
-        const flags = JSON.parse(resp.flags);
-        flags.forEach(flag => {
-            let flagLabel = document.createElement('div');
-            flagLabel.classList.add('check', 'label', 'borderright', 'bgi');
-            flagLabel.innerHTML = flag.name;
-
-            let flagField = document.createElement('div');
-            flagField.classList.add('check', 'entry', 'borderright', 'bgt1');
-            flagField.setAttribute('id', 'flag-' + flag.value);
-            flagField.setAttribute('tabindex', '5');
-            flagField.setAttribute('role', 'button');
-            flagField.setAttribute('aria-pressed', 'false');
-            flagField.setAttribute('onclick', 'toggleFlag(' + flag.value + ')');
-
-            let li = document.createElement('li');
-            li.appendChild(flagLabel);
-            li.appendChild(flagField);
-            ul.appendChild(li);
-        });
-
-        let flagLabel = document.createElement('div');
-        flagLabel.classList.add('check', 'label', 'borderright', 'bgi');
-        flagLabel.innerHTML = 'TOTAL';
-
-        let flagField = document.createElement('div');
-        flagField.classList.add('check', 'entry', 'borderright', 'bgt1');
-        flagField.setAttribute('id', 'flagTotals');
-        flagField.innerHTML = '0';
-
-        let li = document.createElement('li');
-        li.appendChild(flagLabel);
-        li.appendChild(flagField);
-        ul.appendChild(li);
-        flagList.appendChild(ul);
-    });
-
-    sendClientMessage('initIKAnimFlags', {}).then(function(resp) {
-        let flagList = document.getElementById('animIKFlagsOptions');
-        let ul = document.createElement('ul');
-
-        const flags = JSON.parse(resp.flags);
-        flags.forEach(flag => {
-            let flagLabel = document.createElement('div');
-            flagLabel.classList.add('check', 'label', 'borderright', 'bgi');
-            flagLabel.innerHTML = flag.name;
-
-            let flagField = document.createElement('div');
-            flagField.classList.add('check', 'entry', 'borderright', 'bgt1');
-            flagField.setAttribute('id', 'ikflag-' + flag.value);
-            flagField.setAttribute('tabindex', '4');
-            flagField.setAttribute('role', 'button');
-            flagField.setAttribute('aria-pressed', 'false');
-            flagField.setAttribute('onclick', 'toggleIKFlag(' + flag.value + ')');
-
-            let li = document.createElement('li');
-            li.appendChild(flagLabel);
-            li.appendChild(flagField);
-            ul.appendChild(li);
-        });
-
-
-        let flagLabel = document.createElement('div');
-        flagLabel.classList.add('check', 'label', 'borderright', 'bgi');
-        flagLabel.innerHTML = 'TOTAL';
-
-        let flagField = document.createElement('div');
-        flagField.classList.add('check', 'entry', 'borderright', 'bgt1');
-        flagField.setAttribute('id', 'IKFlagTotals');
-        flagField.innerHTML = '0';
-
-        let li = document.createElement('li');
-        li.appendChild(flagLabel);
-        li.appendChild(flagField);
-        ul.appendChild(li);
-        flagList.appendChild(ul);
-    });
-
-    sendClientMessage('initTaskFilters', {}).then(function(resp) {
-        let taskList = document.getElementById('animTaskFilterOptions');
-        let ul = document.createElement('ul');
-
-        const taskFilters = JSON.parse(resp.taskFilters);
-        taskFilters.forEach((taskFilter, index) => {
-            let taskLabel = document.createElement('div');
-            taskLabel.classList.add('check', 'label', 'borderright', 'bgi');
-            taskLabel.innerHTML = taskFilter;
-
-            let taskField = document.createElement('div');
-            taskField.classList.add('check', 'entry', 'taskFilter', 'borderright', 'bgt1');
-            taskField.setAttribute('id', 'task-' + index);
-            taskField.setAttribute('tabindex', '5');
-            taskField.setAttribute('role', 'button');
-            taskField.setAttribute('aria-pressed', 'false');
-            taskField.onclick = function() { toggleTaskFilter(index, taskFilter); };
-
-            let li = document.createElement('li');
-            li.appendChild(taskLabel);
-            li.appendChild(taskField);
-            ul.appendChild(li);
-        });
-        taskList.appendChild(ul);
-    });
 }
 
 function toggleTaskFilter(taskFilterIndex, taskFilter) {
@@ -449,7 +357,7 @@ export function playAnimation() {
 
 export function toggleFlag(flag) {
     let flagTotals = 0;
-    elementSetClass(`flag-${flag}`, 'selected')
+    // elementSetClass(`flag-${flag}`, 'selected')
 
     for (let i=0; i < Flags.TOTAL; i++) {
         let value = toUint32(1 << i);
@@ -527,58 +435,42 @@ export function toggleTorso(state) {
     }
 }
 
+export async function getTaskfilterDropdowns() {
+    let tf_out = {}
+    const taskfilters = await getTaskFilters();
+    taskfilters.forEach((taskFilter, index) => {
+        let key = taskFilter === "" ? "None" : taskFilter;
+        tf_out[key] = () => console.log(taskFilter, index);
+    });
+    return tf_out
+}
 
-// DEPRECATE BELOW //
-// function HandleKeysAnim(event) {
-//     switch(event.key) {
-//         case " ":
-//             if (typeof event.target.onclick == "function") {
-//                 event.target.onclick.apply();
-//             } else {
-//                 togglePlay();
-//             }
-//             break;
-//         case "?":
-//         case "1":
-//         case "x":
-//             if (isVisible('animSearchField')) {
-//                 // Clear search
-//                 elementSetText('animDictList', "");
-//                 elementSetText('animList', "");
-//                 elementSetText('valueAnimSearch', "");
-//                 document.getElementById('valueAnimSearch').focus();
-//             } else if (isVisible('animTimingsOptions')) {
-//                 // Reset timings to defaults
-//                 elementSetText('timingBlendIn', "1.0");
-//                 elementSetText('timingBlendOut', "1.0");
-//                 elementSetText('timingPlayback', "0");
-//                 elementSetText('timingDuration', "-1");
-//             } else if (isVisible('animFlagsOptions')) {
-//                 // Clear all flags
-//                 for (let i=0; i < 32; i++) {
-//                     let value = toUint32(1 << i);
-//                     if (elementHasClass(`flag-${value}`, "selected")) {
-//                         toggleFlag(value);
-//                     }
-//                 }
-//             } else if (isVisible('animIKFlagsOptions')) {
-//                 // Clear all ikflags
-//                 for (let i=0; i < 32 ; i++) {
-//                     let value = toUint32(1 << i);
-//                     if (elementHasClass(`flag-${value}`, "selected")) {
-//                         toggleIKFlag(value);
-//                     }
-//                 }
-//             } else if (isVisible('animEntityOptions')) {
-//                 // Reset entity to player
-//                 elementSetText('animEntityField', "");
-//             } else {
-//                 // Clear the selected animDict and animName
-//                 elementSetText('activeAnimDict', "");
-//                 elementSetText('activeAnimName', "");
-//             }
-//             event.preventDefault();
-//             break;
-//     }
-// }
-//
+export async function getAnimFlagsDropdowns() {
+    let flags_out = {}
+    const animFlags = await getAnimFlags();
+    animFlags.forEach((flag, index) => {
+        let bitvalue = toUint32(1 << flag.value);
+        let name = flag.name.toLowerCase();
+        flags_out[name] = {
+            name: name,
+            tooltip: `${flag.name}: ${bitvalue}`,
+            fn: () => { return bitvalue },
+        }
+    });
+    return flags_out
+}
+
+export async function getAnimIKFlagsDropdowns() {
+    let flags_out = {}
+    const animIKFlags = await getAnimIKFlags();
+    animIKFlags.forEach((flag, index) => {
+        let bitvalue = toUint32(1 << flag.value);
+        let name = flag.name.toLowerCase();
+        flags_out[name] = {
+            name: name,
+            tooltip: `${flag.name}: ${bitvalue}`,
+            fn: () => { return bitvalue },
+        }
+    });
+    return flags_out
+}
