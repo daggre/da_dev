@@ -1,6 +1,6 @@
 local debugMessageQueue = {}
 
-da_debug = {}
+local da_debug = {}
 function da_debug:Breakpoint(condition)
     if condition ~= nil and condition ~= true then return end
 
