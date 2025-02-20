@@ -49,12 +49,39 @@
                 </div>
             </section>
             <section id="exportHUD" class="hud hidden">
-                <div class="pad center blr bgt2">
-                    <div id="exportIcon" class="bigicon"></div>
-                    <div id="exportDescription" class="">Are you sure?</div>
+                <div class="center blr bgt2 pad">
+                    <div id="exportIcon" class="bigicon">󰈝</div>
+                    <div id="exportDescription" class="gap">Export Scene</div>
+                    <p></p>
+                    <ul class="row gap contentleft">
+                        <li style="overflow: hidden;">
+                            <div class="label borderleft bgi">format</div>
+                            <div id="exportFormat" tabindex="99", class="entry dropdown borderright bgt2">YMAP</div>
+                        </li>
+                    </ul>
+                    <div id="exportContent" tabindex="99" contenteditable="true" class="blr bgt2 contentbox">This is some content<br>with multi lines<br>testblah</div>
                     <ul class="row rowpad gap">
-                        <li id="exportYesOption" tabindex="99" class="control blr bgt2">Yes</li>
-                        <li id="exportNoOption" tabindex="99" class="control blr bgt2">No</li>
+                        <li id="exportCopyOption" tabindex="99" class="control blr bgt2">Copy</li>
+                        <li id="exportExitOption" tabindex="99" class="control blr bgt2">Close</li>
+                    </ul>
+                </div>
+            </section>
+            <section id="importHUD" class="hud hidden">
+                <div class="center blr bgt2 pad">
+                    <div id="importIcon" class="bigicon">󰈝</div>
+                    <div id="importDescription" class="gap">Export Scene</div>
+                    <p></p>
+                    <ul class="row gap contentleft">
+                        <li style="overflow: hidden;">
+                            <div class="label borderleft bgi">format</div>
+                            <!-- TODO: autodetect format -->
+                            <div id="importFormat" tabindex="99", class="entry dropdown borderright bgt2">YMAP</div>
+                        </li>
+                    </ul>
+                    <div id="importContent" tabindex="99" contenteditable="true" class="blr bgt2 contentbox">This is some content<br>with multi lines<br>testblah</div>
+                    <ul class="row rowpad gap">
+                        <li id="exportCopyOption" tabindex="99" class="control blr bgt2">Copy</li>
+                        <li id="exportExitOption" tabindex="99" class="control blr bgt2">Close</li>
                     </ul>
                 </div>
             </section>
@@ -463,7 +490,7 @@
             <section id="cameraHUD" class="hud hidden">
                 <div id="camHelp" class="center bgt2 pad blr hidden mgb">
                     <div class="title">FreeCam and NoClip</div>
-                    <div class="bigicon"> </div>
+                    <div class="bigicon"> </div>
                     <ul>
                         <li><div class="label borderleft bgi">w</div><div class="entry borderright bgt1">Move Forward</div></li>
                         <li><div class="label borderleft bgi">a</div><div class="entry borderright bgt1">Move Left</div></li>

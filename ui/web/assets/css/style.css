@@ -335,12 +335,12 @@ ul li {
 }
 
 #crosshair {
-	position: absolute;
-	top: 50vh;
-	left: 50vw;
-	transform: translate(-50%, -50%);
-	font-size: 1.9vh;
-	color: var(--primary);
+    position: absolute;
+    top: 50vh;
+    left: 50vw;
+    transform: translate(-50%, -50%);
+    font-size: 1.9vh;
+    color: var(--primary);
     font-family: LiterationMonoNerd,Menlo,Consolas,monospace;
 }
 
@@ -369,7 +369,7 @@ ul li {
 .row {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: space-evenly;
 }
 
 #crosshair.inactive {
@@ -448,6 +448,11 @@ ul li {
         0 0 10px var(--secondary-light);
 }
 
+::selection {
+    background: var(--secondary-light);
+    color: var(--bg);
+}
+
 .entry:focus, .liHover, .liSelect, .list li:focus  {
     outline: none;
     color: var(--secondary-light);
@@ -522,8 +527,27 @@ ul li {
     bottom: 5px;
     padding: 3px 5px;
     pointer-events: none;
-    background-color: var(--bg-t3);
+    background-color: var(--bg-t2);
     border-radius: var(--brd-rad);
+}
+
+.contentbox {
+    display: block;
+    padding: 0.5rem;
+    text-align: left;
+    min-height: 5vh;
+    max-height: 66vh;
+    width: 30vw;
+    overflow-y: auto;
+    white-space: nowrap;
+}
+
+.contentbox:focus {
+    text-shadow: none;
+}
+
+.contentleft {
+    justify-content: left;
 }
 
 .hidden {

@@ -152,3 +152,4 @@ export function setTheme(theme) {
 export function setDividerStyle(divider) {
     document.documentElement.style.setProperty('--divider', `"${divider} "`);
 }
+

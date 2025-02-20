@@ -1,9 +1,28 @@
 // dev-mocks.js
+
 const testHud = "ui_object";
 // const testHud = "ui_animation";
 const jsonString = `{"test":["a","b"], "vest":["c","d"]}`
 // INFO: Issue with the @ symbol
 // const jsonString = `{"test@test@test": ["test1", "test2", "test3" ], "test@test@test3": [ "test_back", "test_front", "test_left", "test_right" ],}`
+
+const getRandomElement = (arr) => arr[Math.floor(Math.random() * arr.length)];
+const randomSuffix = () => Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+
+const pedPrefixes = ["human", "cowboy", "bandit", "hunter", "sheriff", "traveler"];
+const objectPrefixes = ["crate", "barrel", "table", "lamp", "statue", "fence", "wheel"];
+const pickupPrefixes = ["gold", "ammo", "coin", "map", "food", "herb", "pouch"];
+const vehiclePrefixes = ["wagon", "stagecoach", "cart", "train", "boat", "carriage"];
+const propsetPrefixes = ["camp", "ranch", "market", "graveyard", "station", "fort"];
+
+const mockData = {
+    peds: Array.from({ length: 100 }, () => `${getRandomElement(pedPrefixes)}_${getRandomElement(pedPrefixes)}_${randomSuffix()}`),
+    objects: Array.from({ length: 100 }, () => `${getRandomElement(objectPrefixes)}_${getRandomElement(objectPrefixes)}_${randomSuffix()}`),
+    pickups: Array.from({ length: 100 }, () => `${getRandomElement(pickupPrefixes)}_${getRandomElement(pickupPrefixes)}_${randomSuffix()}`),
+    vehicles: Array.from({ length: 100 }, () => `${getRandomElement(vehiclePrefixes)}_${getRandomElement(vehiclePrefixes)}_${randomSuffix()}`),
+    propsets: Array.from({ length: 100 }, () => `${getRandomElement(propsetPrefixes)}_${getRandomElement(propsetPrefixes)}_${randomSuffix()}`),
+};
+
 const mockResponses = {
     initAnims: () => ({ animations: jsonString, }),
     initAnimFlags: () => ({
@@ -32,13 +51,11 @@ const mockResponses = {
         }),
     }),
     initObjects: () => ({
-        peds: JSON.stringify([ "NPC1" ]),
-        objects: JSON.stringify([
-            "prop_01", "test_prop", "test_fire", "test_tent", "test_02", "prop_02x",
-        ]),
-        pickups: JSON.stringify([ "Pickup1" ]),
-        vehicles: JSON.stringify([ "Vehicle1" ]),
-        propsets: JSON.stringify([ "Propset1" ]),
+        peds: JSON.stringify(mockData.peds),
+        objects: JSON.stringify(mockData.objects),
+        pickups: JSON.stringify(mockData.pickups),
+        vehicles: JSON.stringify(mockData.vehicles),
+        propsets: JSON.stringify(mockData.propsets),
     }),
     initTaskFilters: () => ({
         taskFilters: JSON.stringify([
