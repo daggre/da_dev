@@ -1,3 +1,4 @@
+import { clipboardCopy } from "../utils/clipboard.js";
 import { MouseDown, showConfirm } from '../script.js';
 import { selectOnly, resetList, isVisible, elementSetClass, elementHasClass, elementSetText, toggleSection } from '../utils/nav.js';
 import { sendClientMessage } from '../utils/msg.js';
@@ -96,6 +97,8 @@ function searchObjects(searchValue, searchList, elementId, tabIndex) {
 
     const maxResults = 10000;
     const selectedObject = document.getElementById('activeObject').innerHTML;
+    console.log(searchList);
+    if (!searchList) { return; }
     let results = searchList.filter(str => str.toLowerCase().includes(searchValue.toLowerCase()));
     let ul = document.createElement('ul');
     for (let i=0; i < results.length && i < maxResults; ++i) {
@@ -594,42 +597,29 @@ export function importScene() {
     });
 }
 
-export function exportScene() {
-    showExport("󰈝").then(response => {
-        console.log(response);
-    });
+export function exportScene(type) {
+    const sceneName = ActiveScene;
+    console.log("exportScene", type, sceneName)
 }
 
 /**
  * Popup dialog with export options
  */
-function showExport(icon = "") {
+export function showExport() {
     return new Promise((resolve, reject) => {
-        // TODO: implement export
         const exportHUD = document.getElementById('exportHUD');
-        const bigIcon = document.getElementById('exportIcon');
-        const message = document.getElementById('exportDescription');
-        const yesButton = document.getElementById('exportYesOption');
-        const noButton = document.getElementById('exportNoOption');
+        const copyButton = document.getElementById('exportCopyOption');
+        const exitButton = document.getElementById('exportExitOption');
         const lastFocusedElement = document.activeElement;
 
-
-        bigIcon.innerHTML = icon;
-        message.innerHTML = "test message";
-        yesButton.innerHTML = "yes";
-        noButton.innerHTML = "no";
-
         exportHUD.classList.remove('hidden');
-        noButton.focus();
+        copyButton.focus();
 
         // Create a MutationObserver to monitor if the popup becomes hidden
         const observer = new MutationObserver((mutationsList) => {
             if (exportHUD.classList.contains('hidden')) {
                 cleanup();
                 resolve(false);
-            } else if (exportHUD.classList.contains('clear')) {
-                cleanup();
-                resolve(true);
             }
         });
         observer.observe(exportHUD, {
@@ -637,28 +627,74 @@ function showExport(icon = "") {
             attributeFilter: ['class']
         });
 
-        function handleYes() {
-            cleanup();
-            resolve(true);
+        function handleCopy() {
+            const content = document.getElementById('exportContent').innerHTML;
+            clipboardCopy(content);
         }
 
-        function handleNo() {
+        function handleExit() {
             cleanup();
             resolve(false);
         }
 
         function cleanup() {
-            yesButton.removeEventListener('click', handleYes);
-            noButton.removeEventListener('click', handleNo);
+            copyButton.removeEventListener('click', handleCopy);
+            exitButton.removeEventListener('click', handleExit);
             observer.disconnect();
-            exportHUD.classList.remove('clear');
             exportHUD.classList.add('hidden');
             if (lastFocusedElement) {
                 lastFocusedElement.focus();
             }
         }
 
-        yesButton.addEventListener('click', handleYes);
-        noButton.addEventListener('click', handleNo);
+        copyButton.addEventListener('click', handleCopy);
+        exitButton.addEventListener('click', handleExit);
+    });
+}
+
+export function showImport() {
+    return new Promise((resolve, reject) => {
+        const importHUD = document.getElementById('importHUD');
+        const importButton = document.getElementById('importOption');
+        const exitButton = document.getElementById('importExitOption');
+        const lastFocusedElement = document.activeElement;
+
+        importHUD.classList.remove('hidden');
+        importButton.focus();
+
+        // Create a MutationObserver to monitor if the popup becomes hidden
+        const observer = new MutationObserver((mutationsList) => {
+            if (importHUD.classList.contains('hidden')) {
+                cleanup();
+                resolve(false);
+            }
+        });
+        observer.observe(importHUD, {
+            attributes: true,
+            attributeFilter: ['class']
+        });
+
+        function handleImport() {
+            const sceneData = document.getElementById('importContent').innerHTML;
+            importScene();
+        }
+
+        function handleExit() {
+            cleanup();
+            resolve(false);
+        }
+
+        function cleanup() {
+            importButton.removeEventListener('click', handleCopy);
+            exitButton.removeEventListener('click', handleExit);
+            observer.disconnect();
+            importHUD.classList.add('hidden');
+            if (lastFocusedElement) {
+                lastFocusedElement.focus();
+            }
+        }
+
+        importButton.addEventListener('click', handleImport);
+        exitButton.addEventListener('click', handleExit);
     });
 }

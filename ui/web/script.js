@@ -40,6 +40,8 @@ import {
     placeOnGround,
     exportScene,
     importScene,
+    showExport,
+    showImport,
 } from "./components/obj.js";
 import {
     initAnims,
@@ -151,10 +153,15 @@ export let KeyActions = {
     },
     'exportHUD': {
         ' ': (event) => { clickElement(event); },
-        'y': () => { elementSetClass('exportHUD', 'clear', true); },
-        'n': () => { elementSetClass('exportHUD', 'hidden', true); },
-        'enter': () => { elementSetClass('exportHUD', 'clear', true); },
-        'escape': () => { elementSetClass('exportHUD', 'hidden', true); },
+        'escape': () => {
+            if (!document.getElementById('exportContent').matches(':focus')) {
+                elementSetClass('exportHUD', 'hidden', true);
+            } else {
+                document.activeElement.blur();
+                window.getSelection().removeAllRanges();
+                document.getElementById('exportCopyOption').focus();
+            }
+        },
     },
     'cameraHUD': {
         'escape': () => {
@@ -290,8 +297,8 @@ export const EventActions = {
 
         '#button-savescene': () => saveScene(),
         '#button-clearscene': () => clearScene(),
-        '#button-export': () => exportScene(),
-        '#button-import': () => importScene(),
+        '#button-export': () => showExport(),
+        '#button-import': () => showImport(),
         '#button-reloadscene': () => reloadScene(),
         '#button-deletescene': () => deleteScene(),
         '#button-tagsortbydist': () => tagSelectSort('dist'),
@@ -511,19 +518,19 @@ const DropDownOptions = {
         'wisteria': () => setTheme("wisteria"),
     },
     'objSettingsDividerStyle': {
-        'angle down': () => { setDividerStyle(""); },
-        'angle up': () => { setDividerStyle(""); },
-        'chevron': () => { setDividerStyle(""); },
-        'flame': () => { setDividerStyle(""); },
-        // 'honeycomb': () => { setDividerStyle(""); },
-        'inverted chevron': () => { setDividerStyle(""); },
-        'pixelated': () => { setDividerStyle(""); },
-        'quadrant top': () => { setDividerStyle("▛"); },
-        'quadrant bottom': () => { setDividerStyle("▙"); },
-        'round': () => { setDividerStyle(""); },
-        // 'trapezoid': () => { setDividerStyle(""); },
-        'vertical': () => { setDividerStyle("▌"); },
-        'waveform': () => { setDividerStyle(""); },
+        'angle down': () => setDividerStyle(""),
+        'angle up': () => setDividerStyle(""),
+        'chevron': () => setDividerStyle(""),
+        'flame': () => setDividerStyle(""),
+        // 'honeycomb': () => setDividerStyle(""),
+        'inverted chevron': () => setDividerStyle(""),
+        'pixelated': () => setDividerStyle(""),
+        'quadrant top': () => setDividerStyle("▛"),
+        'quadrant bottom': () => setDividerStyle("▙"),
+        'round': () => setDividerStyle(""),
+        // 'trapezoid': () => setDividerStyle(""),
+        'vertical': () => setDividerStyle("▌"),
+        'waveform': () => setDividerStyle(""),
     },
     'activeNearbyOrigin': {
         'camera': () => selectNearbyOrigin('camera'),
@@ -532,6 +539,18 @@ const DropDownOptions = {
         'raycast': () => selectNearbyOrigin('raycast'),
         'set position': () => selectNearbyOrigin('set position'),
         'select': () => selectNearbyOrigin('select'),
+    },
+    'exportFormat': {
+        'Map Editor XML': () => { console.log("Export Map Editor XML"); },
+        'Propplacer JSON': () => { console.log("Export Propplacer JSON"); },
+        'SpoonerDB': () =>{ console.log("Export SpoonerDB"); },
+        'YMAP': () => { console.log("Export YMAP"); },
+    },
+    'importFormat': {
+        'Map Editor XML': () => exportScene('MapEditorXML', ActiveScene),
+        'Propplacer JSON': () => exportScene('PropplacerJSON', ActiveScene),
+        'SpoonerDB': () => exportScene('SpoonerDB', ActiveScene),
+        'YMAP': () => exportScene('YMAP', ActiveScene),
     },
 }
 
@@ -591,8 +610,10 @@ document.addEventListener('DOMContentLoaded', () => {
     initObj();
     registerListeners();
 
-    setTheme("retro_wave");
+    setTheme("electric_sunset");
+    elementSetText('objSettingsTheme', "electric sunset");
     setDividerStyle("");
+    elementSetText('objSettingsDividerStyle', "angle up");
     toggleCurvedBorder();
 
     window.addEventListener('message', function(msg) {
@@ -969,12 +990,15 @@ export function showContextMenu(options, x, y) {
         const lastFocusedElement = document.activeElement;
 
         options.forEach((option) => {
+            const name = typeof option === "string" ? option : option.name;
+            const tooltip = typeof option === "string" ? "" : option.tooltip;
             const item = document.createElement("div");
+            if (tooltip) { item.setAttribute("aria-label", tooltip); }
             item.classList.add("context-menu-item");
-            item.textContent = option;
+            item.textContent = name;
             item.addEventListener("click", () => {
                 cleanup();
-                resolve(option);
+                resolve(name);
             });
             menu.appendChild(item);
         });
