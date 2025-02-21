@@ -38,9 +38,7 @@ export function elementSetOnlyClass(elOrId, cls, classes) {
     const classList = el.classList;
 
     // Remove all classes from the provided list
-    classes.forEach((c) => {
-        if (c !== cls) classList.remove(c);
-    });
+    classes.forEach((c) => { if (c !== cls) classList.remove(c)});
 
     // Add the target class
     classList.add(cls);

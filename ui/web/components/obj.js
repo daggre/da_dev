@@ -1,5 +1,7 @@
-import { clipboardCopy } from "../utils/clipboard.js";
-import { MouseDown, showConfirm } from '../script.js';
+import { clipboardCopy } from '../utils/clipboard.js';
+import { MouseDown } from '../script.js';
+import { showConfirm } from '../utils/confirm.js';
+import { DropDownOptions } from '../utils/dropdown.js';
 import { selectOnly, resetList, isVisible, elementSetClass, elementHasClass, elementSetText, toggleSection } from '../utils/nav.js';
 import { sendClientMessage } from '../utils/msg.js';
 
@@ -410,6 +412,15 @@ export function selectNearbyOrigin(origin) {
     sendClientMessage('setObjSettings', { nearby: JSON.stringify(NearbyOption) });
 }
 
+DropDownOptions.activeNearbyOrigin = {
+    'camera': () => selectNearbyOrigin('camera'),
+    'offset': () => selectNearbyOrigin('offset'),
+    'player': () => selectNearbyOrigin('player'),
+    'raycast': () => selectNearbyOrigin('raycast'),
+    'set position': () => selectNearbyOrigin('set position'),
+    'select': () => selectNearbyOrigin('select'),
+};
+
 const ObjectHUD_All = [
     "objHelp",
     "objControlOptions",
@@ -597,15 +608,28 @@ export function placeOnGround(handle = document.getElementById('objDetailsEntity
 }
 
 export function importScene() {
-    showExport("󰈠").then(response => {
-        console.log(response);
-    });
+    const sceneName = ActiveScene;
+    console.log("importScene", type, sceneName)
 }
+
+DropDownOptions.importFormat = {
+    'Map Editor XML': () => importScene('MapEditorXML'),
+    'Propplacer JSON': () => importScene('PropplacerJSON'),
+    'SpoonerDB': () => importScene('SpoonerDB'),
+    'YMAP': () => importScene('YMAP'),
+};
 
 export function exportScene(type) {
     const sceneName = ActiveScene;
     console.log("exportScene", type, sceneName)
 }
+
+DropDownOptions.exportFormat = {
+    'Map Editor XML': () => exportScene('MapEditorXML', ActiveScene),
+    'Propplacer JSON': () => exportScene('PropplacerJSON', ActiveScene),
+    'SpoonerDB': () => exportScene('SpoonerDB', ActiveScene),
+    'YMAP': () => exportScene('YMAP', ActiveScene),
+};
 
 /**
  * Popup dialog with export options
