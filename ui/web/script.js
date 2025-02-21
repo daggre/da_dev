@@ -1,6 +1,8 @@
 import { clipboardCopy } from "./utils/clipboard.js";
 import { sendClientMessage } from "./utils/msg.js";
 import { updateCrosshair } from "./components/crosshair.js";
+import { dropdownListeners } from '../utils/dropdown.js';
+import { showContextMenu } from '../utils/contextmenu.js';
 import {
     updateCamera,
     toggleHideCamera,
@@ -52,25 +54,8 @@ import {
     searchAnimDicts,
     addAnimation,
     clearAnimations,
-    playAnimation,
-    togglePlay,
-    toggleStop,
-    toggleLoop,
-    toggleTorso,
-    toggleFlag,
-    toggleIKFlag,
-    getTaskfilterDropdowns,
-    getAnimFlagsDropdowns,
-    getAnimIKFlagsDropdowns,
-    getAnimations,
-    getAnimFlags,
-    getAnimIKFlags,
-    getTaskFilters,
 } from "./components/anims.js";
-import {
-    setTheme,
-    setDividerStyle,
-} from "./components/theme.js";
+import { setUIStyle } from "./components/theme.js";
 import {
     tooltipListener,
     setTooltips,
@@ -85,7 +70,6 @@ let CursorPosDelay = false;
 const ResolutionX = window.screen.width;
 const ResolutionY = window.screen.height;
 export let MouseDown = false;
-
 let Pressed = {}
 let JustPressed = {}
 let QuickPress = { Timeout: 400, MiddleMouse: { active: false, }, }
@@ -110,34 +94,20 @@ const ObjectContextOptions = {
 
 export let KeyActions = {
     'infoHUD': {
-        ' ': (event) => { clickElement(event); },
-        'y': () => { elementSetClass('infoHUD', 'clear', true); },
-        'n': () => { elementSetClass('infoHUD', 'hidden', true); },
-        'enter': () => { elementSetClass('infoHUD', 'clear', true); },
-        'escape': () => { elementSetClass('infoHUD', 'hidden', true); },
+        ' ': (event) => clickElement(event),
+        'y': () => elementSetClass('infoHUD', 'clear', true),
+        'n': () => elementSetClass('infoHUD', 'hidden', true),
+        'enter': () => elementSetClass('infoHUD', 'clear', true),
+        'escape': () => elementSetClass('infoHUD', 'hidden', true),
     },
     'devTreeHUD': {},
     'animHUD': {
         ' ': (event) => { clickElement(event); },
         'escape': () => { sendClientMessage('deactivateMode', { mode: "animation" }); },
-        'backspace': () => { toggleStop(); },
         '1': () => { toggleAnimationSearchHUD(); },
         '2': () => { toggleAnimationConfigureHUD(); },
         'h': () => { toggleHelp("animHelp"); },
         '?': () => { toggleHelp("animHelp"); },
-        'p': () => { togglePlay(); },
-        'r': () => { togglePlay(); },
-        // '3': () => { toggleIKFlags(); },
-        // '4': () => { toggleFlags(); },
-        // '5': () => { toggleTaskFilters(); },
-        // '6': () => { toggleEntity(); },
-        // 'c': () => { toggleSettings(); },
-        // 'i': () => { toggleIKFlags(); },
-        // 'l': () => { toggleLoop(); },
-        // 'o': () => { toggleFlags(); },
-        // 'q': () => { togglePlay(); },
-        // 't': () => { toggleTimings(); },
-        // 'u': () => { toggleTorso(); },
     },
     'gizmo': {
         'escape': () => { sendClientMessage('deactivateMode', { mode: "gizmo"}); },
@@ -320,18 +290,6 @@ export const EventActions = {
         '#objSettingsCurvedBorder': () => toggleCurvedBorder(),
         '#objSettingsHideCamera': () => toggleHideCamera(),
 
-        '#button-search': toggleSearch,
-        '#button-timings': toggleTimings,
-        '#button-flags': toggleFlags,
-        '#button-ikflags': toggleIKFlags,
-        '#button-taskFilters': toggleTaskFilters,
-        '#button-entity': toggleEntity,
-        '#button-settings': toggleSettings,
-        '#button-play': togglePlay,
-        '#button-stop': toggleStop,
-        '#button-loop': toggleLoop,
-        '#button-torso': toggleTorso,
-
         '#button-animTimings': () => toggleAnimDetail('button-animTimings'),
         '#button-animFlags': () => toggleAnimDetail('button-animFlags'),
     },
@@ -504,101 +462,6 @@ const InputFields = {
 }
 
 
-let DropDownOptions = {
-    'objSettingsTheme': {
-        'arctic ice': () => setTheme("arctic_ice"),
-        'blueberry night': () => setTheme("blueberry_night"),
-        'cherry blossom': () => setTheme("cherry_blossom"),
-        'dark cherry': () => setTheme("dark_cherry"),
-        'electric sunset': () => setTheme("electric_sunset"),
-        'emerald dream': () => setTheme("emerald_dream"),
-        'giedi prime': () => setTheme("grayscale"),
-        'hotdog': () => setTheme("hotdog"),
-        'moonlit orchid': () => setTheme("moonlit_orchid"),
-        'mystic grove': () => setTheme("mystic_grove"),
-        'neon sunset': () => setTheme("neon_sunset"),
-        'netrunner': () => setTheme("netrunner"),
-        'night king': () => setTheme("arctic_blue"),
-        'oasis': () => setTheme("oasis"),
-        'oceanic': () => setTheme("oceanic"),
-        'overcast': () => setTheme("overcast"),
-        'retro wave': () => setTheme("retro_wave"),
-        'rose': () => setTheme("noir_rose"),
-        'solarized night': () => setTheme("solarized_night"),
-        'verdant steel': () => setTheme("verdant_steel"),
-        'wisteria': () => setTheme("wisteria"),
-    },
-    'objSettingsDividerStyle': {
-        'angle down': () => setDividerStyle(""),
-        'angle up': () => setDividerStyle(""),
-        'chevron': () => setDividerStyle(""),
-        'flame': () => setDividerStyle(""),
-        // 'honeycomb': () => setDividerStyle(""),
-        'inverted chevron': () => setDividerStyle(""),
-        'pixelated': () => setDividerStyle(""),
-        'quadrant top': () => setDividerStyle("▛"),
-        'quadrant bottom': () => setDividerStyle("▙"),
-        'round': () => setDividerStyle(""),
-        // 'trapezoid': () => setDividerStyle(""),
-        'vertical': () => setDividerStyle("▌"),
-        'waveform': () => setDividerStyle(""),
-    },
-    'activeNearbyOrigin': {
-        'camera': () => selectNearbyOrigin('camera'),
-        'offset': () => selectNearbyOrigin('offset'),
-        'player': () => selectNearbyOrigin('player'),
-        'raycast': () => selectNearbyOrigin('raycast'),
-        'set position': () => selectNearbyOrigin('set position'),
-        'select': () => selectNearbyOrigin('select'),
-    },
-    'exportFormat': {
-        'Map Editor XML': () => { console.log("Export Map Editor XML"); },
-        'Propplacer JSON': () => { console.log("Export Propplacer JSON"); },
-        'SpoonerDB': () =>{ console.log("Export SpoonerDB"); },
-        'YMAP': () => { console.log("Export YMAP"); },
-    },
-    'importFormat': {
-        'Map Editor XML': () => exportScene('MapEditorXML', ActiveScene),
-        'Propplacer JSON': () => exportScene('PropplacerJSON', ActiveScene),
-        'SpoonerDB': () => exportScene('SpoonerDB', ActiveScene),
-        'YMAP': () => exportScene('YMAP', ActiveScene),
-    },
-    'animConfigureTaskfilter': await getTaskfilterDropdowns(),
-}
-
-let DropDownMultiOptions = {
-    'animConfigureAnimFlags': await getAnimFlagsDropdowns(),
-    'animConfigureIKFlags': await getAnimIKFlagsDropdowns(),
-}
-
-export function dropdownListeners() {
-    document.querySelectorAll(".entry.dropdown").forEach(dropdown => {
-        dropdown.addEventListener("click", event => {
-            let x = event.pageX;
-            let y = event.pageY;
-            showContextMenu(Object.keys(DropDownOptions[dropdown.id]), x, y).then(option => {
-                if (option === null) { return; }
-                elementSetText(dropdown.id, option);
-                DropDownOptions[dropdown.id][option]();
-            });
-        });
-    });
-    document.querySelectorAll(".entry.dropdown-multi").forEach(dropdown => {
-        dropdown.addEventListener("click", event => {
-            let x = event.pageX;
-            let y = event.pageY;
-            console.log(DropDownMultiOptions[dropdown.id]);
-            showContextMenu(Object.values(DropDownMultiOptions[dropdown.id]), x, y).then(option => {
-                if (option === null) { return; }
-                console.log("settingtext", dropdown.id);
-                elementSetText(dropdown.id, DropDownMultiOptions[dropdown.id][option].fn());
-            });
-        });
-    });
-}
-
-export function dropdownMultiListeners() {
-}
 
 export function registerListeners() {
     tooltipListener();
@@ -641,16 +504,15 @@ document.addEventListener('DOMContentLoaded', () => {
     initObj();
     registerListeners();
 
-    setTheme("electric_sunset");
+    setUIStyle("electric_sunset", "angle up");
     elementSetText('objSettingsTheme', "electric sunset");
-    setDividerStyle("");
     elementSetText('objSettingsDividerStyle', "angle up");
     toggleCurvedBorder();
 
     window.addEventListener('message', function(msg) {
         switch(msg.data.type) {
             case "ui_trie":
-                console.log("trie", msg.data.trie);
+                console.eog("trie", msg.data.trie);
                 if (msg.data.trie) { initTrie(msg.data.trie); }
                 elementSetClass('devTreeHUD', 'hidden', msg.data.state == false);
                 break;
@@ -954,140 +816,6 @@ function toggleCurvedBorder() {
     } else {
         document.documentElement.style.setProperty('--brd-rad', '0px');
     }
-}
-
-/**
- * Popup a confirmation dialog with a message and two options.
- * @param {string} msg - The message to display in the dialog.
- * @param {string} yes - The text to display on the "Yes" button.
- * @param {string} no - The text to display on the "No" button.
- */
-export function showConfirm(msg = "Are you sure?", yes = "Yes", no = "No") {
-    return new Promise((resolve, reject) => {
-        const infoHUD = document.getElementById('infoHUD');
-        const message = document.getElementById('infoDescription');
-        const yesButton = document.getElementById('yesOption');
-        const noButton = document.getElementById('noOption');
-        const lastFocusedElement = document.activeElement;
-
-
-        message.innerHTML = msg;
-        yesButton.innerHTML = yes;
-        noButton.innerHTML = no;
-
-        infoHUD.classList.remove('hidden');
-        noButton.focus();
-
-        // Create a MutationObserver to monitor if the popup becomes hidden
-        const observer = new MutationObserver((mutationsList) => {
-            if (infoHUD.classList.contains('hidden')) {
-                cleanup();
-                resolve(false);
-            } else if (infoHUD.classList.contains('clear')) {
-                cleanup();
-                resolve(true);
-            }
-        });
-        observer.observe(infoHUD, {
-            attributes: true,
-            attributeFilter: ['class']
-        });
-
-        function handleYes() {
-            cleanup();
-            resolve(true);
-        }
-
-        function handleNo() {
-            cleanup();
-            resolve(false);
-        }
-
-        function cleanup() {
-            yesButton.removeEventListener('click', handleYes);
-            noButton.removeEventListener('click', handleNo);
-            observer.disconnect();
-            infoHUD.classList.remove('clear');
-            infoHUD.classList.add('hidden');
-            if (lastFocusedElement) {
-                lastFocusedElement.focus();
-            }
-        }
-
-        yesButton.addEventListener('click', handleYes);
-        noButton.addEventListener('click', handleNo);
-    });
-}
-
-/**
- * Show a right-click popup with a list of options.
- * @param {Array<string>} options - The list of options to display.
- * @param {number} x - The X coordinate for the popup position.
- * @param {number} y - The Y coordinate for the popup position.
- * @returns {Promise<string | null>} Resolves with the selected option, or null if dismissed.
- */
-export function showContextMenu(options, x, y) {
-    return new Promise((resolve) => {
-        const menu = document.createElement("div");
-        menu.classList.add("context-menu");
-        menu.style.top = `${y}px`;
-        menu.style.left = `${x}px`;
-
-        const lastFocusedElement = document.activeElement;
-
-        options.forEach((option) => {
-            const name = typeof option === "string" ? option : option.name;
-            const tooltip = typeof option === "string" ? "" : option.tooltip;
-            const item = document.createElement("div");
-            if (tooltip) { item.setAttribute("aria-label", tooltip); }
-            item.classList.add("context-menu-item");
-            item.textContent = name;
-            item.addEventListener("click", () => {
-                cleanup();
-                resolve(name);
-            });
-            menu.appendChild(item);
-        });
-
-        document.body.appendChild(menu);
-
-        function cleanup() {
-            menu.remove();
-            document.removeEventListener("click", handleClickOutside);
-            document.removeEventListener("contextmenu", handleRightClick);
-            document.removeEventListener("keydown", handleKeyPress);
-            if (lastFocusedElement) {
-                lastFocusedElement.focus();
-            }
-        }
-
-        function handleClickOutside(event) {
-            if (!menu.contains(event.target)) {
-                cleanup();
-                resolve(null);
-            }
-        }
-
-        function handleRightClick(event) {
-            if (event.button != 2) return;
-            cleanup();
-            resolve(null);
-        }
-
-        function handleKeyPress(event) {
-            if (event.key === "Escape") {
-                cleanup();
-                resolve(null);
-            }
-        }
-
-        // Ensure the events are added following the event that adds the menu
-        setTimeout(() => {
-            document.addEventListener("click", handleClickOutside);
-            document.addEventListener("pointerdown", handleRightClick);
-            document.addEventListener("keydown", handleKeyPress);
-        }, 0);
-    });
 }
 
 function sendKey(key) {

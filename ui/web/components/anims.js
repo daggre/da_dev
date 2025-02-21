@@ -1,8 +1,12 @@
 import {
     KeyActions,
-    showConfirm,
     toUint32,
 } from '../script.js';
+import { showConfirm } from '../utils/confirm.js';
+import {
+    DropDownAdvOptions,
+    DropDownMultiOptions,
+} from '../utils/dropdown.js';
 import { sendClientMessage } from '../utils/msg.js';
 import {
     selectOnly,
@@ -21,26 +25,25 @@ let TaskFilters;
 let FlagTotals = 0;
 let IKFlagTotals = 0;
 
-async function fetchData(key, messageType) {
+async function fetchData(key, messageType, modifier) {
     if (!globalThis[key]) {
         const resp = await sendClientMessage(messageType, {});
-        globalThis[key] = JSON.parse(resp[key.toLowerCase()]);
+        let data = JSON.parse(resp[key.toLowerCase()]);
+
+        if (modifier && typeof modifier === 'function') { modifier(data); }
+        globalThis[key] = data;
     }
     return globalThis[key];
 }
 
-export function getAnimations() { return fetchData('Animations', 'initAnims'); }
-export function getAnimFlags() { return fetchData('AnimFlags', 'initAnimFlags'); }
-export function getAnimIKFlags() { return fetchData('AnimIKFlags', 'initIKAnimFlags'); }
-export function getTaskFilters() { return fetchData('TaskFilters', 'initTaskFilters'); }
+function addSelected(data) {
+    data.forEach((item, index) => { item.selected = false });
+}
 
-// const Flags = {
-//     LOOP: 1,
-//     UPPERBODY: 8,
-//     SECONDARY: 16,
-//     TOTAL: 32,
-// }
-// let TaskFilter = false;
+export function getAnimations() { return fetchData('Animations', 'initAnims'); }
+export function getAnimFlags() { return fetchData('AnimFlags', 'initAnimFlags', addSelected); }
+export function getAnimIKFlags() { return fetchData('AnimIKFlags', 'initIKAnimFlags', addSelected); }
+export function getTaskFilters() { return fetchData('TaskFilters', 'initTaskFilters'); }
 
 const AnimHUD_All = [
     'animHelp',
@@ -143,26 +146,10 @@ export function toggleAnimationConfigureHUD(state) {
     }
 }
 
-function toggleTaskFilter(taskFilterIndex, taskFilter) {
-    let el = document.getElementById('task-' + taskFilterIndex);
-    let selected = el.classList.contains('selected');
-
-    const allTaskFilters = document.querySelectorAll('.taskFilter');
-    allTaskFilters.forEach(filter => filter.classList.remove('selected'));
-
-    if (!selected) {
-        el.classList.add('selected');
-        TaskFilter = taskFilter;
-    } else {
-        TaskFilter = false;
-    }
-}
-
-export function searchAnimDicts(searchValue) {
+export async function searchAnimDicts(searchValue) {
     searchValue = searchValue.trim().toLowerCase();
 
     const maxResults = 10000;
-    let results = [];
     let el = document.getElementById('animDictList');
     el.innerHTML = '';
     el.style.minHeight = 0;
@@ -173,122 +160,138 @@ export function searchAnimDicts(searchValue) {
 
     if (!searchValue || searchValue == '') return;
 
-    Object.keys(Animations).forEach(animDict => {
-        if (animDict.toLowerCase().includes(searchValue)) {
-            results.push({ animDict: animDict });
-        } else {
-            Animations[animDict].every(animName => {
-                if (animName.toLowerCase().includes(searchValue)) {
-                    results.push({ animDict: animDict });
-                    return false;
-                }
-                return true;
-            });
-        }
-    });
+    const animations = await getAnimations();
+    const searchLower = searchValue.toLowerCase();
+    const results = [];
 
-    results.sort(function(a, b) {
-        if (a.animDict < b.animDict) {
-            return -1;
+    for (const animDict of Object.keys(animations)) {
+        if (animDict.toLowerCase().includes(searchLower)) {
+            results.push(animDict);
+            continue;
         }
-        if (a.animDict > b.animDict) {
-            return 1;
-        }
-        return 0;
-    });
 
-    let ul = document.createElement('ul');
-    for (let i=0; i < results.length && i < maxResults; ++i) {
-        const animDict = results[i].animDict;
-        let li = document.createElement('li');
-        li.setAttribute('tabindex', '3');
-        li.addEventListener('click', function(event) {
-            console.log('clicked', animDict, event);
-            if (event.ctrlKey) {
-                ul.removeChild(li);
-            } else {
-                elementSetText('animSelectedDict', animDict);
-                elementSetText('animSelectedName', '');
-                elementSetText('animConfSelectedDict', animDict);
-                elementSetText('animConfSelectedName', '');
-                selectAnimDict(animDict);
+        for (const animName of animations[animDict]) {
+            if (animName.toLowerCase().includes(searchLower)) {
+                results.push(animDict);
+                break;
             }
+        }
+    }
+    results.sort((a, b) => (a.animDict > b.animDict) - (a.animDict < b.animDict));
 
-        })
-        li.addEventListener('mouseenter', function() {
-            li.classList.add('liHover');
-        });
-        li.addEventListener('mouseout', function() {
-            li.classList.remove('liHover');
-        });
-        li.innerHTML = animDict;
-        ul.appendChild(li);
+    const resultCount = results.length;
+    const ul = document.createElement('ul');
+    const fragment = document.createDocumentFragment();
+
+    ul.addEventListener('click', function (event) {
+        const li = event.target.closest('li'); // Ensure we clicked an `li`
+        if (!li) return;
+
+        const animDict = li.dataset.animDict;
+
+        if (event.ctrlKey) {
+            li.remove();
+        } else {
+            elementSetText('animSelectedDict', animDict);
+            elementSetText('animSelectedName', '');
+            elementSetText('animConfSelectedDict', animDict);
+            elementSetText('animConfSelectedName', '');
+            selectAnimDict(animDict);
+        }
+    });
+
+    ul.addEventListener('mouseenter', function (event) {
+        const li = event.target.closest('li');
+        if (li) li.classList.add('liHover');
+    }, true);
+
+    ul.addEventListener('mouseleave', function (event) {
+        const li = event.target.closest('li');
+        if (li) li.classList.remove('liHover');
+    }, true);
+
+    for (let i = 0; i < resultCount && i < maxResults; ++i) {
+        const animDict = results[i];
+        const li = document.createElement('li');
+        li.textContent = animDict; // Faster than innerHTML
+        li.dataset.animDict = animDict; // Use dataset instead of closures
+        li.setAttribute('tabindex', '3');
+        fragment.appendChild(li);
     }
+
+    ul.appendChild(fragment);
     el.appendChild(ul);
-    if (results.length < 30) {
-        el.style.minHeight = results.length + '.4vh';
-    } else {
-        el.style.minHeight = '30vh';
-    }
+
+    el.style.minHeight = `${Math.min(resultCount * 0.4, 30)}vh`; // Ensures valid values
     el.scrollTop = 0;
-    el.scrollLeft = -1000;
-    console.log('searched for', searchValue, 'found results', results.length);
+    el.scrollLeft = 0;
+    console.log('Searched for', searchValue, 'found results', resultCount);
 }
 
-function selectAnimDict(animDict) {
-    let results = [];
-    Object.values(Animations[animDict]).forEach(anim => {
-        results.push({
-            anim: anim,
-            animDict: animDict,
-        });
-    });
+async function selectAnimDict(animDict) {
+    const animations = await getAnimations();
 
-    results.sort(function(a, b) {
-        if (a.anim < b.anim) { return -1; }
-        if (a.anim > b.anim) { return 1; }
-        return 0;
-    });
+    // Transform animations into a sorted array
+    const results = Object.values(animations[animDict])
+        .map(anim => ({ anim, animDict }))
+        .sort((a, b) => a.anim.localeCompare(b.anim));
 
-    let animResults = document.getElementById('animNameList');
+    const animResults = document.getElementById('animNameList');
     animResults.innerHTML = '';
-    let ul = document.createElement('ul');
-    for (let i=0; i < results.length; ++i) {
-        const anim = results[i].anim;
-        let li = document.createElement('li');
-        elementSetText(li, animDict);
-        li.innerHTML = anim;
+
+    // Create <ul> element
+    const ul = document.createElement('ul');
+    const fragment = document.createDocumentFragment();
+
+    // Event Delegation for Click Handling
+    ul.addEventListener('click', function(event) {
+        const li = event.target.closest('li');
+        if (!li) return;
+
+        const anim = li.dataset.anim;
+        if (event.shiftKey) {
+            elementSetText('animSelectedName', anim);
+            elementSetText('animConfSelectedName', anim);
+            addAnimation();
+        } else if (event.ctrlKey) {
+            li.remove();
+        } else {
+            elementSetText('animSelectedName', anim);
+            elementSetText('animConfSelectedName', anim);
+            previewAnimation(animDict, anim);
+        }
+    });
+
+    // Event Delegation for Hover Effects
+    ul.addEventListener('mouseenter', function(event) {
+        const li = event.target.closest('li');
+        if (li) li.classList.add('liHover');
+    }, true);
+
+    ul.addEventListener('mouseleave', function(event) {
+        const li = event.target.closest('li');
+        if (li) li.classList.remove('liHover');
+    }, true);
+
+    // Generate <li> elements
+    for (const { anim } of results) {
+        const li = document.createElement('li');
+        li.textContent = anim; // Faster and safer than innerHTML
+        li.dataset.anim = anim; // Store anim in dataset
         li.setAttribute('tabindex', '4');
-        li.addEventListener('click', function(event) {
-            if (event.shiftKey) {
-                elementSetText('animSelectedName', anim);
-                elementSetText('animConfSelectedName', anim);
-                addAnimation();
-            } else if (event.ctrlKey) {
-                ul.removeChild(li);
-            } else {
-                console.log("choose anim", animDict, anim);
-                elementSetText('animSelectedName', anim);
-                elementSetText('animConfSelectedName', anim);
-                previewAnimation(animDict, anim);
-            }
-        });
-        li.addEventListener('mouseenter', function() {
-            li.classList.add('liHover');
-        });
-        li.addEventListener('mouseout', function() {
-            li.classList.remove('liHover');
-        });
-        ul.appendChild(li);
+        fragment.appendChild(li);
     }
+
+    ul.appendChild(fragment);
     animResults.appendChild(ul);
-    if (results.length < 15) {
-        animResults.style.minHeight = results.length + '.4vh';
-    } else {
-        animResults.style.minHeight = '15.4vh';
-    }
+
+    // Adjust height efficiently
+    const resultCount = results.length;
+    animResults.style.minHeight = `${Math.min(resultCount * 0.4, 15.4)}vh`;
+
+    // Reset scroll position properly
     animResults.scrollTop = 0;
-    animResults.scrollLeft = -1000;
+    animResults.scrollLeft = 0; // Prevent invalid negative scroll values
 }
 
 export function addAnimation() {
@@ -332,145 +335,72 @@ export function clearAnimations() {
     })
 }
 
-export function playAnimation() {
-    const animDict = document.getElementById('activeAnimDict').innerHTML;
-    const anim = document.getElementById('activeAnimName').innerHTML;
-    if (anim == '' || animDict == '') { return; }
-    const entity = document.getElementById('animEntityField').innerHTML;
-    const blendIn = document.getElementById('timingBlendIn').innerHTML;
-    const blendOut = document.getElementById('timingBlendOut').innerHTML;
-    const playback = document.getElementById('timingPlayback').innerHTML;
-    const duration = document.getElementById('timingDuration').innerHTML;
-    sendClientMessage('playAnim', {
-        entity: entity,
-        animDict: animDict,
-        animName: anim,
-        blendInSpeed: blendIn,
-        blendOutSpeed: blendOut,
-        playbackRate: playback,
-        duration: duration,
-        flag: FlagTotals,
-        ikFlag: IKFlagTotals,
-        taskFilter: TaskFilter,
-    });
-}
-
-export function toggleFlag(flag) {
-    let flagTotals = 0;
-    // elementSetClass(`flag-${flag}`, 'selected')
-
-    for (let i=0; i < Flags.TOTAL; i++) {
-        let value = toUint32(1 << i);
-        if (isSelected(`flag-${value}`)) {
-            flagTotals += value;
-        }
-    }
-    FlagTotals = flagTotals;
-    const flagTotalsElement = document.getElementById('flagTotals');
-    if (flagTotalsElement) { flagTotalsElement.innerHTML = flagTotals; }
-
-    updateSpecialFlagSelections(flag);
-}
-
-function updateSpecialFlagSelections(flag) {
-    switch(flag) {
-        case Flags.LOOP:
-            elementSetClass('button-repeat', 'selected', isSelected(`flag-${Flags.LOOP}`));
-            break;
-        case Flags.UPEPRBODY:
-        case Flags.SECONDARY:
-            const torsoSelected =
-                isSelected(`flag-${Flags.UPPERBODY}`) &&
-                isSelected(`flag-${Flags.SECONDARY}`);
-            elementSetClass('button-torso', 'selected', torsoSelected);
-            break;
-    }
-}
-
-export function toggleIKFlag(flag) {
-    let el = document.getElementById('ikflag-' + flag);
-    el.classList.toggle('selected');
-
-    IKFlagTotals = 0;
-    for (let i=0; i < 31 ; i++) {
-        let v = toUint32(1 << i);
-        if (document.getElementById('ikflag-' + v).classList.contains('selected')) {
-            IKFlagTotals += v;
-        }
-    }
-    document.getElementById('IKFlagTotals').innerHTML = IKFlagTotals;
-}
-
 function previewAnimation(animDict, anim) {
     sendClientMessage('playAnimation', { animDict: animDict, anim: anim, });
 }
 
-export function togglePlay(state) {
-    // if (elementSetClass('button-play', 'selected', state)) {
-    //     setTimeout(function() { elementSetClass('button-play', 'selected', false); }, 200);
-    // } else { return; }
-    playAnimation();
-}
-
-export function toggleStop(state) {
-    if (elementSetClass('button-stop', 'selected', state)) {
-        setTimeout(function() { elementSetClass('button-stop', 'selected', false); }, 200);
-    }
-    togglePlay(false);
-    sendClientMessage('stopAnim', {});
-}
-
-export function toggleLoop() { toggleFlag(1); }
-
-export function toggleTorso(state) {
-    const flag8 = isSelected('flag-8');
-    const flag16 = isSelected('flag-16');
-
-    if (elementSetClass('button-torso', 'selected', state)) {
-        if (!flag8) { toggleFlag(8); }
-        if (!flag16) { toggleFlag(16); }
-    } else {
-        if (flag8) { toggleFlag(8); }
-        if (flag16) { toggleFlag(16); }
-    }
-}
-
-export async function getTaskfilterDropdowns() {
-    let tf_out = {}
-    const taskfilters = await getTaskFilters();
-    taskfilters.forEach((taskFilter, index) => {
-        let key = taskFilter === "" ? "None" : taskFilter;
-        tf_out[key] = () => console.log(taskFilter, index);
+DropDownAdvOptions.animConfigureTaskfilter = getTaskfilterDropdowns;
+function getTaskfilterDropdowns() {
+    return getTaskFilters().then(taskfilters => {
+        return taskfilters.map((taskfilter, index) => ({
+            name: taskfilter.name.toLowerCase(),
+            tooltip: taskfilter.note,
+            value: taskfilter.value,
+            fn: () => { return taskfilter.name.toLowerCase(); }
+        }));
     });
-    return tf_out
 }
 
-export async function getAnimFlagsDropdowns() {
-    let flags_out = {}
-    const animFlags = await getAnimFlags();
-    animFlags.forEach((flag, index) => {
-        let bitvalue = toUint32(1 << flag.value);
-        let name = flag.name.toLowerCase();
-        flags_out[name] = {
-            name: name,
-            tooltip: `${flag.name}: ${bitvalue}`,
-            fn: () => { return bitvalue },
-        }
-    });
-    return flags_out
+
+function getFlagsTotal(flags) {
+    console.log(flags)
+    return flags.reduce((total, flag) => {
+        return flag.selected ? total + flag.value : total;
+    }, 0);
 }
 
-export async function getAnimIKFlagsDropdowns() {
-    let flags_out = {}
-    const animIKFlags = await getAnimIKFlags();
-    animIKFlags.forEach((flag, index) => {
-        let bitvalue = toUint32(1 << flag.value);
-        let name = flag.name.toLowerCase();
-        flags_out[name] = {
-            name: name,
-            tooltip: `${flag.name}: ${bitvalue}`,
-            fn: () => { return bitvalue },
-        }
+
+DropDownMultiOptions.animConfigureAnimFlags = {
+    fetch: getAnimFlagsDropdowns,
+    result: getAnimFlagsTotal,
+}
+
+function getAnimFlagsDropdowns() {
+    return getAnimFlags().then(animFlags => {
+        return animFlags.map((flag, index) => ({
+            name: flag.name.toLowerCase(),
+            tooltip: `${flag.value}: ${flag.note}`,
+            value: flag.value,
+            selected: flag.selected,
+            fn: () => getAnimFlags().then(flags => {
+                flags[index].selected = !flags[index].selected;
+            })
+        }));
     });
-    return flags_out
+}
+
+function getAnimFlagsTotal() {
+    return getAnimFlags().then(flags => getFlagsTotal(flags));
+}
+
+DropDownMultiOptions.animConfigureAnimIKFlags = {
+    fetch:  getAnimIKFlagsDropdowns,
+    result: getAnimIKFlagsTotal,
+}
+function getAnimIKFlagsDropdowns() {
+    return getAnimIKFlags().then(animFlags => {
+        return animFlags.map((flag, index) => ({
+            name: flag.name.toLowerCase(),
+            tooltip: `${flag.value}: ${flag.note}`,
+            value: flag.value,
+            selected: flag.selected,
+            fn: () => getAnimIKFlags().then(flags => {
+                flags[index].selected = !flags[index].selected;
+            })
+        }));
+    });
+}
+
+function getAnimIKFlagsTotal() {
+    return getAnimIKFlags().then(flags => getFlagsTotal(flags));
 }

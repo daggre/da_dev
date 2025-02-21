@@ -7,15 +7,15 @@ let formatter = {
         selector: '#menuOptions',
         prefix: ' ',
         msg: 'selectTrieMenu',
-        data: (trieName, option) => { return { menu: option.name } },
+        data: (trieName, option) => ({ menu: option.name }),
     },
     'option': {
         selector: '#devOptions',
         prefix: '',
         msg: 'selectTrieOption',
-        data: (trieName, option) => { return { menu: trieName, option: option.name } },
+        data: (trieName, option) => ({ menu: trieName, option: option.name }),
     }
-}
+};
 
 function appendOptionsToContainer(trieName, type, optionsArray) {
 

@@ -1,5 +1,7 @@
+import { DropDownOptions } from '../utils/dropdown.js';
+import { elementSetText } from '../utils/nav.js';
+
 const themes = {
-    // Original Themes
     oasis: [
         ['primary', '#50c1ee'],
         ['secondary', '#00daaf'],
@@ -30,7 +32,7 @@ const themes = {
         ['secondary-light', '#b4befe'],
         ['bg', '#18181c'],
     ],
-    grayscale: [
+    giedi_prime: [
         ['primary', '#ffffff'],
         ['secondary', '#111111'],
         ['secondary-light', '#ffffff'],
@@ -90,13 +92,13 @@ const themes = {
         ['secondary-light', '#2aa198'],
         ['bg', '#002b36'],
     ],
-    noir_rose: [
+    rose: [
         ['primary', '#ff6b81'],
         ['secondary', '#212121'],
         ['secondary-light', '#ffccd5'],
         ['bg', '#141414'],
     ],
-    arctic_blue: [
+    night_king: [
         ['primary', '#a0c4ff'],
         ['secondary', '#003366'],
         ['secondary-light', '#d0f4ff'],
@@ -128,7 +130,7 @@ const themes = {
     ],
 };
 
-export function setTheme(theme) {
+function setTheme(theme) {
     if (!themes[theme]) {
         console.error(`Theme not found: ${theme}`);
         return;
@@ -147,9 +149,47 @@ export function setTheme(theme) {
             root.style.setProperty('--bg-t3', `${value}22`);
         }
     });
-}
+};
 
-export function setDividerStyle(divider) {
+DropDownOptions.objSettingsTheme = Object.fromEntries(
+  Object.keys(themes).map(key => {
+    // Create a display name by replacing underscores with spaces
+    const displayName = key.replace(/_/g, " ");
+    return [displayName, () => setTheme(key)];
+  })
+);
+
+function setDividerStyle(divider) {
     document.documentElement.style.setProperty('--divider', `"${divider} "`);
-}
+};
 
+// Define the mapping of option names to divider style values
+const dividerStyles = {
+  'angle down': "",
+  'angle up': "",
+  'chevron': "",
+  'flame': "",
+  // 'honeycomb': "", // optional entry
+  'inverted chevron': "",
+  'pixelated': "",
+  'quadrant top': "▛",
+  'quadrant bottom': "▙",
+  'round': "",
+  // 'trapezoid': "", // optional entry
+  'vertical': "▌",
+  'waveform': "",
+};
+
+// Generate the dropdown options object using Object.entries and Object.fromEntries
+DropDownOptions.objSettingsDividerStyle = Object.fromEntries(
+  Object.entries(dividerStyles).map(([name, style]) => [
+    name, () => setDividerStyle(style)
+  ])
+);
+
+export function setUIStyle(theme = "retro wave", divider = "angle up") {
+    setTheme(theme);
+    elementSetText('objSettingsTheme', theme);
+    setDividerStyle(dividerStyles[divider]);
+    elementSetText('objSettingsDividerStyle', divider);
+}
