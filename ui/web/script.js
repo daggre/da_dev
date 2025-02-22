@@ -1,17 +1,15 @@
+import { setUIStyle } from "./utils/theme.js";
 import { clipboardCopy } from "./utils/clipboard.js";
 import { sendClientMessage } from "./utils/msg.js";
 import { updateCrosshair } from "./components/crosshair.js";
-import { dropdownListeners } from '../utils/dropdown.js';
-import { showContextMenu } from '../utils/contextmenu.js';
-import {
-    updateCamera,
-    toggleHideCamera,
-} from "./components/camera.js";
+import { fetchSpawnData, initSettings } from "./components/settings.js"
+import { tooltipListener, setTooltips, } from "./components/tooltip.js";
+import { dropdownListeners, showDropdown } from './components/dropdown.js';
+import { updateCamera, toggleHideCamera, } from "./components/camera.js";
 import {
     clickElement,
     elementSetOnlyClass,
     elementSetClass,
-    elementHasClass,
     elementSetText,
     isVisible,
     resetList,
@@ -19,57 +17,53 @@ import {
 } from "./utils/nav.js";
 import { initTrie } from "./components/trie.js";
 import {
-    initObj,
-    initializeObjectHUD,
-    searchSpawnObject,
-    getTrackedObjects,
+    showExport,
+    showImport,
     saveScene,
     clearScene,
     reloadScene,
     deleteScene,
+} from "./components/scene.js"
+import {
+    searchSpawnObject,
+    getTrackedObjects,
     toggleNearbyFilter,
     tagSelectSort,
     selectSpawnType,
     selectNearbyOrigin,
-    toggleObjectHUD,
-    toggleObjectSpawnHUD,
-    toggleObjectNearbyHUD,
-    toggleObjectImportExportHUD,
-    toggleObjectSettingsHUD,
     toggleVisible,
     toggleFrozen,
     toggleCollision,
     setRotation,
     placeOnGround,
-    exportScene,
-    importScene,
-    showExport,
-    showImport,
 } from "./components/obj.js";
 import {
-    initializeAnimationHUD,
-    toggleAnimationHUD,
-    toggleAnimationSearchHUD,
-    toggleAnimationConfigureHUD,
+    toggleObjectHUD,
+    toggleObjectSpawnHUD,
+    toggleObjectNearbyHUD,
+    toggleObjectImportExportHUD,
+    toggleObjectSettingsHUD,
+} from "./components/hud/obj.js";
+import {
     searchAnimDicts,
     addAnimation,
     clearAnimations,
 } from "./components/anims.js";
-import { setUIStyle } from "./components/theme.js";
 import {
-    tooltipListener,
-    setTooltips,
-} from "./components/tooltip.js";
+    toggleAnimationHUD,
+    toggleAnimationSearchHUD,
+    toggleAnimationConfigureHUD,
+} from "./components/hud/anim.js";
 
+export let MouseDown = false;
 const CursorUpdateRate = 30;
+const ResolutionX = window.screen.width;
+const ResolutionY = window.screen.height;
 let MCP = false;
 let GizmoActive = false;
 let KeyPressRepeat = false;
 let LeftClickActive = false;
 let CursorPosDelay = false;
-const ResolutionX = window.screen.width;
-const ResolutionY = window.screen.height;
-export let MouseDown = false;
 let Pressed = {}
 let JustPressed = {}
 let QuickPress = { Timeout: 400, MiddleMouse: { active: false, }, }
@@ -387,7 +381,7 @@ export const EventActions = {
                 }
 
                 if (shouldClear) {
-                    event.target.innerHTML = ''; // Clear the div manually
+                    event.target.textContent = ''; // Clear the div manually
                     event.preventDefault(); // Prevent <br> or any default action
                 }
                 break;
@@ -401,7 +395,7 @@ export const EventActions = {
 
                     // Clear the div only if the cursor is at the start and its the last char
                     if (cursorAtStart && textLength === 1) {
-                        event.target.innerHTML = ''; // Clear the div manually
+                        event.target.textContent = ''; // Clear the div manually
                         event.preventDefault(); // Prevent <br> or any default action
                     }
                 }
@@ -493,7 +487,7 @@ function getCurrentHUD() {
     // TODO: cache in appState, dont always query DOM
     const huds = document.querySelectorAll(".hud");
     for (let hud of huds) {
-        if (!elementHasClass(hud, 'hidden')) {
+        if (!hud.classList.contains('hidden')) {
             return hud.id;
         }
     }
@@ -501,7 +495,8 @@ function getCurrentHUD() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    initObj();
+    fetchSpawnData();
+    initSettings();
     registerListeners();
 
     setUIStyle("electric_sunset", "angle up");
@@ -517,11 +512,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 elementSetClass('devTreeHUD', 'hidden', msg.data.state == false);
                 break;
             case "ui_animation":
-                initializeAnimationHUD();
                 toggleAnimationHUD(msg.data.state);
                 break;
             case "ui_object":
-                initializeObjectHUD();
                 toggleObjectHUD(msg.data.state);
                 break;
             case "ui_camera":

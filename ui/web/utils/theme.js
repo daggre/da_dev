@@ -1,5 +1,5 @@
-import { DropDownOptions } from '../utils/dropdown.js';
-import { elementSetText } from '../utils/nav.js';
+import { DropDownOptions } from '../components/dropdown.js';
+import { elementSetText } from './nav.js';
 
 const themes = {
     oasis: [

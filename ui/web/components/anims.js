@@ -1,22 +1,7 @@
-import {
-    KeyActions,
-    toUint32,
-} from '../script.js';
-import { showConfirm } from '../utils/confirm.js';
-import {
-    DropDownAdvOptions,
-    DropDownMultiOptions,
-} from '../utils/dropdown.js';
+import { showConfirm } from './confirm.js';
 import { sendClientMessage } from '../utils/msg.js';
-import {
-    selectOnly,
-    resetList,
-    isVisible,
-    elementSetClass,
-    elementHasClass,
-    elementSetText,
-    toggleSection
-} from '../utils/nav.js';
+import { resetList, elementSetText, } from '../utils/nav.js';
+import { DropDownAdvOptions, DropDownMultiOptions, } from './dropdown.js';
 
 let Animations;
 let AnimFlags;
@@ -45,124 +30,9 @@ export function getAnimFlags() { return fetchData('AnimFlags', 'initAnimFlags', 
 export function getAnimIKFlags() { return fetchData('AnimIKFlags', 'initIKAnimFlags', addSelected); }
 export function getTaskFilters() { return fetchData('TaskFilters', 'initTaskFilters'); }
 
-const AnimHUD_All = [
-    'animHelp',
-    'animHUDControls',
-
-    'animSearchLeftColumn',
-    'animSearchDict',
-    'animSearchName',
-    'animSearchField',
-    'animDictList',
-    'animNameList',
-
-    'animListConfigureLeftColumn',
-    'animListConfigureOptions',
-    'animListConfigureList',
-    'animListConfigureDict',
-    'animListConfigureName',
-];
-
-const AnimHUD_Visible = [
-    'animHUDControls',
-];
-
-const AnimHUD_Buttons = [
-    'button-animsearch',
-    'button-animconfigure',
-];
-
-const AnimHUD_Search = [
-    'animSearchLeftColumn',
-    'animSearchDict',
-    'animSearchName',
-    'animSearchField',
-    'animDictList',
-    'animNameList',
-];
-
-const AnimHUD_Configure = [
-    'animListConfigureLeftColumn',
-    'animListConfigureOptions',
-    'animListConfigureList',
-    'animListConfigureDict',
-    'animListConfigureName',
-];
-
-export function initializeAnimationHUD() {
-    toggleSection(
-        false,
-        [],
-        AnimHUD_Visible,
-        AnimHUD_All
-    );
-    elementSetClass('animHUD', 'hidden', true);
-}
-
-export function toggleAnimationHUD(state) {
-    if (state == undefined)
-        state = elementHasClass('animHUD', 'hidden');
-    toggleSection(
-        state,
-        AnimHUD_Visible, // Elements to show
-        [],
-        AnimHUD_All, // All elements
-    );
-    elementSetClass('animHUD', 'hidden', !state);
-}
-
-export function toggleAnimationSearchHUD(state) {
-    if (state == undefined)
-        state = elementHasClass(AnimHUD_Search[0], 'hidden');
-    console.log('toggleAnimationSearchHUD', state);
-    toggleSection(
-        state,
-        AnimHUD_Search, // Elements to show
-        AnimHUD_Visible, // All visible elements
-        AnimHUD_All, // All elements
-    );
-    if (state) {
-        selectOnly('button-animsearch', AnimHUD_Buttons);
-        document.getElementById('button-animsearch').focus();
-    } else {
-        elementSetClass('button-animsearch', 'selected', state);
-    }
-}
-
-export function toggleAnimationConfigureHUD(state) {
-    if (state == undefined)
-        state = elementHasClass(AnimHUD_Configure[0], 'hidden');
-    toggleSection(
-        state,
-        AnimHUD_Configure, // Elements to show
-        AnimHUD_Visible, // All visible elements
-        AnimHUD_All, // All elements
-    );
-    if (state) {
-        selectOnly('button-animconfigure', AnimHUD_Buttons);
-        document.getElementById('button-animconfigure').focus();
-    } else {
-        elementSetClass('button-animconfigure', 'selected', state);
-    }
-}
-
-export async function searchAnimDicts(searchValue) {
-    searchValue = searchValue.trim().toLowerCase();
-
-    const maxResults = 10000;
-    let el = document.getElementById('animDictList');
-    el.innerHTML = '';
-    el.style.minHeight = 0;
-
-    let nameListEl = document.getElementById('animNameList');
-    nameListEl.innerHTML = '';
-    nameListEl.style.minHeight = 0;
-
-    if (!searchValue || searchValue == '') return;
-
-    const animations = await getAnimations();
-    const searchLower = searchValue.toLowerCase();
+function deepSearch(animations, search) {
     const results = [];
+    const searchLower = search.toLowerCase();
 
     for (const animDict of Object.keys(animations)) {
         if (animDict.toLowerCase().includes(searchLower)) {
@@ -177,7 +47,25 @@ export async function searchAnimDicts(searchValue) {
             }
         }
     }
-    results.sort((a, b) => (a.animDict > b.animDict) - (a.animDict < b.animDict));
+
+    return results;
+}
+
+export async function searchAnimDicts(searchValue) {
+
+    const maxResults = 10000;
+    let el = document.getElementById('animDictList');
+    el.textContent = '';
+    el.style.minHeight = 0;
+
+    let nameListEl = document.getElementById('animNameList');
+    nameListEl.textContent = '';
+    nameListEl.style.minHeight = 0;
+
+    searchValue = searchValue.trim().toLowerCase();
+    if (!searchValue || searchValue == '') return;
+    const results = animDictStringSearch(await getAnimations(), searchValue).sort();
+
 
     const resultCount = results.length;
     const ul = document.createElement('ul');
@@ -213,7 +101,7 @@ export async function searchAnimDicts(searchValue) {
     for (let i = 0; i < resultCount && i < maxResults; ++i) {
         const animDict = results[i];
         const li = document.createElement('li');
-        li.textContent = animDict; // Faster than innerHTML
+        li.textContent = animDict;
         li.dataset.animDict = animDict; // Use dataset instead of closures
         li.setAttribute('tabindex', '3');
         fragment.appendChild(li);
@@ -237,7 +125,7 @@ async function selectAnimDict(animDict) {
         .sort((a, b) => a.anim.localeCompare(b.anim));
 
     const animResults = document.getElementById('animNameList');
-    animResults.innerHTML = '';
+    animResults.textContent = '';
 
     // Create <ul> element
     const ul = document.createElement('ul');
@@ -276,7 +164,7 @@ async function selectAnimDict(animDict) {
     // Generate <li> elements
     for (const { anim } of results) {
         const li = document.createElement('li');
-        li.textContent = anim; // Faster and safer than innerHTML
+        li.textContent = anim;
         li.dataset.anim = anim; // Store anim in dataset
         li.setAttribute('tabindex', '4');
         fragment.appendChild(li);
@@ -295,8 +183,8 @@ async function selectAnimDict(animDict) {
 }
 
 export function addAnimation() {
-    const animDict = document.getElementById('animSelectedDict').innerHTML;
-    const animName = document.getElementById('animSelectedName').innerHTML;
+    const animDict = document.getElementById('animSelectedDict').textContent;
+    const animName = document.getElementById('animSelectedName').textContent;
     if (animDict == '' || animName == '') { return; }
 
     let el = document.getElementById('animConfigureList');
@@ -307,7 +195,7 @@ export function addAnimation() {
         el.appendChild(ul);
     }
     let li = document.createElement('li');
-    li.innerHTML = animDict + ' - ' + animName;
+    li.textContent = animDict + ' - ' + animName;
     li.setAttribute('tabindex', '13');
     li.setAttribute('id', 'anim-' + animDict + '-' + animName);
     // TODO: Make this flex box so we can have the animation settings underneath it

@@ -1,13 +1,5 @@
 import { EventActions } from "../script.js";
 
-function showOnly(element, elements = []) {
-    elements.forEach(e => elementSetClass(e, 'hidden', e === element));
-}
-
-export function selectOnly(element, elements = []) {
-    elements.forEach(e => elementSetClass(e, 'selected', e === element));
-}
-
 export function clickElement(event) {
     const { target } = event;
     // If the target is an <li> with an onclick handler, trigger it.
@@ -120,28 +112,6 @@ export function initializeElements(allElements, visibleElements) {
 }
 
 /**
- * Toggle visibility for a specific section and its subsections.
- * @param {boolean} state - State to determine if elements should be visible.
- * @param {string} parentElementId - The main parent element's ID always visible.
- * @param {string[]} elementsToShow - List of element IDs to show when state is true.
- * @param {string[]} elementsIgnored - List of element IDs not to change.
- * @param {string[]} allElements - List of all relevant element IDs for this section.
- */
-export function toggleSection(state, elementsToShow, elementsIgnored, allElements) {
-
-    const visibleSet = new Set(elementsToShow);
-
-    allElements.forEach((elId) => {
-        const el = document.getElementById(elId);
-        if (!el) return;
-        if (elementsIgnored.includes(elId)) return;
-
-        const shouldBeVisible = state && visibleSet.has(elId);
-        updateElementVisibility(el, shouldBeVisible);
-    });
-}
-
-/**
  * Update the visibility of an element based on state.
  * @param {HTMLElement} el - The DOM element.
  * @param {boolean} isVisible - Whether the element should be visible.
@@ -160,7 +130,7 @@ export function resetList(elOrId) {
         console.error(`Element not found: ${elOrId}`);
         return false; // Return false if the element is not found
     }
-    el.innerHTML = '';
+    el.textContent = '';
     el.style.minHeight = '0';
     el.scrollTop = 0;
     el.scrollLeft = 0;
