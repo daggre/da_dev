@@ -13,9 +13,9 @@ export function showConfirm(msg = "Are you sure?", yes = "Yes", no = "No") {
         const lastFocusedElement = document.activeElement;
 
 
-        message.innerHTML = msg;
-        yesButton.innerHTML = yes;
-        noButton.innerHTML = no;
+        message.textContent = msg;
+        yesButton.textContent = yes;
+        noButton.textContent = no;
 
         infoHUD.classList.remove('hidden');
         noButton.focus();

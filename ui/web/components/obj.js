@@ -1,348 +1,186 @@
-import { clipboardCopy } from '../utils/clipboard.js';
+import { Settings } from './settings.js';
+import { DropDownOptions } from './dropdown.js';
 import { MouseDown } from '../script.js';
-import { showConfirm } from '../utils/confirm.js';
-import { DropDownOptions } from '../utils/dropdown.js';
-import { selectOnly, resetList, isVisible, elementSetClass, elementHasClass, elementSetText, toggleSection } from '../utils/nav.js';
 import { sendClientMessage } from '../utils/msg.js';
+import {
+    resetList,
+    isVisible,
+    elementSetClass,
+    elementHasClass,
+    elementSetText
+} from '../utils/nav.js';
 
-let DefaultScene = "default"
-let ActiveScene = DefaultScene;
-let NearbyOption = {
-    object: true,
-    ped: true,
-    vehicle: true,
-    other: false,
-    origin: "camera",
-    range: 50,
-}
-let SceneObjectsLoopRunning = false;
-let SelectedObjectSpawnType = "objects";
-let SpawnOption = new Map();
-let TagOption = { sort: "dist", }
 let TrackedObjectsLoopRunning = false;
-
-export function initObj() {
-    initializeObjectHUD();
-
-    sendClientMessage('initObjects', {}).then(function(resp) {
-        SpawnOption.set("objects", JSON.parse(resp.objects));
-        SpawnOption.set("peds", JSON.parse(resp.peds));
-        SpawnOption.set("vehicles", JSON.parse(resp.vehicles));
-        SpawnOption.set("propsets", JSON.parse(resp.propsets));
-        SpawnOption.set("pickups", JSON.parse(resp.pickups));
-    });
-
-    sendClientMessage('initObjSettings', {}).then(function(resp) {
-        NearbyOption = JSON.parse(resp.nearby);
-
-        elementSetClass('button-nearby-object', 'selected', NearbyOption.object);
-        elementSetClass('button-nearby-ped', 'selected', NearbyOption.ped);
-        elementSetClass('button-nearby-vehicle', 'selected', NearbyOption.vehicle);
-        elementSetClass('button-nearby-scene', 'selected', NearbyOption.scene);
-        document.getElementById('nearbyRange').innerHTML = NearbyOption.range;
-
-        document.getElementById('button-nearbyOrigin-' + NearbyOption.origin.replace(/ /g, '-')).classList.add('selected');
-        document.getElementById("activeNearbyOrigin").innerHTML = NearbyOption.origin;
-
-        TagOption = JSON.parse(resp.tags);
-        document.getElementById('button-tagsortby' + TagOption.sort).classList.add('selected');
-    });
-}
-
-export function saveScene() {
-    const newSceneName = document.getElementById('selectedScene').innerHTML;
-    sendClientMessage('saveScene', { scene: newSceneName, });
-    ActiveScene = newSceneName;
-    getScenes();
-}
-
-export function clearScene() {
-    const sceneName = ActiveScene;
-    showConfirm(`Unsaved changes will be lost.<br>Remove scene '${sceneName}' objects?`).then(confirm => {
-        if (confirm) {
-            // TODO: implement clearScene
-            sendClientMessage('clearScene', { scene: sceneName });
-            trackSceneObjects();
-        } else {
-            console.log("Clear scene cancelled");
-        }
-    });
-}
-
-export function reloadScene() {
-    const sceneName = ActiveScene;
-    sendClientMessage('reloadScene', { scene: sceneName });
-}
-
-export function deleteScene() {
-    const sceneName = ActiveScene;
-    showConfirm(`This action cannot be undone!<br>Delete scene '${sceneName}'?`).then(confirm => {
-        if (confirm) {
-            sendClientMessage('deleteScene', { scene: sceneName });
-            ActiveScene = DefaultScene;
-            getScenes();
-        } else {
-            console.log("Delete scene cancelled");
-        }
-    });
-}
+let SelectedObjectSpawnType = "objects";
 
 export function searchSpawnObject(searchString) {
     resetList('objSpawnList');
-    searchObjects(searchString, SpawnOption.get(SelectedObjectSpawnType), "objSpawnList", 3);
+    searchObjects(searchString, Settings.Spawn[SelectedObjectSpawnType], "objSpawnList", 3);
 }
 
 function searchObjects(searchValue, searchList, elementId, tabIndex) {
-    let el = document.getElementById(elementId);
+    const el = document.getElementById(elementId);
     el.style.minHeight = "0";
-    if (searchValue == "") return;
+    if (!searchValue) return;
 
     const maxResults = 10000;
-    const selectedObject = document.getElementById('activeObject').innerHTML;
-    console.log(searchList);
-    if (!searchList) { return; }
-    let results = searchList.filter(str => str.toLowerCase().includes(searchValue.toLowerCase()));
-    let ul = document.createElement('ul');
-    for (let i=0; i < results.length && i < maxResults; ++i) {
-        let li = document.createElement('li');
-        const name = results[i];
-        if (name == selectedObject) { li.classList.add('liSelect'); }
-        li.addEventListener('mouseenter', function() {
-            li.classList.add('liHover');
-            if (elementHasClass('button-spawnpreview', 'selected')) {
-                sendClientMessage('spawnPreviewObject', { name: name });
-            }
-        });
-        li.addEventListener('mouseout', function() {
-            li.classList.remove('liHover');
-            if (elementHasClass('button-spawnpreview', 'selected')) {
-                sendClientMessage('removePreviewObject', {});
-            }
+    const selectedObject = document.getElementById('activeObject').textContent;
 
-        });
-        li.addEventListener('click', function() {
-            // Remove liSelect class from any li in this element that has liSelect
-            el.querySelectorAll('li').forEach(function(li) {
-                li.classList.remove('liSelect');
-            });
+    if (!searchList) return;
+
+    // Optimize filter by pre-lowering searchValue once
+    const searchLower = searchValue.toLowerCase();
+    const results = searchList.filter(str => str.toLowerCase().includes(searchLower));
+
+    // Create fragment for efficient DOM updates
+    const ul = document.createElement('ul');
+    const fragment = document.createDocumentFragment();
+
+    results.slice(0, maxResults).forEach(name => {
+        const li = document.createElement('li');
+        li.dataset.name = name; // Store name in dataset
+        li.textContent = name;
+
+        if (name === selectedObject) {
             li.classList.add('liSelect');
-            selectSpawnObject(this.innerHTML);
-        })
-        if (tabIndex)
-            li.setAttribute('tabindex', tabIndex);
-        li.innerHTML = name;
-        ul.appendChild(li);
-    }
+        }
+
+        if (tabIndex) li.setAttribute('tabindex', tabIndex);
+        fragment.appendChild(li);
+    });
+
+    ul.appendChild(fragment);
     el.appendChild(ul);
-    if (results.length < 30) {
-        el.style.minHeight = results.length + ".4vh";
-    } else {
-        el.style.minHeight = "30vh";
-    }
+
+    // Event Delegation for Hover & Click
+    ul.addEventListener('pointerenter', searchHandleHover, true);
+    ul.addEventListener('pointerleave', searchHandleHover, true);
+    ul.addEventListener('click', searchHandleClick);
+
+    // Set minHeight dynamically
+    el.style.minHeight = `${Math.min(results.length * 0.4, 30)}vh`;
     el.scrollTop = 0;
-    el.scrollLeft = -1000;
+    el.scrollLeft = 0;
 }
 
+// Handle hover events (pointerenter, pointerleave)
+function searchHandleHover(event) {
+    const li = event.target.closest('li');
+    if (!li) return;
+
+    const isPreviewSelected = elementHasClass('button-spawnpreview', 'selected');
+    if (event.type === "pointerenter") {
+        li.classList.add('liHover');
+        if (isPreviewSelected) {
+            sendClientMessage('spawnPreviewObject', { name: li.dataset.name });
+        }
+    } else {
+        li.classList.remove('liHover');
+        if (isPreviewSelected) {
+            sendClientMessage('removePreviewObject', {});
+        }
+    }
+}
+
+// Handle object selection (click event)
+function searchHandleClick(event) {
+    const li = event.target.closest('li');
+    if (!li) return;
+
+    const el = li.closest('ul').parentElement;
+    el.querySelectorAll('li').forEach(li => li.classList.remove('liSelect'));
+
+    li.classList.add('liSelect');
+    selectSpawnObject(li.dataset.name);
+}
 
 export function getTrackedObjects() {
-    if (TrackedObjectsLoopRunning) { return; }
+    if (TrackedObjectsLoopRunning) return;
     TrackedObjectsLoopRunning = true;
-    let el = document.getElementById("objNearbyResults");
+
+    const el = document.getElementById("objNearbyResults");
     resetList(el);
-    const loopId = setInterval(function() {
-        if (isVisible(el)) {
-            if (!MouseDown) {
-                let currentNearbyRange = document.getElementById('nearbyRange').innerHTML;
-                if (currentNearbyRange != NearbyOption.range) {
-                    NearbyOption.range = currentNearbyRange;
-                    sendClientMessage('setObjSettings', { nearby: JSON.stringify(NearbyOption) });
-                }
-                sendClientMessage('nearbyObjects', {
-                    range: currentNearbyRange,
-                    origin: NearbyOption.origin,
-                }).then(function(resp) {
-                        let objects = resp.nearbyObjects;
-                        objects.sort((a, b) => a.distance - b.distance);
 
-                        el.innerHTML = "";
-                        let ul = document.createElement('ul');
-                        let filteredLength = 0;
-                        for (let i = 0; i < objects.length; ++i) {
-                            if (objects[i].objType && !NearbyOption[objects[i].objType]) {
-                                continue;
-                            }
-
-                            filteredLength++;
-                            let li = document.createElement('li');
-                            let handle = objects[i].handle;
-                            if (objects[i].networkId) {
-                                handle = handle + " [" + objects[i].networkId + "]";
-                            }
-                            li.innerHTML = `${objects[i].distance.toFixed(2)} ${handle} ${objects[i].modelName}`;
-                            if (objects[i].select) {
-                                li.classList.add('liSelect');
-                                li.classList.add('liPseudoFocus');
-                            } else if (objects[i].hover) {
-                                // li.classList.add('liHover');
-                            }
-                            li.addEventListener('mouseenter', function() {
-                                li.classList.add('liHover');
-                                sendClientMessage('trackObject', {
-                                    handle: this.innerHTML.split(" ")[1],
-                                    category: "hover",
-                                });
-                            })
-                            li.addEventListener('mouseout', function() {
-                                li.classList.remove('liHover');
-                                sendClientMessage('trackObject', {
-                                    handle: this.innerHTML.split(" ")[1],
-                                    category: "hover",
-                                    remove: true,
-                                });
-                            })
-                            li.addEventListener('click', function() {
-                                li.classList.add('liSelect');
-                                sendClientMessage('trackObject', {
-                                    handle: this.innerHTML.split(" ")[1],
-                                    category: "select",
-                                });
-
-                        })
-                        ul.appendChild(li);
-                    }
-                    el.appendChild(ul);
-                    if (filteredLength < 15) {
-                        el.style.minHeight = filteredLength + ".4vh";
-                    } else {
-                        el.style.minHeight = "15.4vh";
-                    }
-                });
-            }
-        } else {
+    const loopId = setInterval(async () => {
+        if (!isVisible(el)) {
             clearInterval(loopId);
             TrackedObjectsLoopRunning = false;
+            return;
         }
+
+        if (MouseDown) return;
+
+        const currentNearbyRange = document.getElementById('nearbyRange').textContent;
+        if (currentNearbyRange !== Settings.Nearby.range) {
+            Settings.Nearby.range = currentNearbyRange;
+            sendClientMessage('setObjSettings', { nearby: JSON.stringify(Settings.Nearby) });
+        }
+
+        const resp = await sendClientMessage('nearbyObjects', {
+            range: currentNearbyRange,
+            origin: Settings.Nearby.origin,
+        });
+
+        const objects = (resp.nearbyObjects || []).sort((a, b) => a.distance - b.distance);
+        el.textContent = "";
+
+        const ul = document.createElement('ul');
+        const fragment = document.createDocumentFragment();
+        let filteredLength = 0;
+
+        objects.forEach(({ objType, handle, networkId, distance, modelName, select, hover }) => {
+            if (objType && !Settings.Nearby[objType]) return; // Skip if not allowed
+            filteredLength++;
+
+            const li = document.createElement('li');
+            li.dataset.handle = handle;
+            li.textContent = `${distance.toFixed(2)} ${handle}${networkId ? ` [${networkId}]` : ''} ${modelName}`;
+
+            if (select) {
+                li.classList.add('liSelect', 'liPseudoFocus');
+            }
+            if (hover) {
+                li.classList.add('liHover');
+            }
+
+            fragment.appendChild(li);
+        });
+
+        ul.appendChild(fragment);
+        el.appendChild(ul);
+
+        // Event Delegation for Hover & Click
+        ul.addEventListener('pointerenter', trackHandleHover, true);
+        ul.addEventListener('pointerleave', trackHandleHover, true);
+        ul.addEventListener('click', trackHandleClick);
+
+        // Set minHeight dynamically
+        el.style.minHeight = `${Math.min(filteredLength * 0.4, 15.4)}vh`;
     }, 250);
 }
 
-export function getScenes() {
-    let el = document.getElementById("objScenesList");
-    resetList(el);
-    sendClientMessage('scenesList', {}).then(function(resp) {
-        let sceneList = JSON.parse(resp.scenes);
-        // Sort list by names alphabetically
-        sceneList.sort((a, b) => a.name.localeCompare(b.name));
-
-        let ul = document.createElement('ul');
-        for (let i = 0; i < sceneList.length; ++i) {
-            let li = document.createElement('li');
-            const name = sceneList[i].name;
-            li.innerHTML = name;
-            if (name == ActiveScene) { li.classList.add('liSelect'); }
-            li.addEventListener('mouseenter', function() {
-                li.classList.add('liHover');
-            });
-            li.addEventListener('mouseout', function() {
-                li.classList.remove('liHover');
-            });
-            li.addEventListener('click', function() {
-                ActiveScene = this.innerHTML;
-                el.querySelectorAll('li').forEach(function(li) {
-                    li.classList.remove('liSelect');
-                });
-                li.classList.add('liSelect');
-                elementSetText('selectedScene', ActiveScene);
-                // elementSetClass('objSceneObjectsListOptions', 'hidden', false);
-                sendClientMessage('loadScene', { scene: ActiveScene });
-                trackSceneObjects();
-            })
-            li.setAttribute('tabindex', '23');
-            ul.appendChild(li);
-        }
-        el.appendChild(ul);
-        if (sceneList.length < 4) {
-            el.style.minHeight = sceneList.length + ".3vh";
-        } else {
-            el.style.minHeight = "4.9vh";
-        }
+// Handle hover events (pointerenter, pointerleave)
+function trackHandleHover(event) {
+    const li = event.target.closest('li');
+    if (!li) return;
+    event.type === 'pointerenter' ? li.classList.add('liHover') : li.classList.remove('liHover');
+    sendClientMessage('trackObject', {
+        handle: li.dataset.handle,
+        category: "hover",
+        remove: event.type === 'pointerleave',
     });
 }
 
-export function trackSceneObjects() {
-    if (SceneObjectsLoopRunning) { return; }
-    SceneObjectsLoopRunning = true;
-    let el = document.getElementById("objSceneObjectsList");
-    resetList(el);
-    const loopId = setInterval(function() {
-        if (isVisible(el)) {
-            if (!MouseDown) {
-                sendClientMessage('getScene', {
-                    scene: ActiveScene,
-                }).then(function(resp) {
-                        let objects = resp.objects;
-                        el.innerHTML = "";
-                        let ul = document.createElement('ul');
-                        if (!Array.isArray(objects) || objects.length === 0) {
-                            let li = document.createElement('li');
-                            li.innerHTML = "";
-                            ul.appendChild(li);
-                            el.appendChild(ul);
-                            el.style.minHeight = "1.3vh";
-                            return;
-                        }
-                        // This is for objects in the scene
-                        if (TagOption.sort == "dist") {
-                            objects.sort((a, b) => a.distance - b.distance);
-                        } else if (TagOption.sort == "name") {
-                            objects.sort((a, b) => a.modelName.localeCompare(b.modelName));
-                        }
-
-                        for (let i = 0; i < objects.length; ++i) {
-                            let li = document.createElement('li');
-                            let handle = objects[i].handle;
-                            if (objects[i].networkId) {
-                                handle = handle + " [" + objects[i].networkId + "]";
-                            }
-                            li.innerHTML = `${objects[i].distance.toFixed(2)} ${handle} ${objects[i].modelName}`;
-                            if (objects[i].select) {
-                                li.classList.add('liSelect');
-                            } else if (objects[i].hover) {
-                                li.classList.add('liHover');
-                            }
-                            li.addEventListener('mouseenter', function() {
-                                sendClientMessage('trackObject', {
-                                    handle: this.innerHTML.split(" ")[1],
-                                    category: "hover",
-                                });
-                            });
-                            li.addEventListener('mouseout', function() {
-                                sendClientMessage('trackObject', {
-                                    handle: this.innerHTML.split(" ")[1],
-                                    category: "hover",
-                                    remove: true,
-                                });
-                            });
-                            li.addEventListener('click', function() {
-                                sendClientMessage('trackObject', {
-                                    handle: this.innerHTML.split(" ")[1],
-                                    category: "select",
-                                });
-                            });
-                            ul.appendChild(li);
-                        }
-                        el.appendChild(ul);
-                        if (objects.length < 4) {
-                            el.style.minHeight = objects.length + ".3vh";
-                        } else {
-                            el.style.minHeight = "4.9vh";
-                        }
-                    });
-            }
-        } else {
-            clearInterval(loopId);
-            SceneObjectsLoopRunning = false;
-        }
-    }, 250);
+// Handle object selection (click event)
+function trackHandleClick(event) {
+    const li = event.target.closest('li');
+    if (!li) return;
+    console.log("trackHandleClick", li);
+    li.classList.add('liSelect');
+    sendClientMessage('trackObject', {
+        handle: li.dataset.handle,
+        category: "select",
+    });
 }
 
 function selectSpawnObject(object) {
@@ -352,378 +190,119 @@ function selectSpawnObject(object) {
 
 export function toggleNearbyFilter(type) {
     const selected = elementSetClass(`button-nearby-${type}`, 'selected');
-    NearbyOption[type] = selected;
-    sendClientMessage('setObjSettings', { nearby: JSON.stringify(NearbyOption) });
+    Settings.Nearby[type] = selected;
+    sendClientMessage('setObjSettings', { nearby: JSON.stringify(Settings.Nearby) });
 }
 
 export function tagSelectSort(sortType) {
-    elementSetClass(`button-tagsortby${TagOption.sort}`, 'selected', false);
+    elementSetClass(`button-tagsortby${Settings.Tag.sort}`, 'selected', false);
     elementSetClass(`button-tagsortby${sortType}`, 'selected', true);
-    TagOption.sort = sortType;
-    sendClientMessage('setObjSettings', { tags: JSON.stringify(TagOption) });
+    Settings.Tag.sort = sortType;
+    sendClientMessage('setObjSettings', { tags: JSON.stringify(Settings.Tag) });
 }
 
 const PREFIX_OBJ_SPAWN = "button-spawn";
-const validSpawns = new Set(["objects", "peds", "vehicles", "propsets", "pickups", "other"]);
-
-export function selectSpawnType(spawn) {
-    const prev = SelectedObjectSpawnType;
-    if (!prev || !spawn) {
-        console.error("Invalid prev or spawn value:", { prev, spawn });
-        return;
-    }
-    if (spawn === prev) { return; }
-    if (!validSpawns.has(spawn)) {
-        console.error("Invalid spawn type:", spawn);
-        return;
-    }
-    SelectedObjectSpawnType = spawn;
-
-    elementSetClass(`${PREFIX_OBJ_SPAWN}${prev}`, 'selected', false);
-    elementSetClass(`${PREFIX_OBJ_SPAWN}${spawn}`, 'selected', true);
-
-    searchSpawnObject(document.getElementById('objSearch').innerHTML);
-}
-
-function formatId(str) { return str.replace(/ /g, '-'); }
-
 const PREFIX_NEARBY_ORIGIN = "button-nearbyOrigin-";
+const validSpawns = new Set(["objects", "peds", "vehicles", "propsets", "pickups", "other"]);
 const validOrigins = new Set(["camera", "offset", "player", "raycast", "select", "set position"]);
 
+/**
+ * Generic function to handle selection changes and UI updates.
+ * @param {string} type - The type of selection (e.g., "spawn", "origin").
+ * @param {Set<string>} validOptions - A set of valid options.
+ * @param {string} newValue - The new value to set.
+ * @param {string} prefix - The button prefix for UI updates.
+ * @param {Function} updateState - Function to update the global state.
+ * @param {Function} onChange - Optional callback to execute when a new selection is made.
+ */
+function selectOption(type, validOptions, newValue, prefix, updateState, onChange = null) {
+    const prevValue = updateState(); // Get current value
+    if (!prevValue || !newValue) {
+        console.error(`Invalid ${type} value:`, { prevValue, newValue });
+        return;
+    }
+    if (newValue === prevValue) return;
+    if (!validOptions.has(newValue)) {
+        console.error(`Invalid ${type} type:`, newValue);
+        return;
+    }
+
+    updateState(newValue); // Update the state
+
+    elementSetClass(`${prefix}${formatId(prevValue)}`, 'selected', false);
+    elementSetClass(`${prefix}${formatId(newValue)}`, 'selected', true);
+
+    if (onChange) onChange(newValue); // Execute additional logic if provided
+}
+
+/**
+ * Select the object spawn type.
+ * @param {string} spawn - The new spawn type to select.
+ */
+export function selectSpawnType(spawn) {
+    selectOption(
+        "spawn",
+        validSpawns,
+        spawn,
+        PREFIX_OBJ_SPAWN,
+        (newValue) => { if (newValue) SelectedObjectSpawnType = newValue; return SelectedObjectSpawnType; },
+        () => searchSpawnObject(document.getElementById('objSearch').textContent)
+    );
+}
+
+/**
+ * Select the nearby origin.
+ * @param {string} origin - The new nearby origin to select.
+ */
 export function selectNearbyOrigin(origin) {
-    const prev = NearbyOption.origin;
-    if (!prev || !origin) {
-        console.error("Invalid prev or origin value:", { prev, origin });
-        return;
-    }
-    if (origin === prev) { return; }
-    if (!validOrigins.has(origin)) {
-        console.error("Invalid origin type:", origin);
-        return;
-    }
-    NearbyOption.origin = origin;
-
-    elementSetClass(`${PREFIX_NEARBY_ORIGIN}${formatId(prev)}`, 'selected', false);
-    elementSetClass(`${PREFIX_NEARBY_ORIGIN}${formatId(origin)}`, 'selected', true);
-
-    elementSetText('activeNearbyOrigin', origin);
-
-    sendClientMessage('setNearbyOriginPos', origin == "set position" ? {} : { remove: true });
-    sendClientMessage('setObjSettings', { nearby: JSON.stringify(NearbyOption) });
-}
-
-DropDownOptions.activeNearbyOrigin = {
-    'camera': () => selectNearbyOrigin('camera'),
-    'offset': () => selectNearbyOrigin('offset'),
-    'player': () => selectNearbyOrigin('player'),
-    'raycast': () => selectNearbyOrigin('raycast'),
-    'set position': () => selectNearbyOrigin('set position'),
-    'select': () => selectNearbyOrigin('select'),
-};
-
-const ObjectHUD_All = [
-    "objHelp",
-    "objControlOptions",
-    "objDetails",
-
-    "objSpawnLeftColumn",
-    "objSearchField",
-    "objSpawnName",
-    "objSpawnOptions",
-    "objSpawnList",
-
-    "objNearbyLeftColumn",
-    "objNearbyOrigin",
-    "selectedNearbyOrigin",
-    "objNearbyFilter",
-    "objNearbyRange",
-    "objNearbyResults",
-
-    "objScenesLeftColumn",
-    "objScenesList",
-    "sceneSelected",
-    "objSceneTagOptions",
-    "objSceneObjectsList",
-
-    "objSettings",
-];
-
-const ObjectHUD_Visible = [
-    "objControlOptions",
-    // "objDetails",
-];
-
-const ObjectHUD_Buttons = [
-    "button-spawn",
-    "button-trackedobjlist",
-    "button-importexport",
-    "button-objsettings",
-];
-
-const ObjectHUD_Spawn = [
-    "objSpawnLeftColumn",
-    "objSearchField",
-    "objSpawnName",
-    "objSpawnOptions",
-    "objSpawnList",
-];
-
-const ObjectHUD_Nearby = [
-    "objNearbyLeftColumn",
-    "objNearbyOrigin",
-    "selectedNearbyOrigin",
-    "objNearbyFilter",
-    "objNearbyRange",
-    "objNearbyResults",
-];
-
-const ObjectHUD_ImportExport = [
-    "objScenesLeftColumn",
-    "objSceneControlOptions",
-    "objScenesList",
-    "sceneSelected",
-    "objSceneTagOptions",
-    "objSceneObjectsList",
-];
-
-const ObjectHUD_Settings = [
-    "objSettings",
-    "objSettingsOptions",
-];
-
-export function initializeObjectHUD() {
-    toggleSection(
-        false,
-        [],
-        ObjectHUD_Visible,
-        ObjectHUD_All
+    selectOption(
+        "origin",
+        validOrigins,
+        origin,
+        PREFIX_NEARBY_ORIGIN,
+        (newValue) => { if (newValue) Settings.Nearby.origin = newValue; return Settings.Nearby.origin; },
+        (newValue) => {
+            elementSetText('activeNearbyOrigin', newValue);
+            sendClientMessage('setNearbyOriginPos', newValue === "set position" ? {} : { remove: true });
+            sendClientMessage('setObjSettings', { nearby: JSON.stringify(Settings.Nearby) });
+        }
     );
-    elementSetClass('objectHUD', 'hidden', true);
 }
 
-export function toggleObjectHUD(state) {
-    if (state == undefined)
-        state = elementHasClass('objectHUD', 'hidden');
-    toggleSection(
-        state,
-        ObjectHUD_Visible, // Elements to show when visible
-        [],
-        ObjectHUD_All      // All relevant elements
-    );
-    elementSetClass('objectHUD', 'hidden', !state);
+/**
+ * Format a string to be used in an ID (replaces spaces with hyphens).
+ * @param {string} str - The string to format.
+ * @returns {string} - The formatted string.
+ */
+function formatId(str) {
+    return str.replace(/ /g, '-');
 }
 
-export function toggleObjectSpawnHUD(state) {
-    if (state == undefined)
-        state = elementHasClass(ObjectHUD_Spawn[0], 'hidden');
-    toggleSection(
-        state,
-        ObjectHUD_Spawn,
-        ObjectHUD_Visible,
-        ObjectHUD_All
-    );
-    if (state) {
-        selectOnly('button-spawn', ObjectHUD_Buttons);
-        document.getElementById('button-spawn').focus();
-    } else {
-        elementSetClass('button-spawn', 'selected', state);
-    }
-}
+DropDownOptions.activeNearbyOrigin = Object.fromEntries(
+    [...validOrigins].map(origin => [origin, () => selectNearbyOrigin(origin)])
+);
 
-export function toggleObjectNearbyHUD(state) {
-    if (state == undefined)
-        state = elementHasClass(ObjectHUD_Nearby[0], 'hidden');
-    toggleSection(
-        state,
-        ObjectHUD_Nearby,
-        ObjectHUD_Visible,
-        ObjectHUD_All
-    );
-    if (state) {
-        selectOnly('button-trackedobjlist', ObjectHUD_Buttons);
-        document.getElementById('button-trackedobjlist').focus();
-        getTrackedObjects();
-    } else {
-        elementSetClass('button-trackedobjlist', 'selected', state);
-    }
-}
 
-export function toggleObjectImportExportHUD(state) {
-    if (state == undefined)
-        state = elementHasClass(ObjectHUD_ImportExport[0], 'hidden');
-    toggleSection(
-        state,
-        ObjectHUD_ImportExport,
-        ObjectHUD_Visible,
-        ObjectHUD_All
-    );
-    if (state) {
-        getScenes();
-        selectOnly('button-importexport', ObjectHUD_Buttons);
-        document.getElementById('button-importexport').focus();
-        trackSceneObjects();
-    } else {
-        elementSetClass('button-importexport', 'selected', state);
-    }
-}
-
-export function toggleObjectSettingsHUD(state) {
-    if (state == undefined)
-        state = elementHasClass(ObjectHUD_Settings[0], 'hidden');
-    toggleSection(
-        state,
-        ObjectHUD_Settings,
-        ObjectHUD_Visible,
-        ObjectHUD_All
-    );
-    if (state) {
-        selectOnly('button-objsettings', ObjectHUD_Buttons);
-        document.getElementById('button-objsettings').focus();
-    } else {
-        elementSetClass('button-objsettings', 'selected', state);
-    }
-}
-
-export function toggleVisible(handle = document.getElementById('objDetailsEntityHandle')?.innerHTML) {
+export function toggleVisible(handle = document.getElementById('objDetailsEntityHandle')?.textContent) {
     const state = elementHasClass('objDetailsEntityVisible', 'selected');
     sendClientMessage('setVisible', { handle: handle, state: !state });
 }
 
-export function toggleFrozen(handle = document.getElementById('objDetailsEntityHandle')?.innerHTML) {
+export function toggleFrozen(handle = document.getElementById('objDetailsEntityHandle')?.textContent) {
     const state = elementHasClass('objDetailsEntityFrozen', 'selected');
     sendClientMessage('setFrozen', { handle: handle, state: !state });
 }
 
-export function toggleCollision(handle = document.getElementById('objDetailsEntityHandle')?.innerHTML) {
+export function toggleCollision(handle = document.getElementById('objDetailsEntityHandle')?.textContent) {
     const state = elementHasClass('objDetailsEntityCollision', 'selected');
     sendClientMessage('setCollision', { handle: handle, state: !state });
 }
 
-export function setRotation(handle = document.getElementById('objDetailsEntityHandle')?.innerHTML, x, y, z) {
+export function setRotation(handle = document.getElementById('objDetailsEntityHandle')?.textContent, x, y, z) {
     sendClientMessage('setRotation', { handle: handle, x: x, y: y, z: z })
 }
 
-export function placeOnGround(handle = document.getElementById('objDetailsEntityHandle')?.innerHTML) {
+export function placeOnGround(handle = document.getElementById('objDetailsEntityHandle')?.textContent) {
     sendClientMessage('placeOnGround', { handle: handle, });
 }
 
-export function importScene() {
-    const sceneName = ActiveScene;
-    console.log("importScene", type, sceneName)
-}
-
-DropDownOptions.importFormat = {
-    'Map Editor XML': () => importScene('MapEditorXML'),
-    'Propplacer JSON': () => importScene('PropplacerJSON'),
-    'SpoonerDB': () => importScene('SpoonerDB'),
-    'YMAP': () => importScene('YMAP'),
-};
-
-export function exportScene(type) {
-    const sceneName = ActiveScene;
-    console.log("exportScene", type, sceneName)
-}
-
-DropDownOptions.exportFormat = {
-    'Map Editor XML': () => exportScene('MapEditorXML', ActiveScene),
-    'Propplacer JSON': () => exportScene('PropplacerJSON', ActiveScene),
-    'SpoonerDB': () => exportScene('SpoonerDB', ActiveScene),
-    'YMAP': () => exportScene('YMAP', ActiveScene),
-};
-
-/**
- * Popup dialog with export options
- */
-export function showExport() {
-    return new Promise((resolve, reject) => {
-        const exportHUD = document.getElementById('exportHUD');
-        const copyButton = document.getElementById('exportCopyOption');
-        const exitButton = document.getElementById('exportExitOption');
-        const lastFocusedElement = document.activeElement;
-
-        exportHUD.classList.remove('hidden');
-        copyButton.focus();
-
-        // Create a MutationObserver to monitor if the popup becomes hidden
-        const observer = new MutationObserver((mutationsList) => {
-            if (exportHUD.classList.contains('hidden')) {
-                cleanup();
-                resolve(false);
-            }
-        });
-        observer.observe(exportHUD, {
-            attributes: true,
-            attributeFilter: ['class']
-        });
-
-        function handleCopy() {
-            const content = document.getElementById('exportContent').innerHTML;
-            clipboardCopy(content);
-        }
-
-        function handleExit() {
-            cleanup();
-            resolve(false);
-        }
-
-        function cleanup() {
-            copyButton.removeEventListener('click', handleCopy);
-            exitButton.removeEventListener('click', handleExit);
-            observer.disconnect();
-            exportHUD.classList.add('hidden');
-            if (lastFocusedElement) {
-                lastFocusedElement.focus();
-            }
-        }
-
-        copyButton.addEventListener('click', handleCopy);
-        exitButton.addEventListener('click', handleExit);
-    });
-}
-
-export function showImport() {
-    return new Promise((resolve, reject) => {
-        const importHUD = document.getElementById('importHUD');
-        const importButton = document.getElementById('importOption');
-        const exitButton = document.getElementById('importExitOption');
-        const lastFocusedElement = document.activeElement;
-
-        importHUD.classList.remove('hidden');
-        importButton.focus();
-
-        // Create a MutationObserver to monitor if the popup becomes hidden
-        const observer = new MutationObserver((mutationsList) => {
-            if (importHUD.classList.contains('hidden')) {
-                cleanup();
-                resolve(false);
-            }
-        });
-        observer.observe(importHUD, {
-            attributes: true,
-            attributeFilter: ['class']
-        });
-
-        function handleImport() {
-            const sceneData = document.getElementById('importContent').innerHTML;
-            importScene();
-        }
-
-        function handleExit() {
-            cleanup();
-            resolve(false);
-        }
-
-        function cleanup() {
-            importButton.removeEventListener('click', handleCopy);
-            exitButton.removeEventListener('click', handleExit);
-            observer.disconnect();
-            importHUD.classList.add('hidden');
-            if (lastFocusedElement) {
-                lastFocusedElement.focus();
-            }
-        }
-
-        importButton.addEventListener('click', handleImport);
-        exitButton.addEventListener('click', handleExit);
-    });
-}

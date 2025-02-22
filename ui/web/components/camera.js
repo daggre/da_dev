@@ -1,7 +1,4 @@
-import {
-    elementSetText,
-    elementSetClass,
-} from '../utils/nav.js';
+import { elementSetText, elementSetClass, } from '../utils/nav.js';
 
 let cameraHUDTimeout = null;
 let hideCamera = true;
