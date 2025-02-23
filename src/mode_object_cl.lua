@@ -14,11 +14,16 @@ local UntrackedModels = { [0] = true, }
 local Spawn = nil
 local HitCoords = nil
 local NearbyOriginPos = nil
-local ActiveScene = "autosave"
+local DefaultScene = "default"
+local ActiveScene = DefaultScene
 local Scenes = {
     [ActiveScene] = { name = ActiveScene, objects = {} },
 }
 local PreviewObject = nil
+local Theme = {
+    Primary = {r=0, g=218, b=175, a=255},
+    Secondary = {r=80, g=193, b=238, a=255},
+}
 
 local UID = 0
 local _getUID = function()
@@ -49,6 +54,7 @@ local GetObjData = function(entityHandle)
     local modelName = dat.getName(modelHash)
     local x,y,z = table.unpack(GetEntityCoords(entityHandle))
     local pitch, roll, yaw = table.unpack(GetEntityRotation(entityHandle, 2))
+    local visible = IsEntityVisible(entityHandle) == 1
     local frozen = IsEntityFrozen(entityHandle) == 1
     local collision = GetEntityCollisionDisabled(entityHandle) == false
 
@@ -62,6 +68,7 @@ local GetObjData = function(entityHandle)
     objData.rotation_pitch = tonumber(string.format("%.2f", pitch))
     objData.rotation_roll = tonumber(string.format("%.2f", roll))
     objData.rotation_yaw = tonumber(string.format("%.2f", yaw))
+    objData.visible = visible
     objData.frozen = frozen
     objData.collision = collision
 
@@ -300,9 +307,9 @@ local SelectModeTick = function()
     --     {r=80, g=193, b=238, a=255} or -- Blue
     --     {r=255, g=255, b=255, a=255} -- White (Hovered and Selected)
     -- )
-    DrawBB(Select, {r=80, g=193, b=238, a=255}) -- Blue
-    DrawBB(Hover, {r=255, g=255, b=255, a=255}) -- White
-    lazy(30).uiUpdate(Select, Hover, GetObjData(Select)) -- TODO: Optimize
+    DrawBB(Select, Theme.Primary) -- Blue
+    DrawBB(Hover, Theme.Secondary) -- White
+    lazy(30).uiUpdate(Select, Hover, GetObjData(Select))
 end
 
 local ObjectModeThread = function()
@@ -415,7 +422,7 @@ da_mode.register({
             modifiers = { shift = true, },
             fn = function()
                 if not Spawn or not HitCoords then return; end
-                if not ActiveScene then ActiveScene = "autosave"; end
+                if not ActiveScene then ActiveScene = DefaultScene; end
                 if not Scenes[ActiveScene] then Scenes[ActiveScene] = { objects = {}, }; end
                 local obj = da_obj.create(Spawn, HitCoords, { ground = true, })
                 log.spam("Spawned object", ActiveScene, obj, Spawn, HitCoords)
@@ -558,6 +565,14 @@ da_mode.register({
             active = true,
             fn = function()
                 da_ui.send("keyPress", { mode = "objectHUD", key = "3" })
+            end,
+        },
+        {
+            key = "4",
+            event = "justPressed",
+            active = true,
+            fn = function()
+                da_ui.send("keyPress", { mode = "objectHUD", key = "4" })
             end,
         },
     },
@@ -717,6 +732,11 @@ local DispatchKeyEvents = function(data)
     })
 end
 
+local function SetVisible(data)
+    local entityHandle = tonumber(data.handle)
+    da_obj.set(entityHandle, { visible = data.state })
+end
+
 local function SetFrozen(data)
     local entityHandle = tonumber(data.handle)
     da_obj.set(entityHandle, { frozen = data.state })
@@ -728,8 +748,19 @@ local function SetCollision(data)
 end
 
 local function SetRotation(data)
+    if not data then return; end
     local entityHandle = tonumber(data.handle)
-    da_obj.set(entityHandle, { rotation = { data.x, data.y, data.z }})
+    if not data.x or not data.y or not data.z then
+        local rot = GetEntityRotation(entityHandle, 2)
+        if not data.x then data.x = rot.x; end
+        if not data.y then data.y = rot.y; end
+        if not data.z then data.z = rot.z; end
+    end
+    da_obj.set(entityHandle, { rotation = {
+        x = data.x,
+        y = data.y,
+        z = data.z
+    }})
 end
 
 local function PlaceOnGround(data)
@@ -752,6 +783,33 @@ local function SpawnPreviewObject(name)
     if lastObj then da_obj.delete(lastObj); end
 end
 
+local function hexStringToNumber(hexStr)
+    hexStr = hexStr:gsub("#", "")
+    return tonumber(hexStr, 16)
+end
+
+local function hexToRGB(hex)
+    return {
+        r = (hex >> 16) & 0xFF,
+        g = (hex >> 8) & 0xFF,
+        b = hex & 0xFF,
+        a = 255,
+    }
+end
+
+local function parseHexColor(hexStr)
+    local hex = hexStringToNumber(hexStr)
+    if not hex then return nil end
+    return hexToRGB(hex)
+end
+
+local function setTheme(theme)
+    assert(theme[1][1] == "primary", "Invalid primary theme element")
+    Theme.Primary = parseHexColor(theme[1][2])
+    assert(theme[3][1] == "secondary-light", "Invalid secondary theme element")
+    Theme.Secondary = parseHexColor(theme[3][2])
+end
+
 da_ui.callbacks({
     nearbyObjects = function(data) return { nearbyObjects = GetNearbyObjects(data.range, data.origin) } end,
     scenesList = function(data) return GetScenesList() end,
@@ -760,6 +818,7 @@ da_ui.callbacks({
     clearScene = function(data) return ClearScene(data.scene) end,
     reloadScene = function(data) return ReloadScene(data.scene) end,
     deleteScene = function(data) return DeleteScene(data.scene) end,
+    setVisible = function(data) return SetVisible(data) end,
     setFrozen = function(data) return SetFrozen(data) end,
     setCollision = function(data) return SetCollision(data) end,
     setRotation = function(data) return SetRotation(data) end,
@@ -775,6 +834,7 @@ da_ui.events({
     trackObject = TrackObject,
     setNearbyOriginPos = SetNearbyOriginPos,
     saveScene = function(data) CheckRename(data.scene); SaveScene(data.scene) end,
+    setTheme = function(data) setTheme(data.theme); end,
 })
 da_net.events({
     onResourceStop = function(resourceName)

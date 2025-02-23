@@ -374,10 +374,12 @@ ul li {
 
 #crosshair.inactive {
     color: var(--primary);
+    text-shadow: none;
 }
 
 #crosshair.selected {
-    color: var(--secondary-light);
+    /*color: var(--secondary-light);*/
+    color: var(--primary);
     text-shadow: none;
 }
 
