@@ -507,7 +507,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('message', function(msg) {
         switch(msg.data.type) {
             case "ui_trie":
-                console.eog("trie", msg.data.trie);
+                console.log("trie", msg.data.trie);
                 if (msg.data.trie) { initTrie(msg.data.trie); }
                 elementSetClass('devTreeHUD', 'hidden', msg.data.state == false);
                 break;
