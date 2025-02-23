@@ -1,4 +1,4 @@
-import { setUIStyle } from "./utils/theme.js";
+import { setUIStyle, toggleBorder, toggleCurvedBorder, setCurvedBorderAmount } from "./utils/theme.js";
 import { clipboardCopy } from "./utils/clipboard.js";
 import { sendClientMessage } from "./utils/msg.js";
 import { updateCrosshair } from "./components/crosshair.js";
@@ -82,8 +82,9 @@ const ObjectContextOptions = {
         sendClientMessage('trackObject', { handle: data.handle, category: "select" });
         sendClientMessage('toggleMode', { mode: "gizmo" });
     },
-    'Reset Rotation': (data) => { setRotation(data.handle, 0, 0, 0); },
-    'Place on Ground': (data) => { placeOnGround(data.handle); },
+    'Set Upright': (data) => setRotation(data.handle, 0, 0, null),
+    'Reset Rotation': (data) => setRotation(data.handle, 0, 0, 0),
+    'Place on Ground': (data) => placeOnGround(data.handle),
 }
 
 export let KeyActions = {
@@ -192,7 +193,7 @@ export let MouseActions = {
                 let y = event.pageY;
                 sendClientMessage('getRaycast', { x: x/ResolutionX, y: y/ResolutionY }).then((data) => {
                     if (!data.handle) { return; }
-                    showContextMenu(Object.keys(ObjectContextOptions), x, y).then((option) => {
+                    showDropdown(Object.keys(ObjectContextOptions), x, y).then((option) => {
                         if (!option) { return; }
                         ObjectContextOptions[option](data);
                     });
@@ -275,7 +276,7 @@ export const EventActions = {
         '#button-tagsortbydist': () => tagSelectSort('dist'),
         '#button-tagsortbyname': () => tagSelectSort('name'),
 
-        '#objDetailsEntityVisible': () => toggleVisibility(),
+        '#objDetailsEntityVisible': () => toggleVisible(),
         '#objDetailsEntityFrozen': () => toggleFrozen(),
         '#objDetailsEntityCollision': () => toggleCollision(),
 
@@ -434,6 +435,7 @@ const InputFields = {
             getTrackedObjects();
         }
     },
+    '#objSettingsCurvedBorderAmount': (event) => setCurvedBorderAmount(),
     "#animSearch": (event) => {
         if (event.key == "Enter" || event.inputType == "insertParagraph") {
             event.preventDefault();
@@ -791,29 +793,10 @@ function toggleAnimDetail(elId, state) {
     elementSetClass(listEl, 'hidden', !state);
 }
 
-function toggleBorder() {
-    // Toggle var(--brd-size) if #objSettingsBorder is selected
-    const selected = elementSetClass('objSettingsBorder', 'selected');
-    if (selected) {
-        document.documentElement.style.setProperty('--brd-size', '2px');
-    } else {
-        document.documentElement.style.setProperty('--brd-size', '0px');
-    }
-}
-
-function toggleCurvedBorder() {
-    // Toggle var(--brd-rad) if #button-objSettingsCurvedBorder is selected
-    const selected = elementSetClass('objSettingsCurvedBorder', 'selected');
-    if (selected) {
-        document.documentElement.style.setProperty('--brd-rad', '8px');
-    } else {
-        document.documentElement.style.setProperty('--brd-rad', '0px');
-    }
-}
-
 function sendKey(key) {
     sendClientMessage('dispatchKeyEvents', {
         justPressed: { [key]: true, },
         pressed: Pressed
     });
 }
+

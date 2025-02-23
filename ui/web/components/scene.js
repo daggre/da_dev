@@ -1,4 +1,5 @@
 import { resetList, isVisible, elementSetText } from '../utils/nav.js';
+import { showConfirm } from './confirm.js';
 import { sendClientMessage } from '../utils/msg.js';
 import { DropDownOptions } from './dropdown.js';
 import { MouseDown } from '../script.js';

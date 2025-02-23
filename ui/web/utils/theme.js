@@ -1,5 +1,8 @@
 import { DropDownOptions } from '../components/dropdown.js';
 import { elementSetText } from './nav.js';
+import { sendClientMessage} from './msg.js';
+
+let BorderCurved = '8';
 
 const themes = {
     oasis: [
@@ -149,6 +152,7 @@ function setTheme(theme) {
             root.style.setProperty('--bg-t3', `${value}22`);
         }
     });
+    sendClientMessage('setTheme', { theme: t });
 };
 
 DropDownOptions.objSettingsTheme = Object.fromEntries(
@@ -193,3 +197,36 @@ export function setUIStyle(theme = "retro wave", divider = "angle up") {
     setDividerStyle(dividerStyles[divider]);
     elementSetText('objSettingsDividerStyle', divider);
 }
+
+export function toggleBorder() {
+    // Toggle var(--brd-size) if #objSettingsBorder is selected
+    const selected = document.getElementById('objSettingsBorder').classList.toggle('selected');
+    if (selected) {
+        document.documentElement.style.setProperty('--brd-size', '2px');
+    } else {
+        document.documentElement.style.setProperty('--brd-size', '0px');
+    }
+}
+
+export function setCurvedBorderAmount() {
+    const curved = document.getElementById('objSettingsCurvedBorder').classList.contains('selected');
+    const el = document.getElementById('objSettingsCurvedBorderAmount');
+    // Check that the text content is a number
+    if (!isNaN(el.textContent)) {
+        BorderCurved = el.textContent;
+        if (curved) {
+            document.documentElement.style.setProperty('--brd-rad', `${BorderCurved}px`);
+        }
+    }
+}
+
+export function toggleCurvedBorder() {
+    // Toggle var(--brd-rad) if #button-objSettingsCurvedBorder is selected
+    const selected = document.getElementById('objSettingsCurvedBorder').classList.toggle('selected');
+    if (selected) {
+        document.documentElement.style.setProperty('--brd-rad', `${BorderCurved}px`);
+    } else {
+        document.documentElement.style.setProperty('--brd-rad', '0px');
+    }
+}
+

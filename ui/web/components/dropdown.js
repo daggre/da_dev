@@ -117,6 +117,7 @@ export function showDropdown(options, x, y, multiSelect = false) {
         function handleOutsideClick(event) {
             if (!menu.contains(event.target)) {
                 cleanup();
+                // TODO: TEST and confirm if we should resolve null in both cases
                 resolve(multiSelect ? Array.from(modifiedItems) : null);
             }
         }
@@ -124,7 +125,7 @@ export function showDropdown(options, x, y, multiSelect = false) {
         function handleKeyPress(event) {
             if (event.key === "Enter") {
                 cleanup();
-                resolve(multiSelect ? Array.from(modifiedItems) : null);
+                resolve(multiSelect ? Array.from(modifiedItems) : menuItems[activeIndex].textContent);
             } else if (event.key === "Escape") {
                 cleanup();
                 resolve(null);
