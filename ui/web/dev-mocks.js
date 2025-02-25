@@ -247,6 +247,13 @@ const mockResponses = {
         tags: JSON.stringify({
             sort: "dist",
         }),
+        theme: JSON.stringify({
+            color: "retro_wave",
+            divider: "angle_up",
+            border: true,
+            borderrad: false,
+            borderradamount: 8,
+        })
     }),
     initObjects: () => ({
         peds: JSON.stringify(mockData.peds),

@@ -1,10 +1,12 @@
 import { sendClientMessage } from '../utils/msg.js';
 import { elementSetClass } from '../utils/nav.js'; // TODO: refactor elementSetClass
+import { initUIStyle } from '../utils/theme.js';
 
 export let Settings = {
     Nearby: { object: true, ped: true, vehicle: true, other: false, origin: "camera", range: 50, },
     Spawn: { objects: [], peds: [], vehicles: [], propsets: [], pickups: [], },
     Tag: { sort: "dist" },
+    Theme: { color: "retro wave", divider: "angle up", border: true, borderrad: false, borderradamount: 8 },
 }
 
 export function fetchSpawnData() {
@@ -21,6 +23,16 @@ export function initSettings() {
     sendClientMessage('initObjSettings', {}).then(function(resp) {
         Settings.Nearby = JSON.parse(resp.nearby);
         Settings.Tag = JSON.parse(resp.tags);
+        Settings.Theme = JSON.parse(resp.theme);
+        initUIStyle(
+            Settings.Theme.color,
+            Settings.Theme.divider,
+            Settings.Theme.border,
+            Settings.Theme.borderrad,
+            Settings.Theme.borderradamount
+        );
+
+
 
         elementSetClass('button-nearby-object', 'selected', Settings.Nearby.object);
         elementSetClass('button-nearby-ped', 'selected', Settings.Nearby.ped);
