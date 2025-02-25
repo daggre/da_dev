@@ -1,8 +1,8 @@
 // dev-mocks.js
 
-const testHud = "ui_object";
-// const testHud = "ui_animation";
-const jsonString = `{"test":["a","b"], "vest":["c","d"]}`
+// const testHud = "ui_object";
+const testHud = "ui_animation";
+const animjsonString = `{"test":["a","b"], "vest":["c","d"]}`
 // INFO: Issue with the @ symbol
 // const jsonString = `{"test@test@test": ["test1", "test2", "test3" ], "test@test@test3": [ "test_back", "test_front", "test_left", "test_right" ],}`
 
@@ -15,18 +15,7 @@ const pickupPrefixes = ["gold", "ammo", "coin", "map", "food", "herb", "pouch"];
 const vehiclePrefixes = ["wagon", "stagecoach", "cart", "train", "boat", "carriage"];
 const propsetPrefixes = ["camp", "ranch", "market", "graveyard", "station", "fort"];
 
-const mockData = {
-    peds: Array.from({ length: 100 }, () => `${getRandomElement(pedPrefixes)}_${getRandomElement(pedPrefixes)}_${randomSuffix()}`),
-    objects: Array.from({ length: 100 }, () => `${getRandomElement(objectPrefixes)}_${getRandomElement(objectPrefixes)}_${randomSuffix()}`),
-    pickups: Array.from({ length: 100 }, () => `${getRandomElement(pickupPrefixes)}_${getRandomElement(pickupPrefixes)}_${randomSuffix()}`),
-    vehicles: Array.from({ length: 100 }, () => `${getRandomElement(vehiclePrefixes)}_${getRandomElement(vehiclePrefixes)}_${randomSuffix()}`),
-    propsets: Array.from({ length: 100 }, () => `${getRandomElement(propsetPrefixes)}_${getRandomElement(propsetPrefixes)}_${randomSuffix()}`),
-};
-
-const mockResponses = {
-    initAnims: () => ({ animations: jsonString, }),
-    initAnimFlags: () => ({
-        animflags: JSON.stringify([
+const animFlags = [
             { value: (1<<0), name: "AF_LOOPING", note: "Loop the animation" },
             { value: (1<<1), name: "AF_HOLD_LAST_FRAME", note: "Stop animation on last frame" },
             { value: (1<<2), name: "AF_NOT_INTERRUPTABLE", note: "Prevent animation interrupts" },
@@ -59,10 +48,8 @@ const mockResponses = {
             { value: (1<<29), name: "AF_BLENDOUT_WRT_LAST_FRAME", note: "" },
             { value: (1<<30), name: "AF_DISABLE_PHYSICAL_ACTIVATION", note: "" },
             { value: (1<<31), name: "AF_DISABLE_RELEASE_EVENTS", note: "" },
-        ]),
-    }),
-    initIKAnimFlags: () => ({
-        animikflags: JSON.stringify([
+        ];
+const animikFlags = [
             { value: (1 << 0), name: "AIK_DISABLE_LEG_IK", note: "Disable Leg Inverse Kinematics" },
             { value: (1 << 1), name: "AIK_DISABLE_ARM_IK", note: "Disable Arm Inverse Kinematics" },
             { value: (1 << 2), name: "AIK_DISABLE_HEAD_IK", note: "Disable Head Inverse Kinematics" },
@@ -94,10 +81,8 @@ const mockResponses = {
             { value: (1 << 28), name: "AIK_0xA4F64B54", note: "" },
             { value: (1 << 29), name: "AIK_DISABLE_TWO_BONE_IK", note: "Only use one bone in IK?" },
             { value: (1 << 30), name: "AIK_0x0C1380EC", note: "" },
-        ]),
-    }),
-    initTaskFilters: () => ({
-        taskfilters: JSON.stringify([
+        ];
+const taskfilters = [
             { value: "", name: "None", note: "Prevents some AnimFlags from working??" },
             { value: "accessoriesonly_filter", name: "Accessories Only", note: "Animate Accessories Only" },
             { value: "allfingers_and_hand_helpers_filter", name: "Helper: Fingers, Hands", note: "" },
@@ -233,8 +218,21 @@ const mockResponses = {
             { value: "upperbodywithsatchel_filter", name: "Upperbody, Satchel", note: "" },
             { value: "upperonly_filter", name: "Upper Only", note: "" },
             { value: "weaponswap_filter", name: "Weapon Swap", note: "" },
-        ]),
-    }),
+        ];
+
+const mockData = {
+    peds: Array.from({ length: 100 }, () => `${getRandomElement(pedPrefixes)}_${getRandomElement(pedPrefixes)}_${randomSuffix()}`),
+    objects: Array.from({ length: 100 }, () => `${getRandomElement(objectPrefixes)}_${getRandomElement(objectPrefixes)}_${randomSuffix()}`),
+    pickups: Array.from({ length: 100 }, () => `${getRandomElement(pickupPrefixes)}_${getRandomElement(pickupPrefixes)}_${randomSuffix()}`),
+    vehicles: Array.from({ length: 100 }, () => `${getRandomElement(vehiclePrefixes)}_${getRandomElement(vehiclePrefixes)}_${randomSuffix()}`),
+    propsets: Array.from({ length: 100 }, () => `${getRandomElement(propsetPrefixes)}_${getRandomElement(propsetPrefixes)}_${randomSuffix()}`),
+};
+
+const mockResponses = {
+    initAnims: () => ({ animations: animjsonString, }),
+    initAnimFlags: () => ({ animflags: JSON.stringify(animFlags), }),
+    initIKAnimFlags: () => ({ animikflags: JSON.stringify(animikFlags), }),
+    initTaskFilters: () => ({ taskfilters: JSON.stringify(taskfilters), }),
     initObjSettings: () => ({
         nearby: JSON.stringify({
             object: true,
@@ -319,6 +317,7 @@ const mockResponses = {
     gizmoStop: () => ({}),
     spawnPreviewObject: () => ({}),
     removePreviewObject: () => ({}),
+    setTheme: () => ({}),
 };
 
 function getMockResponse(endpoint) {

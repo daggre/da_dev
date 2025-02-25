@@ -6,7 +6,7 @@ export let Settings = {
     Nearby: { object: true, ped: true, vehicle: true, other: false, origin: "camera", range: 50, },
     Spawn: { objects: [], peds: [], vehicles: [], propsets: [], pickups: [], },
     Tag: { sort: "dist" },
-    Theme: { color: "retro wave", divider: "angle up", border: true, borderrad: false, borderradamount: 8 },
+    Theme: { color: "retro_wave", divider: "angle up", border: true, borderrad: false, borderradamount: 8 },
 }
 
 export function fetchSpawnData() {
@@ -24,15 +24,6 @@ export function initSettings() {
         Settings.Nearby = JSON.parse(resp.nearby);
         Settings.Tag = JSON.parse(resp.tags);
         Settings.Theme = JSON.parse(resp.theme);
-        initUIStyle(
-            Settings.Theme.color,
-            Settings.Theme.divider,
-            Settings.Theme.border,
-            Settings.Theme.borderrad,
-            Settings.Theme.borderradamount
-        );
-
-
 
         elementSetClass('button-nearby-object', 'selected', Settings.Nearby.object);
         elementSetClass('button-nearby-ped', 'selected', Settings.Nearby.ped);
@@ -43,6 +34,13 @@ export function initSettings() {
         document.getElementById("activeNearbyOrigin").textContent = Settings.Nearby.origin;
         document.getElementById(`button-tagsortby${Settings.Tag.sort}`).classList.add('selected');
     });
+    initUIStyle(
+        Settings.Theme.color,
+        Settings.Theme.divider,
+        Settings.Theme.border,
+        Settings.Theme.borderrad,
+        Settings.Theme.borderradamount
+    );
 }
 
 function formatId(str) { return str.replace(/ /g, '-'); }
