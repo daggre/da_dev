@@ -1,7 +1,4 @@
-import {
-    elementSetClass,
-    elementHasClass,
-} from "../utils/nav.js";
+import { elementSetClass } from "../utils/nav.js";
 
 let TooltipEnabled = true
 
