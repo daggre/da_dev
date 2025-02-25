@@ -3,13 +3,6 @@ import { sendClientMessage } from '../utils/msg.js';
 import { resetList, elementSetText, } from '../utils/nav.js';
 import { DropDownAdvOptions, DropDownMultiOptions, } from './dropdown.js';
 
-let Animations;
-let AnimFlags;
-let AnimIKFlags;
-let TaskFilters;
-let FlagTotals = 0;
-let IKFlagTotals = 0;
-
 async function fetchData(key, messageType, modifier) {
     if (!globalThis[key]) {
         const resp = await sendClientMessage(messageType, {});
@@ -64,8 +57,7 @@ export async function searchAnimDicts(searchValue) {
 
     searchValue = searchValue.trim().toLowerCase();
     if (!searchValue || searchValue == '') return;
-    const results = animDictStringSearch(await getAnimations(), searchValue).sort();
-
+    const results = deepSearch(await getAnimations(), searchValue).sort();
 
     const resultCount = results.length;
     const ul = document.createElement('ul');
