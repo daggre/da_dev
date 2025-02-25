@@ -8,11 +8,9 @@ import { dropdownListeners, showDropdown } from './components/dropdown.js';
 import { updateCamera, toggleHideCamera, } from "./components/camera.js";
 import {
     clickElement,
-    elementSetOnlyClass,
     elementSetClass,
     elementSetText,
     isVisible,
-    resetList,
     isInterruptingElement,
 } from "./utils/nav.js";
 import { initTrie } from "./components/trie.js";
@@ -61,7 +59,6 @@ const ResolutionX = window.screen.width;
 const ResolutionY = window.screen.height;
 let MCP = false;
 let GizmoActive = false;
-let KeyPressRepeat = false;
 let LeftClickActive = false;
 let CursorPosDelay = false;
 let Pressed = {}
@@ -148,8 +145,8 @@ export let KeyActions = {
 
 export let MouseActions = {
     'devTreeHUD': {
-        leftClick: (event) => { },
-        middleClick: (event) => { },
+        leftClick: () => { },
+        middleClick: () => { },
     },
     'animHUD': {
         leftClick: (event) => {
@@ -160,7 +157,7 @@ export let MouseActions = {
                 }
             }
         },
-        middleClick: (event) => {
+        middleClick: () => {
             if (MCP) {
                 sendClientMessage('deactivateMCP', {}).then((mcpState) => { toggleMCP(mcpState); });
             } else {
@@ -200,7 +197,7 @@ export let MouseActions = {
                 });
             }
         },
-        middleClick: (event) => {
+        middleClick: () => {
             if (MCP) {
                 sendClientMessage('deactivateMCP', {}).then((mcpState) => {
                     console.log("deactivateMCP", mcpState);
@@ -217,7 +214,7 @@ export let MouseActions = {
         },
     },
     'gizmo': {
-        middleClick: (event) => {
+        middleClick: () => {
             QuickPress.MiddleMouse.active = true;
             setTimeout(() => { QuickPress.MiddleMouse.active = false; }, QuickPress.Timeout);
             sendClientMessage('activateMCP', { mode: "gizmo" }).then((mcpState) => {
@@ -359,7 +356,7 @@ export const EventActions = {
             case "Tab":
                 return;
             case "Backspace":
-            case "Delete":
+            case "Delete": {
                 const selection = window.getSelection();
                 // console.log(event, selection);
                 if (!selection.rangeCount) break;
@@ -386,21 +383,7 @@ export const EventActions = {
                     event.preventDefault(); // Prevent <br> or any default action
                 }
                 break;
-
-            case "Delete":
-                // Get the current selection and cursor position
-                const del_selection = window.getSelection();
-                if (del_selection.rangeCount > 0) {
-                    const cursorAtStart = del_selection.anchorOffset === 0; // Caret is at the start
-                    const textLength = event.target.textContent.length;
-
-                    // Clear the div only if the cursor is at the start and its the last char
-                    if (cursorAtStart && textLength === 1) {
-                        event.target.textContent = ''; // Clear the div manually
-                        event.preventDefault(); // Prevent <br> or any default action
-                    }
-                }
-                break;
+            }
         }
         JustPressed[event.key] = true;
         if (event.key == "Escape" || !isInputField) {
@@ -435,7 +418,7 @@ const InputFields = {
             getTrackedObjects();
         }
     },
-    '#objSettingsCurvedBorderAmount': (event) => setCurvedBorderAmount(),
+    '#objSettingsCurvedBorderAmount': () => setCurvedBorderAmount(),
     "#animSearch": (event) => {
         if (event.key == "Enter" || event.inputType == "insertParagraph") {
             event.preventDefault();
@@ -573,30 +556,30 @@ function toggleCrosshair(state) {
     elementSetClass('crosshair', 'hidden', !state || !MCP);
 }
 
-const AnimElements = [
-    'animControlOptions',
-    'activeAnimDisplay',
-    'animSearchLists',
-];
+// const AnimElements = [
+//     'animControlOptions',
+//     'activeAnimDisplay',
+//     'animSearchLists',
+// ];
+//
+// const AnimSubElements = [
+//     'animDictList',
+//     'animList',
+//     'animSearchField',
+//     'animTimingsOptions',
+//     'animFlagsOptions',
+//     'animIKFlagsOptions',
+//     'animEntityOptions',
+// ]
 
-const AnimSubElements = [
-    'animDictList',
-    'animList',
-    'animSearchField',
-    'animTimingsOptions',
-    'animFlagsOptions',
-    'animIKFlagsOptions',
-    'animEntityOptions',
-]
-
-// Animation HUD //
-function setUIAnim(state) {
-    state = !!state;
-    AnimSubElements.forEach((el) => { elementSetClass(el, 'hidden', true); });
-    AnimElements.forEach((el) => { elementSetClass(el, 'hidden', !state); });
-    console.log("setUIAnim", state);
-    elementSetClass('animHUD', 'hidden', state);
-}
+// // Animation HUD //
+// function setUIAnim(state) {
+//     state = !!state;
+//     AnimSubElements.forEach((el) => { elementSetClass(el, 'hidden', true); });
+//     AnimElements.forEach((el) => { elementSetClass(el, 'hidden', !state); });
+//     console.log("setUIAnim", state);
+//     elementSetClass('animHUD', 'hidden', state);
+// }
 
 function toggleSettings(state) {
     const selected = elementSetClass('button-settings', 'selected', state);
