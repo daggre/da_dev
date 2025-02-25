@@ -1,0 +1,18 @@
+{
+  "name": "da_dev",
+  "version": "1.0.0",
+  "description": "Development Kit for RedM",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "daggre",
+  "license": "MIT",
+  "dependencies": {
+    "some-package": "^1.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^7.32.0"
+  }
+}
