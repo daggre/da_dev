@@ -203,6 +203,8 @@ DropDownOptions.objSettingsDividerStyle = Object.fromEntries(
 );
 
 export function initUIStyle(theme, divider, border, borderrad, borderradamount) {
+    console.log(theme, divider, border, borderrad, borderradamount);
+    console.log(Settings.Theme);
     setTheme(theme);
     setDividerStyle(divider);
     document.getElementById('objSettingsBorder').classList.toggle('selected', !border);
