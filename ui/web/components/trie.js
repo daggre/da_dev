@@ -25,22 +25,22 @@ function appendOptionsToContainer(trieName, type, optionsArray) {
         return;
     }
 
-    const $container = $(fmt.selector);
-    if (!$container) {
+    const container = fmt.selector;
+    if (!container) {
         console.error(`Container not found for selector: ${fmt.selector}`);
         return;
     }
-    $container.empty();
+    container.empty();
 
     if (!optionsArray) { return; }
-    optionsArray.forEach((option, idx) => {
+    optionsArray.forEach((option) => {
         const msg = fmt.msg;
         const data = fmt.data(trieName, option);
         KeyActions["devTreeHUD"][option.key] = () => {
             sendClientMessage(msg, data);
             elementSetClass('devTreeHUD', 'hidden', true)
         };
-        $container.append(`
+        container.append(`
             <div class="row">
                 <div class="column value">${fmt.prefix}${option.name}</div>
                 <div class="column key">${option.key}</div>
