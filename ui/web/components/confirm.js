@@ -5,7 +5,7 @@
  * @param {string} no - The text to display on the "No" button.
  */
 export function showConfirm(msg = "Are you sure?", yes = "Yes", no = "No") {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         const infoHUD = document.getElementById('infoHUD');
         const message = document.getElementById('infoDescription');
         const yesButton = document.getElementById('yesOption');
@@ -21,7 +21,7 @@ export function showConfirm(msg = "Are you sure?", yes = "Yes", no = "No") {
         noButton.focus();
 
         // Create a MutationObserver to monitor if the popup becomes hidden
-        const observer = new MutationObserver((mutationsList) => {
+        const observer = new MutationObserver(() => {
             if (infoHUD.classList.contains('hidden')) {
                 cleanup();
                 resolve(false);
