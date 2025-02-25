@@ -15,7 +15,7 @@ async function fetchData(key, messageType, modifier) {
 }
 
 function addSelected(data) {
-    data.forEach((item, index) => { item.selected = false });
+    data.forEach((item) => { item.selected = false });
 }
 
 export function getAnimations() { return fetchData('Animations', 'initAnims'); }
@@ -222,7 +222,7 @@ function previewAnimation(animDict, anim) {
 DropDownAdvOptions.animConfigureTaskfilter = getTaskfilterDropdowns;
 function getTaskfilterDropdowns() {
     return getTaskFilters().then(taskfilters => {
-        return taskfilters.map((taskfilter, index) => ({
+        return taskfilters.map((taskfilter) => ({
             name: taskfilter.name.toLowerCase(),
             tooltip: taskfilter.note,
             value: taskfilter.value,
