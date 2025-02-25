@@ -13,7 +13,7 @@ jobs:
         run: sudo apt-get install -y lua5.4 luarocks
 
       - name: Install Luacheck
-        run: luarocks install luacheck
+        run: luarocks install --local luacheck
 
       - name: Run Luacheck
         run: luacheck .
