@@ -1,9 +1,6 @@
-let lastErrorMessage = null;
-
 export function sendClientMessage(endpoint, data) {
-    const resourceName = typeof GetParentResourceName === "undefined"
-        ? "mockResource"
-        : GetParentResourceName();
+    /* eslint-disable-next-line no-undef */
+    const resourceName = typeof GetParentResourceName === "undefined" ? "mockResource" : GetParentResourceName();
 
     const url = `https://${resourceName}/${endpoint}`;
 
