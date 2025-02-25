@@ -1,4 +1,4 @@
-import { setUIStyle, toggleBorder, toggleCurvedBorder, setCurvedBorderAmount } from "./utils/theme.js";
+import { setBorder, setCurvedBorder, setCurvedBorderAmount } from "./utils/theme.js";
 import { clipboardCopy } from "./utils/clipboard.js";
 import { sendClientMessage } from "./utils/msg.js";
 import { updateCrosshair } from "./components/crosshair.js";
@@ -281,8 +281,8 @@ export const EventActions = {
         '#objDetailsEntityCollision': () => toggleCollision(),
 
         '#objSettingsTooltip': () => setTooltips(),
-        '#objSettingsBorder': () => toggleBorder(),
-        '#objSettingsCurvedBorder': () => toggleCurvedBorder(),
+        '#objSettingsBorder': () => setBorder(),
+        '#objSettingsCurvedBorder': () => setCurvedBorder(),
         '#objSettingsHideCamera': () => toggleHideCamera(),
 
         '#button-animTimings': () => toggleAnimDetail('button-animTimings'),
@@ -500,11 +500,6 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchSpawnData();
     initSettings();
     registerListeners();
-
-    setUIStyle("electric_sunset", "angle up");
-    elementSetText('objSettingsTheme', "electric sunset");
-    elementSetText('objSettingsDividerStyle', "angle up");
-    toggleCurvedBorder();
 
     window.addEventListener('message', function(msg) {
         switch(msg.data.type) {

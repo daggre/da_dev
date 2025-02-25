@@ -9,6 +9,7 @@ da_ui.callbacks({
     initObjSettings = function() return {
         nearby = kvp.rawget("setting:ui:nearby"),
         tags = kvp.rawget("setting:ui:tags"),
+        theme = kvp.rawget("setting:ui:theme"),
     } end,
     initObjects = function() return {
         peds = json.encode(dat.ped),
@@ -26,6 +27,7 @@ da_ui.events({
     setObjSettings = function(data)
         if data.nearby then kvp.rawset("setting:ui:nearby", data.nearby) end
         if data.tags then kvp.rawset("setting:ui:tags", data.tags) end
+        if data.theme then kvp.rawset("setting:ui:theme", data.theme) end
     end,
     playAnim = function(data)
         local entity = data.entity and tonumber(data.entity) or nil
@@ -89,6 +91,13 @@ Citizen.CreateThread(function()
         range = 50,
     }
     setting.ui.tags = { sort = "dist" }
+    setting.ui.theme = {
+        color = "retro wave",
+        divider = "angle up",
+        border = true,
+        borderrad = false,
+        borderradamount = 8,
+    }
 
     -- Init settings
     for k1, category in pairs(setting) do
