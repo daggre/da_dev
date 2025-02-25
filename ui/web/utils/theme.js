@@ -197,7 +197,7 @@ const dividerStyles = {
 
 // Generate the dropdown options object using Object.entries and Object.fromEntries
 DropDownOptions.objSettingsDividerStyle = Object.fromEntries(
-  Object.entries(dividerStyles).map(([name, style]) => [
+  Object.entries(dividerStyles).map(([name]) => [
     name, () => setDividerStyle(name)
   ])
 );
