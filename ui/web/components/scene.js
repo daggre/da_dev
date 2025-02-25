@@ -1,3 +1,4 @@
+import { clipboardCopy } from '../utils/clipboard.js';
 import { resetList, isVisible, elementSetText } from '../utils/nav.js';
 import { showConfirm } from './confirm.js';
 import { sendClientMessage } from '../utils/msg.js';
@@ -207,7 +208,7 @@ function trackHandleClick(event) {
 
 export function importScene() {
     const sceneName = ActiveScene;
-    console.log("importScene", type, sceneName)
+    console.log("importScene", sceneName)
 }
 
 export function exportScene(type) {
@@ -219,7 +220,7 @@ export function exportScene(type) {
  * Popup dialog with export options
  */
 export function showExport() {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         const exportHUD = document.getElementById('exportHUD');
         const copyButton = document.getElementById('exportCopyOption');
         const exitButton = document.getElementById('exportExitOption');
@@ -229,7 +230,7 @@ export function showExport() {
         exitButton.focus();
 
         // Create a MutationObserver to monitor if the popup becomes hidden
-        const observer = new MutationObserver((mutationsList) => {
+        const observer = new MutationObserver(() => {
             if (exportHUD.classList.contains('hidden')) {
                 cleanup();
                 resolve(false);
@@ -266,7 +267,7 @@ export function showExport() {
 }
 
 export function showImport() {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         const importHUD = document.getElementById('importHUD');
         const importButton = document.getElementById('importOption');
         const exitButton = document.getElementById('importExitOption');
@@ -276,7 +277,7 @@ export function showImport() {
         exitButton.focus();
 
         // Create a MutationObserver to monitor if the popup becomes hidden
-        const observer = new MutationObserver((mutationsList) => {
+        const observer = new MutationObserver(() => {
             if (importHUD.classList.contains('hidden')) {
                 cleanup();
                 resolve(false);
@@ -288,7 +289,7 @@ export function showImport() {
         });
 
         function handleImport() {
-            const sceneData = document.getElementById('importContent').textContent;
+            // const sceneData = document.getElementById('importContent').textContent;
             importScene();
         }
 
@@ -298,7 +299,7 @@ export function showImport() {
         }
 
         function cleanup() {
-            importButton.removeEventListener('click', handleCopy);
+            importButton.removeEventListener('click', handleImport);
             exitButton.removeEventListener('click', handleExit);
             observer.disconnect();
             importHUD.classList.add('hidden');
