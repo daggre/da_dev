@@ -15,5 +15,8 @@ jobs:
       - name: Install Luacheck
         run: luarocks install --local luacheck
 
+      - name: Add LuaRocks bin to PATH
+        run: echo "::add-path::$(luarocks path --bin)"
+
       - name: Run Luacheck
         run: luacheck .
