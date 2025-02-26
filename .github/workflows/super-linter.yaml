@@ -29,5 +29,5 @@ jobs:
       - name: Super-linter
         uses: super-linter/super-linter/slim@v7.2.1 # x-release-please-version
         env:
-          To report GitHub Actions status checks
-          GITHUB_TOKEN: ${{ github.token }}
+          # To report GitHub Actions status checks
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
