@@ -41,7 +41,7 @@ const AnimHUD = {
 };
 
 export function toggleAnimationHUD(state) {
-    const animHudEl = document.getElementById('animHUD');
+    const animHudEl = document.getElementById('anim-hud');
     state = state ?? animHudEl.classList.contains('hidden');
     toggleSection(state, AnimHUD.visible, [], AnimHUD.all);
 
@@ -68,6 +68,6 @@ export function toggleAnimDetail(elId, state) {
         state = !el.classList.contains('selected');
     }
     el.classList.toggle('selected', state);
-    const listEl = AnimConfigureCategoryMap.get(elId);
+    const listEl = document.getElementById(AnimConfigureCategoryMap.get(elId));
     listEl.classList.toggle('hidden', !state);
 }

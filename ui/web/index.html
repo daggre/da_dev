@@ -14,34 +14,45 @@
         <!-- External Libraries -->
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
 
+        <script>
+        const isBrowser = typeof window.invokeNative === 'undefined';
+
+        if (isBrowser) {
+            window.netReady = new Promise((resolve) => {
+                console.log('Promising netReady');
+                const script = document.createElement('script');
+                script.src = 'dev-mocks.js';
+                script.onload = () => {
+                    console.log('Development script loaded. Promise netReady resolved');
+                    resolve(); // Mark as ready
+                };
+                script.onerror = () => {
+                    console.warn('Failed to load dev-mocks.js.');
+                    resolve(); // Still resolve to avoid blocking
+                };
+                document.head.appendChild(script);
+            });
+
+            // Create a link element for the favicon
+            const favicon = document.createElement('link');
+            favicon.rel = 'icon';
+            favicon.href =
+                'data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAGAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA';
+            document.head.appendChild(favicon);
+        } else {
+            console.log('Running in RedM Game environment.');
+            window.netReady = Promise.resolve(); // Immediately resolve in RedM environment
+        }
+        </script>
+
         <!-- Your Scripts -->
         <script type="module" src="./assets/gizmo.js" defer></script>
         <script type="module" src="script.js" defer></script>
 
-        <!-- Development Script Loader -->
-        <script>
-            const isBrowser = typeof window.invokeNative === 'undefined';
-            if (isBrowser) {
-                const script = document.createElement('script');
-                script.src = 'dev-mocks.js';
-                document.head.appendChild(script);
-                console.log('Development script loaded.');
-                // Create a link element for the favicon with a Data URL
-                const favicon = document.createElement('link');
-                favicon.rel = 'icon';
-                // This is a minimal, empty favicon as a Data URL
-                favicon.href =
-                    'data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAGAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//wAA//8AAP//AAD//wAA';
-                document.head.appendChild(favicon);
-            } else {
-                console.log('Running in RedM environment.');
-            }
-        </script>
     </head>
 
     <body>
         <main>
-            <!-- TODO: Complete this -->
             <section id="info-hud" class="hud hidden">
                 <div class="pad center blr bgt2">
                     <div class="bigicon"></div>
@@ -108,7 +119,7 @@
                     </ul>
                 </div>
             </section>
-            <section id="importHUD" class="hud hidden">
+            <section id="import-hud" class="hud hidden">
                 <div class="center blr bgt2 pad">
                     <div id="importIcon" class="bigicon">󰈝</div>
                     <div id="importDescription" class="gap">Export Scene</div>
@@ -137,14 +148,14 @@
                     </div>
                     <ul class="row rowpad gap">
                         <li
-                            id="exportCopyOption"
+                            id="importOption"
                             tabindex="99"
                             class="control blr bgt2"
                         >
                             Copy
                         </li>
                         <li
-                            id="exportExitOption"
+                            id="importExitOption"
                             tabindex="99"
                             class="control blr bgt2"
                         >
@@ -162,7 +173,7 @@
                     <ul id="devOptions" class="options-list"></ul>
                 </div>
             </section>
-            <section id="objectHUD" class="hud hidden">
+            <section id="object-hud" class="hud hidden">
                 <div id="objHelp" class="center bgt2 pad blr hidden mgb">
                     <div class="title">Object Editor</div>
                     <div class="bigicon"></div>
@@ -873,7 +884,7 @@
                     </div>
                 </div>
             </section>
-            <section id="animHUD" class="hud hidden">
+            <section id="anim-hud" class="hud hidden">
                 <div id="animHelp" class="center bgt2 pad blr hidden mgb">
                     <div class="title">Animation Developer Kit</div>
                     <div class="bigicon"></div>
@@ -1092,6 +1103,7 @@
                         <div
                             id="animSelectedDict"
                             class="entry borderright bgt1"
+                            aria-label="Animation Dictionary"
                         ></div>
                     </div>
                     <div
@@ -1102,6 +1114,7 @@
                         <div
                             id="animSelectedName"
                             class="entry borderright bgt1"
+                            aria-label="Animation Name"
                         ></div>
                     </div>
                     <div
@@ -1114,6 +1127,7 @@
                             class="entry borderright bgt1"
                             tabindex="2"
                             contenteditable="true"
+                            aria-label="Search Animations"
                         ></div>
                     </div>
                     <div
@@ -1137,6 +1151,7 @@
                         <div
                             id="animConfSelectedDict"
                             class="entry borderright bgt1"
+                            aria-label="Animation Dictionary"
                         ></div>
                     </div>
                     <div
@@ -1147,6 +1162,7 @@
                         <div
                             id="animConfSelectedName"
                             class="entry borderright bgt1"
+                            aria-label="Animation Name"
                         ></div>
                     </div>
                     <div id="animListConfigureOptions" class="bgt1 blr gap">
@@ -1158,6 +1174,7 @@
                                     tabindex="12"
                                     role="button"
                                     aria-pressed="false"
+                                    aria-label="Add Selected Animation"
                                 >
                                     󰜄
                                 </div>
@@ -1167,6 +1184,7 @@
                                     tabindex="12"
                                     role="button"
                                     aria-pressed="false"
+                                    aria-label="Clear Selected Animation Config"
                                 >
                                     󰎟
                                 </div>
@@ -1176,6 +1194,7 @@
                                     tabindex="12"
                                     role="button"
                                     aria-pressed="false"
+                                    aria-label="Clear All Animations"
                                 >
                                     󰗨
                                 </div>
@@ -1225,6 +1244,7 @@
                                     <div
                                         id="animConfigureEntity"
                                         class="entry borderright bgt1"
+                                        tabindex="13"
                                         contenteditable="false"
                                         aria-label="Entity Handle"
                                     ></div>
@@ -1234,6 +1254,7 @@
                                     <div
                                         id="animConfigureDict"
                                         class="entry borderright bgt1"
+                                        tabindex="13"
                                         contenteditable="false"
                                         aria-label="Animation Dictionary Name"
                                     ></div>
@@ -1243,6 +1264,7 @@
                                     <div
                                         id="animConfigureName"
                                         class="entry borderright bgt1"
+                                        tabindex="13"
                                         contenteditable="false"
                                         aria-label="Animation Name"
                                     ></div>
@@ -1458,216 +1480,6 @@
                 </div>
 
             </section>
-            <section id="animHUD" class="hud hidden">
-                <div id="animControlOptions" class="bgt1 blr gap">
-                    <ul class="row">
-                        <li id="animSettings" style="display: none">
-                            <div
-                                id="button-search"
-                                class="control"
-                                tabindex="2"
-                                role="button"
-                                aria-pressed="false"
-                            >
-                                
-                            </div>
-                            <div
-                                id="button-timings"
-                                class="control"
-                                tabindex="3"
-                                role="button"
-                                aria-pressed="false"
-                            >
-                                
-                            </div>
-                            <div
-                                id="button-ikflags"
-                                class="control"
-                                tabindex="4"
-                                role="button"
-                                aria-pressed="false"
-                            >
-                                
-                            </div>
-                            <div
-                                id="button-flags"
-                                class="control"
-                                tabindex="5"
-                                role="button"
-                                aria-pressed="false"
-                            >
-                                
-                            </div>
-                            <div
-                                id="button-taskFilters"
-                                class="control"
-                                tabindex="6"
-                                role="button"
-                                aria-pressed="false"
-                            >
-                                󰤶
-                            </div>
-                            <div
-                                id="button-entity"
-                                class="control"
-                                tabindex="7"
-                                role="button"
-                                aria-pressed="false"
-                            >
-                                
-                            </div>
-                        </li>
-                        <li>
-                            <div
-                                id="button-settings"
-                                class="control"
-                                tabindex="1"
-                                role="button"
-                                aria-pressed="false"
-                            >
-                                
-                            </div>
-                            <div
-                                id="button-play"
-                                class="control"
-                                tabindex="11"
-                                role="button"
-                                aria-pressed="false"
-                            >
-                                
-                            </div>
-                            <div
-                                id="button-stop"
-                                class="control"
-                                tabindex="11"
-                                role="button"
-                                aria-pressed="false"
-                            >
-                                
-                            </div>
-                            <div
-                                id="button-repeat"
-                                class="control"
-                                tabindex="11"
-                                role="button"
-                                aria-pressed="false"
-                            >
-                                
-                            </div>
-                            <div
-                                id="button-torso"
-                                class="control"
-                                tabindex="11"
-                                role="button"
-                                aria-pressed="false"
-                            >
-                                
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-                <div id="animSearchLists" class="list-group top left">
-                    <div
-                        id="animDictList"
-                        class="list list-primary bggradient"
-                    ></div>
-                    <div
-                        id="animList"
-                        class="list list-secondary bggradient"
-                    ></div>
-                </div>
-                <div id="animSearchField" class="searchField">
-                    <div class="label borderleft bgi" style="width: auto">
-                        
-                    </div>
-                    <div
-                        id="valueAnimSearch"
-                        class="entry borderright bgt1"
-                        tabindex="2"
-                        contenteditable="true"
-                    ></div>
-                </div>
-                <div id="animTimingsOptions">
-                    <ul id="animTimings">
-                        <li>
-                            <div class="label borderleft bgi">Blend-In</div>
-                            <div
-                                id="timingBlendIn"
-                                class="entry borderright bgt1"
-                                contenteditable="true"
-                                tabindex="3"
-                            >
-                                1.0
-                            </div>
-                        </li>
-                        <li>
-                            <div class="label borderleft bgi">Blend-Out</div>
-                            <div
-                                id="timingBlendOut"
-                                class="entry borderright bgt1"
-                                contenteditable="true"
-                                tabindex="3"
-                            >
-                                1.0
-                            </div>
-                        </li>
-                        <li>
-                            <div class="label borderleft bgi">Playback</div>
-                            <div
-                                id="timingPlayback"
-                                class="entry borderright bgt1"
-                                contenteditable="true"
-                                tabindex="3"
-                            >
-                                0
-                            </div>
-                        </li>
-                        <li>
-                            <div class="label borderleft bgi">Duration</div>
-                            <div
-                                id="timingDuration"
-                                class="entry borderright bgt1"
-                                contenteditable="true"
-                                tabindex="3"
-                            >
-                                -1
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-                <div id="animFlagsOptions" class="flagList"></div>
-                <div id="animIKFlagsOptions" class="flagList"></div>
-                <div id="animTaskFilterOptions" class="flagList"></div>
-                <div id="animEntityOptions">
-                    <ul id="animEntity">
-                        <li>
-                            <div class="label borderleft bgi">Entity</div>
-                            <div
-                                id="animEntityField"
-                                class="entry borderright bgt1"
-                                contenteditable="true"
-                                tabindex="6"
-                            ></div>
-                        </li>
-                    </ul>
-                </div>
-                <div id="activeAnimDisplay">
-                    <ul id="animActive">
-                        <li>
-                            <div class="label borderleft bgi">animDict</div>
-                            <div
-                                id="activeAnimDict"
-                                class="entry borderright bgt1"
-                            ></div>
-                            <div class="label borderleft bgi">anim</div>
-                            <div
-                                id="activeAnimName"
-                                class="entry borderright bgt1"
-                            ></div>
-                        </li>
-                    </ul>
-                </div>
-            </section>
             <section id="camera-hud" class="hud hidden">
                 <div id="camHelp" class="center bgt2 pad blr hidden mgb">
                     <div class="title">FreeCam and NoClip</div>
@@ -1854,6 +1666,216 @@
                     </ul>
                 </div>
             </section>
+            <!-- <section id="animHUD" class="hud hidden"> -->
+            <!--     <div id="animControlOptions" class="bgt1 blr gap"> -->
+            <!--         <ul class="row"> -->
+            <!--             <li id="animSettings" style="display: none"> -->
+            <!--                 <div -->
+            <!--                     id="button-search" -->
+            <!--                     class="control" -->
+            <!--                     tabindex="2" -->
+            <!--                     role="button" -->
+            <!--                     aria-pressed="false" -->
+            <!--                 > -->
+            <!--                      -->
+            <!--                 </div> -->
+            <!--                 <div -->
+            <!--                     id="button-timings" -->
+            <!--                     class="control" -->
+            <!--                     tabindex="3" -->
+            <!--                     role="button" -->
+            <!--                     aria-pressed="false" -->
+            <!--                 > -->
+            <!--                      -->
+            <!--                 </div> -->
+            <!--                 <div -->
+            <!--                     id="button-ikflags" -->
+            <!--                     class="control" -->
+            <!--                     tabindex="4" -->
+            <!--                     role="button" -->
+            <!--                     aria-pressed="false" -->
+            <!--                 > -->
+            <!--                      -->
+            <!--                 </div> -->
+            <!--                 <div -->
+            <!--                     id="button-flags" -->
+            <!--                     class="control" -->
+            <!--                     tabindex="5" -->
+            <!--                     role="button" -->
+            <!--                     aria-pressed="false" -->
+            <!--                 > -->
+            <!--                      -->
+            <!--                 </div> -->
+            <!--                 <div -->
+            <!--                     id="button-taskFilters" -->
+            <!--                     class="control" -->
+            <!--                     tabindex="6" -->
+            <!--                     role="button" -->
+            <!--                     aria-pressed="false" -->
+            <!--                 > -->
+            <!--                     󰤶 -->
+            <!--                 </div> -->
+            <!--                 <div -->
+            <!--                     id="button-entity" -->
+            <!--                     class="control" -->
+            <!--                     tabindex="7" -->
+            <!--                     role="button" -->
+            <!--                     aria-pressed="false" -->
+            <!--                 > -->
+            <!--                      -->
+            <!--                 </div> -->
+            <!--             </li> -->
+            <!--             <li> -->
+            <!--                 <div -->
+            <!--                     id="button-settings" -->
+            <!--                     class="control" -->
+            <!--                     tabindex="1" -->
+            <!--                     role="button" -->
+            <!--                     aria-pressed="false" -->
+            <!--                 > -->
+            <!--                      -->
+            <!--                 </div> -->
+            <!--                 <div -->
+            <!--                     id="button-play" -->
+            <!--                     class="control" -->
+            <!--                     tabindex="11" -->
+            <!--                     role="button" -->
+            <!--                     aria-pressed="false" -->
+            <!--                 > -->
+            <!--                      -->
+            <!--                 </div> -->
+            <!--                 <div -->
+            <!--                     id="button-stop" -->
+            <!--                     class="control" -->
+            <!--                     tabindex="11" -->
+            <!--                     role="button" -->
+            <!--                     aria-pressed="false" -->
+            <!--                 > -->
+            <!--                      -->
+            <!--                 </div> -->
+            <!--                 <div -->
+            <!--                     id="button-repeat" -->
+            <!--                     class="control" -->
+            <!--                     tabindex="11" -->
+            <!--                     role="button" -->
+            <!--                     aria-pressed="false" -->
+            <!--                 > -->
+            <!--                      -->
+            <!--                 </div> -->
+            <!--                 <div -->
+            <!--                     id="button-torso" -->
+            <!--                     class="control" -->
+            <!--                     tabindex="11" -->
+            <!--                     role="button" -->
+            <!--                     aria-pressed="false" -->
+            <!--                 > -->
+            <!--                      -->
+            <!--                 </div> -->
+            <!--             </li> -->
+            <!--         </ul> -->
+            <!--     </div> -->
+            <!--     <div id="animSearchLists" class="list-group top left"> -->
+            <!--         <div -->
+            <!--             id="animDictList" -->
+            <!--             class="list list-primary bggradient" -->
+            <!--         ></div> -->
+            <!--         <div -->
+            <!--             id="animList" -->
+            <!--             class="list list-secondary bggradient" -->
+            <!--         ></div> -->
+            <!--     </div> -->
+            <!--     <div id="animSearchField" class="searchField"> -->
+            <!--         <div class="label borderleft bgi" style="width: auto"> -->
+            <!--              -->
+            <!--         </div> -->
+            <!--         <div -->
+            <!--             id="valueAnimSearch" -->
+            <!--             class="entry borderright bgt1" -->
+            <!--             tabindex="2" -->
+            <!--             contenteditable="true" -->
+            <!--         ></div> -->
+            <!--     </div> -->
+            <!--     <div id="animTimingsOptions"> -->
+            <!--         <ul id="animTimings"> -->
+            <!--             <li> -->
+            <!--                 <div class="label borderleft bgi">Blend-In</div> -->
+            <!--                 <div -->
+            <!--                     id="timingBlendIn" -->
+            <!--                     class="entry borderright bgt1" -->
+            <!--                     contenteditable="true" -->
+            <!--                     tabindex="3" -->
+            <!--                 > -->
+            <!--                     1.0 -->
+            <!--                 </div> -->
+            <!--             </li> -->
+            <!--             <li> -->
+            <!--                 <div class="label borderleft bgi">Blend-Out</div> -->
+            <!--                 <div -->
+            <!--                     id="timingBlendOut" -->
+            <!--                     class="entry borderright bgt1" -->
+            <!--                     contenteditable="true" -->
+            <!--                     tabindex="3" -->
+            <!--                 > -->
+            <!--                     1.0 -->
+            <!--                 </div> -->
+            <!--             </li> -->
+            <!--             <li> -->
+            <!--                 <div class="label borderleft bgi">Playback</div> -->
+            <!--                 <div -->
+            <!--                     id="timingPlayback" -->
+            <!--                     class="entry borderright bgt1" -->
+            <!--                     contenteditable="true" -->
+            <!--                     tabindex="3" -->
+            <!--                 > -->
+            <!--                     0 -->
+            <!--                 </div> -->
+            <!--             </li> -->
+            <!--             <li> -->
+            <!--                 <div class="label borderleft bgi">Duration</div> -->
+            <!--                 <div -->
+            <!--                     id="timingDuration" -->
+            <!--                     class="entry borderright bgt1" -->
+            <!--                     contenteditable="true" -->
+            <!--                     tabindex="3" -->
+            <!--                 > -->
+            <!--                     -1 -->
+            <!--                 </div> -->
+            <!--             </li> -->
+            <!--         </ul> -->
+            <!--     </div> -->
+            <!--     <div id="animFlagsOptions" class="flagList"></div> -->
+            <!--     <div id="animIKFlagsOptions" class="flagList"></div> -->
+            <!--     <div id="animTaskFilterOptions" class="flagList"></div> -->
+            <!--     <div id="animEntityOptions"> -->
+            <!--         <ul id="animEntity"> -->
+            <!--             <li> -->
+            <!--                 <div class="label borderleft bgi">Entity</div> -->
+            <!--                 <div -->
+            <!--                     id="animEntityField" -->
+            <!--                     class="entry borderright bgt1" -->
+            <!--                     contenteditable="true" -->
+            <!--                     tabindex="6" -->
+            <!--                 ></div> -->
+            <!--             </li> -->
+            <!--         </ul> -->
+            <!--     </div> -->
+            <!--     <div id="activeAnimDisplay"> -->
+            <!--         <ul id="animActive"> -->
+            <!--             <li> -->
+            <!--                 <div class="label borderleft bgi">animDict</div> -->
+            <!--                 <div -->
+            <!--                     id="activeAnimDict" -->
+            <!--                     class="entry borderright bgt1" -->
+            <!--                 ></div> -->
+            <!--                 <div class="label borderleft bgi">anim</div> -->
+            <!--                 <div -->
+            <!--                     id="activeAnimName" -->
+            <!--                     class="entry borderright bgt1" -->
+            <!--                 ></div> -->
+            <!--             </li> -->
+            <!--         </ul> -->
+            <!--     </div> -->
+            <!-- </section> -->
         </main>
         <!-- TODO: Test new copy function and update this -->
         <div id="copyField" class="hidden">

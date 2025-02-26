@@ -59,7 +59,7 @@ const ObjectHUD = {
 };
 
 export function toggleObjectHUD(state) {
-    const objectHudEl = document.getElementById('objectHUD');
+    const objectHudEl = document.getElementById('object-hud');
     state = state ?? objectHudEl.classList.contains('hidden');
     toggleSection(state, ObjectHUD.visible, [], ObjectHUD.all);
     objectHudEl.classList.toggle('hidden', !state);

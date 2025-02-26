@@ -393,12 +393,12 @@ function getMockResponse(endpoint) {
 }
 
 function sendMockEvent(message, data) {
-    const e = new MessageEvent(message, { data: data });
-    window.dispatchEvent(e);
     console.log(
         `[Mock][Client Send] Dispatched mock event '${message}' with data: `,
         data
     );
+    const e = new MessageEvent(message, { data: data });
+    window.dispatchEvent(e);
 }
 
 console.log('Running dev-mocks');
@@ -416,19 +416,14 @@ window.endpointMute = {
 
 document.body.style.backgroundColor = '#333333';
 
-document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => {
-        console.log('[DOC] DOMContentLoaded');
-        sendMockEvent('message', {
-            type: testHud,
-            state: true,
-        });
-
-        setTimeout(() => {
-            sendMockEvent('message', {
-                type: 'updateCamera',
-                camera: { speed: '0.20' },
-            });
-        }, 1000);
-    }, 100);
+window.messagesReady.then(() => {
+    console.log('messagesReady resolved: sending mock game init messages');
+    sendMockEvent('message', {
+        type: testHud,
+        state: true,
+    });
+    sendMockEvent('message', {
+        type: 'updateCamera',
+        camera: { speed: '0.20' },
+    });
 });

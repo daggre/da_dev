@@ -289,7 +289,7 @@ export function showExport() {
 
 export function showImport() {
     return new Promise(resolve => {
-        const importHUD = document.getElementById('importHUD');
+        const importHUD = document.getElementById('import-hud');
         const importButton = document.getElementById('importOption');
         const exitButton = document.getElementById('importExitOption');
         const lastFocusedElement = document.activeElement;
