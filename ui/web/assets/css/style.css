@@ -1,6 +1,6 @@
 @font-face {
     font-family: LiterationMonoNerd;
-    src: url("../fonts/LiterationMonoNerd.ttf");
+    src: url('../fonts/LiterationMonoNerd.ttf');
 }
 
 .test {
@@ -19,7 +19,7 @@
     --brd-rad: 8px;
     --brd-size: 2px;
     /* stylelint-disable-next-line no-irregular-whitespace */
-    --divider: " ";
+    --divider: ' ';
 }
 
 html {
@@ -245,7 +245,7 @@ ul li {
 }
 
 .entry.borderright::before {
-    content: var(--divider, "|");
+    content: var(--divider, '|');
     color: var(--primary);
     pointer-events: none;
     text-shadow:
@@ -257,7 +257,7 @@ ul li {
 .entry.borderright::after {
     color: transparent;
     pointer-events: none;
-    content: "";
+    content: '';
 }
 
 .check {
@@ -265,12 +265,12 @@ ul li {
 }
 
 .check.borderright.selected::after {
-    content: "";
+    content: '';
     color: var(--primary);
 }
 
 .check.borderright::after {
-    content: "";
+    content: '';
     color: var(--primary);
 }
 
