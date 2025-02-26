@@ -1,5 +1,4 @@
 import { sendClientMessage } from '../utils/msg.js';
-import { elementSetClass } from '../utils/nav.js'; // TODO: refactor elementSetClass
 import { initUIStyle } from '../utils/theme.js';
 
 export let Settings = {
@@ -46,34 +45,14 @@ export function initSettings() {
         Settings.tag = JSON.parse(resp.tags);
         Settings.theme = JSON.parse(resp.theme);
 
-        elementSetClass(
-            'button-nearby-object',
-            'selected',
-            Settings.nearby.object
-        );
-        elementSetClass('button-nearby-ped', 'selected', Settings.nearby.ped);
-        elementSetClass(
-            'button-nearby-vehicle',
-            'selected',
-            Settings.nearby.vehicle
-        );
-        elementSetClass(
-            'button-nearby-scene',
-            'selected',
-            Settings.nearby.scene
-        );
-        document.getElementById('nearbyRange').textContent =
-            Settings.nearby.range;
-        document
-            .getElementById(
-                `button-nearbyOrigin-${formatId(Settings.nearby.origin)}`
-            )
-            .classList.add('selected');
-        document.getElementById('activeNearbyOrigin').textContent =
-            Settings.nearby.origin;
-        document
-            .getElementById(`button-tagsortby${Settings.tag.sort}`)
-            .classList.add('selected');
+        document.getElementById('button-nearby-object').classList.toggle('selected', Settings.nearby.object);
+        document.getElementById('button-nearby-ped').classList.toggle('selected', Settings.nearby.ped);
+        document.getElementById('button-nearby-vehicle').classList.toggle('selected', Settings.nearby.vehicle);
+        // document.getElementById('button-nearby-other').classList.toggle('selected', Settings.nearby.other);
+        document.getElementById('nearbyRange').textContent = Settings.nearby.range;
+        document.getElementById(`button-nearbyOrigin-${formatId(Settings.nearby.origin)}`).classList.add('selected');
+        document.getElementById('activeNearbyOrigin').textContent = Settings.nearby.origin;
+        document.getElementById(`button-tagsortby${Settings.tag.sort}`).classList.add('selected');
     });
     initUIStyle(
         Settings.theme.color,

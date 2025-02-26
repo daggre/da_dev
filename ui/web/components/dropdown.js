@@ -1,5 +1,3 @@
-import { elementSetText } from '../utils/nav.js';
-
 export let DropDownAdvOptions = {};
 export let DropDownMultiOptions = {};
 export let DropDownOptions = {};
@@ -18,7 +16,7 @@ export function dropdownListeners() {
                     if (option === null) {
                         return;
                     }
-                    elementSetText(dropdown.id, option);
+                    document.getElementById(dropdown.id).textContent = option;
                     DropDownOptions[dropdown.id][option]();
                 });
             } else if (DropDownAdvOptions[dropdown.id]) {
@@ -27,7 +25,8 @@ export function dropdownListeners() {
                         if (option === null) {
                             return;
                         }
-                        elementSetText(dropdown.id, option.fn());
+                        console.log(option, dropdown);
+                        document.getElementById(dropdown.id).textContent = option.name;
                     });
                 });
             } else if (DropDownMultiOptions[dropdown.id]) {
@@ -40,7 +39,8 @@ export function dropdownListeners() {
                         DropDownMultiOptions[dropdown.id]
                             .result()
                             .then(result => {
-                                elementSetText(dropdown.id, result);
+                                console.log(result, dropdown);
+                                document.getElementById(dropdown.id).textContent = result;
                             });
                     });
                 });
@@ -132,7 +132,8 @@ export function showDropdown(options, x, y, multiSelect = false) {
         function handleOutsideClick(event) {
             if (!menu.contains(event.target)) {
                 cleanup();
-                // TODO: TEST and confirm if we should resolve null in both cases
+                // If its multi-select, resolve with the set of selected items
+                // otherwise  dont select anything
                 resolve(multiSelect ? Array.from(modifiedItems) : null);
             }
         }

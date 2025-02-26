@@ -2,13 +2,7 @@ import { Settings } from './settings.js';
 import { DropDownOptions } from './dropdown.js';
 import { MouseDown } from '../script.js';
 import { sendClientMessage } from '../utils/msg.js';
-import {
-    resetList,
-    isVisible,
-    elementSetClass,
-    elementHasClass,
-    elementSetText,
-} from '../utils/nav.js';
+import { resetList, isVisible, } from '../utils/nav.js';
 
 let TrackedObjectsLoopRunning = false;
 let SelectedObjectSpawnType = 'objects';
@@ -75,10 +69,7 @@ function searchHandleHover(event) {
     const li = event.target.closest('li');
     if (!li) return;
 
-    const isPreviewSelected = elementHasClass(
-        'button-spawnpreview',
-        'selected'
-    );
+    const isPreviewSelected = document.getElementById('button-spawnpreview').classList.contains('selected');
     if (event.type === 'pointerenter') {
         li.classList.add('li-hover');
         if (isPreviewSelected) {
@@ -211,12 +202,12 @@ function trackHandleClick(event) {
 }
 
 function selectSpawnObject(object) {
-    elementSetText('activeObject', object);
+    document.getElementById('activeObject').textContent = object;
     sendClientMessage('selectSpawnObject', { name: object });
 }
 
 export function toggleNearbyFilter(type) {
-    const selected = elementSetClass(`button-nearby-${type}`, 'selected');
+    const selected = document.getElementById(`button-nearby-${type}`).classList.toggle('selected');
     Settings.nearby[type] = selected;
     sendClientMessage('setObjSettings', {
         nearby: JSON.stringify(Settings.nearby),
@@ -224,8 +215,8 @@ export function toggleNearbyFilter(type) {
 }
 
 export function tagSelectSort(sortType) {
-    elementSetClass(`button-tagsortby${Settings.tag.sort}`, 'selected', false);
-    elementSetClass(`button-tagsortby${sortType}`, 'selected', true);
+    document.getElementById(`button-tagsortby${Settings.tag.sort}`).classList.remove('selected');
+    document.getElementById(`button-tagsortby${sortType}`).classList.add('selected');
     Settings.tag.sort = sortType;
     sendClientMessage('setObjSettings', { tags: JSON.stringify(Settings.tag) });
 }
@@ -279,8 +270,8 @@ function selectOption(
 
     updateState(newValue); // Update the state
 
-    elementSetClass(`${prefix}${formatId(prevValue)}`, 'selected', false);
-    elementSetClass(`${prefix}${formatId(newValue)}`, 'selected', true);
+    document.getElementById(`${prefix}${formatId(prevValue)}`).classList.remove('selected');
+    document.getElementById(`${prefix}${formatId(newValue)}`).classList.add('selected');
 
     if (onChange) onChange(newValue); // Execute additional logic if provided
 }
@@ -319,7 +310,7 @@ export function selectNearbyOrigin(origin) {
             return Settings.nearby.origin;
         },
         newValue => {
-            elementSetText('activeNearbyOrigin', newValue);
+            document.getElementById('activeNearbyOrigin').textContent = newValue;
             sendClientMessage(
                 'setNearbyOriginPos',
                 newValue === 'set position' ? {} : { remove: true }
@@ -347,21 +338,21 @@ DropDownOptions.activeNearbyOrigin = Object.fromEntries(
 export function toggleVisible(
     handle = document.getElementById('objDetailsEntityHandle')?.textContent
 ) {
-    const state = elementHasClass('objDetailsEntityVisible', 'selected');
+    const state = document.getElementById('objDetailsEntityVisible').classList.contains('selected');
     sendClientMessage('setVisible', { handle: handle, state: !state });
 }
 
 export function toggleFrozen(
     handle = document.getElementById('objDetailsEntityHandle')?.textContent
 ) {
-    const state = elementHasClass('objDetailsEntityFrozen', 'selected');
+    const state = document.getElementById('objDetailsEntityFrozen').classList.contains('selected');
     sendClientMessage('setFrozen', { handle: handle, state: !state });
 }
 
 export function toggleCollision(
     handle = document.getElementById('objDetailsEntityHandle')?.textContent
 ) {
-    const state = elementHasClass('objDetailsEntityCollision', 'selected');
+    const state = document.getElementById('objDetailsEntityCollision').classList.contains('selected');
     sendClientMessage('setCollision', { handle: handle, state: !state });
 }
 

@@ -8,6 +8,7 @@
 // }
 
 // TODO: Test this new implemented clipboardCopy function
+// FIXME: This didnt work ingame
 export function clipboardCopy(val) {
     if (navigator.clipboard) {
         navigator.clipboard

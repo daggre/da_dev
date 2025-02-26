@@ -1,5 +1,4 @@
 import { DropDownOptions } from '../components/dropdown.js';
-import { elementSetText } from './nav.js';
 import { sendClientMessage } from './msg.js';
 import { Settings } from '../components/settings.js';
 
@@ -153,7 +152,8 @@ function setTheme(theme) {
         }
     });
     sendClientMessage('setTheme', { theme: t });
-    elementSetText('objSettingsTheme', theme);
+    const displayTheme = theme.replace(/_/g, ' ');
+    document.getElementById('objSettingsTheme').textContent = displayTheme;
     if (Settings.theme.color != theme) {
         Settings.theme.color = theme;
         sendClientMessage('setObjSettings', {
@@ -173,7 +173,7 @@ DropDownOptions.objSettingsTheme = Object.fromEntries(
 function setDividerStyle(divider) {
     const style = dividerStyles[divider];
     document.documentElement.style.setProperty('--divider', `"${style} "`);
-    elementSetText('objSettingsDividerStyle', divider);
+    document.getElementById('objSettingsDividerStyle').textContent = divider;
     if (Settings.theme.divider != divider) {
         Settings.theme.divider = divider;
         sendClientMessage('setObjSettings', {
@@ -273,7 +273,6 @@ export function setCurvedBorderAmount() {
 }
 
 export function setCurvedBorder() {
-    // Toggle var(--brd-rad) if #button-objSettingsCurvedBorder is selected
     const selected = document
         .getElementById('objSettingsCurvedBorder')
         .classList.toggle('selected');

@@ -1,7 +1,7 @@
+import { MCP } from '../../script.js';
 import { toggleHUD, toggleSection } from './common.js';
-import { searchSpawnObject } from '../obj.js';
 import { getScenes, trackSceneObjects } from '../scene.js';
-import { getTrackedObjects } from '../obj.js';
+import { searchSpawnObject, getTrackedObjects } from '../obj.js';
 
 const ObjectHUD = {
     all: [
@@ -31,7 +31,6 @@ const ObjectHUD = {
         spawn: 'button-spawn',
         tracked: 'button-trackedobjlist',
         importExport: 'button-importexport',
-        settings: 'button-objsettings',
     },
     sections: {
         spawn: [
@@ -56,7 +55,6 @@ const ObjectHUD = {
             'objSceneTagOptions',
             'objSceneObjectsList',
         ],
-        settings: ['objSettings'],
     },
 };
 
@@ -99,3 +97,69 @@ export function toggleObjectImportExportHUD(state) {
 export function toggleObjectSettingsHUD(state) {
     toggleHUD(state, ObjectHUD, 'settings', ObjectHUD.buttons.settings);
 }
+
+const ObjectDetailsCategoryMap = new Map([
+    ['button-objDetailsPosition', 'objDetailsListPosition'],
+    ['button-objDetailsStatus', 'objDetailsListStatus'],
+]);
+
+export function toggleObjectDetail(elId, state) {
+    console.log('toggleObjectDetail', elId, state);
+    const el = document.getElementById(elId);
+    if (state === undefined) {
+        state = !el.classList.contains('selected');
+    }
+    el.classList.toggle('selected', state);
+    const listEl = ObjectDetailsCategoryMap.get(elId);
+    listEl.classList.toggle('hidden', !state);
+}
+
+const ObjectDetailsFields = new Map([
+    ['objDetailsEntityHandle', 'handle'],
+    ['objDetailsEntityNetworkId', 'networkID'],
+    // ["objDetailsEntityModelHash", "modelHash"],
+    ['objDetailsEntityModelName', 'modelName'],
+    ['objDetailsEntityPosX', 'coords_x'],
+    ['objDetailsEntityPosY', 'coords_y'],
+    ['objDetailsEntityPosZ', 'coords_z'],
+    ['objDetailsEntityRotPitch', 'rotation_pitch'],
+    ['objDetailsEntityRotRoll', 'rotation_roll'],
+    ['objDetailsEntityRotYaw', 'rotation_yaw'],
+]);
+
+const ObjectDetailsOptions = new Map([
+    ['objDetailsEntityVisible', 'visible'],
+    ['objDetailsEntityFrozen', 'frozen'],
+    ['objDetailsEntityCollision', 'collision'],
+]);
+
+function clearObjectDetails() {
+    ObjectDetailsFields.forEach((value, key) => {
+        document.getElementById(key).textContent = '';
+    });
+    ObjectDetailsOptions.forEach((value, key) => {
+        document.getElementById(key).textContent = '';
+    });
+}
+
+export function updateObjectDetails(data) {
+    const objDetailsEl = document.getElementById('objDetails');
+    if (!data.select) {
+        clearObjectDetails();
+        objDetailsEl.classList.add('hidden');
+        return;
+    }
+
+    ObjectDetailsFields.forEach((value, key) => {
+        document.getElementById(key).textContent = data.selectData[value];
+    });
+    ObjectDetailsOptions.forEach((value, key) => {
+        document.getElementById(key).classList.toggle('selected', data.selectData[value]);
+    });
+    objDetailsEl.classList.remove('hidden');
+}
+
+export function toggleCrosshair(state) {
+    document.getElementById('crosshair').classList.toggle('hidden', !state || !MCP);
+}
+

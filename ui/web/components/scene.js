@@ -1,5 +1,5 @@
 import { clipboardCopy } from '../utils/clipboard.js';
-import { resetList, isVisible, elementSetText } from '../utils/nav.js';
+import { resetList, isVisible } from '../utils/nav.js';
 import { showConfirm } from './confirm.js';
 import { sendClientMessage } from '../utils/msg.js';
 import { DropDownOptions } from './dropdown.js';
@@ -126,7 +126,7 @@ export function getScenes() {
             li.classList.add('li-select');
             selectedLi = li; // Update selected `<li>`
 
-            elementSetText('selectedScene', ActiveScene);
+            document.getElementById('selectedScene').textContent = ActiveScene;
             sendClientMessage('loadScene', { scene: ActiveScene });
             trackSceneObjects();
         });
