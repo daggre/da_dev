@@ -108,7 +108,7 @@ export let KeyActions = {
         escape: () => toggleSettingsHUD(false),
     },
     'dev-tree-hud': {},
-    animHUD: {
+    'anim-hud': {
         ' ': event => {
             clickElement(event);
         },
@@ -140,7 +140,7 @@ export let KeyActions = {
             toggleSettingsHUD(false);
         },
     },
-    objectHUD: {
+    'object-hud': {
         ' ': event => {
             clickElement(event);
         },
@@ -190,6 +190,20 @@ export let KeyActions = {
             toggleSettingsHUD(false);
         },
     },
+    'import-hud': {
+        ' ': event => {
+            clickElement(event);
+        },
+        escape: () => {
+            if (!document.getElementById('importContent').matches(':focus')) {
+                document.getElementById('import-hud').classList.add('hidden');
+            } else {
+                document.activeElement.blur();
+                window.getSelection().removeAllRanges();
+                document.getElementById('importExitOption').focus();
+            }
+        },
+    },
     'export-hud': {
         ' ': event => {
             clickElement(event);
@@ -230,7 +244,7 @@ export let MouseActions = {
         leftClick: () => {},
         middleClick: () => {},
     },
-    animHUD: {
+    'anim-hud': {
         leftClick: event => {
             // TODO: convert this to EventActions click
             if (
@@ -260,7 +274,7 @@ export let MouseActions = {
             }
         },
     },
-    objectHUD: {
+    'object-hud': {
         leftClick: event => {
             if (!MCP) {
                 if (isInterruptingElement(event.target)) {
@@ -406,7 +420,7 @@ export const EventActions = {
             !CursorPosDelay &&
             !MCP &&
             !GizmoActive &&
-            isVisible('objectHUD') &&
+            isVisible('object-hud') &&
             !document.activeElement.classList.contains('entry')
         ) {
             CursorPosDelay = true;
@@ -422,7 +436,7 @@ export const EventActions = {
     },
     mousedown: event => {
         MouseDown = true;
-        const currentHUD = getCurrentHUD(); // Assume this function gets the currently active HUD
+        const currentHUD = getActiveSection();
 
         const mouseButtonActions = {
             0: 'leftClick', // Left Click
@@ -444,7 +458,7 @@ export const EventActions = {
                 LeftClickActive = false;
                 break;
         }
-        if (isVisible('animHUD') || isVisible('objectHUD')) {
+        if (isVisible('anim-hud') || isVisible('object-hud')) {
             switch (event.button) {
                 case 1: // Middle Click
                     if (!QuickPress.MiddleMouse.active) {
@@ -515,7 +529,7 @@ export const EventActions = {
         }
         JustPressed[event.key] = true;
         if (event.key == 'Escape' || !isInputField) {
-            handleKeyPress(event, getCurrentHUD());
+            handleKeyPress(event, getActiveSection());
         } else if (isInputField) {
             if (event.key == 'Enter') {
                 Object.keys(InputFields).forEach(selector => {
@@ -594,74 +608,77 @@ export function registerListeners() {
     });
 }
 
-export function toUint32(value) {
-    return value >>> 0;
-}
-
-function getCurrentHUD() {
-    // TODO: cache in appState, dont always query DOM
-    const huds = document.querySelectorAll('.hud');
-    for (let hud of huds) {
-        if (!hud.classList.contains('hidden')) {
-            return hud.id;
+function getActiveSection() {
+    const sections = document.querySelectorAll('section');
+    for (let section of sections) {
+        if (!section.classList.contains('hidden')) {
+            return section.id;
         }
     }
     return null;
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    fetchSpawnData();
-    initSettings();
-    registerListeners();
+window.messagesReady = new Promise((resolve) => {
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log("Running messagesReady");
+        window.addEventListener('message', function (msg) {
+            switch (msg.data.type) {
+                case 'ui_trie':
+                    console.log('trie', msg.data.trie);
+                    if (msg.data.trie) {
+                        initTrie(msg.data.trie);
+                    }
+                    document.getElementById('dev-tree-hud').classList.toggle('hidden', msg.data.state == false);
+                    break;
+                case 'ui_animation':
+                    toggleAnimationHUD(msg.data.state);
+                    break;
+                case 'ui_object':
+                    toggleObjectHUD(msg.data.state);
+                    break;
+                case 'ui_camera':
+                    document.getElementById('camera-hud').classList.toggle('hidden', msg.data.state == false);
+                    break;
+                case 'updateCrosshair':
+                    updateCrosshair(msg.data);
+                    updateObjectDetails(msg.data);
+                    break;
+                case 'updateCamera':
+                    updateCamera(msg.data.camera);
+                    break;
+                // case "updateSceneObjects":
+                //     updateSceneObjects(msg.data.objects);
+                case 'clipboard':
+                    clipboardCopy(msg.data.text);
+                    break;
+                case 'mcp':
+                    toggleMCP(msg.data.active);
+                    break;
+                case 'setGizmoState':
+                    GizmoActive = msg.data.data.shown;
+                    document.getElementById('gizmo').classList.toggle('hidden', !GizmoActive);
+                    break;
+                case 'toggleHelp':
+                    toggleHelp(
+                        msg.data.mode,
+                        msg.data.state,
+                        msg.data.toggleCursor
+                    );
+                    break;
+                case 'keyPress':
+                    handleKeyPress({ key: msg.data.key }, msg.data.mode);
+                    break;
+            }
+        });
+        console.log("Promise messagesReady resolved");
+        resolve();
+    });
 
-    window.addEventListener('message', function (msg) {
-        switch (msg.data.type) {
-            case 'ui_trie':
-                console.log('trie', msg.data.trie);
-                if (msg.data.trie) {
-                    initTrie(msg.data.trie);
-                }
-                document.getElementById('dev-tree-hud').classList.toggle('hidden', msg.data.state == false);
-                break;
-            case 'ui_animation':
-                toggleAnimationHUD(msg.data.state);
-                break;
-            case 'ui_object':
-                toggleObjectHUD(msg.data.state);
-                break;
-            case 'ui_camera':
-                document.getElementById('camera-hud').classList.toggle('hidden', msg.data.state == false);
-                break;
-            case 'updateCrosshair':
-                updateCrosshair(msg.data);
-                updateObjectDetails(msg.data);
-                break;
-            case 'updateCamera':
-                updateCamera(msg.data.camera);
-                break;
-            // case "updateSceneObjects":
-            //     updateSceneObjects(msg.data.objects);
-            case 'clipboard':
-                clipboardCopy(msg.data.text);
-                break;
-            case 'mcp':
-                toggleMCP(msg.data.active);
-                break;
-            case 'setGizmoState':
-                GizmoActive = msg.data.data.shown;
-                document.getElementById('gizmo').classList.toggle('hidden', !GizmoActive);
-                break;
-            case 'toggleHelp':
-                toggleHelp(
-                    msg.data.mode,
-                    msg.data.state,
-                    msg.data.toggleCursor
-                );
-                break;
-            case 'keyPress':
-                handleKeyPress({ key: msg.data.key }, msg.data.mode);
-                break;
-        }
+    window.netReady.then(() => {
+        console.log("netReady resolved: Running fetches and script.js init");
+        fetchSpawnData();
+        initSettings();
+        registerListeners();
     });
 });
 

@@ -548,7 +548,7 @@ da_mode.register({
             event = "justPressed",
             active = true,
             fn = function()
-                da_ui.send("keyPress", { mode = "objectHUD", key = "1" })
+                da_ui.send("keyPress", { mode = "object-hud", key = "1" })
             end,
         },
         {
@@ -556,7 +556,7 @@ da_mode.register({
             event = "justPressed",
             active = true,
             fn = function()
-                da_ui.send("keyPress", { mode = "objectHUD", key = "2" })
+                da_ui.send("keyPress", { mode = "object-hud", key = "2" })
             end,
         },
         {
@@ -564,7 +564,7 @@ da_mode.register({
             event = "justPressed",
             active = true,
             fn = function()
-                da_ui.send("keyPress", { mode = "objectHUD", key = "3" })
+                da_ui.send("keyPress", { mode = "object-hud", key = "3" })
             end,
         },
         {
@@ -572,7 +572,7 @@ da_mode.register({
             event = "justPressed",
             active = true,
             fn = function()
-                da_ui.send("keyPress", { mode = "objectHUD", key = "4" })
+                da_ui.send("keyPress", { mode = "object-hud", key = "4" })
             end,
         },
     },

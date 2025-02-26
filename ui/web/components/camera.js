@@ -4,7 +4,7 @@ let hideCamera = true;
 export function updateCamera(camera) {
     const camEl = document.getElementById('camera-hud');
     camEl.classList.remove('hidden');
-    camEl.textContent = camera.speed;
+    document.getElementById('cam-speed').textContent = camera.speed;
     // Set update time and then hide it
     clearTimeout(cameraHudTimeout);
     cameraHudTimeout = setTimeout(() => {
