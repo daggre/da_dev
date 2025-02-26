@@ -17,7 +17,7 @@ export function searchSpawnObject(searchString) {
     resetList('objSpawnList');
     searchObjects(
         searchString,
-        Settings.Spawn[SelectedObjectSpawnType],
+        Settings.spawn[SelectedObjectSpawnType],
         'objSpawnList',
         3
     );
@@ -122,16 +122,16 @@ export function getTrackedObjects() {
 
         const currentNearbyRange =
             document.getElementById('nearbyRange').textContent;
-        if (currentNearbyRange !== Settings.Nearby.range) {
-            Settings.Nearby.range = currentNearbyRange;
+        if (currentNearbyRange !== Settings.nearby.range) {
+            Settings.nearby.range = currentNearbyRange;
             sendClientMessage('setObjSettings', {
-                nearby: JSON.stringify(Settings.Nearby),
+                nearby: JSON.stringify(Settings.nearby),
             });
         }
 
         const resp = await sendClientMessage('nearbyObjects', {
             range: currentNearbyRange,
-            origin: Settings.Nearby.origin,
+            origin: Settings.nearby.origin,
         });
 
         const objects = (resp.nearbyObjects || []).sort(
@@ -153,7 +153,7 @@ export function getTrackedObjects() {
                 select,
                 hover,
             }) => {
-                if (objType && !Settings.Nearby[objType]) return; // Skip if not allowed
+                if (objType && !Settings.nearby[objType]) return; // Skip if not allowed
                 filteredLength++;
 
                 const li = document.createElement('li');
@@ -217,17 +217,17 @@ function selectSpawnObject(object) {
 
 export function toggleNearbyFilter(type) {
     const selected = elementSetClass(`button-nearby-${type}`, 'selected');
-    Settings.Nearby[type] = selected;
+    Settings.nearby[type] = selected;
     sendClientMessage('setObjSettings', {
-        nearby: JSON.stringify(Settings.Nearby),
+        nearby: JSON.stringify(Settings.nearby),
     });
 }
 
 export function tagSelectSort(sortType) {
-    elementSetClass(`button-tagsortby${Settings.Tag.sort}`, 'selected', false);
+    elementSetClass(`button-tagsortby${Settings.tag.sort}`, 'selected', false);
     elementSetClass(`button-tagsortby${sortType}`, 'selected', true);
-    Settings.Tag.sort = sortType;
-    sendClientMessage('setObjSettings', { tags: JSON.stringify(Settings.Tag) });
+    Settings.tag.sort = sortType;
+    sendClientMessage('setObjSettings', { tags: JSON.stringify(Settings.tag) });
 }
 
 const PREFIX_OBJ_SPAWN = 'button-spawn';
@@ -315,8 +315,8 @@ export function selectNearbyOrigin(origin) {
         origin,
         PREFIX_NEARBY_ORIGIN,
         newValue => {
-            if (newValue) Settings.Nearby.origin = newValue;
-            return Settings.Nearby.origin;
+            if (newValue) Settings.nearby.origin = newValue;
+            return Settings.nearby.origin;
         },
         newValue => {
             elementSetText('activeNearbyOrigin', newValue);
@@ -325,7 +325,7 @@ export function selectNearbyOrigin(origin) {
                 newValue === 'set position' ? {} : { remove: true }
             );
             sendClientMessage('setObjSettings', {
-                nearby: JSON.stringify(Settings.Nearby),
+                nearby: JSON.stringify(Settings.nearby),
             });
         }
     );

@@ -172,9 +172,9 @@ export function trackSceneObjects() {
         }
 
         // Sorting based on the configured tag option
-        if (Settings.Tag.sort === 'dist') {
+        if (Settings.tag.sort === 'dist') {
             objects.sort((a, b) => a.distance - b.distance);
-        } else if (Settings.Tag.sort === 'name') {
+        } else if (Settings.tag.sort === 'name') {
             objects.sort((a, b) => a.modelName.localeCompare(b.modelName));
         }
 

@@ -3,17 +3,25 @@ import { elementSetClass } from '../utils/nav.js'; // TODO: refactor elementSetC
 import { initUIStyle } from '../utils/theme.js';
 
 export let Settings = {
-    Nearby: {
-        object: true,
-        ped: true,
-        vehicle: true,
-        other: false,
-        origin: 'camera',
+    nearby: {
         range: 50,
+        ped: true,
+        other: false,
+        object: true,
+        vehicle: true,
+        origin: 'camera',
     },
-    Spawn: { objects: [], peds: [], vehicles: [], propsets: [], pickups: [] },
-    Tag: { sort: 'dist' },
-    Theme: {
+    spawn: {
+        objects: [],
+        peds: [],
+        vehicles: [],
+        propsets: [],
+        pickups: [],
+    },
+    tag: {
+        sort: 'dist'
+    },
+    theme: {
         color: 'retro_wave',
         divider: 'angle up',
         border: true,
@@ -24,55 +32,55 @@ export let Settings = {
 
 export function fetchSpawnData() {
     sendClientMessage('initObjects', {}).then(function (resp) {
-        Settings.Spawn.objects = JSON.parse(resp.objects);
-        Settings.Spawn.peds = JSON.parse(resp.peds);
-        Settings.Spawn.vehicles = JSON.parse(resp.vehicles);
-        Settings.Spawn.propsets = JSON.parse(resp.propsets);
-        Settings.Spawn.pickups = JSON.parse(resp.pickups);
+        Settings.spawn.objects = JSON.parse(resp.objects);
+        Settings.spawn.peds = JSON.parse(resp.peds);
+        Settings.spawn.vehicles = JSON.parse(resp.vehicles);
+        Settings.spawn.propsets = JSON.parse(resp.propsets);
+        Settings.spawn.pickups = JSON.parse(resp.pickups);
     });
 }
 
 export function initSettings() {
     sendClientMessage('initObjSettings', {}).then(function (resp) {
-        Settings.Nearby = JSON.parse(resp.nearby);
-        Settings.Tag = JSON.parse(resp.tags);
-        Settings.Theme = JSON.parse(resp.theme);
+        Settings.nearby = JSON.parse(resp.nearby);
+        Settings.tag = JSON.parse(resp.tags);
+        Settings.theme = JSON.parse(resp.theme);
 
         elementSetClass(
             'button-nearby-object',
             'selected',
-            Settings.Nearby.object
+            Settings.nearby.object
         );
-        elementSetClass('button-nearby-ped', 'selected', Settings.Nearby.ped);
+        elementSetClass('button-nearby-ped', 'selected', Settings.nearby.ped);
         elementSetClass(
             'button-nearby-vehicle',
             'selected',
-            Settings.Nearby.vehicle
+            Settings.nearby.vehicle
         );
         elementSetClass(
             'button-nearby-scene',
             'selected',
-            Settings.Nearby.scene
+            Settings.nearby.scene
         );
         document.getElementById('nearbyRange').textContent =
-            Settings.Nearby.range;
+            Settings.nearby.range;
         document
             .getElementById(
-                `button-nearbyOrigin-${formatId(Settings.Nearby.origin)}`
+                `button-nearbyOrigin-${formatId(Settings.nearby.origin)}`
             )
             .classList.add('selected');
         document.getElementById('activeNearbyOrigin').textContent =
-            Settings.Nearby.origin;
+            Settings.nearby.origin;
         document
-            .getElementById(`button-tagsortby${Settings.Tag.sort}`)
+            .getElementById(`button-tagsortby${Settings.tag.sort}`)
             .classList.add('selected');
     });
     initUIStyle(
-        Settings.Theme.color,
-        Settings.Theme.divider,
-        Settings.Theme.border,
-        Settings.Theme.borderrad,
-        Settings.Theme.borderradamount
+        Settings.theme.color,
+        Settings.theme.divider,
+        Settings.theme.border,
+        Settings.theme.borderrad,
+        Settings.theme.borderradamount
     );
 }
 

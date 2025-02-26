@@ -154,10 +154,10 @@ function setTheme(theme) {
     });
     sendClientMessage('setTheme', { theme: t });
     elementSetText('objSettingsTheme', theme);
-    if (Settings.Theme.color != theme) {
-        Settings.Theme.color = theme;
+    if (Settings.theme.color != theme) {
+        Settings.theme.color = theme;
         sendClientMessage('setObjSettings', {
-            theme: JSON.stringify(Settings.Theme),
+            theme: JSON.stringify(Settings.theme),
         });
     }
 }
@@ -174,10 +174,10 @@ function setDividerStyle(divider) {
     const style = dividerStyles[divider];
     document.documentElement.style.setProperty('--divider', `"${style} "`);
     elementSetText('objSettingsDividerStyle', divider);
-    if (Settings.Theme.divider != divider) {
-        Settings.Theme.divider = divider;
+    if (Settings.theme.divider != divider) {
+        Settings.theme.divider = divider;
         sendClientMessage('setObjSettings', {
-            theme: JSON.stringify(Settings.Theme),
+            theme: JSON.stringify(Settings.theme),
         });
     }
 }
@@ -215,7 +215,7 @@ export function initUIStyle(
     borderradamount
 ) {
     console.log(theme, divider, border, borderrad, borderradamount);
-    console.log(Settings.Theme);
+    console.log(Settings.theme);
     setTheme(theme);
     setDividerStyle(divider);
     document
@@ -241,10 +241,10 @@ export function setBorder() {
     } else {
         document.documentElement.style.setProperty('--brd-size', '0px');
     }
-    if (Settings.Theme.border != selected) {
-        Settings.Theme.border = selected;
+    if (Settings.theme.border != selected) {
+        Settings.theme.border = selected;
         sendClientMessage('setObjSettings', {
-            theme: JSON.stringify(Settings.Theme),
+            theme: JSON.stringify(Settings.theme),
         });
     }
 }
@@ -263,10 +263,10 @@ export function setCurvedBorderAmount() {
                 `${borderRad}px`
             );
         }
-        if (Settings.Theme.borderradamount != borderRad) {
-            Settings.Theme.borderradamount = borderRad;
+        if (Settings.theme.borderradamount != borderRad) {
+            Settings.theme.borderradamount = borderRad;
             sendClientMessage('setObjSettings', {
-                theme: JSON.stringify(Settings.Theme),
+                theme: JSON.stringify(Settings.theme),
             });
         }
     }
@@ -280,16 +280,16 @@ export function setCurvedBorder() {
     if (selected) {
         document.documentElement.style.setProperty(
             '--brd-rad',
-            `${Settings.Theme.borderradamount}px`
+            `${Settings.theme.borderradamount}px`
         );
     } else {
         document.documentElement.style.setProperty('--brd-rad', '0px');
     }
 
-    if (Settings.Theme.borderrad != selected) {
-        Settings.Theme.borderrad = selected;
+    if (Settings.theme.borderrad != selected) {
+        Settings.theme.borderrad = selected;
         sendClientMessage('setObjSettings', {
-            theme: JSON.stringify(Settings.Theme),
+            theme: JSON.stringify(Settings.theme),
         });
     }
 }
