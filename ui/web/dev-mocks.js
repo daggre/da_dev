@@ -1,7 +1,7 @@
 // dev-mocks.js
 
-// const testHud = "ui_object";
-const testHud = "ui_animation";
+const testHud = "ui_object";
+// const testHud = "ui_animation";
 const animjsonString = `{"test":["a","b"], "vest":["c","d"]}`
 // INFO: Issue with the @ symbol
 // const jsonString = `{"test@test@test": ["test1", "test2", "test3" ], "test@test@test3": [ "test_back", "test_front", "test_left", "test_right" ],}`
