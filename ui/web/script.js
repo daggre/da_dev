@@ -85,14 +85,14 @@ const ObjectContextOptions = {
 }
 
 export let KeyActions = {
-    'infoHUD': {
+    'info-hud': {
         ' ': (event) => clickElement(event),
-        'y': () => elementSetClass('infoHUD', 'clear', true),
-        'n': () => elementSetClass('infoHUD', 'hidden', true),
-        'enter': () => elementSetClass('infoHUD', 'clear', true),
-        'escape': () => elementSetClass('infoHUD', 'hidden', true),
+        'y': () => elementSetClass('info-hud', 'clear', true),
+        'n': () => elementSetClass('info-hud', 'hidden', true),
+        'enter': () => elementSetClass('info-hud', 'clear', true),
+        'escape': () => elementSetClass('info-hud', 'hidden', true),
     },
-    'devTreeHUD': {},
+    'dev-tree-hud': {},
     'animHUD': {
         ' ': (event) => { clickElement(event); },
         'escape': () => { sendClientMessage('deactivateMode', { mode: "animation" }); },
@@ -120,11 +120,11 @@ export let KeyActions = {
         'x': () => { sendKey('x'); },
         'escape': () => { sendClientMessage('deactivateMode', { mode: "object" }); },
     },
-    'exportHUD': {
+    'export-hud': {
         ' ': (event) => { clickElement(event); },
         'escape': () => {
             if (!document.getElementById('exportContent').matches(':focus')) {
-                elementSetClass('exportHUD', 'hidden', true);
+                elementSetClass('export-hud', 'hidden', true);
             } else {
                 document.activeElement.blur();
                 window.getSelection().removeAllRanges();
@@ -132,7 +132,7 @@ export let KeyActions = {
             }
         },
     },
-    'cameraHUD': {
+    'camera-hud': {
         'escape': () => {
             toggleHelp("camHelp", false);
             sendClientMessage('deactivateMode', { mode: "freecam" });
@@ -144,7 +144,7 @@ export let KeyActions = {
 }
 
 export let MouseActions = {
-    'devTreeHUD': {
+    'dev-tree-hud': {
         leftClick: () => { },
         middleClick: () => { },
     },
@@ -489,7 +489,7 @@ document.addEventListener('DOMContentLoaded', () => {
             case "ui_trie":
                 console.log("trie", msg.data.trie);
                 if (msg.data.trie) { initTrie(msg.data.trie); }
-                elementSetClass('devTreeHUD', 'hidden', msg.data.state == false);
+                elementSetClass('dev-tree-hud', 'hidden', msg.data.state == false);
                 break;
             case "ui_animation":
                 toggleAnimationHUD(msg.data.state);
@@ -498,7 +498,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 toggleObjectHUD(msg.data.state);
                 break;
             case "ui_camera":
-                elementSetClass('cameraHUD', 'hidden', msg.data.state == false);
+                elementSetClass('camera-hud', 'hidden', msg.data.state == false);
                 break;
             case "updateCrosshair":
                 updateCrosshair(msg.data);

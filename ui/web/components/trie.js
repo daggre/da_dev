@@ -36,9 +36,9 @@ function appendOptionsToContainer(trieName, type, optionsArray) {
     optionsArray.forEach((option) => {
         const msg = fmt.msg;
         const data = fmt.data(trieName, option);
-        KeyActions["devTreeHUD"][option.key] = () => {
+        KeyActions["dev-tree-hud"][option.key] = () => {
             sendClientMessage(msg, data);
-            elementSetClass('devTreeHUD', 'hidden', true)
+            elementSetClass('dev-tree-hud', 'hidden', true)
         };
         container.append(`
             <div class="row">
@@ -50,11 +50,11 @@ function appendOptionsToContainer(trieName, type, optionsArray) {
 }
 
 function clearKeyActions() {
-    for (const key in KeyActions["devTreeHUD"]) {
-        delete KeyActions["devTreeHUD"][key];
+    for (const key in KeyActions["dev-tree-hud"]) {
+        delete KeyActions["dev-tree-hud"][key];
     }
-    KeyActions["devTreeHUD"].default = () => {
-        elementSetClass('devTreeHUD', 'hidden', true);
+    KeyActions["dev-tree-hud"].default = () => {
+        elementSetClass('dev-tree-hud', 'hidden', true);
         sendClientMessage('deactivateMode', { mode: "devTree" });
     }
 }
