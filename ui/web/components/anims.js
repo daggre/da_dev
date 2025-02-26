@@ -82,12 +82,12 @@ export async function searchAnimDicts(searchValue) {
 
     ul.addEventListener('mouseenter', function (event) {
         const li = event.target.closest('li');
-        if (li) li.classList.add('liHover');
+        if (li) li.classList.add('li-hover');
     }, true);
 
     ul.addEventListener('mouseleave', function (event) {
         const li = event.target.closest('li');
-        if (li) li.classList.remove('liHover');
+        if (li) li.classList.remove('li-hover');
     }, true);
 
     for (let i = 0; i < resultCount && i < maxResults; ++i) {
@@ -145,12 +145,12 @@ async function selectAnimDict(animDict) {
     // Event Delegation for Hover Effects
     ul.addEventListener('mouseenter', function(event) {
         const li = event.target.closest('li');
-        if (li) li.classList.add('liHover');
+        if (li) li.classList.add('li-hover');
     }, true);
 
     ul.addEventListener('mouseleave', function(event) {
         const li = event.target.closest('li');
-        if (li) li.classList.remove('liHover');
+        if (li) li.classList.remove('li-hover');
     }, true);
 
     // Generate <li> elements
@@ -198,10 +198,10 @@ export function addAnimation() {
     });
     ul.appendChild(li);
     li.addEventListener('mouseenter', function() {
-        li.classList.add('liHover');
+        li.classList.add('li-hover');
     });
     li.addEventListener('mouseout', function() {
-        li.classList.remove('liHover');
+        li.classList.remove('li-hover');
     });
 }
 

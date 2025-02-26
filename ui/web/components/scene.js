@@ -80,7 +80,7 @@ export function getScenes() {
             li.dataset.sceneName = scene.name; // Store scene name for easy access
 
             if (scene.name === ActiveScene) {
-                li.classList.add('liSelect');
+                li.classList.add('li-select');
                 selectedLi = li; // Store the selected `<li>`
             }
 
@@ -93,12 +93,12 @@ export function getScenes() {
         // Event Delegation for Hover & Click Events
         ul.addEventListener('mouseenter', (event) => {
             const li = event.target.closest('li');
-            if (li) li.classList.add('liHover');
+            if (li) li.classList.add('li-hover');
         }, true);
 
         ul.addEventListener('mouseleave', (event) => {
             const li = event.target.closest('li');
-            if (li) li.classList.remove('liHover');
+            if (li) li.classList.remove('li-hover');
         }, true);
 
         ul.addEventListener('click', (event) => {
@@ -108,8 +108,8 @@ export function getScenes() {
             ActiveScene = li.dataset.sceneName;
 
             // Remove previous selection
-            if (selectedLi) selectedLi.classList.remove('liSelect');
-            li.classList.add('liSelect');
+            if (selectedLi) selectedLi.classList.remove('li-select');
+            li.classList.add('li-select');
             selectedLi = li; // Update selected `<li>`
 
             elementSetText('selectedScene', ActiveScene);
@@ -167,8 +167,8 @@ export function trackSceneObjects() {
             li.dataset.handle = handle; // Store handle in dataset
             li.textContent = `${distance.toFixed(2)} ${handle}${networkId ? ` [${networkId}]` : ''} ${modelName}`;
 
-            if (select) li.classList.add('liSelect');
-            if (hover) li.classList.add('liHover');
+            if (select) li.classList.add('li-select');
+            if (hover) li.classList.add('li-hover');
 
             fragment.appendChild(li);
         });
@@ -189,7 +189,7 @@ export function trackSceneObjects() {
 function trackHandleHover(event) {
     const li = event.target.closest('li');
     if (!li) return;
-    event.type === 'pointerenter' ? li.classList.add('liHover') : li.classList.remove('liHover');
+    event.type === 'pointerenter' ? li.classList.add('li-hover') : li.classList.remove('li-hover');
     sendClientMessage('trackObject', {
         handle: li.dataset.handle,
         category: "hover",
@@ -221,22 +221,22 @@ export function exportScene(type) {
  */
 export function showExport() {
     return new Promise((resolve) => {
-        const exportHUD = document.getElementById('exportHUD');
+        const exportHud = document.getElementById('export-hud');
         const copyButton = document.getElementById('exportCopyOption');
         const exitButton = document.getElementById('exportExitOption');
         const lastFocusedElement = document.activeElement;
 
-        exportHUD.classList.remove('hidden');
+        exportHud.classList.remove('hidden');
         exitButton.focus();
 
         // Create a MutationObserver to monitor if the popup becomes hidden
         const observer = new MutationObserver(() => {
-            if (exportHUD.classList.contains('hidden')) {
+            if (exportHud.classList.contains('hidden')) {
                 cleanup();
                 resolve(false);
             }
         });
-        observer.observe(exportHUD, {
+        observer.observe(exportHud, {
             attributes: true,
             attributeFilter: ['class']
         });
@@ -255,7 +255,7 @@ export function showExport() {
             copyButton.removeEventListener('click', handleCopy);
             exitButton.removeEventListener('click', handleExit);
             observer.disconnect();
-            exportHUD.classList.add('hidden');
+            exportHud.classList.add('hidden');
             if (lastFocusedElement) {
                 lastFocusedElement.focus();
             }

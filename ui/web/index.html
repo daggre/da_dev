@@ -38,17 +38,17 @@
     <body>
         <main>
             <!-- TODO: Complete this -->
-            <section id="infoHUD" class="hud hidden">
+            <section id="info-hud" class="hud hidden">
                 <div class="pad center blr bgt2">
                     <div class="bigicon"></div>
-                    <div id="infoDescription" class="">Are you sure?</div>
+                    <div id="info-description" class="">Are you sure?</div>
                     <ul class="row rowpad gap">
                         <li id="yesOption" tabindex="99" class="control blr bgt2">Yes</li>
                         <li id="noOption" tabindex="99" class="control blr bgt2">No</li>
                     </ul>
                 </div>
             </section>
-            <section id="exportHUD" class="hud hidden">
+            <section id="export-hud" class="hud hidden">
                 <div class="center blr bgt2 pad">
                     <div id="exportIcon" class="bigicon">󰈝</div>
                     <div id="exportDescription" class="gap">Export Scene</div>
@@ -86,7 +86,7 @@
                 </div>
             </section>
             <section id="gizmo" class="hud hidden"></section>
-            <section id="devTreeHUD" class="hud blr bgt1 hidden">
+            <section id="dev-tree-hud" class="hud blr bgt1 hidden">
                 <div id="menuOptionsContainer">
                     <ul id="menuOptions" class="options-list"> </ul>
                 </div>
@@ -138,12 +138,12 @@
                         </li>
                     </ul>
                 </div>
-                <div id="objSpawnLeftColumn" class="listGroup top left">
-                    <div id="objSpawnName" class="row gap noflex listEntryField">
+                <div id="objSpawnLeftColumn" class="list-group top left">
+                    <div id="objSpawnName" class="row gap noflex list-entry-field">
                         <div class="label borderleft bgi">+</div>
                         <div id="activeObject" class="entry borderright bgt1" aria-label="Selected Spawn Object"></div>
                     </div>
-                    <div id="objSearchField" class="row gap noflex listEntryField">
+                    <div id="objSearchField" class="row gap noflex list-entry-field">
                         <div class="label borderleft bgi"></div>
                         <div id="objSearch" class="entry borderright bgt1" tabindex="2" contenteditable="true" aria-label="Spawn Object Search"></div>
                     </div>
@@ -161,10 +161,10 @@
                             </li>
                         </ul>
                     </div>
-                    <div id="objSpawnList" class="list listPrimary bggradient">
+                    <div id="objSpawnList" class="list list-primary bggradient">
                     </div>
                 </div>
-                <div id="objScenesLeftColumn" class="listGroup top left">
+                <div id="objScenesLeftColumn" class="list-group top left">
                     <div id="objSceneControlOptions" class="bgt1 blr gap">
                         <ul class="row">
                             <li>
@@ -177,11 +177,11 @@
                             </li>
                         </ul>
                     </div>
-                    <div id="sceneSelected" class="row gap noflex listEntryField">
+                    <div id="sceneSelected" class="row gap noflex list-entry-field">
                         <div class="label borderleft bgi">scene</div>
                         <div id="selectedScene" class="entry borderright bgt1" tabindex="13" contenteditable="true" aria-label="Selected Scene">autosave</div>
                     </div>
-                    <div id="objScenesList" class="list listPrimary bggradient gap">
+                    <div id="objScenesList" class="list list-primary bggradient gap">
                     </div>
                     <div id="objSceneTagOptions" class="bgt1 blr gap">
                         <ul class="row">
@@ -191,10 +191,10 @@
                             </li>
                         </ul>
                     </div>
-                    <div id="objSceneObjectsList" class="list listPrimary bggradient gap">
+                    <div id="objSceneObjectsList" class="list list-primary bggradient gap">
                     </div>
                 </div>
-                <div id="objNearbyLeftColumn" class="listGroup top left">
+                <div id="objNearbyLeftColumn" class="list-group top left">
                     <div id="objNearbyOrigin" class="bgt1 blr gap noflex">
                         <ul class="row">
                             <li>
@@ -207,7 +207,7 @@
                             </li>
                         </ul>
                     </div>
-                    <div id="selectedNearbyOrigin" class="row gap noflex listEntryField">
+                    <div id="selectedNearbyOrigin" class="row gap noflex list-entry-field">
                         <div class="label borderleft bgi">origin</div>
                         <div id="activeNearbyOrigin" class="entry dropdown borderright bgt1" aria-label="Current Origin Setting">camera</div>
                     </div>
@@ -222,14 +222,14 @@
                             </li>
                         </ul>
                     </div>
-                    <div id="objNearbyRange" class="row gap noflex listEntryField">
+                    <div id="objNearbyRange" class="row gap noflex list-entry-field">
                         <div class="label borderleft bgi">range</div>
                         <div id="nearbyRange" class="entry borderright bgt1" tabindex="24" contenteditable="true" aria-label="Distance Limit">50</div>
                     </div>
-                    <div id="objNearbyResults" class="list listPrimary bggradient">
+                    <div id="objNearbyResults" class="list list-primary bggradient">
                     </div>
                 </div>
-                <div id="objDetails" class="listGroup top right hidden">
+                <div id="objDetails" class="list-group top right hidden">
                     <div id="objDetailsOptions" class="bgt1 blr gap">
                         <ul class="row">
                             <li>
@@ -299,7 +299,7 @@
                         </ul>
                     </div>
                 </div>
-                <div id="objSettings" class="listGroup top left">
+                <div id="objSettings" class="list-group top left">
                     <div id="objSettingsOptions" class="mgb">
                         <ul>
                             <li>
@@ -382,30 +382,30 @@
                         </li>
                     </ul>
                 </div>
-                <div id="animSearchLeftColumn" class="listGroup top left">
-                    <div id="animSearchDict" class="row gap noflex listEntryField">
+                <div id="animSearchLeftColumn" class="list-group top left">
+                    <div id="animSearchDict" class="row gap noflex list-entry-field">
                         <div class="label borderleft bgi">dict</div>
                         <div id="animSelectedDict" class="entry borderright bgt1"></div>
                     </div>
-                    <div id="animSearchName" class="row gap noflex listEntryField">
+                    <div id="animSearchName" class="row gap noflex list-entry-field">
                         <div class="label borderleft bgi">name</div>
                         <div id="animSelectedName" class="entry borderright bgt1"></div>
                     </div>
-                    <div id="animSearchField" class="row gap noflex listEntryField">
+                    <div id="animSearchField" class="row gap noflex list-entry-field">
                         <div class="label borderleft bgi"></div>
                         <div id="animSearch" class="entry borderright bgt1" tabindex="2" contenteditable="true"></div>
                     </div>
-                    <div id="animDictList" class="list listPrimary bggradient">
+                    <div id="animDictList" class="list list-primary bggradient">
                     </div>
-                    <div id="animNameList" class="list listSecondary bggradient">
+                    <div id="animNameList" class="list list-secondary bggradient">
                     </div>
                 </div>
-                <div id="animListConfigureLeftColumn" class="listGroup top left">
-                    <div id="animListConfigureDict" class="row gap noflex listEntryField">
+                <div id="animListConfigureLeftColumn" class="list-group top left">
+                    <div id="animListConfigureDict" class="row gap noflex list-entry-field">
                         <div class="label borderleft bgi">dict</div>
                         <div id="animConfSelectedDict" class="entry borderright bgt1"></div>
                     </div>
-                    <div id="animListConfigureName" class="row gap noflex listEntryField">
+                    <div id="animListConfigureName" class="row gap noflex list-entry-field">
                         <div class="label borderleft bgi">name</div>
                         <div id="animConfSelectedName" class="entry borderright bgt1"></div>
                     </div>
@@ -418,7 +418,7 @@
                             </li>
                         </ul>
                     </div>
-                    <div id="animListConfigureList" class="list listPrimary bggradient gap">
+                    <div id="animListConfigureList" class="list list-primary bggradient gap">
                         <ul id="animConfigureListUl"></ul>
                     </div>
                     <div id="animConfigureRightColumn" class="">
@@ -513,10 +513,10 @@
                         </li>
                     </ul>
                 </div>
-                <div id="animSearchLists" class="listGroup top left">
-                    <div id="animDictList" class="list listPrimary bggradient">
+                <div id="animSearchLists" class="list-group top left">
+                    <div id="animDictList" class="list list-primary bggradient">
                     </div>
-                    <div id="animList" class="list listSecondary bggradient">
+                    <div id="animList" class="list list-secondary bggradient">
                     </div>
                 </div>
                 <div id="animSearchField" class="searchField">
@@ -565,7 +565,7 @@
                     </ul>
                 </div>
             </section>
-            <section id="cameraHUD" class="hud hidden">
+            <section id="camera-hud" class="hud hidden">
                 <div id="camHelp" class="center bgt2 pad blr hidden mgb">
                     <div class="title">FreeCam and NoClip</div>
                     <div class="bigicon"> </div>

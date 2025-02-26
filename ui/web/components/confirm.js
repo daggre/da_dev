@@ -6,8 +6,8 @@
  */
 export function showConfirm(msg = "Are you sure?", yes = "Yes", no = "No") {
     return new Promise((resolve) => {
-        const infoHUD = document.getElementById('infoHUD');
-        const message = document.getElementById('infoDescription');
+        const infoHud = document.getElementById('info-hud');
+        const message = document.getElementById('info-description');
         const yesButton = document.getElementById('yesOption');
         const noButton = document.getElementById('noOption');
         const lastFocusedElement = document.activeElement;
@@ -17,20 +17,20 @@ export function showConfirm(msg = "Are you sure?", yes = "Yes", no = "No") {
         yesButton.textContent = yes;
         noButton.textContent = no;
 
-        infoHUD.classList.remove('hidden');
+        infoHud.classList.remove('hidden');
         noButton.focus();
 
         // Create a MutationObserver to monitor if the popup becomes hidden
         const observer = new MutationObserver(() => {
-            if (infoHUD.classList.contains('hidden')) {
+            if (infoHud.classList.contains('hidden')) {
                 cleanup();
                 resolve(false);
-            } else if (infoHUD.classList.contains('clear')) {
+            } else if (infoHud.classList.contains('clear')) {
                 cleanup();
                 resolve(true);
             }
         });
-        observer.observe(infoHUD, {
+        observer.observe(infoHud, {
             attributes: true,
             attributeFilter: ['class']
         });
@@ -49,8 +49,8 @@ export function showConfirm(msg = "Are you sure?", yes = "Yes", no = "No") {
             yesButton.removeEventListener('click', handleYes);
             noButton.removeEventListener('click', handleNo);
             observer.disconnect();
-            infoHUD.classList.remove('clear');
-            infoHUD.classList.add('hidden');
+            infoHud.classList.remove('clear');
+            infoHud.classList.add('hidden');
             if (lastFocusedElement) {
                 lastFocusedElement.focus();
             }

@@ -42,7 +42,7 @@ function searchObjects(searchValue, searchList, elementId, tabIndex) {
         li.textContent = name;
 
         if (name === selectedObject) {
-            li.classList.add('liSelect');
+            li.classList.add('li-select');
         }
 
         if (tabIndex) li.setAttribute('tabindex', tabIndex);
@@ -70,12 +70,12 @@ function searchHandleHover(event) {
 
     const isPreviewSelected = elementHasClass('button-spawnpreview', 'selected');
     if (event.type === "pointerenter") {
-        li.classList.add('liHover');
+        li.classList.add('li-hover');
         if (isPreviewSelected) {
             sendClientMessage('spawnPreviewObject', { name: li.dataset.name });
         }
     } else {
-        li.classList.remove('liHover');
+        li.classList.remove('li-hover');
         if (isPreviewSelected) {
             sendClientMessage('removePreviewObject', {});
         }
@@ -88,9 +88,9 @@ function searchHandleClick(event) {
     if (!li) return;
 
     const el = li.closest('ul').parentElement;
-    el.querySelectorAll('li').forEach(li => li.classList.remove('liSelect'));
+    el.querySelectorAll('li').forEach(li => li.classList.remove('li-select'));
 
-    li.classList.add('liSelect');
+    li.classList.add('li-select');
     selectSpawnObject(li.dataset.name);
 }
 
@@ -137,10 +137,10 @@ export function getTrackedObjects() {
             li.textContent = `${distance.toFixed(2)} ${handle}${networkId ? ` [${networkId}]` : ''} ${modelName}`;
 
             if (select) {
-                li.classList.add('liSelect', 'liPseudoFocus');
+                li.classList.add('li-select', 'li-pseudo-focus');
             }
             if (hover) {
-                li.classList.add('liHover');
+                li.classList.add('li-hover');
             }
 
             fragment.appendChild(li);
@@ -163,7 +163,7 @@ export function getTrackedObjects() {
 function trackHandleHover(event) {
     const li = event.target.closest('li');
     if (!li) return;
-    event.type === 'pointerenter' ? li.classList.add('liHover') : li.classList.remove('liHover');
+    event.type === 'pointerenter' ? li.classList.add('li-hover') : li.classList.remove('li-hover');
     sendClientMessage('trackObject', {
         handle: li.dataset.handle,
         category: "hover",
@@ -176,7 +176,7 @@ function trackHandleClick(event) {
     const li = event.target.closest('li');
     if (!li) return;
     console.log("trackHandleClick", li);
-    li.classList.add('liSelect');
+    li.classList.add('li-select');
     sendClientMessage('trackObject', {
         handle: li.dataset.handle,
         category: "select",
