@@ -1,4 +1,3 @@
-
 @font-face {
     font-family: LiterationMonoNerd;
     src: url("../fonts/LiterationMonoNerd.ttf");
@@ -12,10 +11,10 @@
     --primary: #aac7ff;
     --secondary: #705575;
     --secondary-light: #fad8fd;
-    --bg: #04101D;
-    --bg-t1: #04101DAB;
-    --bg-t2: #04101D75;
-    --bg-t3: #04101D22;
+    --bg: #04101d;
+    --bg-t1: #04101dab;
+    --bg-t2: #04101d75;
+    --bg-t3: #04101d22;
     --font-size: 16px;
     --brd-rad: 8px;
     --brd-size: 2px;
@@ -24,7 +23,7 @@
 }
 
 html {
-    color-scheme: normal!important
+    color-scheme: normal !important;
 }
 
 body {
@@ -32,16 +31,16 @@ body {
     height: 100vh;
     margin: 0;
     padding: 0;
-    font-family: LiterationMonoNerd,Menlo,Consolas,monospace;
+    font-family: LiterationMonoNerd, Menlo, Consolas, monospace;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     font-size: var(--font-size);
     user-select: none;
-    overflow: hidden!important;
+    overflow: hidden !important;
 }
 
 code {
-    font-family: LiterationMonoNerd,Menlo,Consolas,monospace;
+    font-family: LiterationMonoNerd, Menlo, Consolas, monospace;
 }
 
 ul {
@@ -87,7 +86,9 @@ ul li {
 
 .bgi {
     color: var(--bg);
-    text-shadow: 0 0 1px, 0 0 1px;
+    text-shadow:
+        0 0 1px,
+        0 0 1px;
     border-radius: var(--brd-rad);
     background: var(--primary);
     margin-right: -1px;
@@ -147,7 +148,7 @@ ul li {
 .right {
     position: absolute;
     max-height: 70vh;
-    right: 2vh
+    right: 2vh;
 }
 
 .left {
@@ -157,7 +158,7 @@ ul li {
 }
 
 .pad {
-    padding: 1.0rem;
+    padding: 1rem;
 }
 
 .list-group {
@@ -177,9 +178,13 @@ ul li {
     overflow-y: auto;
 }
 
-.title { font-size: 1.5vh; }
+.title {
+    font-size: 1.5vh;
+}
 
-.subtitle { font-size: 0.7vh; }
+.subtitle {
+    font-size: 0.7vh;
+}
 
 .bigicon {
     font-size: 4vh;
@@ -245,8 +250,7 @@ ul li {
     pointer-events: none;
     text-shadow:
         0 0 4px var(--primary),
-        /*0 0 10px var(--primary),*/
-        0 0 12px var(--primary),
+        /*0 0 10px var(--primary),*/ 0 0 12px var(--primary),
         0 0 18px var(--primary);
 }
 
@@ -262,7 +266,7 @@ ul li {
 
 .check.borderright.selected::after {
     content: "";
-    color: var(--primary)
+    color: var(--primary);
 }
 
 .check.borderright::after {
@@ -289,7 +293,7 @@ ul li {
     transform: translate(-50%, -50%);
     font-size: 1.9vh;
     color: var(--primary);
-    font-family: LiterationMonoNerd,Menlo,Consolas,monospace;
+    font-family: LiterationMonoNerd, Menlo, Consolas, monospace;
 }
 
 .list-entry-field {
@@ -349,7 +353,8 @@ ul li {
         0 0 10px var(--primary);
 }
 
-:hover, .hover {
+:hover,
+.hover {
     color: var(--bg);
     text-shadow:
         0 0 4px var(--primary),
@@ -367,7 +372,8 @@ ul li {
         0 0 10px var(--primary);
 }
 
-:focus, .li-pseudo-focus {
+:focus,
+.li-pseudo-focus {
     outline: none;
     color: var(--secondary-light);
     text-shadow:
@@ -403,7 +409,10 @@ ul li {
     color: var(--bg);
 }
 
-.entry:focus, .li-hover, .li-select, .list li:focus  {
+.entry:focus,
+.li-hover,
+.li-select,
+.list li:focus {
     outline: none;
     color: var(--secondary-light);
     text-shadow:
@@ -449,8 +458,7 @@ ul li {
 #button-spawnfavs:focus {
     outline: none;
     color: var(--secondary-light);
-    text-shadow:
-        0 0 15px gold;
+    text-shadow: 0 0 15px gold;
 }
 
 .context-menu {
@@ -472,7 +480,9 @@ ul li {
 
 .context-menu-item:hover {
     color: var(--bg);
-    text-shadow: 0 0 1px, 0 0 1px;
+    text-shadow:
+        0 0 1px,
+        0 0 1px;
     background: var(--secondary-light);
 }
 
@@ -512,4 +522,3 @@ ul li {
 .hidden {
     display: none;
 }
-
