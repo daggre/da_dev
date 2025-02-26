@@ -1,27 +1,39 @@
 import { showConfirm } from './confirm.js';
 import { sendClientMessage } from '../utils/msg.js';
-import { resetList, elementSetText, } from '../utils/nav.js';
-import { DropDownAdvOptions, DropDownMultiOptions, } from './dropdown.js';
+import { resetList, elementSetText } from '../utils/nav.js';
+import { DropDownAdvOptions, DropDownMultiOptions } from './dropdown.js';
 
 async function fetchData(key, messageType, modifier) {
     if (!globalThis[key]) {
         const resp = await sendClientMessage(messageType, {});
         let data = JSON.parse(resp[key.toLowerCase()]);
 
-        if (modifier && typeof modifier === 'function') { modifier(data); }
+        if (modifier && typeof modifier === 'function') {
+            modifier(data);
+        }
         globalThis[key] = data;
     }
     return globalThis[key];
 }
 
 function addSelected(data) {
-    data.forEach((item) => { item.selected = false });
+    data.forEach(item => {
+        item.selected = false;
+    });
 }
 
-export function getAnimations() { return fetchData('Animations', 'initAnims'); }
-export function getAnimFlags() { return fetchData('AnimFlags', 'initAnimFlags', addSelected); }
-export function getAnimIKFlags() { return fetchData('AnimIKFlags', 'initIKAnimFlags', addSelected); }
-export function getTaskFilters() { return fetchData('TaskFilters', 'initTaskFilters'); }
+export function getAnimations() {
+    return fetchData('Animations', 'initAnims');
+}
+export function getAnimFlags() {
+    return fetchData('AnimFlags', 'initAnimFlags', addSelected);
+}
+export function getAnimIKFlags() {
+    return fetchData('AnimIKFlags', 'initIKAnimFlags', addSelected);
+}
+export function getTaskFilters() {
+    return fetchData('TaskFilters', 'initTaskFilters');
+}
 
 function deepSearch(animations, search) {
     const results = [];
@@ -45,7 +57,6 @@ function deepSearch(animations, search) {
 }
 
 export async function searchAnimDicts(searchValue) {
-
     const maxResults = 10000;
     let el = document.getElementById('animDictList');
     el.textContent = '';
@@ -80,15 +91,23 @@ export async function searchAnimDicts(searchValue) {
         }
     });
 
-    ul.addEventListener('mouseenter', function (event) {
-        const li = event.target.closest('li');
-        if (li) li.classList.add('li-hover');
-    }, true);
+    ul.addEventListener(
+        'mouseenter',
+        function (event) {
+            const li = event.target.closest('li');
+            if (li) li.classList.add('li-hover');
+        },
+        true
+    );
 
-    ul.addEventListener('mouseleave', function (event) {
-        const li = event.target.closest('li');
-        if (li) li.classList.remove('li-hover');
-    }, true);
+    ul.addEventListener(
+        'mouseleave',
+        function (event) {
+            const li = event.target.closest('li');
+            if (li) li.classList.remove('li-hover');
+        },
+        true
+    );
 
     for (let i = 0; i < resultCount && i < maxResults; ++i) {
         const animDict = results[i];
@@ -124,7 +143,7 @@ async function selectAnimDict(animDict) {
     const fragment = document.createDocumentFragment();
 
     // Event Delegation for Click Handling
-    ul.addEventListener('click', function(event) {
+    ul.addEventListener('click', function (event) {
         const li = event.target.closest('li');
         if (!li) return;
 
@@ -143,15 +162,23 @@ async function selectAnimDict(animDict) {
     });
 
     // Event Delegation for Hover Effects
-    ul.addEventListener('mouseenter', function(event) {
-        const li = event.target.closest('li');
-        if (li) li.classList.add('li-hover');
-    }, true);
+    ul.addEventListener(
+        'mouseenter',
+        function (event) {
+            const li = event.target.closest('li');
+            if (li) li.classList.add('li-hover');
+        },
+        true
+    );
 
-    ul.addEventListener('mouseleave', function(event) {
-        const li = event.target.closest('li');
-        if (li) li.classList.remove('li-hover');
-    }, true);
+    ul.addEventListener(
+        'mouseleave',
+        function (event) {
+            const li = event.target.closest('li');
+            if (li) li.classList.remove('li-hover');
+        },
+        true
+    );
 
     // Generate <li> elements
     for (const { anim } of results) {
@@ -177,7 +204,9 @@ async function selectAnimDict(animDict) {
 export function addAnimation() {
     const animDict = document.getElementById('animSelectedDict').textContent;
     const animName = document.getElementById('animSelectedName').textContent;
-    if (animDict == '' || animName == '') { return; }
+    if (animDict == '' || animName == '') {
+        return;
+    }
 
     let el = document.getElementById('animConfigureList');
     let ul = document.getElementById('animConfigureListUl');
@@ -191,59 +220,61 @@ export function addAnimation() {
     li.setAttribute('tabindex', '13');
     li.setAttribute('id', 'anim-' + animDict + '-' + animName);
     // TODO: Make this flex box so we can have the animation settings underneath it
-    li.addEventListener('click', function(event) {
+    li.addEventListener('click', function (event) {
         // TODO: Store and track animation info
         console.log('clicked', animDict, animName);
-        if (event.ctrlKey) { ul.removeChild(li); }
+        if (event.ctrlKey) {
+            ul.removeChild(li);
+        }
     });
     ul.appendChild(li);
-    li.addEventListener('mouseenter', function() {
+    li.addEventListener('mouseenter', function () {
         li.classList.add('li-hover');
     });
-    li.addEventListener('mouseout', function() {
+    li.addEventListener('mouseout', function () {
         li.classList.remove('li-hover');
     });
 }
 
 export function clearAnimations() {
-    showConfirm("Clear all animations?").then(confirm => {
+    showConfirm('Clear all animations?').then(confirm => {
         if (confirm) {
             resetList('animConfigureList');
         } else {
-            console.log("Canceled clear animations.")
+            console.log('Canceled clear animations.');
         }
-    })
+    });
 }
 
 function previewAnimation(animDict, anim) {
-    sendClientMessage('playAnimation', { animDict: animDict, anim: anim, });
+    sendClientMessage('playAnimation', { animDict: animDict, anim: anim });
 }
 
 DropDownAdvOptions.animConfigureTaskfilter = getTaskfilterDropdowns;
 function getTaskfilterDropdowns() {
     return getTaskFilters().then(taskfilters => {
-        return taskfilters.map((taskfilter) => ({
+        return taskfilters.map(taskfilter => ({
             name: taskfilter.name.toLowerCase(),
             tooltip: taskfilter.note,
             value: taskfilter.value,
-            fn: () => { return taskfilter.name.toLowerCase(); }
+            fn: () => {
+                return taskfilter.name.toLowerCase();
+            },
         }));
     });
 }
 
-
 function getFlagsTotal(flags) {
-    console.log(flags)
+    console.log(flags);
     return flags.reduce((total, flag) => {
         return flag.selected ? total + flag.value : total;
     }, 0);
 }
 
-
 DropDownMultiOptions.animConfigureAnimFlags = {
     fetch: getAnimFlagsDropdowns,
     result: getAnimFlagsTotal,
-}
+};
 
 function getAnimFlagsDropdowns() {
     return getAnimFlags().then(animFlags => {
@@ -252,9 +283,10 @@ function getAnimFlagsDropdowns() {
             tooltip: `${flag.value}: ${flag.note}`,
             value: flag.value,
             selected: flag.selected,
-            fn: () => getAnimFlags().then(flags => {
-                flags[index].selected = !flags[index].selected;
-            })
+            fn: () =>
+                getAnimFlags().then(flags => {
+                    flags[index].selected = !flags[index].selected;
+                }),
         }));
     });
 }
@@ -264,9 +296,9 @@ function getAnimFlagsTotal() {
 }
 
 DropDownMultiOptions.animConfigureAnimIKFlags = {
-    fetch:  getAnimIKFlagsDropdowns,
+    fetch: getAnimIKFlagsDropdowns,
     result: getAnimIKFlagsTotal,
-}
+};
 function getAnimIKFlagsDropdowns() {
     return getAnimIKFlags().then(animFlags => {
         return animFlags.map((flag, index) => ({
@@ -274,9 +306,10 @@ function getAnimIKFlagsDropdowns() {
             tooltip: `${flag.value}: ${flag.note}`,
             value: flag.value,
             selected: flag.selected,
-            fn: () => getAnimIKFlags().then(flags => {
-                flags[index].selected = !flags[index].selected;
-            })
+            fn: () =>
+                getAnimIKFlags().then(flags => {
+                    flags[index].selected = !flags[index].selected;
+                }),
         }));
     });
 }

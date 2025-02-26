@@ -1,11 +1,11 @@
-import { elementSetClass } from "../utils/nav.js";
+import { elementSetClass } from '../utils/nav.js';
 
-let TooltipEnabled = true
+let TooltipEnabled = true;
 
 export function tooltipListener() {
-    const tooltip = document.createElement("div");
-    elementSetClass(tooltip, 'hidden', true)
-    tooltip.id = "tooltip";
+    const tooltip = document.createElement('div');
+    elementSetClass(tooltip, 'hidden', true);
+    tooltip.id = 'tooltip';
     document.body.appendChild(tooltip);
 
     let focusedElement = null;
@@ -18,26 +18,26 @@ export function tooltipListener() {
     }
 
     function hideTooltip() {
-        elementSetClass(tooltip, 'hidden', true)
+        elementSetClass(tooltip, 'hidden', true);
     }
 
     function handleHover(event) {
-        if (event.target.hasAttribute("aria-label")) {
-            showTooltip(event.target.getAttribute("aria-label"));
+        if (event.target.hasAttribute('aria-label')) {
+            showTooltip(event.target.getAttribute('aria-label'));
         } else {
             if (focusedElement === null) {
                 hideTooltip();
             } else {
-                showTooltip(focusedElement.getAttribute("aria-label"));
+                showTooltip(focusedElement.getAttribute('aria-label'));
             }
         }
     }
 
     function handleFocus(event) {
-        if (event.target.hasAttribute("aria-label")) {
+        if (event.target.hasAttribute('aria-label')) {
             focusedElement = event.target;
-            if (!document.querySelector(":hover")) {
-                showTooltip(event.target.getAttribute("aria-label"));
+            if (!document.querySelector(':hover')) {
+                showTooltip(event.target.getAttribute('aria-label'));
             }
         }
     }
@@ -46,19 +46,19 @@ export function tooltipListener() {
         if (focusedElement === event.target) {
             focusedElement = null;
         }
-        if (!document.querySelector(":hover")) {
+        if (!document.querySelector(':hover')) {
             hideTooltip();
         }
     }
 
-    document.addEventListener("mouseover", handleHover);
-    document.addEventListener("focusin", handleFocus);
-    document.addEventListener("focusout", handleFocusOut);
+    document.addEventListener('mouseover', handleHover);
+    document.addEventListener('focusin', handleFocus);
+    document.addEventListener('focusout', handleFocusOut);
 }
 
 export function setTooltips() {
-    TooltipEnabled = elementSetClass("objSettingsTooltip", 'selected');
+    TooltipEnabled = elementSetClass('objSettingsTooltip', 'selected');
     if (!TooltipEnabled) {
-        elementSetClass("tooltip", 'hidden', true);
+        elementSetClass('tooltip', 'hidden', true);
     }
 }

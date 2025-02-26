@@ -6,40 +6,42 @@ import { DropDownOptions } from './dropdown.js';
 import { MouseDown } from '../script.js';
 import { Settings } from './settings.js';
 
-let DefaultScene = "default"
+let DefaultScene = 'default';
 let ActiveScene = DefaultScene;
 let SceneObjectsLoopRunning = false;
 
 DropDownOptions.importFormat = {
     'Map Editor XML': () => importScene('MapEditorXML'),
     'Propplacer JSON': () => importScene('PropplacerJSON'),
-    'SpoonerDB': () => importScene('SpoonerDB'),
-    'YMAP': () => importScene('YMAP'),
+    SpoonerDB: () => importScene('SpoonerDB'),
+    YMAP: () => importScene('YMAP'),
 };
 
 DropDownOptions.exportFormat = {
     'Map Editor XML': () => exportScene('MapEditorXML', ActiveScene),
     'Propplacer JSON': () => exportScene('PropplacerJSON', ActiveScene),
-    'SpoonerDB': () => exportScene('SpoonerDB', ActiveScene),
-    'YMAP': () => exportScene('YMAP', ActiveScene),
+    SpoonerDB: () => exportScene('SpoonerDB', ActiveScene),
+    YMAP: () => exportScene('YMAP', ActiveScene),
 };
 
 export function saveScene() {
     const newSceneName = document.getElementById('selectedScene').textContent;
-    sendClientMessage('saveScene', { scene: newSceneName, });
+    sendClientMessage('saveScene', { scene: newSceneName });
     ActiveScene = newSceneName;
     getScenes();
 }
 
 export function clearScene() {
     const sceneName = ActiveScene;
-    showConfirm(`Unsaved changes will be lost.<br>Remove scene '${sceneName}' objects?`).then(confirm => {
+    showConfirm(
+        `Unsaved changes will be lost.<br>Remove scene '${sceneName}' objects?`
+    ).then(confirm => {
         if (confirm) {
             // TODO: implement clearScene
             sendClientMessage('clearScene', { scene: sceneName });
             trackSceneObjects();
         } else {
-            console.log("Clear scene cancelled");
+            console.log('Clear scene cancelled');
         }
     });
 }
@@ -51,23 +53,27 @@ export function reloadScene() {
 
 export function deleteScene() {
     const sceneName = ActiveScene;
-    showConfirm(`This action cannot be undone!<br>Delete scene '${sceneName}'?`).then(confirm => {
+    showConfirm(
+        `This action cannot be undone!<br>Delete scene '${sceneName}'?`
+    ).then(confirm => {
         if (confirm) {
             sendClientMessage('deleteScene', { scene: sceneName });
             ActiveScene = DefaultScene;
             getScenes();
         } else {
-            console.log("Delete scene cancelled");
+            console.log('Delete scene cancelled');
         }
     });
 }
 
 export function getScenes() {
-    const el = document.getElementById("objScenesList");
+    const el = document.getElementById('objScenesList');
     resetList(el);
 
-    sendClientMessage('scenesList', {}).then((resp) => {
-        const sceneList = JSON.parse(resp.scenes).sort((a, b) => a.name.localeCompare(b.name));
+    sendClientMessage('scenesList', {}).then(resp => {
+        const sceneList = JSON.parse(resp.scenes).sort((a, b) =>
+            a.name.localeCompare(b.name)
+        );
 
         const ul = document.createElement('ul');
         const fragment = document.createDocumentFragment();
@@ -91,17 +97,25 @@ export function getScenes() {
         el.appendChild(ul);
 
         // Event Delegation for Hover & Click Events
-        ul.addEventListener('mouseenter', (event) => {
-            const li = event.target.closest('li');
-            if (li) li.classList.add('li-hover');
-        }, true);
+        ul.addEventListener(
+            'mouseenter',
+            event => {
+                const li = event.target.closest('li');
+                if (li) li.classList.add('li-hover');
+            },
+            true
+        );
 
-        ul.addEventListener('mouseleave', (event) => {
-            const li = event.target.closest('li');
-            if (li) li.classList.remove('li-hover');
-        }, true);
+        ul.addEventListener(
+            'mouseleave',
+            event => {
+                const li = event.target.closest('li');
+                if (li) li.classList.remove('li-hover');
+            },
+            true
+        );
 
-        ul.addEventListener('click', (event) => {
+        ul.addEventListener('click', event => {
             const li = event.target.closest('li');
             if (!li) return;
 
@@ -126,7 +140,7 @@ export function trackSceneObjects() {
     if (SceneObjectsLoopRunning) return;
     SceneObjectsLoopRunning = true;
 
-    const el = document.getElementById("objSceneObjectsList");
+    const el = document.getElementById('objSceneObjectsList');
     resetList(el);
 
     const loopId = setInterval(async () => {
@@ -138,40 +152,44 @@ export function trackSceneObjects() {
 
         if (MouseDown) return;
 
-        const resp = await sendClientMessage('getScene', { scene: ActiveScene });
+        const resp = await sendClientMessage('getScene', {
+            scene: ActiveScene,
+        });
         const objects = resp.objects || [];
 
-        el.textContent = "";
+        el.textContent = '';
         const ul = document.createElement('ul');
         const fragment = document.createDocumentFragment();
 
         if (objects.length === 0) {
             const li = document.createElement('li');
-            li.textContent = "";
+            li.textContent = '';
             fragment.appendChild(li);
             ul.appendChild(fragment);
             el.appendChild(ul);
-            el.style.minHeight = "1.3vh";
+            el.style.minHeight = '1.3vh';
             return;
         }
 
         // Sorting based on the configured tag option
-        if (Settings.Tag.sort === "dist") {
+        if (Settings.Tag.sort === 'dist') {
             objects.sort((a, b) => a.distance - b.distance);
-        } else if (Settings.Tag.sort === "name") {
+        } else if (Settings.Tag.sort === 'name') {
             objects.sort((a, b) => a.modelName.localeCompare(b.modelName));
         }
 
-        objects.forEach(({ handle, networkId, distance, modelName, select, hover }) => {
-            const li = document.createElement('li');
-            li.dataset.handle = handle; // Store handle in dataset
-            li.textContent = `${distance.toFixed(2)} ${handle}${networkId ? ` [${networkId}]` : ''} ${modelName}`;
+        objects.forEach(
+            ({ handle, networkId, distance, modelName, select, hover }) => {
+                const li = document.createElement('li');
+                li.dataset.handle = handle; // Store handle in dataset
+                li.textContent = `${distance.toFixed(2)} ${handle}${networkId ? ` [${networkId}]` : ''} ${modelName}`;
 
-            if (select) li.classList.add('li-select');
-            if (hover) li.classList.add('li-hover');
+                if (select) li.classList.add('li-select');
+                if (hover) li.classList.add('li-hover');
 
-            fragment.appendChild(li);
-        });
+                fragment.appendChild(li);
+            }
+        );
 
         ul.appendChild(fragment);
         el.appendChild(ul);
@@ -189,10 +207,12 @@ export function trackSceneObjects() {
 function trackHandleHover(event) {
     const li = event.target.closest('li');
     if (!li) return;
-    event.type === 'pointerenter' ? li.classList.add('li-hover') : li.classList.remove('li-hover');
+    event.type === 'pointerenter'
+        ? li.classList.add('li-hover')
+        : li.classList.remove('li-hover');
     sendClientMessage('trackObject', {
         handle: li.dataset.handle,
-        category: "hover",
+        category: 'hover',
         remove: event.type === 'pointerleave',
     });
 }
@@ -202,25 +222,25 @@ function trackHandleClick(event) {
     if (!li) return;
     sendClientMessage('trackObject', {
         handle: li.dataset.handle,
-        category: "select",
+        category: 'select',
     });
 }
 
 export function importScene() {
     const sceneName = ActiveScene;
-    console.log("importScene", sceneName)
+    console.log('importScene', sceneName);
 }
 
 export function exportScene(type) {
     const sceneName = ActiveScene;
-    console.log("exportScene", type, sceneName)
+    console.log('exportScene', type, sceneName);
 }
 
 /**
  * Popup dialog with export options
  */
 export function showExport() {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
         const exportHud = document.getElementById('export-hud');
         const copyButton = document.getElementById('exportCopyOption');
         const exitButton = document.getElementById('exportExitOption');
@@ -238,11 +258,12 @@ export function showExport() {
         });
         observer.observe(exportHud, {
             attributes: true,
-            attributeFilter: ['class']
+            attributeFilter: ['class'],
         });
 
         function handleCopy() {
-            const content = document.getElementById('exportContent').textContent;
+            const content =
+                document.getElementById('exportContent').textContent;
             clipboardCopy(content);
         }
 
@@ -267,7 +288,7 @@ export function showExport() {
 }
 
 export function showImport() {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
         const importHUD = document.getElementById('importHUD');
         const importButton = document.getElementById('importOption');
         const exitButton = document.getElementById('importExitOption');
@@ -285,7 +306,7 @@ export function showImport() {
         });
         observer.observe(importHUD, {
             attributes: true,
-            attributeFilter: ['class']
+            attributeFilter: ['class'],
         });
 
         function handleImport() {

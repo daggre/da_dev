@@ -1,35 +1,47 @@
-import { elementSetText } from "../utils/nav.js";
+import { elementSetText } from '../utils/nav.js';
 
 export let DropDownAdvOptions = {};
 export let DropDownMultiOptions = {};
 export let DropDownOptions = {};
 
 export function dropdownListeners() {
-    document.querySelectorAll(".entry.dropdown").forEach(dropdown => {
-        dropdown.addEventListener("click", event => {
+    document.querySelectorAll('.entry.dropdown').forEach(dropdown => {
+        dropdown.addEventListener('click', event => {
             let x = event.pageX;
             let y = event.pageY;
             if (DropDownOptions[dropdown.id]) {
-                showDropdown(Object.keys(DropDownOptions[dropdown.id]), x, y).then(option => {
-                    if (option === null) { return; }
+                showDropdown(
+                    Object.keys(DropDownOptions[dropdown.id]),
+                    x,
+                    y
+                ).then(option => {
+                    if (option === null) {
+                        return;
+                    }
                     elementSetText(dropdown.id, option);
-                    DropDownOptions[dropdown.id][option]()
+                    DropDownOptions[dropdown.id][option]();
                 });
             } else if (DropDownAdvOptions[dropdown.id]) {
                 DropDownAdvOptions[dropdown.id]().then(options => {
                     showDropdown(options, x, y).then(option => {
-                        if (option === null) { return; }
+                        if (option === null) {
+                            return;
+                        }
                         elementSetText(dropdown.id, option.fn());
                     });
                 });
             } else if (DropDownMultiOptions[dropdown.id]) {
                 DropDownMultiOptions[dropdown.id].fetch().then(options => {
                     showDropdown(options, x, y, true).then(modifiedOptions => {
-                        if (modifiedOptions === null) { return; }
+                        if (modifiedOptions === null) {
+                            return;
+                        }
                         modifiedOptions.forEach(option => option.fn());
-                        DropDownMultiOptions[dropdown.id].result().then(result => {
-                            elementSetText(dropdown.id, result);
-                        });
+                        DropDownMultiOptions[dropdown.id]
+                            .result()
+                            .then(result => {
+                                elementSetText(dropdown.id, result);
+                            });
                     });
                 });
             }
@@ -45,15 +57,15 @@ export function dropdownListeners() {
  * @returns {Promise<string | null>} Resolves with the selected option, or null if dismissed.
  */
 export function showDropdown(options, x, y, multiSelect = false) {
-    return new Promise((resolve) => {
-        const menu = document.createElement("div");
-        menu.classList.add("context-menu");
+    return new Promise(resolve => {
+        const menu = document.createElement('div');
+        menu.classList.add('context-menu');
 
         // Positioning and styling
         menu.style.top = `${y}px`;
         menu.style.left = `${x}px`;
-        menu.style.maxHeight = "50vh";
-        menu.style.overflowY = "auto";
+        menu.style.maxHeight = '50vh';
+        menu.style.overflowY = 'auto';
 
         const lastFocusedElement = document.activeElement;
         const fragment = document.createDocumentFragment();
@@ -64,19 +76,20 @@ export function showDropdown(options, x, y, multiSelect = false) {
         // For multi-select, keep track of selected options
         const modifiedItems = new Set();
 
-        options.forEach((option) => {
-            const name = typeof option === "string" ? option : option.name;
-            const tooltip = typeof option === "string" ? "" : option.tooltip;
-            let selected = typeof option === "string" ? undefined : option.selected;
-            const item = document.createElement("div");
+        options.forEach(option => {
+            const name = typeof option === 'string' ? option : option.name;
+            const tooltip = typeof option === 'string' ? '' : option.tooltip;
+            let selected =
+                typeof option === 'string' ? undefined : option.selected;
+            const item = document.createElement('div');
 
-            if (tooltip) item.setAttribute("aria-label", tooltip);
-            item.classList.add("context-menu-item");
+            if (tooltip) item.setAttribute('aria-label', tooltip);
+            item.classList.add('context-menu-item');
 
             // Function to update the displayed text based on selection state
             function updateText() {
                 if (multiSelect) {
-                    item.textContent = `${selected ? "󰄲" : ""} ${name}`;
+                    item.textContent = `${selected ? '󰄲' : ''} ${name}`;
                 } else {
                     item.textContent = name;
                 }
@@ -85,7 +98,7 @@ export function showDropdown(options, x, y, multiSelect = false) {
             item.tabIndex = 0;
             menuItems.push(item);
 
-            item.addEventListener("click", () => {
+            item.addEventListener('click', () => {
                 if (multiSelect) {
                     // Toggle selection without closing the menu.
                     selected = !selected;
@@ -109,8 +122,10 @@ export function showDropdown(options, x, y, multiSelect = false) {
 
         function cleanup() {
             menu.remove();
-            document.removeEventListener("pointerdown", handleOutsideClick, { capture: true });
-            document.removeEventListener("keydown", handleKeyPress);
+            document.removeEventListener('pointerdown', handleOutsideClick, {
+                capture: true,
+            });
+            document.removeEventListener('keydown', handleKeyPress);
             if (lastFocusedElement) lastFocusedElement.focus();
         }
 
@@ -123,29 +138,36 @@ export function showDropdown(options, x, y, multiSelect = false) {
         }
 
         function handleKeyPress(event) {
-            if (event.key === "Enter") {
+            if (event.key === 'Enter') {
                 cleanup();
-                resolve(multiSelect ? Array.from(modifiedItems) : menuItems[activeIndex].textContent);
-            } else if (event.key === "Escape") {
+                resolve(
+                    multiSelect
+                        ? Array.from(modifiedItems)
+                        : menuItems[activeIndex].textContent
+                );
+            } else if (event.key === 'Escape') {
                 cleanup();
                 resolve(null);
-            } else if (event.key === "ArrowDown") {
+            } else if (event.key === 'ArrowDown') {
                 event.preventDefault();
                 activeIndex = (activeIndex + 1) % menuItems.length;
                 menuItems[activeIndex].focus();
-            } else if (event.key === "ArrowUp") {
+            } else if (event.key === 'ArrowUp') {
                 event.preventDefault();
-                activeIndex = (activeIndex - 1 + menuItems.length) % menuItems.length;
+                activeIndex =
+                    (activeIndex - 1 + menuItems.length) % menuItems.length;
                 menuItems[activeIndex].focus();
-            } else if (event.key === " " && activeIndex !== -1) {
+            } else if (event.key === ' ' && activeIndex !== -1) {
                 menuItems[activeIndex].click();
             }
         }
 
         // Add event listeners after the menu is added
         setTimeout(() => {
-            document.addEventListener("pointerdown", handleOutsideClick, { capture: true });
-            document.addEventListener("keydown", handleKeyPress);
+            document.addEventListener('pointerdown', handleOutsideClick, {
+                capture: true,
+            });
+            document.addEventListener('keydown', handleKeyPress);
         }, 0);
 
         // Set initial focus for accessibility
