@@ -12,8 +12,6 @@ import { dropdownListeners, showDropdown } from './components/dropdown.js';
 import { updateCamera, toggleHideCamera } from './components/camera.js';
 import {
     clickElement,
-    elementSetClass,
-    elementSetText,
     isVisible,
     isInterruptingElement,
 } from './utils/nav.js';
@@ -45,23 +43,30 @@ import {
     toggleObjectNearbyHUD,
     toggleObjectImportExportHUD,
     toggleObjectSettingsHUD,
+    toggleObjectDetail,
+    toggleCrosshair,
+    updateObjectDetails,
 } from './components/hud/obj.js';
 import {
     searchAnimDicts,
     addAnimation,
-    clearAnimations,
+    clearAnimation,
+    deleteAllAnimations,
 } from './components/anims.js';
 import {
     toggleAnimationHUD,
     toggleAnimationSearchHUD,
     toggleAnimationConfigureHUD,
+    toggleAnimDetail,
 } from './components/hud/anim.js';
+import { toggleHelp, } from './components/hud/help.js';
+import { toggleSettingsHUD } from './components/hud/settings.js';
 
 export let MouseDown = false;
+export let MCP = false;
 const CursorUpdateRate = 30;
 const ResolutionX = window.screen.width;
 const ResolutionY = window.screen.height;
-let MCP = false;
 let GizmoActive = false;
 let LeftClickActive = false;
 let CursorPosDelay = false;
@@ -94,10 +99,13 @@ const ObjectContextOptions = {
 export let KeyActions = {
     'info-hud': {
         ' ': event => clickElement(event),
-        y: () => elementSetClass('info-hud', 'clear', true),
-        n: () => elementSetClass('info-hud', 'hidden', true),
-        enter: () => elementSetClass('info-hud', 'clear', true),
-        escape: () => elementSetClass('info-hud', 'hidden', true),
+        y: () => document.getElementById('info-hud').classList.add('clear'),
+        n: () => document.getElementById('info-hud').classList.add('hidden'),
+        enter: () => document.getElementById('info-hud').classList.add('clear'),
+        escape: () => document.getElementById('info-hud').classList.add('hidden'),
+    },
+    'settings-hud': {
+        escape: () => toggleSettingsHUD(false),
     },
     'dev-tree-hud': {},
     animHUD: {
@@ -106,6 +114,7 @@ export let KeyActions = {
         },
         escape: () => {
             sendClientMessage('deactivateMode', { mode: 'animation' });
+            toggleSettingsHUD(false);
         },
         1: () => {
             toggleAnimationSearchHUD();
@@ -116,6 +125,11 @@ export let KeyActions = {
         h: () => {
             toggleHelp('animHelp');
         },
+        s: () => {
+            if (Pressed.Shift && !Pressed.Control) {
+                toggleSettingsHUD();
+            }
+        },
         '?': () => {
             toggleHelp('animHelp');
         },
@@ -123,6 +137,7 @@ export let KeyActions = {
     gizmo: {
         escape: () => {
             sendClientMessage('deactivateMode', { mode: 'gizmo' });
+            toggleSettingsHUD(false);
         },
     },
     objectHUD: {
@@ -138,9 +153,9 @@ export let KeyActions = {
         3: () => {
             toggleObjectNearbyHUD();
         },
-        4: () => {
-            toggleObjectSettingsHUD();
-        },
+        // 4: () => {
+        //     toggleObjectSettingsHUD();
+        // },
         f: () => {
             sendKey('f');
         },
@@ -160,6 +175,9 @@ export let KeyActions = {
             if (Pressed.Control) {
                 saveScene();
             }
+            if (Pressed.Shift && !Pressed.Control) {
+                toggleSettingsHUD();
+            }
         },
         t: () => {
             sendKey('t');
@@ -169,6 +187,7 @@ export let KeyActions = {
         },
         escape: () => {
             sendClientMessage('deactivateMode', { mode: 'object' });
+            toggleSettingsHUD(false);
         },
     },
     'export-hud': {
@@ -177,7 +196,7 @@ export let KeyActions = {
         },
         escape: () => {
             if (!document.getElementById('exportContent').matches(':focus')) {
-                elementSetClass('export-hud', 'hidden', true);
+                document.getElementById('export-hud').classList.add('hidden');
             } else {
                 document.activeElement.blur();
                 window.getSelection().removeAllRanges();
@@ -190,12 +209,18 @@ export let KeyActions = {
             toggleHelp('camHelp', false);
             sendClientMessage('deactivateMode', { mode: 'freecam' });
             sendClientMessage('deactivateMode', { mode: 'noclip' });
+            toggleSettingsHUD(false);
         },
         '?': () => {
             toggleHelp('camHelp', false);
         },
         h: () => {
             toggleHelp('camHelp', false);
+        },
+        s: () => {
+            if (Pressed.Shift && !Pressed.Control) {
+                toggleSettingsHUD();
+            }
         },
     },
 };
@@ -313,18 +338,14 @@ export const EventActions = {
         '#button-animsearch': () => toggleAnimationSearchHUD(),
         '#button-animconfigure': () => toggleAnimationConfigureHUD(),
 
-        '#button-animconfadd': () => {
-            addAnimation();
-        },
-        '#button-animconfclear': () => {
-            clearAnimations();
-        },
+        '#button-animconfadd': () => addAnimation(),
+        '#button-animconfclearselected': () => clearAnimation(),
+        '#button-animconfdeleteall': () => deleteAllAnimations(),
 
         // Object HUD
         '#button-spawn': () => toggleObjectSpawnHUD(),
         '#button-trackedobjlist': () => toggleObjectNearbyHUD(),
         '#button-importexport': () => toggleObjectImportExportHUD(),
-        '#button-objsettings': () => toggleObjectSettingsHUD(),
 
         '#button-objDetailsPosition': () =>
             toggleObjectDetail('button-objDetailsPosition'),
@@ -332,10 +353,10 @@ export const EventActions = {
             toggleObjectDetail('button-objDetailsStatus'),
 
         '#button-spawnpreview': () => {
-            elementSetClass('button-spawnpreview', 'selected');
+            document.getElementById('button-spawnpreview').classList.toggle('selected');
         },
         '#button-spawnfavs': () => {
-            elementSetClass('button-spawnfavs', 'selected');
+            document.getElementById('button-spawnfavs').classList.toggle('selected');
         },
         '#button-spawnobjects': () => selectSpawnType('objects'),
         '#button-spawnpeds': () => selectSpawnType('peds'),
@@ -535,11 +556,11 @@ const InputFields = {
             const dict = document.getElementById('animDictList');
             const anim = document.getElementById('animNameList');
 
-            elementSetText(dict, '');
+            dict.textContent = '';
             dict.scrollTop = 0;
             dict.scrollLeft = -1000;
 
-            elementSetText(anim, '');
+            anim.textContent = '';
             anim.scrollTop = 0;
             anim.scrollLeft = -1000;
 
@@ -600,11 +621,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (msg.data.trie) {
                     initTrie(msg.data.trie);
                 }
-                elementSetClass(
-                    'dev-tree-hud',
-                    'hidden',
-                    msg.data.state == false
-                );
+                document.getElementById('dev-tree-hud').classList.toggle('hidden', msg.data.state == false);
                 break;
             case 'ui_animation':
                 toggleAnimationHUD(msg.data.state);
@@ -613,11 +630,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 toggleObjectHUD(msg.data.state);
                 break;
             case 'ui_camera':
-                elementSetClass(
-                    'camera-hud',
-                    'hidden',
-                    msg.data.state == false
-                );
+                document.getElementById('camera-hud').classList.toggle('hidden', msg.data.state == false);
                 break;
             case 'updateCrosshair':
                 updateCrosshair(msg.data);
@@ -636,7 +649,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 break;
             case 'setGizmoState':
                 GizmoActive = msg.data.data.shown;
-                elementSetClass('gizmo', 'hidden', !GizmoActive);
+                document.getElementById('gizmo').classList.toggle('hidden', !GizmoActive);
                 break;
             case 'toggleHelp':
                 toggleHelp(
@@ -667,251 +680,16 @@ function handleKeyPress(event, hud) {
     }
 }
 
-// Help HUD //
-function toggleHelp(elementId, state) {
-    if (state === undefined) {
-        state = !isVisible(elementId);
-    }
-    const helpDisabled = elementSetClass(elementId, 'hidden', !state);
-    if (elementId == 'objHelp') {
-        toggleCrosshair(helpDisabled);
-    }
-}
-
-function toggleMCP(state) {
-    MCP = state;
-    toggleCrosshair(state);
-}
-
-function toggleCrosshair(state) {
-    elementSetClass('crosshair', 'hidden', !state || !MCP);
-}
-
-// const AnimElements = [
-//     'animControlOptions',
-//     'activeAnimDisplay',
-//     'animSearchLists',
-// ];
-//
-// const AnimSubElements = [
-//     'animDictList',
-//     'animList',
-//     'animSearchField',
-//     'animTimingsOptions',
-//     'animFlagsOptions',
-//     'animIKFlagsOptions',
-//     'animEntityOptions',
-// ]
-
-// // Animation HUD //
-// function setUIAnim(state) {
-//     state = !!state;
-//     AnimSubElements.forEach((el) => { elementSetClass(el, 'hidden', true); });
-//     AnimElements.forEach((el) => { elementSetClass(el, 'hidden', !state); });
-//     console.log("setUIAnim", state);
-//     elementSetClass('animHUD', 'hidden', state);
-// }
-
-function toggleSettings(state) {
-    const selected = elementSetClass('button-settings', 'selected', state);
-    elementSetClass('animSettings', 'hidden', selected);
-}
-
-const AnimSearchElements = ['animSearchField', 'animDictList', 'animList'];
-
-function toggleSearch(state) {
-    if (elementSetClass('button-search', 'selected', state)) {
-        toggleSettings(true);
-        toggleTimings(false);
-        toggleFlags(false);
-        toggleIKFlags(false);
-        toggleTaskFilters(false);
-        toggleEntity(false);
-        toggleHelp('animHelp', false);
-
-        AnimSearchElements.forEach(el => {
-            elementSetClass(el, 'hidden', false);
-        });
-        document.getElementById('button-search').focus();
-        document.getElementById('animDictList').scrollLeft = -1000;
-        document.getElementById('animList').scrollLeft = -1000;
-    } else {
-        AnimSearchElements.forEach(el => {
-            elementSetClass(el, 'hidden', true);
-        });
-        document.getElementById('valueAnimSearch').blur();
-    }
-}
-
-function toggleTimings(state) {
-    if (elementSetClass('button-timings', 'selected', state)) {
-        toggleSettings(true);
-        toggleSearch(false);
-        toggleFlags(false);
-        toggleIKFlags(false);
-        toggleTaskFilters(false);
-        toggleEntity(false);
-        toggleHelp('animHelp', false);
-
-        elementSetClass('animTimingsOptions', 'hidden', false);
-        document.getElementById('button-timings').focus();
-    } else {
-        elementSetClass('animTimingsOptions', 'hidden', true);
-        if (document.activeElement.classList.contains('entry')) {
-            document.activeElement.blur();
-        }
-    }
-}
-
-function toggleFlags(state) {
-    if (elementSetClass('button-flags', 'selected', state)) {
-        toggleSettings(true);
-        toggleSearch(false);
-        toggleTimings(false);
-        toggleIKFlags(false);
-        toggleTaskFilters(false);
-        toggleEntity(false);
-        toggleHelp('animHelp', false);
-        document.getElementById('button-flags').focus();
-        elementSetClass('animFlagsOptions', 'hidden', false);
-    } else {
-        elementSetClass('animFlagsOptions', 'hidden', true);
-        if (document.activeElement.classList.contains('entry')) {
-            document.activeElement.blur();
-        }
-    }
-}
-
-function toggleIKFlags(state) {
-    if (elementSetClass('button-ikflags', 'selected', state)) {
-        toggleSettings(true);
-        toggleSearch(false);
-        toggleTimings(false);
-        toggleFlags(false);
-        toggleTaskFilters(false);
-        toggleEntity(false);
-        toggleHelp('animHelp', false);
-        document.getElementById('button-ikflags').focus();
-        elementSetClass('animIKFlagsOptions', 'hidden', false);
-    } else {
-        elementSetClass('animIKFlagsOptions', 'hidden', true);
-        if (document.activeElement.classList.contains('entry')) {
-            document.activeElement.blur();
-        }
-    }
-}
-
-function toggleTaskFilters(state) {
-    if (elementSetClass('button-taskFilters', 'selected', state)) {
-        toggleSettings(true);
-        toggleSearch(false);
-        toggleTimings(false);
-        toggleFlags(false);
-        toggleIKFlags(false);
-        toggleEntity(false);
-        toggleHelp('animHelp', false);
-        document.getElementById('button-taskFilters').focus();
-        elementSetClass('animTaskFilterOptions', 'hidden', false);
-    } else {
-        elementSetClass('animTaskFilterOptions', 'hidden', true);
-    }
-}
-
-function toggleEntity(state) {
-    if (elementSetClass('button-entity', 'selected', state)) {
-        toggleSettings(true);
-        toggleSearch(false);
-        toggleTimings(false);
-        toggleFlags(false);
-        toggleIKFlags(false);
-        toggleTaskFilters(false);
-        toggleHelp('animHelp', false);
-        document.getElementById('button-entity').focus();
-        elementSetClass('animEntityOptions', 'hidden', false);
-    } else {
-        elementSetClass('animEntityOptions', 'hidden', true);
-    }
-}
-
-const ObjectDetailsCategoryMap = new Map([
-    ['button-objDetailsPosition', 'objDetailsListPosition'],
-    ['button-objDetailsStatus', 'objDetailsListStatus'],
-]);
-
-function toggleObjectDetail(elId, state) {
-    console.log('toggleObjectDetail', elId, state);
-    const el = document.getElementById(elId);
-    if (state === undefined) {
-        state = !el.classList.contains('selected');
-    }
-    elementSetClass(el, 'selected', state);
-    const listEl = ObjectDetailsCategoryMap.get(elId);
-    elementSetClass(listEl, 'hidden', !state);
-}
-
-const ObjectDetailsFields = new Map([
-    ['objDetailsEntityHandle', 'handle'],
-    ['objDetailsEntityNetworkId', 'networkID'],
-    // ["objDetailsEntityModelHash", "modelHash"],
-    ['objDetailsEntityModelName', 'modelName'],
-    ['objDetailsEntityPosX', 'coords_x'],
-    ['objDetailsEntityPosY', 'coords_y'],
-    ['objDetailsEntityPosZ', 'coords_z'],
-    ['objDetailsEntityRotPitch', 'rotation_pitch'],
-    ['objDetailsEntityRotRoll', 'rotation_roll'],
-    ['objDetailsEntityRotYaw', 'rotation_yaw'],
-]);
-
-const ObjectDetailsOptions = new Map([
-    ['objDetailsEntityVisible', 'visible'],
-    ['objDetailsEntityFrozen', 'frozen'],
-    ['objDetailsEntityCollision', 'collision'],
-]);
-
-function clearObjectDetails() {
-    ObjectDetailsFields.forEach((value, key) => {
-        elementSetText(key, '');
-    });
-    ObjectDetailsOptions.forEach((value, key) => {
-        elementSetText(key, '');
-    });
-}
-
-function updateObjectDetails(data) {
-    if (!data.select) {
-        clearObjectDetails();
-        elementSetClass('objDetails', 'hidden', true);
-        return;
-    }
-
-    ObjectDetailsFields.forEach((value, key) => {
-        elementSetText(key, data.selectData[value]);
-    });
-    ObjectDetailsOptions.forEach((value, key) => {
-        elementSetClass(key, 'selected', data.selectData[value]);
-    });
-    elementSetClass('objDetails', 'hidden', false);
-}
-
-const AnimConfigureCategoryMap = new Map([
-    ['button-animTimings', 'animConfigureTimings'],
-    ['button-animFlags', 'animConfigureFlags'],
-]);
-
-function toggleAnimDetail(elId, state) {
-    console.log('toggleAnimConfigureCategory', elId, state);
-    const el = document.getElementById(elId);
-    if (state === undefined) {
-        state = !el.classList.contains('selected');
-    }
-    elementSetClass(el, 'selected', state);
-    const listEl = AnimConfigureCategoryMap.get(elId);
-    elementSetClass(listEl, 'hidden', !state);
-}
-
 function sendKey(key) {
     sendClientMessage('dispatchKeyEvents', {
         justPressed: { [key]: true },
         pressed: Pressed,
     });
 }
+
+// Help HUD //
+function toggleMCP(state) {
+    MCP = state;
+    toggleCrosshair(state);
+}
+

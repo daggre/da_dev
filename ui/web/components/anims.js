@@ -1,6 +1,6 @@
+import { resetList } from '../utils/nav.js';
 import { showConfirm } from './confirm.js';
 import { sendClientMessage } from '../utils/msg.js';
-import { resetList, elementSetText } from '../utils/nav.js';
 import { DropDownAdvOptions, DropDownMultiOptions } from './dropdown.js';
 
 async function fetchData(key, messageType, modifier) {
@@ -83,10 +83,10 @@ export async function searchAnimDicts(searchValue) {
         if (event.ctrlKey) {
             li.remove();
         } else {
-            elementSetText('animSelectedDict', animDict);
-            elementSetText('animSelectedName', '');
-            elementSetText('animConfSelectedDict', animDict);
-            elementSetText('animConfSelectedName', '');
+            document.getElementById('animSelectedDict').textContent = animDict;
+            document.getElementById('animSelectedName').textContent = '';
+            document.getElementById('animConfSelectedDict').textContent = animDict;
+            document.getElementById('animSearchDict').value = animDict;
             selectAnimDict(animDict);
         }
     });
@@ -149,14 +149,14 @@ async function selectAnimDict(animDict) {
 
         const anim = li.dataset.anim;
         if (event.shiftKey) {
-            elementSetText('animSelectedName', anim);
-            elementSetText('animConfSelectedName', anim);
+            document.getElementById('animSelectedName').textContent = anim;
+            document.getElementById('animConfSelectedName').textContent = anim;
             addAnimation();
         } else if (event.ctrlKey) {
             li.remove();
         } else {
-            elementSetText('animSelectedName', anim);
-            elementSetText('animConfSelectedName', anim);
+            document.getElementById('animSelectedName').textContent = anim;
+            document.getElementById('animConfSelectedName').textContent = anim;
             previewAnimation(animDict, anim);
         }
     });
@@ -208,7 +208,7 @@ export function addAnimation() {
         return;
     }
 
-    let el = document.getElementById('animConfigureList');
+    let el = document.getElementById('animListConfigureList');
     let ul = document.getElementById('animConfigureListUl');
     if (!ul) {
         ul = document.createElement('ul');
@@ -217,12 +217,13 @@ export function addAnimation() {
     }
     let li = document.createElement('li');
     li.textContent = animDict + ' - ' + animName;
+    li.dataset.animDict = animDict;
+    li.dataset.animName = animName;
     li.setAttribute('tabindex', '13');
     li.setAttribute('id', 'anim-' + animDict + '-' + animName);
-    // TODO: Make this flex box so we can have the animation settings underneath it
     li.addEventListener('click', function (event) {
-        // TODO: Store and track animation info
         console.log('clicked', animDict, animName);
+        selectAnimConfigure(li.dataset);
         if (event.ctrlKey) {
             ul.removeChild(li);
         }
@@ -236,12 +237,20 @@ export function addAnimation() {
     });
 }
 
-export function clearAnimations() {
-    showConfirm('Clear all animations?').then(confirm => {
+export function clearAnimation() {
+    document.getElementById('animConfigureRightColumn').classList.add('hidden');
+    document.getElementById('animConfigureEntity').textContent = '';
+    document.getElementById('animConfigureDict').textContent = '';
+    document.getElementById('animConfigureName').textContent = '';
+}
+
+export function deleteAllAnimations() {
+    showConfirm('Delete all configured animations?').then(confirm => {
         if (confirm) {
-            resetList('animConfigureList');
+            clearAnimation();
+            resetList('animListConfigureList');
         } else {
-            console.log('Canceled clear animations.');
+            console.log('Canceled delete all animations.');
         }
     });
 }
@@ -316,4 +325,12 @@ function getAnimIKFlagsDropdowns() {
 
 function getAnimIKFlagsTotal() {
     return getAnimIKFlags().then(flags => getFlagsTotal(flags));
+}
+
+
+function selectAnimConfigure(data) {
+    document.getElementById('animConfigureEntity').textContent = 1;
+    document.getElementById('animConfigureDict').textContent = data.animDict;
+    document.getElementById('animConfigureName').textContent = data.animName;
+    document.getElementById('animConfigureRightColumn').classList.remove('hidden');
 }

@@ -1,10 +1,8 @@
-import { elementSetClass } from '../utils/nav.js';
-
 let TooltipEnabled = true;
 
 export function tooltipListener() {
     const tooltip = document.createElement('div');
-    elementSetClass(tooltip, 'hidden', true);
+    tooltip.classList.add('hidden');
     tooltip.id = 'tooltip';
     document.body.appendChild(tooltip);
 
@@ -13,12 +11,12 @@ export function tooltipListener() {
     function showTooltip(label) {
         if (label) {
             tooltip.textContent = label;
-            elementSetClass(tooltip, 'hidden', !TooltipEnabled);
+            tooltip.classList.toggle('hidden', !TooltipEnabled);
         }
     }
 
     function hideTooltip() {
-        elementSetClass(tooltip, 'hidden', true);
+        tooltip.classList.add('hidden');
     }
 
     function handleHover(event) {
@@ -57,8 +55,8 @@ export function tooltipListener() {
 }
 
 export function setTooltips() {
-    TooltipEnabled = elementSetClass('objSettingsTooltip', 'selected');
+    TooltipEnabled = document.getElementById('objSettingsTooltip').classList.toggle('selected');
     if (!TooltipEnabled) {
-        elementSetClass('tooltip', 'hidden', true);
+        ducoment.getElementById('tooltip').classList.add('hidden');
     }
 }

@@ -55,3 +55,19 @@ export function toggleAnimationSearchHUD(state) {
 export function toggleAnimationConfigureHUD(state) {
     toggleHUD(state, AnimHUD, 'configure', AnimHUD.buttons.configure);
 }
+
+const AnimConfigureCategoryMap = new Map([
+    ['button-animTimings', 'animConfigureTimings'],
+    ['button-animFlags', 'animConfigureFlags'],
+]);
+
+export function toggleAnimDetail(elId, state) {
+    console.log('toggleAnimConfigureCategory', elId, state);
+    const el = document.getElementById(elId);
+    if (state === undefined) {
+        state = !el.classList.contains('selected');
+    }
+    el.classList.toggle('selected', state);
+    const listEl = AnimConfigureCategoryMap.get(elId);
+    listEl.classList.toggle('hidden', !state);
+}

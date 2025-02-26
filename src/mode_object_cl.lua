@@ -857,7 +857,7 @@ da_trie.addOpt("devRoot", "obj mode", "e",
     function() da_mode.activate("object") end,
     function() return not da_mode.isActive("object") end)
 
-da_trie.addOpt("objRoot", "exit obj mode", "e",
+da_trie.addOpt("objRoot", "exit mode", "e",
     function() da_mode.deactivate("object") end,
     function() return da_mode.isActive("object") end)
 

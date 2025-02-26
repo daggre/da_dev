@@ -43,41 +43,6 @@ export function elementSetOnlyClass(elOrId, cls, classes) {
     return true; // Return true to confirm successful operation
 }
 
-/**
- * Add, remove, or toggle a class on an element.
- * @param {string|HTMLElement} elOrId - Element or element ID.
- * @param {string} cls - Class name to toggle/add/remove.
- * @param {boolean|undefined} [state] - Optional. true to add, false to remove, undefined to toggle.
- */
-export function elementSetClass(elOrId, cls, state) {
-    const el =
-        typeof elOrId === 'string' ? document.getElementById(elOrId) : elOrId;
-
-    if (!el) {
-        console.error(`Element not found: ${elOrId}`);
-        return;
-    }
-
-    if (state === true) {
-        el.classList.add(cls); // Add class
-    } else if (state === false) {
-        el.classList.remove(cls); // Remove class
-    } else {
-        el.classList.toggle(cls); // Toggle class if state is undefined
-    }
-    return el.classList.contains(cls);
-}
-
-export function elementSetText(elOrId, text) {
-    const el =
-        typeof elOrId === 'string' ? document.getElementById(elOrId) : elOrId;
-    if (!el) {
-        console.error(`Element not found: ${elOrId}`);
-        return false; // Return false if the element is not found
-    }
-    el.innerText = text;
-}
-
 export function isSelected(elOrId) {
     elementHasClass(elOrId, 'selected');
 }
@@ -146,7 +111,7 @@ export function resetList(elOrId) {
         console.error(`Element not found: ${elOrId}`);
         return false; // Return false if the element is not found
     }
-    el.textContent = '';
+    el.innerHTML = '';
     el.style.minHeight = '0';
     el.scrollTop = 0;
     el.scrollLeft = 0;

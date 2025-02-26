@@ -9,6 +9,10 @@ export function toggleHUD(state, hud, section, button, onShow = null) {
     if (state) {
         Object.values(hud.buttons).forEach(b => {
             const el = document.getElementById(b);
+            if (!el) {
+                console.error(`Button ${b} not found`);
+                return;
+            }
             el.classList.toggle('selected', el === buttonEl);
         });
         document.getElementById(button).focus();
