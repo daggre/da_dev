@@ -1,19 +1,23 @@
-import { setBorder, setCurvedBorder, setCurvedBorderAmount } from "./utils/theme.js";
-import { clipboardCopy } from "./utils/clipboard.js";
-import { sendClientMessage } from "./utils/msg.js";
-import { updateCrosshair } from "./components/crosshair.js";
-import { fetchSpawnData, initSettings } from "./components/settings.js"
-import { tooltipListener, setTooltips, } from "./components/tooltip.js";
+import {
+    setBorder,
+    setCurvedBorder,
+    setCurvedBorderAmount,
+} from './utils/theme.js';
+import { clipboardCopy } from './utils/clipboard.js';
+import { sendClientMessage } from './utils/msg.js';
+import { updateCrosshair } from './components/crosshair.js';
+import { fetchSpawnData, initSettings } from './components/settings.js';
+import { tooltipListener, setTooltips } from './components/tooltip.js';
 import { dropdownListeners, showDropdown } from './components/dropdown.js';
-import { updateCamera, toggleHideCamera, } from "./components/camera.js";
+import { updateCamera, toggleHideCamera } from './components/camera.js';
 import {
     clickElement,
     elementSetClass,
     elementSetText,
     isVisible,
     isInterruptingElement,
-} from "./utils/nav.js";
-import { initTrie } from "./components/trie.js";
+} from './utils/nav.js';
+import { initTrie } from './components/trie.js';
 import {
     showExport,
     showImport,
@@ -21,7 +25,7 @@ import {
     clearScene,
     reloadScene,
     deleteScene,
-} from "./components/scene.js"
+} from './components/scene.js';
 import {
     searchSpawnObject,
     getTrackedObjects,
@@ -34,24 +38,24 @@ import {
     toggleCollision,
     setRotation,
     placeOnGround,
-} from "./components/obj.js";
+} from './components/obj.js';
 import {
     toggleObjectHUD,
     toggleObjectSpawnHUD,
     toggleObjectNearbyHUD,
     toggleObjectImportExportHUD,
     toggleObjectSettingsHUD,
-} from "./components/hud/obj.js";
+} from './components/hud/obj.js';
 import {
     searchAnimDicts,
     addAnimation,
     clearAnimations,
-} from "./components/anims.js";
+} from './components/anims.js';
 import {
     toggleAnimationHUD,
     toggleAnimationSearchHUD,
     toggleAnimationConfigureHUD,
-} from "./components/hud/anim.js";
+} from './components/hud/anim.js';
 
 export let MouseDown = false;
 const CursorUpdateRate = 30;
@@ -61,68 +65,117 @@ let MCP = false;
 let GizmoActive = false;
 let LeftClickActive = false;
 let CursorPosDelay = false;
-let Pressed = {}
-let JustPressed = {}
-let QuickPress = { Timeout: 400, MiddleMouse: { active: false, }, }
+let Pressed = {};
+let JustPressed = {};
+let QuickPress = { Timeout: 400, MiddleMouse: { active: false } };
 
 const KeyTranslateMap = {
     '&': '1',
-    'é': '2',
+    é: '2',
     '"': '3',
-    '\'': '4',
+    "'": '4',
 };
 
 const ObjectContextOptions = {
     // 'Info': (data) => { console.log("Info", data.handle); },
     // 'Clone': (data) => { console.log("Clone", data.handle); },
-    'Move': (data) => {
-        sendClientMessage('trackObject', { handle: data.handle, category: "select" });
-        sendClientMessage('toggleMode', { mode: "gizmo" });
+    Move: data => {
+        sendClientMessage('trackObject', {
+            handle: data.handle,
+            category: 'select',
+        });
+        sendClientMessage('toggleMode', { mode: 'gizmo' });
     },
-    'Set Upright': (data) => setRotation(data.handle, 0, 0, null),
-    'Reset Rotation': (data) => setRotation(data.handle, 0, 0, 0),
-    'Place on Ground': (data) => placeOnGround(data.handle),
-}
+    'Set Upright': data => setRotation(data.handle, 0, 0, null),
+    'Reset Rotation': data => setRotation(data.handle, 0, 0, 0),
+    'Place on Ground': data => placeOnGround(data.handle),
+};
 
 export let KeyActions = {
     'info-hud': {
-        ' ': (event) => clickElement(event),
-        'y': () => elementSetClass('info-hud', 'clear', true),
-        'n': () => elementSetClass('info-hud', 'hidden', true),
-        'enter': () => elementSetClass('info-hud', 'clear', true),
-        'escape': () => elementSetClass('info-hud', 'hidden', true),
+        ' ': event => clickElement(event),
+        y: () => elementSetClass('info-hud', 'clear', true),
+        n: () => elementSetClass('info-hud', 'hidden', true),
+        enter: () => elementSetClass('info-hud', 'clear', true),
+        escape: () => elementSetClass('info-hud', 'hidden', true),
     },
     'dev-tree-hud': {},
-    'animHUD': {
-        ' ': (event) => { clickElement(event); },
-        'escape': () => { sendClientMessage('deactivateMode', { mode: "animation" }); },
-        '1': () => { toggleAnimationSearchHUD(); },
-        '2': () => { toggleAnimationConfigureHUD(); },
-        'h': () => { toggleHelp("animHelp"); },
-        '?': () => { toggleHelp("animHelp"); },
+    animHUD: {
+        ' ': event => {
+            clickElement(event);
+        },
+        escape: () => {
+            sendClientMessage('deactivateMode', { mode: 'animation' });
+        },
+        1: () => {
+            toggleAnimationSearchHUD();
+        },
+        2: () => {
+            toggleAnimationConfigureHUD();
+        },
+        h: () => {
+            toggleHelp('animHelp');
+        },
+        '?': () => {
+            toggleHelp('animHelp');
+        },
     },
-    'gizmo': {
-        'escape': () => { sendClientMessage('deactivateMode', { mode: "gizmo"}); },
+    gizmo: {
+        escape: () => {
+            sendClientMessage('deactivateMode', { mode: 'gizmo' });
+        },
     },
-    'objectHUD': {
-        ' ': (event) => { clickElement(event); },
-        '1': () => { toggleObjectSpawnHUD(); },
-        '2': () => { toggleObjectImportExportHUD(); },
-        '3': () => { toggleObjectNearbyHUD(); },
-        '4': () => { toggleObjectSettingsHUD(); },
-        'f': () => { sendKey('f'); },
-        'g': () => { sendKey('g'); },
-        'h': () => { toggleHelp("objHelp"); },
-        '?': () => { toggleHelp("objHelp"); },
-        'r': () => { sendKey('r'); },
-        's': () => { if (Pressed.Control) { saveScene(); } },
-        't': () => { sendKey('t'); },
-        'x': () => { sendKey('x'); },
-        'escape': () => { sendClientMessage('deactivateMode', { mode: "object" }); },
+    objectHUD: {
+        ' ': event => {
+            clickElement(event);
+        },
+        1: () => {
+            toggleObjectSpawnHUD();
+        },
+        2: () => {
+            toggleObjectImportExportHUD();
+        },
+        3: () => {
+            toggleObjectNearbyHUD();
+        },
+        4: () => {
+            toggleObjectSettingsHUD();
+        },
+        f: () => {
+            sendKey('f');
+        },
+        g: () => {
+            sendKey('g');
+        },
+        h: () => {
+            toggleHelp('objHelp');
+        },
+        '?': () => {
+            toggleHelp('objHelp');
+        },
+        r: () => {
+            sendKey('r');
+        },
+        s: () => {
+            if (Pressed.Control) {
+                saveScene();
+            }
+        },
+        t: () => {
+            sendKey('t');
+        },
+        x: () => {
+            sendKey('x');
+        },
+        escape: () => {
+            sendClientMessage('deactivateMode', { mode: 'object' });
+        },
     },
     'export-hud': {
-        ' ': (event) => { clickElement(event); },
-        'escape': () => {
+        ' ': event => {
+            clickElement(event);
+        },
+        escape: () => {
             if (!document.getElementById('exportContent').matches(':focus')) {
                 elementSetClass('export-hud', 'hidden', true);
             } else {
@@ -133,44 +186,57 @@ export let KeyActions = {
         },
     },
     'camera-hud': {
-        'escape': () => {
-            toggleHelp("camHelp", false);
-            sendClientMessage('deactivateMode', { mode: "freecam" });
-            sendClientMessage('deactivateMode', { mode: "noclip" });
+        escape: () => {
+            toggleHelp('camHelp', false);
+            sendClientMessage('deactivateMode', { mode: 'freecam' });
+            sendClientMessage('deactivateMode', { mode: 'noclip' });
         },
-        '?': () => { toggleHelp('camHelp', false); },
-        'h': () => { toggleHelp('camHelp', false); },
+        '?': () => {
+            toggleHelp('camHelp', false);
+        },
+        h: () => {
+            toggleHelp('camHelp', false);
+        },
     },
-}
+};
 
 export let MouseActions = {
     'dev-tree-hud': {
-        leftClick: () => { },
-        middleClick: () => { },
+        leftClick: () => {},
+        middleClick: () => {},
     },
-    'animHUD': {
-        leftClick: (event) => {
+    animHUD: {
+        leftClick: event => {
             // TODO: convert this to EventActions click
-            if (event.target.id === "activeAnimDict" || event.target.id === "activeAnimName") {
-                if (event.target.innerHTML !== "") {
+            if (
+                event.target.id === 'activeAnimDict' ||
+                event.target.id === 'activeAnimName'
+            ) {
+                if (event.target.innerHTML !== '') {
                     clipboardCopy(event.target.innerHTML);
                 }
             }
         },
         middleClick: () => {
             if (MCP) {
-                sendClientMessage('deactivateMCP', {}).then((mcpState) => { toggleMCP(mcpState); });
-            } else {
-                QuickPress.MiddleMouse.active = true;
-                setTimeout(() => { QuickPress.MiddleMouse.active = false; }, QuickPress.Timeout);
-                sendClientMessage('activateMCP', { mode: "animation" }).then((mcpState) => {
+                sendClientMessage('deactivateMCP', {}).then(mcpState => {
                     toggleMCP(mcpState);
                 });
+            } else {
+                QuickPress.MiddleMouse.active = true;
+                setTimeout(() => {
+                    QuickPress.MiddleMouse.active = false;
+                }, QuickPress.Timeout);
+                sendClientMessage('activateMCP', { mode: 'animation' }).then(
+                    mcpState => {
+                        toggleMCP(mcpState);
+                    }
+                );
             }
         },
     },
-    'objectHUD': {
-        leftClick: (event) => {
+    objectHUD: {
+        leftClick: event => {
             if (!MCP) {
                 if (isInterruptingElement(event.target)) {
                     event.stopPropagation();
@@ -179,7 +245,7 @@ export let MouseActions = {
                 sendKey('MouseLeft');
             }
         },
-        rightClick: (event) => {
+        rightClick: event => {
             if (!MCP) {
                 if (isInterruptingElement(event.target)) {
                     event.stopPropagation();
@@ -188,38 +254,55 @@ export let MouseActions = {
                 event.preventDefault();
                 let x = event.pageX;
                 let y = event.pageY;
-                sendClientMessage('getRaycast', { x: x/ResolutionX, y: y/ResolutionY }).then((data) => {
-                    if (!data.handle) { return; }
-                    showDropdown(Object.keys(ObjectContextOptions), x, y).then((option) => {
-                        if (!option) { return; }
-                        ObjectContextOptions[option](data);
-                    });
+                sendClientMessage('getRaycast', {
+                    x: x / ResolutionX,
+                    y: y / ResolutionY,
+                }).then(data => {
+                    if (!data.handle) {
+                        return;
+                    }
+                    showDropdown(Object.keys(ObjectContextOptions), x, y).then(
+                        option => {
+                            if (!option) {
+                                return;
+                            }
+                            ObjectContextOptions[option](data);
+                        }
+                    );
                 });
             }
         },
         middleClick: () => {
             if (MCP) {
-                sendClientMessage('deactivateMCP', {}).then((mcpState) => {
-                    console.log("deactivateMCP", mcpState);
+                sendClientMessage('deactivateMCP', {}).then(mcpState => {
+                    console.log('deactivateMCP', mcpState);
                     toggleMCP(mcpState);
                 });
             } else {
                 QuickPress.MiddleMouse.active = true;
-                setTimeout(() => { QuickPress.MiddleMouse.active = false; }, QuickPress.Timeout);
-                sendClientMessage('activateMCP', { mode: "object" }).then((mcpState) => {
-                    console.log("activateMCP", mcpState);
-                    toggleMCP(mcpState);
-                });
+                setTimeout(() => {
+                    QuickPress.MiddleMouse.active = false;
+                }, QuickPress.Timeout);
+                sendClientMessage('activateMCP', { mode: 'object' }).then(
+                    mcpState => {
+                        console.log('activateMCP', mcpState);
+                        toggleMCP(mcpState);
+                    }
+                );
             }
         },
     },
-    'gizmo': {
+    gizmo: {
         middleClick: () => {
             QuickPress.MiddleMouse.active = true;
-            setTimeout(() => { QuickPress.MiddleMouse.active = false; }, QuickPress.Timeout);
-            sendClientMessage('activateMCP', { mode: "gizmo" }).then((mcpState) => {
-                toggleMCP(mcpState);
-            });
+            setTimeout(() => {
+                QuickPress.MiddleMouse.active = false;
+            }, QuickPress.Timeout);
+            sendClientMessage('activateMCP', { mode: 'gizmo' }).then(
+                mcpState => {
+                    toggleMCP(mcpState);
+                }
+            );
         },
     },
 };
@@ -230,8 +313,12 @@ export const EventActions = {
         '#button-animsearch': () => toggleAnimationSearchHUD(),
         '#button-animconfigure': () => toggleAnimationConfigureHUD(),
 
-        '#button-animconfadd': () => { addAnimation(); },
-        '#button-animconfclear': () => { clearAnimations(); },
+        '#button-animconfadd': () => {
+            addAnimation();
+        },
+        '#button-animconfclear': () => {
+            clearAnimations();
+        },
 
         // Object HUD
         '#button-spawn': () => toggleObjectSpawnHUD(),
@@ -239,11 +326,17 @@ export const EventActions = {
         '#button-importexport': () => toggleObjectImportExportHUD(),
         '#button-objsettings': () => toggleObjectSettingsHUD(),
 
-        '#button-objDetailsPosition': () => toggleObjectDetail('button-objDetailsPosition'),
-        '#button-objDetailsStatus': () => toggleObjectDetail('button-objDetailsStatus'),
+        '#button-objDetailsPosition': () =>
+            toggleObjectDetail('button-objDetailsPosition'),
+        '#button-objDetailsStatus': () =>
+            toggleObjectDetail('button-objDetailsStatus'),
 
-        '#button-spawnpreview': () => { elementSetClass('button-spawnpreview', 'selected'); },
-        '#button-spawnfavs': () => { elementSetClass('button-spawnfavs', 'selected'); },
+        '#button-spawnpreview': () => {
+            elementSetClass('button-spawnpreview', 'selected');
+        },
+        '#button-spawnfavs': () => {
+            elementSetClass('button-spawnfavs', 'selected');
+        },
         '#button-spawnobjects': () => selectSpawnType('objects'),
         '#button-spawnpeds': () => selectSpawnType('peds'),
         '#button-spawnvehicles': () => selectSpawnType('vehicles'),
@@ -255,7 +348,8 @@ export const EventActions = {
         '#button-nearbyOrigin-offset': () => selectNearbyOrigin('offset'),
         '#button-nearbyOrigin-player': () => selectNearbyOrigin('player'),
         '#button-nearbyOrigin-raycast': () => selectNearbyOrigin('raycast'),
-        '#button-nearbyOrigin-set-position': () => selectNearbyOrigin('set position'),
+        '#button-nearbyOrigin-set-position': () =>
+            selectNearbyOrigin('set position'),
         '#button-nearbyOrigin-select': () => selectNearbyOrigin('select'),
 
         '#button-nearby-object': () => toggleNearbyFilter('object'),
@@ -286,20 +380,26 @@ export const EventActions = {
         '#button-animFlags': () => toggleAnimDetail('button-animFlags'),
     },
     input: {},
-    mousemove: (event) => {
-        if (!CursorPosDelay && !MCP && !GizmoActive &&
-                isVisible('objectHUD') &&
-                !document.activeElement.classList.contains('entry')) {
+    mousemove: event => {
+        if (
+            !CursorPosDelay &&
+            !MCP &&
+            !GizmoActive &&
+            isVisible('objectHUD') &&
+            !document.activeElement.classList.contains('entry')
+        ) {
             CursorPosDelay = true;
             sendClientMessage('sendCursorPos', {
-                x: event.clientX/ResolutionX,
-                y: event.clientY/ResolutionY,
+                x: event.clientX / ResolutionX,
+                y: event.clientY / ResolutionY,
                 click: LeftClickActive,
             });
-            setTimeout(function() { CursorPosDelay = false; }, CursorUpdateRate);
+            setTimeout(function () {
+                CursorPosDelay = false;
+            }, CursorUpdateRate);
         }
     },
-    mousedown: (event) => {
+    mousedown: event => {
         MouseDown = true;
         const currentHUD = getCurrentHUD(); // Assume this function gets the currently active HUD
 
@@ -316,47 +416,52 @@ export const EventActions = {
             // Fallback or global behavior if no specific HUD action is defined
         }
     },
-    mouseup: (event) => {
+    mouseup: event => {
         MouseDown = false;
-        switch(event.button) {
+        switch (event.button) {
             case 0: // Left Click
                 LeftClickActive = false;
                 break;
         }
         if (isVisible('animHUD') || isVisible('objectHUD')) {
-            switch(event.button) {
+            switch (event.button) {
                 case 1: // Middle Click
                     if (!QuickPress.MiddleMouse.active) {
-                        sendClientMessage('deactivateMCP', {}).then((mcpState) => { toggleMCP(mcpState); });
+                        sendClientMessage('deactivateMCP', {}).then(
+                            mcpState => {
+                                toggleMCP(mcpState);
+                            }
+                        );
                     }
                     break;
             }
         }
     },
-    keyup: (event) => {
+    keyup: event => {
         JustPressed[event.key] = false;
         Pressed[event.key] = false;
     },
-    keydown: (event) => {
+    keydown: event => {
         if (MCP) {
             event.preventDefault();
             return;
         }
-        const isInputField = event.target.getAttribute('contenteditable') == "true"
+        const isInputField =
+            event.target.getAttribute('contenteditable') == 'true';
         Pressed[event.key] = true;
         // Check universal nav keys
-        switch(event.key) {
-            case " ":
-                if (typeof event.target.onclick == "function") {
+        switch (event.key) {
+            case ' ':
+                if (typeof event.target.onclick == 'function') {
                     event.target.onclick.apply();
                     event.preventDefault();
                     return;
                 }
                 break;
-            case "Tab":
+            case 'Tab':
                 return;
-            case "Backspace":
-            case "Delete": {
+            case 'Backspace':
+            case 'Delete': {
                 const selection = window.getSelection();
                 // console.log(event, selection);
                 if (!selection.rangeCount) break;
@@ -372,8 +477,10 @@ export const EventActions = {
                 } else if (textLength === 1) {
                     // No text is selected
                     const cursorAtStart = selection.anchorOffset === 0; // Caret is at the start of the div
-                    if ((event.key === "Backspace" && !cursorAtStart) ||
-                        (event.key === "Delete" && cursorAtStart)) {
+                    if (
+                        (event.key === 'Backspace' && !cursorAtStart) ||
+                        (event.key === 'Delete' && cursorAtStart)
+                    ) {
                         shouldClear = true;
                     }
                 }
@@ -386,13 +493,13 @@ export const EventActions = {
             }
         }
         JustPressed[event.key] = true;
-        if (event.key == "Escape" || !isInputField) {
-            handleKeyPress(event, getCurrentHUD())
+        if (event.key == 'Escape' || !isInputField) {
+            handleKeyPress(event, getCurrentHUD());
         } else if (isInputField) {
-            if (event.key == "Enter") {
-                Object.keys(InputFields).forEach((selector) => {
+            if (event.key == 'Enter') {
+                Object.keys(InputFields).forEach(selector => {
                     if (event.target.matches(selector)) {
-                        const action = InputFields[selector]
+                        const action = InputFields[selector];
                         action.length ? action(event) : action();
                         event.preventDefault();
                     }
@@ -400,63 +507,63 @@ export const EventActions = {
             }
         }
         JustPressed[event.key] = false;
-    }
+    },
 };
 
 const InputFields = {
-    "#objSearch": (event) => { searchSpawnObject(event.target.innerHTML) },
-    "#selectedScene": (event) => {
-        console.log("selectedScene event triggered", event);
-        if (event.key == "Enter" || event.inputType == "insertParagraph") {
+    '#objSearch': event => {
+        searchSpawnObject(event.target.innerHTML);
+    },
+    '#selectedScene': event => {
+        console.log('selectedScene event triggered', event);
+        if (event.key == 'Enter' || event.inputType == 'insertParagraph') {
             event.preventDefault();
             saveScene();
         }
     },
-    "#nearbyRange": (event) => {
-        if (event.key == "Enter" || event.inputType == "insertParagraph") {
+    '#nearbyRange': event => {
+        if (event.key == 'Enter' || event.inputType == 'insertParagraph') {
             event.preventDefault();
             getTrackedObjects();
         }
     },
     '#objSettingsCurvedBorderAmount': () => setCurvedBorderAmount(),
-    "#animSearch": (event) => {
-        if (event.key == "Enter" || event.inputType == "insertParagraph") {
+    '#animSearch': event => {
+        if (event.key == 'Enter' || event.inputType == 'insertParagraph') {
             event.preventDefault();
 
-            const dict = document.getElementById("animDictList");
-            const anim = document.getElementById("animNameList");
+            const dict = document.getElementById('animDictList');
+            const anim = document.getElementById('animNameList');
 
-            elementSetText(dict, "");
+            elementSetText(dict, '');
             dict.scrollTop = 0;
             dict.scrollLeft = -1000;
 
-            elementSetText(anim, "");
+            elementSetText(anim, '');
             anim.scrollTop = 0;
             anim.scrollLeft = -1000;
 
-            const value = document.getElementById("animSearch").innerHTML;
+            const value = document.getElementById('animSearch').innerHTML;
             searchAnimDicts(value);
         }
     },
-}
-
-
+};
 
 export function registerListeners() {
     tooltipListener();
     dropdownListeners();
-    Object.keys(EventActions).forEach((eventType) => {
-        document.body.addEventListener(eventType, (event) => {
+    Object.keys(EventActions).forEach(eventType => {
+        document.body.addEventListener(eventType, event => {
             const eventActions = EventActions[eventType];
 
             // Check if eventActions is a function
-            if (typeof eventActions === "function") {
+            if (typeof eventActions === 'function') {
                 eventActions(event); // Call the standalone function directly
                 return;
             }
 
             // If eventActions is a list of selectors
-            Object.keys(eventActions).forEach((selector) => {
+            Object.keys(eventActions).forEach(selector => {
                 if (event.target.matches(selector)) {
                     const action = eventActions[selector];
                     action.length ? action(event) : action();
@@ -466,11 +573,13 @@ export function registerListeners() {
     });
 }
 
-export function toUint32(value) { return value >>> 0; }
+export function toUint32(value) {
+    return value >>> 0;
+}
 
 function getCurrentHUD() {
     // TODO: cache in appState, dont always query DOM
-    const huds = document.querySelectorAll(".hud");
+    const huds = document.querySelectorAll('.hud');
     for (let hud of huds) {
         if (!hud.classList.contains('hidden')) {
             return hud.id;
@@ -484,67 +593,89 @@ document.addEventListener('DOMContentLoaded', () => {
     initSettings();
     registerListeners();
 
-    window.addEventListener('message', function(msg) {
-        switch(msg.data.type) {
-            case "ui_trie":
-                console.log("trie", msg.data.trie);
-                if (msg.data.trie) { initTrie(msg.data.trie); }
-                elementSetClass('dev-tree-hud', 'hidden', msg.data.state == false);
+    window.addEventListener('message', function (msg) {
+        switch (msg.data.type) {
+            case 'ui_trie':
+                console.log('trie', msg.data.trie);
+                if (msg.data.trie) {
+                    initTrie(msg.data.trie);
+                }
+                elementSetClass(
+                    'dev-tree-hud',
+                    'hidden',
+                    msg.data.state == false
+                );
                 break;
-            case "ui_animation":
+            case 'ui_animation':
                 toggleAnimationHUD(msg.data.state);
                 break;
-            case "ui_object":
+            case 'ui_object':
                 toggleObjectHUD(msg.data.state);
                 break;
-            case "ui_camera":
-                elementSetClass('camera-hud', 'hidden', msg.data.state == false);
+            case 'ui_camera':
+                elementSetClass(
+                    'camera-hud',
+                    'hidden',
+                    msg.data.state == false
+                );
                 break;
-            case "updateCrosshair":
+            case 'updateCrosshair':
                 updateCrosshair(msg.data);
                 updateObjectDetails(msg.data);
                 break;
-            case "updateCamera":
+            case 'updateCamera':
                 updateCamera(msg.data.camera);
                 break;
             // case "updateSceneObjects":
             //     updateSceneObjects(msg.data.objects);
-            case "clipboard":
+            case 'clipboard':
                 clipboardCopy(msg.data.text);
                 break;
-            case "mcp":
+            case 'mcp':
                 toggleMCP(msg.data.active);
                 break;
-            case "setGizmoState":
-                GizmoActive = msg.data.data.shown
+            case 'setGizmoState':
+                GizmoActive = msg.data.data.shown;
                 elementSetClass('gizmo', 'hidden', !GizmoActive);
                 break;
-            case "toggleHelp":
-                toggleHelp(msg.data.mode, msg.data.state, msg.data.toggleCursor);
+            case 'toggleHelp':
+                toggleHelp(
+                    msg.data.mode,
+                    msg.data.state,
+                    msg.data.toggleCursor
+                );
                 break;
-            case "keyPress":
+            case 'keyPress':
                 handleKeyPress({ key: msg.data.key }, msg.data.mode);
                 break;
         }
-    })
+    });
 });
 
 function handleKeyPress(event, hud) {
     const rawKey = event.key;
-    if (!hud) { return; }
+    if (!hud) {
+        return;
+    }
     const lowercaseKey = rawKey.toLowerCase();
     const key = KeyTranslateMap[lowercaseKey] || lowercaseKey;
 
     const action = KeyActions[hud][key] || KeyActions[hud].default;
     // console.log("handleKeyPress", hud, key, event);
-    if (action) { action(event); }
+    if (action) {
+        action(event);
+    }
 }
 
 // Help HUD //
 function toggleHelp(elementId, state) {
-    if (state === undefined) { state = !isVisible(elementId); }
+    if (state === undefined) {
+        state = !isVisible(elementId);
+    }
     const helpDisabled = elementSetClass(elementId, 'hidden', !state);
-    if (elementId == "objHelp") { toggleCrosshair(helpDisabled); }
+    if (elementId == 'objHelp') {
+        toggleCrosshair(helpDisabled);
+    }
 }
 
 function toggleMCP(state) {
@@ -586,11 +717,7 @@ function toggleSettings(state) {
     elementSetClass('animSettings', 'hidden', selected);
 }
 
-const AnimSearchElements = [
-    'animSearchField',
-    'animDictList',
-    'animList',
-];
+const AnimSearchElements = ['animSearchField', 'animDictList', 'animList'];
 
 function toggleSearch(state) {
     if (elementSetClass('button-search', 'selected', state)) {
@@ -600,14 +727,18 @@ function toggleSearch(state) {
         toggleIKFlags(false);
         toggleTaskFilters(false);
         toggleEntity(false);
-        toggleHelp("animHelp", false)
+        toggleHelp('animHelp', false);
 
-        AnimSearchElements.forEach((el) => { elementSetClass(el, 'hidden', false) });
+        AnimSearchElements.forEach(el => {
+            elementSetClass(el, 'hidden', false);
+        });
         document.getElementById('button-search').focus();
         document.getElementById('animDictList').scrollLeft = -1000;
         document.getElementById('animList').scrollLeft = -1000;
     } else {
-        AnimSearchElements.forEach((el) => { elementSetClass(el, 'hidden', true) });
+        AnimSearchElements.forEach(el => {
+            elementSetClass(el, 'hidden', true);
+        });
         document.getElementById('valueAnimSearch').blur();
     }
 }
@@ -620,7 +751,7 @@ function toggleTimings(state) {
         toggleIKFlags(false);
         toggleTaskFilters(false);
         toggleEntity(false);
-        toggleHelp("animHelp", false)
+        toggleHelp('animHelp', false);
 
         elementSetClass('animTimingsOptions', 'hidden', false);
         document.getElementById('button-timings').focus();
@@ -640,7 +771,7 @@ function toggleFlags(state) {
         toggleIKFlags(false);
         toggleTaskFilters(false);
         toggleEntity(false);
-        toggleHelp("animHelp", false)
+        toggleHelp('animHelp', false);
         document.getElementById('button-flags').focus();
         elementSetClass('animFlagsOptions', 'hidden', false);
     } else {
@@ -659,7 +790,7 @@ function toggleIKFlags(state) {
         toggleFlags(false);
         toggleTaskFilters(false);
         toggleEntity(false);
-        toggleHelp("animHelp", false)
+        toggleHelp('animHelp', false);
         document.getElementById('button-ikflags').focus();
         elementSetClass('animIKFlagsOptions', 'hidden', false);
     } else {
@@ -678,7 +809,7 @@ function toggleTaskFilters(state) {
         toggleFlags(false);
         toggleIKFlags(false);
         toggleEntity(false);
-        toggleHelp("animHelp", false)
+        toggleHelp('animHelp', false);
         document.getElementById('button-taskFilters').focus();
         elementSetClass('animTaskFilterOptions', 'hidden', false);
     } else {
@@ -694,7 +825,7 @@ function toggleEntity(state) {
         toggleFlags(false);
         toggleIKFlags(false);
         toggleTaskFilters(false);
-        toggleHelp("animHelp", false)
+        toggleHelp('animHelp', false);
         document.getElementById('button-entity').focus();
         elementSetClass('animEntityOptions', 'hidden', false);
     } else {
@@ -708,37 +839,42 @@ const ObjectDetailsCategoryMap = new Map([
 ]);
 
 function toggleObjectDetail(elId, state) {
-    console.log("toggleObjectDetail", elId, state);
+    console.log('toggleObjectDetail', elId, state);
     const el = document.getElementById(elId);
-    if (state === undefined) { state = !el.classList.contains('selected'); }
+    if (state === undefined) {
+        state = !el.classList.contains('selected');
+    }
     elementSetClass(el, 'selected', state);
     const listEl = ObjectDetailsCategoryMap.get(elId);
     elementSetClass(listEl, 'hidden', !state);
 }
 
 const ObjectDetailsFields = new Map([
-    ["objDetailsEntityHandle", "handle"],
-    ["objDetailsEntityNetworkId", "networkID"],
+    ['objDetailsEntityHandle', 'handle'],
+    ['objDetailsEntityNetworkId', 'networkID'],
     // ["objDetailsEntityModelHash", "modelHash"],
-    ["objDetailsEntityModelName", "modelName"],
-    ["objDetailsEntityPosX", "coords_x"],
-    ["objDetailsEntityPosY", "coords_y"],
-    ["objDetailsEntityPosZ", "coords_z"],
-    ["objDetailsEntityRotPitch", "rotation_pitch"],
-    ["objDetailsEntityRotRoll", "rotation_roll"],
-    ["objDetailsEntityRotYaw", "rotation_yaw"],
+    ['objDetailsEntityModelName', 'modelName'],
+    ['objDetailsEntityPosX', 'coords_x'],
+    ['objDetailsEntityPosY', 'coords_y'],
+    ['objDetailsEntityPosZ', 'coords_z'],
+    ['objDetailsEntityRotPitch', 'rotation_pitch'],
+    ['objDetailsEntityRotRoll', 'rotation_roll'],
+    ['objDetailsEntityRotYaw', 'rotation_yaw'],
 ]);
 
 const ObjectDetailsOptions = new Map([
-    ["objDetailsEntityVisible", "visible"],
-    ["objDetailsEntityFrozen", "frozen"],
-    ["objDetailsEntityCollision", "collision"],
-
+    ['objDetailsEntityVisible', 'visible'],
+    ['objDetailsEntityFrozen', 'frozen'],
+    ['objDetailsEntityCollision', 'collision'],
 ]);
 
 function clearObjectDetails() {
-    ObjectDetailsFields.forEach((value, key) => { elementSetText(key, ""); });
-    ObjectDetailsOptions.forEach((value, key) => { elementSetText(key, ""); });
+    ObjectDetailsFields.forEach((value, key) => {
+        elementSetText(key, '');
+    });
+    ObjectDetailsOptions.forEach((value, key) => {
+        elementSetText(key, '');
+    });
 }
 
 function updateObjectDetails(data) {
@@ -752,7 +888,7 @@ function updateObjectDetails(data) {
         elementSetText(key, data.selectData[value]);
     });
     ObjectDetailsOptions.forEach((value, key) => {
-        elementSetClass(key, "selected", data.selectData[value]);
+        elementSetClass(key, 'selected', data.selectData[value]);
     });
     elementSetClass('objDetails', 'hidden', false);
 }
@@ -763,9 +899,11 @@ const AnimConfigureCategoryMap = new Map([
 ]);
 
 function toggleAnimDetail(elId, state) {
-    console.log("toggleAnimConfigureCategory", elId, state);
+    console.log('toggleAnimConfigureCategory', elId, state);
     const el = document.getElementById(elId);
-    if (state === undefined) { state = !el.classList.contains('selected'); }
+    if (state === undefined) {
+        state = !el.classList.contains('selected');
+    }
     elementSetClass(el, 'selected', state);
     const listEl = AnimConfigureCategoryMap.get(elId);
     elementSetClass(listEl, 'hidden', !state);
@@ -773,8 +911,7 @@ function toggleAnimDetail(elId, state) {
 
 function sendKey(key) {
     sendClientMessage('dispatchKeyEvents', {
-        justPressed: { [key]: true, },
-        pressed: Pressed
+        justPressed: { [key]: true },
+        pressed: Pressed,
     });
 }
-

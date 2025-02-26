@@ -1,13 +1,22 @@
 export function sendClientMessage(endpoint, data) {
     /* eslint-disable-next-line no-undef */
-    const resourceName = typeof GetParentResourceName === "undefined" ? "mockResource" : GetParentResourceName();
+    const resourceName =
+        typeof GetParentResourceName === 'undefined'
+            ? 'mockResource'
+            : GetParentResourceName();
 
     const url = `https://${resourceName}/${endpoint}`;
 
     // Development mock response
-    if (typeof GetParentResourceName === "undefined" && typeof window.getMockResponse === "function") {
+    if (
+        typeof GetParentResourceName === 'undefined' &&
+        typeof window.getMockResponse === 'function'
+    ) {
         if (!window.endpointMute[endpoint]) {
-            console.log(`[Mock][NUI Send] sendClientMessage called to ${url} with data:`, data);
+            console.log(
+                `[Mock][NUI Send] sendClientMessage called to ${url} with data:`,
+                data
+            );
         }
         try {
             const mockResponse = window.getMockResponse(endpoint);
@@ -23,16 +32,21 @@ export function sendClientMessage(endpoint, data) {
         headers: { 'Content-Type': 'application/json; charset=UTF-8' },
         body: JSON.stringify(data),
     })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`Server error: ${response.statusText}`);
-        }
-        return response.json().catch(() => {
-            throw new Error("Invalid JSON response received from server");
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Server error: ${response.statusText}`);
+            }
+            return response.json().catch(() => {
+                throw new Error('Invalid JSON response received from server');
+            });
+        })
+        .catch(error => {
+            console.error(
+                'sendClientMessage error:',
+                error.message || error.toString(),
+                url,
+                data
+            );
+            return { error: true, message: error.message || error.toString() };
         });
-    })
-    .catch(error => {
-        console.error("sendClientMessage error:", error.message || error.toString(), url, data);
-        return { error: true, message: error.message || error.toString() };
-    });
 }

@@ -1,4 +1,4 @@
-import { EventActions } from "../script.js";
+import { EventActions } from '../script.js';
 
 export function clickElement(event) {
     const { target } = event;
@@ -17,11 +17,14 @@ export function clickElement(event) {
     // Otherwise, use a keyed lookup for click handlers.
     const eventId = `#${target.id}`;
     const handler = EventActions.click[eventId];
-    if (handler) { handler(event); }
+    if (handler) {
+        handler(event);
+    }
 }
 
 export function elementSetOnlyClass(elOrId, cls, classes) {
-    const el = typeof elOrId === "string" ? document.getElementById(elOrId) : elOrId;
+    const el =
+        typeof elOrId === 'string' ? document.getElementById(elOrId) : elOrId;
     if (!el) {
         console.error(`Element not found: ${elOrId}`);
         return false; // Return false if the element is not found
@@ -30,7 +33,9 @@ export function elementSetOnlyClass(elOrId, cls, classes) {
     const classList = el.classList;
 
     // Remove all classes from the provided list
-    classes.forEach((c) => { if (c !== cls) classList.remove(c)});
+    classes.forEach(c => {
+        if (c !== cls) classList.remove(c);
+    });
 
     // Add the target class
     classList.add(cls);
@@ -45,7 +50,8 @@ export function elementSetOnlyClass(elOrId, cls, classes) {
  * @param {boolean|undefined} [state] - Optional. true to add, false to remove, undefined to toggle.
  */
 export function elementSetClass(elOrId, cls, state) {
-    const el = typeof elOrId === "string" ? document.getElementById(elOrId) : elOrId;
+    const el =
+        typeof elOrId === 'string' ? document.getElementById(elOrId) : elOrId;
 
     if (!el) {
         console.error(`Element not found: ${elOrId}`);
@@ -63,7 +69,8 @@ export function elementSetClass(elOrId, cls, state) {
 }
 
 export function elementSetText(elOrId, text) {
-    const el = typeof elOrId === 'string' ? document.getElementById(elOrId) : elOrId;
+    const el =
+        typeof elOrId === 'string' ? document.getElementById(elOrId) : elOrId;
     if (!el) {
         console.error(`Element not found: ${elOrId}`);
         return false; // Return false if the element is not found
@@ -71,10 +78,13 @@ export function elementSetText(elOrId, text) {
     el.innerText = text;
 }
 
-export function isSelected(elOrId) { elementHasClass(elOrId, 'selected'); }
+export function isSelected(elOrId) {
+    elementHasClass(elOrId, 'selected');
+}
 
 export function elementHasClass(elOrId, className) {
-    const el = typeof elOrId === 'string' ? document.getElementById(elOrId) : elOrId;
+    const el =
+        typeof elOrId === 'string' ? document.getElementById(elOrId) : elOrId;
     if (!el) {
         console.error(`Element not found: ${elOrId}`);
         return false; // Return false if the element is not found
@@ -83,14 +93,19 @@ export function elementHasClass(elOrId, className) {
 }
 
 export function isVisible(elOrId) {
-    const el = typeof elOrId === 'string' ? document.getElementById(elOrId) : elOrId;
+    const el =
+        typeof elOrId === 'string' ? document.getElementById(elOrId) : elOrId;
     if (!el) {
         console.error(`Element not found: ${elOrId}`);
         return false; // Return false if the element is not found
     }
     const style = window.getComputedStyle(el);
-    if (style.display === "none") { return false; }
-    if (style.visibility === "hidden") { return false; }
+    if (style.display === 'none') {
+        return false;
+    }
+    if (style.visibility === 'hidden') {
+        return false;
+    }
     return true;
 }
 
@@ -102,7 +117,7 @@ export function isVisible(elOrId) {
 export function initializeElements(allElements, visibleElements) {
     const visibleSet = new Set(visibleElements);
 
-    allElements.forEach((elId) => {
+    allElements.forEach(elId => {
         const el = document.getElementById(elId);
         if (!el) return;
 
@@ -118,14 +133,15 @@ export function initializeElements(allElements, visibleElements) {
  */
 function updateElementVisibility(el, isVisible) {
     if (isVisible) {
-        if (el.classList.contains("hidden")) el.classList.remove("hidden");
+        if (el.classList.contains('hidden')) el.classList.remove('hidden');
     } else {
-        if (!el.classList.contains("hidden")) el.classList.add("hidden");
+        if (!el.classList.contains('hidden')) el.classList.add('hidden');
     }
 }
 
 export function resetList(elOrId) {
-    const el = typeof elOrId === 'string' ? document.getElementById(elOrId) : elOrId;
+    const el =
+        typeof elOrId === 'string' ? document.getElementById(elOrId) : elOrId;
     if (!el) {
         console.error(`Element not found: ${elOrId}`);
         return false; // Return false if the element is not found
@@ -137,11 +153,13 @@ export function resetList(elOrId) {
 }
 
 export function isInterruptingElement(target) {
-    return target.classList.contains('entry') ||
+    return (
+        target.classList.contains('entry') ||
         target.classList.contains('control') ||
         target.classList.contains('label') ||
         target.closest('.context-menu') ||
         target.closest('.label') ||
         target.closest('.entry') ||
-        target.closest('.control');
+        target.closest('.control')
+    );
 }
