@@ -10,16 +10,17 @@
 // TODO: Test this new implemented clipboardCopy function
 export function clipboardCopy(val) {
     if (navigator.clipboard) {
-        navigator.clipboard.writeText(val)
+        navigator.clipboard
+            .writeText(val)
             .then(() => console.log(`Copied: ${val}`))
             .catch(err => console.error('Failed to copy: ', err));
     } else {
         // Fallback for older browsers
-        const tempInput = document.createElement("input");
+        const tempInput = document.createElement('input');
         document.body.appendChild(tempInput);
         tempInput.value = val;
         tempInput.select();
-        document.execCommand("copy");
+        document.execCommand('copy');
         tempInput.remove();
         console.log(`Copied (fallback): ${val}`);
     }

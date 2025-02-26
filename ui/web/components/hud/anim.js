@@ -2,21 +2,42 @@ import { toggleHUD, toggleSection } from './common.js';
 
 const AnimHUD = {
     all: [
-        'animHelp', 'animHUDControls',
-        'animSearchLeftColumn', 'animSearchDict', 'animSearchName',
-        'animSearchField', 'animDictList', 'animNameList',
-        'animListConfigureLeftColumn', 'animListConfigureOptions',
-        'animListConfigureList', 'animListConfigureDict', 'animListConfigureName'
+        'animHelp',
+        'animHUDControls',
+        'animSearchLeftColumn',
+        'animSearchDict',
+        'animSearchName',
+        'animSearchField',
+        'animDictList',
+        'animNameList',
+        'animListConfigureLeftColumn',
+        'animListConfigureOptions',
+        'animListConfigureList',
+        'animListConfigureDict',
+        'animListConfigureName',
     ],
     visible: ['animHUDControls'], // Default visible elements
     buttons: {
         search: 'button-animsearch',
-        configure: 'button-animconfigure'
+        configure: 'button-animconfigure',
     },
     sections: {
-        search: ['animSearchLeftColumn', 'animSearchDict', 'animSearchName', 'animSearchField', 'animDictList', 'animNameList'],
-        configure: ['animListConfigureLeftColumn', 'animListConfigureOptions', 'animListConfigureList', 'animListConfigureDict', 'animListConfigureName']
-    }
+        search: [
+            'animSearchLeftColumn',
+            'animSearchDict',
+            'animSearchName',
+            'animSearchField',
+            'animDictList',
+            'animNameList',
+        ],
+        configure: [
+            'animListConfigureLeftColumn',
+            'animListConfigureOptions',
+            'animListConfigureList',
+            'animListConfigureDict',
+            'animListConfigureName',
+        ],
+    },
 };
 
 export function toggleAnimationHUD(state) {

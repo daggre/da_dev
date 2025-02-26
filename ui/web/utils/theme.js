@@ -1,6 +1,6 @@
 import { DropDownOptions } from '../components/dropdown.js';
 import { elementSetText } from './nav.js';
-import { sendClientMessage} from './msg.js';
+import { sendClientMessage } from './msg.js';
 import { Settings } from '../components/settings.js';
 
 // TODO: Add other settings save and edit functions
@@ -156,16 +156,18 @@ function setTheme(theme) {
     elementSetText('objSettingsTheme', theme);
     if (Settings.Theme.color != theme) {
         Settings.Theme.color = theme;
-        sendClientMessage('setObjSettings', { theme: JSON.stringify(Settings.Theme) });
+        sendClientMessage('setObjSettings', {
+            theme: JSON.stringify(Settings.Theme),
+        });
     }
-};
+}
 
 DropDownOptions.objSettingsTheme = Object.fromEntries(
-  Object.keys(themes).map(key => {
-    // Create a display name by replacing underscores with spaces
-    const displayName = key.replace(/_/g, " ");
-    return [displayName, () => setTheme(key)];
-  })
+    Object.keys(themes).map(key => {
+        // Create a display name by replacing underscores with spaces
+        const displayName = key.replace(/_/g, ' ');
+        return [displayName, () => setTheme(key)];
+    })
 );
 
 function setDividerStyle(divider) {
@@ -174,51 +176,66 @@ function setDividerStyle(divider) {
     elementSetText('objSettingsDividerStyle', divider);
     if (Settings.Theme.divider != divider) {
         Settings.Theme.divider = divider;
-        sendClientMessage('setObjSettings', { theme: JSON.stringify(Settings.Theme) });
+        sendClientMessage('setObjSettings', {
+            theme: JSON.stringify(Settings.Theme),
+        });
     }
-};
+}
 
 // Define the mapping of option names to divider style values
 const dividerStyles = {
-  'angle down': "",
-  'angle up': "",
-  'chevron': "",
-  'flame': "",
-  // 'honeycomb': "", // optional entry
-  'inverted chevron': "",
-  'pixelated': "",
-  'quadrant top': "▛",
-  'quadrant bottom': "▙",
-  'round': "",
-  // 'trapezoid': "", // optional entry
-  'vertical': "▌",
-  'waveform': "",
+    'angle down': '',
+    'angle up': '',
+    chevron: '',
+    flame: '',
+    // 'honeycomb': "", // optional entry
+    'inverted chevron': '',
+    pixelated: '',
+    'quadrant top': '▛',
+    'quadrant bottom': '▙',
+    round: '',
+    // 'trapezoid': "", // optional entry
+    vertical: '▌',
+    waveform: '',
 };
 
 // Generate the dropdown options object using Object.entries and Object.fromEntries
 DropDownOptions.objSettingsDividerStyle = Object.fromEntries(
-  Object.entries(dividerStyles).map(([name]) => [
-    name, () => setDividerStyle(name)
-  ])
+    Object.entries(dividerStyles).map(([name]) => [
+        name,
+        () => setDividerStyle(name),
+    ])
 );
 
-export function initUIStyle(theme, divider, border, borderrad, borderradamount) {
+export function initUIStyle(
+    theme,
+    divider,
+    border,
+    borderrad,
+    borderradamount
+) {
     console.log(theme, divider, border, borderrad, borderradamount);
     console.log(Settings.Theme);
     setTheme(theme);
     setDividerStyle(divider);
-    document.getElementById('objSettingsBorder').classList.toggle('selected', !border);
+    document
+        .getElementById('objSettingsBorder')
+        .classList.toggle('selected', !border);
     setBorder();
-    document.getElementById('objSettingsCurvedBorder').classList.toggle('selected', !borderrad);
+    document
+        .getElementById('objSettingsCurvedBorder')
+        .classList.toggle('selected', !borderrad);
     setCurvedBorder();
-    document.getElementById('objSettingsCurvedBorderAmount').textContent = borderradamount;
+    document.getElementById('objSettingsCurvedBorderAmount').textContent =
+        borderradamount;
     setCurvedBorderAmount();
-
 }
 
 export function setBorder() {
     // Toggle var(--brd-size) if #objSettingsBorder is selected
-    const selected = document.getElementById('objSettingsBorder').classList.toggle('selected');
+    const selected = document
+        .getElementById('objSettingsBorder')
+        .classList.toggle('selected');
     if (selected) {
         document.documentElement.style.setProperty('--brd-size', '2px');
     } else {
@@ -226,38 +243,53 @@ export function setBorder() {
     }
     if (Settings.Theme.border != selected) {
         Settings.Theme.border = selected;
-        sendClientMessage('setObjSettings', { theme: JSON.stringify(Settings.Theme) });
+        sendClientMessage('setObjSettings', {
+            theme: JSON.stringify(Settings.Theme),
+        });
     }
 }
 
 export function setCurvedBorderAmount() {
-    const curved = document.getElementById('objSettingsCurvedBorder').classList.contains('selected');
+    const curved = document
+        .getElementById('objSettingsCurvedBorder')
+        .classList.contains('selected');
     const el = document.getElementById('objSettingsCurvedBorderAmount');
     // Check that the text content is a number
     if (!isNaN(el.textContent)) {
         const borderRad = el.textContent;
         if (curved) {
-            document.documentElement.style.setProperty('--brd-rad', `${borderRad}px`);
+            document.documentElement.style.setProperty(
+                '--brd-rad',
+                `${borderRad}px`
+            );
         }
         if (Settings.Theme.borderradamount != borderRad) {
             Settings.Theme.borderradamount = borderRad;
-            sendClientMessage('setObjSettings', { theme: JSON.stringify(Settings.Theme) });
+            sendClientMessage('setObjSettings', {
+                theme: JSON.stringify(Settings.Theme),
+            });
         }
     }
 }
 
 export function setCurvedBorder() {
     // Toggle var(--brd-rad) if #button-objSettingsCurvedBorder is selected
-    const selected = document.getElementById('objSettingsCurvedBorder').classList.toggle('selected');
+    const selected = document
+        .getElementById('objSettingsCurvedBorder')
+        .classList.toggle('selected');
     if (selected) {
-        document.documentElement.style.setProperty('--brd-rad', `${Settings.Theme.borderradamount}px`);
+        document.documentElement.style.setProperty(
+            '--brd-rad',
+            `${Settings.Theme.borderradamount}px`
+        );
     } else {
         document.documentElement.style.setProperty('--brd-rad', '0px');
     }
 
     if (Settings.Theme.borderrad != selected) {
         Settings.Theme.borderrad = selected;
-        sendClientMessage('setObjSettings', { theme: JSON.stringify(Settings.Theme) });
+        sendClientMessage('setObjSettings', {
+            theme: JSON.stringify(Settings.Theme),
+        });
     }
 }
-

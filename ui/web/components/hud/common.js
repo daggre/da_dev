@@ -26,11 +26,15 @@ export function toggleHUD(state, hud, section, button, onShow = null) {
  * @param {string[]} elementsIgnored - List of element IDs not to change.
  * @param {string[]} allElements - List of all relevant element IDs for this section.
  */
-export function toggleSection(state, elementsToShow, elementsIgnored, allElements) {
-
+export function toggleSection(
+    state,
+    elementsToShow,
+    elementsIgnored,
+    allElements
+) {
     const visibleSet = new Set(elementsToShow);
 
-    allElements.forEach((elId) => {
+    allElements.forEach(elId => {
         const el = document.getElementById(elId);
         if (!el) return;
         if (elementsIgnored.includes(elId)) return;
