@@ -7,20 +7,25 @@ import {
     isVisible,
     elementSetClass,
     elementHasClass,
-    elementSetText
+    elementSetText,
 } from '../utils/nav.js';
 
 let TrackedObjectsLoopRunning = false;
-let SelectedObjectSpawnType = "objects";
+let SelectedObjectSpawnType = 'objects';
 
 export function searchSpawnObject(searchString) {
     resetList('objSpawnList');
-    searchObjects(searchString, Settings.Spawn[SelectedObjectSpawnType], "objSpawnList", 3);
+    searchObjects(
+        searchString,
+        Settings.Spawn[SelectedObjectSpawnType],
+        'objSpawnList',
+        3
+    );
 }
 
 function searchObjects(searchValue, searchList, elementId, tabIndex) {
     const el = document.getElementById(elementId);
-    el.style.minHeight = "0";
+    el.style.minHeight = '0';
     if (!searchValue) return;
 
     const maxResults = 10000;
@@ -30,7 +35,9 @@ function searchObjects(searchValue, searchList, elementId, tabIndex) {
 
     // Optimize filter by pre-lowering searchValue once
     const searchLower = searchValue.toLowerCase();
-    const results = searchList.filter(str => str.toLowerCase().includes(searchLower));
+    const results = searchList.filter(str =>
+        str.toLowerCase().includes(searchLower)
+    );
 
     // Create fragment for efficient DOM updates
     const ul = document.createElement('ul');
@@ -68,8 +75,11 @@ function searchHandleHover(event) {
     const li = event.target.closest('li');
     if (!li) return;
 
-    const isPreviewSelected = elementHasClass('button-spawnpreview', 'selected');
-    if (event.type === "pointerenter") {
+    const isPreviewSelected = elementHasClass(
+        'button-spawnpreview',
+        'selected'
+    );
+    if (event.type === 'pointerenter') {
         li.classList.add('li-hover');
         if (isPreviewSelected) {
             sendClientMessage('spawnPreviewObject', { name: li.dataset.name });
@@ -98,7 +108,7 @@ export function getTrackedObjects() {
     if (TrackedObjectsLoopRunning) return;
     TrackedObjectsLoopRunning = true;
 
-    const el = document.getElementById("objNearbyResults");
+    const el = document.getElementById('objNearbyResults');
     resetList(el);
 
     const loopId = setInterval(async () => {
@@ -110,10 +120,13 @@ export function getTrackedObjects() {
 
         if (MouseDown) return;
 
-        const currentNearbyRange = document.getElementById('nearbyRange').textContent;
+        const currentNearbyRange =
+            document.getElementById('nearbyRange').textContent;
         if (currentNearbyRange !== Settings.Nearby.range) {
             Settings.Nearby.range = currentNearbyRange;
-            sendClientMessage('setObjSettings', { nearby: JSON.stringify(Settings.Nearby) });
+            sendClientMessage('setObjSettings', {
+                nearby: JSON.stringify(Settings.Nearby),
+            });
         }
 
         const resp = await sendClientMessage('nearbyObjects', {
@@ -121,30 +134,42 @@ export function getTrackedObjects() {
             origin: Settings.Nearby.origin,
         });
 
-        const objects = (resp.nearbyObjects || []).sort((a, b) => a.distance - b.distance);
-        el.textContent = "";
+        const objects = (resp.nearbyObjects || []).sort(
+            (a, b) => a.distance - b.distance
+        );
+        el.textContent = '';
 
         const ul = document.createElement('ul');
         const fragment = document.createDocumentFragment();
         let filteredLength = 0;
 
-        objects.forEach(({ objType, handle, networkId, distance, modelName, select, hover }) => {
-            if (objType && !Settings.Nearby[objType]) return; // Skip if not allowed
-            filteredLength++;
+        objects.forEach(
+            ({
+                objType,
+                handle,
+                networkId,
+                distance,
+                modelName,
+                select,
+                hover,
+            }) => {
+                if (objType && !Settings.Nearby[objType]) return; // Skip if not allowed
+                filteredLength++;
 
-            const li = document.createElement('li');
-            li.dataset.handle = handle;
-            li.textContent = `${distance.toFixed(2)} ${handle}${networkId ? ` [${networkId}]` : ''} ${modelName}`;
+                const li = document.createElement('li');
+                li.dataset.handle = handle;
+                li.textContent = `${distance.toFixed(2)} ${handle}${networkId ? ` [${networkId}]` : ''} ${modelName}`;
 
-            if (select) {
-                li.classList.add('li-select', 'li-pseudo-focus');
+                if (select) {
+                    li.classList.add('li-select', 'li-pseudo-focus');
+                }
+                if (hover) {
+                    li.classList.add('li-hover');
+                }
+
+                fragment.appendChild(li);
             }
-            if (hover) {
-                li.classList.add('li-hover');
-            }
-
-            fragment.appendChild(li);
-        });
+        );
 
         ul.appendChild(fragment);
         el.appendChild(ul);
@@ -163,10 +188,12 @@ export function getTrackedObjects() {
 function trackHandleHover(event) {
     const li = event.target.closest('li');
     if (!li) return;
-    event.type === 'pointerenter' ? li.classList.add('li-hover') : li.classList.remove('li-hover');
+    event.type === 'pointerenter'
+        ? li.classList.add('li-hover')
+        : li.classList.remove('li-hover');
     sendClientMessage('trackObject', {
         handle: li.dataset.handle,
-        category: "hover",
+        category: 'hover',
         remove: event.type === 'pointerleave',
     });
 }
@@ -175,23 +202,25 @@ function trackHandleHover(event) {
 function trackHandleClick(event) {
     const li = event.target.closest('li');
     if (!li) return;
-    console.log("trackHandleClick", li);
+    console.log('trackHandleClick', li);
     li.classList.add('li-select');
     sendClientMessage('trackObject', {
         handle: li.dataset.handle,
-        category: "select",
+        category: 'select',
     });
 }
 
 function selectSpawnObject(object) {
-    elementSetText("activeObject", object);
+    elementSetText('activeObject', object);
     sendClientMessage('selectSpawnObject', { name: object });
 }
 
 export function toggleNearbyFilter(type) {
     const selected = elementSetClass(`button-nearby-${type}`, 'selected');
     Settings.Nearby[type] = selected;
-    sendClientMessage('setObjSettings', { nearby: JSON.stringify(Settings.Nearby) });
+    sendClientMessage('setObjSettings', {
+        nearby: JSON.stringify(Settings.Nearby),
+    });
 }
 
 export function tagSelectSort(sortType) {
@@ -201,10 +230,24 @@ export function tagSelectSort(sortType) {
     sendClientMessage('setObjSettings', { tags: JSON.stringify(Settings.Tag) });
 }
 
-const PREFIX_OBJ_SPAWN = "button-spawn";
-const PREFIX_NEARBY_ORIGIN = "button-nearbyOrigin-";
-const validSpawns = new Set(["objects", "peds", "vehicles", "propsets", "pickups", "other"]);
-const validOrigins = new Set(["camera", "offset", "player", "raycast", "select", "set position"]);
+const PREFIX_OBJ_SPAWN = 'button-spawn';
+const PREFIX_NEARBY_ORIGIN = 'button-nearbyOrigin-';
+const validSpawns = new Set([
+    'objects',
+    'peds',
+    'vehicles',
+    'propsets',
+    'pickups',
+    'other',
+]);
+const validOrigins = new Set([
+    'camera',
+    'offset',
+    'player',
+    'raycast',
+    'select',
+    'set position',
+]);
 
 /**
  * Generic function to handle selection changes and UI updates.
@@ -215,7 +258,14 @@ const validOrigins = new Set(["camera", "offset", "player", "raycast", "select",
  * @param {Function} updateState - Function to update the global state.
  * @param {Function} onChange - Optional callback to execute when a new selection is made.
  */
-function selectOption(type, validOptions, newValue, prefix, updateState, onChange = null) {
+function selectOption(
+    type,
+    validOptions,
+    newValue,
+    prefix,
+    updateState,
+    onChange = null
+) {
     const prevValue = updateState(); // Get current value
     if (!prevValue || !newValue) {
         console.error(`Invalid ${type} value:`, { prevValue, newValue });
@@ -241,12 +291,16 @@ function selectOption(type, validOptions, newValue, prefix, updateState, onChang
  */
 export function selectSpawnType(spawn) {
     selectOption(
-        "spawn",
+        'spawn',
         validSpawns,
         spawn,
         PREFIX_OBJ_SPAWN,
-        (newValue) => { if (newValue) SelectedObjectSpawnType = newValue; return SelectedObjectSpawnType; },
-        () => searchSpawnObject(document.getElementById('objSearch').textContent)
+        newValue => {
+            if (newValue) SelectedObjectSpawnType = newValue;
+            return SelectedObjectSpawnType;
+        },
+        () =>
+            searchSpawnObject(document.getElementById('objSearch').textContent)
     );
 }
 
@@ -256,15 +310,23 @@ export function selectSpawnType(spawn) {
  */
 export function selectNearbyOrigin(origin) {
     selectOption(
-        "origin",
+        'origin',
         validOrigins,
         origin,
         PREFIX_NEARBY_ORIGIN,
-        (newValue) => { if (newValue) Settings.Nearby.origin = newValue; return Settings.Nearby.origin; },
-        (newValue) => {
+        newValue => {
+            if (newValue) Settings.Nearby.origin = newValue;
+            return Settings.Nearby.origin;
+        },
+        newValue => {
             elementSetText('activeNearbyOrigin', newValue);
-            sendClientMessage('setNearbyOriginPos', newValue === "set position" ? {} : { remove: true });
-            sendClientMessage('setObjSettings', { nearby: JSON.stringify(Settings.Nearby) });
+            sendClientMessage(
+                'setNearbyOriginPos',
+                newValue === 'set position' ? {} : { remove: true }
+            );
+            sendClientMessage('setObjSettings', {
+                nearby: JSON.stringify(Settings.Nearby),
+            });
         }
     );
 }
@@ -282,27 +344,38 @@ DropDownOptions.activeNearbyOrigin = Object.fromEntries(
     [...validOrigins].map(origin => [origin, () => selectNearbyOrigin(origin)])
 );
 
-
-export function toggleVisible(handle = document.getElementById('objDetailsEntityHandle')?.textContent) {
+export function toggleVisible(
+    handle = document.getElementById('objDetailsEntityHandle')?.textContent
+) {
     const state = elementHasClass('objDetailsEntityVisible', 'selected');
     sendClientMessage('setVisible', { handle: handle, state: !state });
 }
 
-export function toggleFrozen(handle = document.getElementById('objDetailsEntityHandle')?.textContent) {
+export function toggleFrozen(
+    handle = document.getElementById('objDetailsEntityHandle')?.textContent
+) {
     const state = elementHasClass('objDetailsEntityFrozen', 'selected');
     sendClientMessage('setFrozen', { handle: handle, state: !state });
 }
 
-export function toggleCollision(handle = document.getElementById('objDetailsEntityHandle')?.textContent) {
+export function toggleCollision(
+    handle = document.getElementById('objDetailsEntityHandle')?.textContent
+) {
     const state = elementHasClass('objDetailsEntityCollision', 'selected');
     sendClientMessage('setCollision', { handle: handle, state: !state });
 }
 
-export function setRotation(handle = document.getElementById('objDetailsEntityHandle')?.textContent, x, y, z) {
-    sendClientMessage('setRotation', { handle: handle, x: x, y: y, z: z })
+export function setRotation(
+    handle = document.getElementById('objDetailsEntityHandle')?.textContent,
+    x,
+    y,
+    z
+) {
+    sendClientMessage('setRotation', { handle: handle, x: x, y: y, z: z });
 }
 
-export function placeOnGround(handle = document.getElementById('objDetailsEntityHandle')?.textContent) {
-    sendClientMessage('placeOnGround', { handle: handle, });
+export function placeOnGround(
+    handle = document.getElementById('objDetailsEntityHandle')?.textContent
+) {
+    sendClientMessage('placeOnGround', { handle: handle });
 }
-

@@ -4,14 +4,13 @@
  * @param {string} yes - The text to display on the "Yes" button.
  * @param {string} no - The text to display on the "No" button.
  */
-export function showConfirm(msg = "Are you sure?", yes = "Yes", no = "No") {
-    return new Promise((resolve) => {
+export function showConfirm(msg = 'Are you sure?', yes = 'Yes', no = 'No') {
+    return new Promise(resolve => {
         const infoHud = document.getElementById('info-hud');
         const message = document.getElementById('info-description');
         const yesButton = document.getElementById('yesOption');
         const noButton = document.getElementById('noOption');
         const lastFocusedElement = document.activeElement;
-
 
         message.textContent = msg;
         yesButton.textContent = yes;
@@ -32,7 +31,7 @@ export function showConfirm(msg = "Are you sure?", yes = "Yes", no = "No") {
         });
         observer.observe(infoHud, {
             attributes: true,
-            attributeFilter: ['class']
+            attributeFilter: ['class'],
         });
 
         function handleYes() {

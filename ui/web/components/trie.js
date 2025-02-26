@@ -1,24 +1,23 @@
-import { KeyActions } from "../script.js";
-import { elementSetClass } from "../utils/nav.js";
-import { sendClientMessage } from "../utils/msg.js";
+import { KeyActions } from '../script.js';
+import { elementSetClass } from '../utils/nav.js';
+import { sendClientMessage } from '../utils/msg.js';
 
 let formatter = {
-    'menu': {
+    menu: {
         selector: '#menuOptions',
         prefix: ' ',
         msg: 'selectTrieMenu',
         data: (trieName, option) => ({ menu: option.name }),
     },
-    'option': {
+    option: {
         selector: '#devOptions',
         prefix: '',
         msg: 'selectTrieOption',
         data: (trieName, option) => ({ menu: trieName, option: option.name }),
-    }
+    },
 };
 
 function appendOptionsToContainer(trieName, type, optionsArray) {
-
     const fmt = formatter[type];
     if (!fmt) {
         console.error(`Formatter not found for type: ${type}`);
@@ -32,13 +31,15 @@ function appendOptionsToContainer(trieName, type, optionsArray) {
     }
     container.empty();
 
-    if (!optionsArray) { return; }
-    optionsArray.forEach((option) => {
+    if (!optionsArray) {
+        return;
+    }
+    optionsArray.forEach(option => {
         const msg = fmt.msg;
         const data = fmt.data(trieName, option);
-        KeyActions["dev-tree-hud"][option.key] = () => {
+        KeyActions['dev-tree-hud'][option.key] = () => {
             sendClientMessage(msg, data);
-            elementSetClass('dev-tree-hud', 'hidden', true)
+            elementSetClass('dev-tree-hud', 'hidden', true);
         };
         container.append(`
             <div class="row">
@@ -50,18 +51,18 @@ function appendOptionsToContainer(trieName, type, optionsArray) {
 }
 
 function clearKeyActions() {
-    for (const key in KeyActions["dev-tree-hud"]) {
-        delete KeyActions["dev-tree-hud"][key];
+    for (const key in KeyActions['dev-tree-hud']) {
+        delete KeyActions['dev-tree-hud'][key];
     }
-    KeyActions["dev-tree-hud"].default = () => {
+    KeyActions['dev-tree-hud'].default = () => {
         elementSetClass('dev-tree-hud', 'hidden', true);
-        sendClientMessage('deactivateMode', { mode: "devTree" });
-    }
+        sendClientMessage('deactivateMode', { mode: 'devTree' });
+    };
 }
 
 export function initTrie(optionTrie) {
     if (!optionTrie) {
-        console.error("Invalid optionTrie provided");
+        console.error('Invalid optionTrie provided');
         return;
     }
 
