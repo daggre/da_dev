@@ -20,21 +20,21 @@
 
         <!-- Development Script Loader -->
         <script>
-            const isBrowser = typeof window.invokeNative === "undefined";
+            const isBrowser = typeof window.invokeNative === 'undefined';
             if (isBrowser) {
-                const script = document.createElement("script");
-                script.src = "dev-mocks.js";
+                const script = document.createElement('script');
+                script.src = 'dev-mocks.js';
                 document.head.appendChild(script);
-                console.log("Development script loaded.");
+                console.log('Development script loaded.');
                 // Create a link element for the favicon with a Data URL
-                const favicon = document.createElement("link");
-                favicon.rel = "icon";
+                const favicon = document.createElement('link');
+                favicon.rel = 'icon';
                 // This is a minimal, empty favicon as a Data URL
                 favicon.href =
-                    "data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAGAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//wAA//8AAP//AAD//wAA";
+                    'data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAGAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//wAA//8AAP//AAD//wAA';
                 document.head.appendChild(favicon);
             } else {
-                console.log("Running in RedM environment.");
+                console.log('Running in RedM environment.');
             }
         </script>
     </head>
