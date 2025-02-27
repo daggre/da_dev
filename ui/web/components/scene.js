@@ -246,6 +246,7 @@ export function showExport() {
         const exitButton = document.getElementById('exportExitOption');
         const lastFocusedElement = document.activeElement;
 
+        document.getElementById('import-hud').classList.add('hidden');
         exportHud.classList.remove('hidden');
         exitButton.focus();
 
@@ -294,6 +295,7 @@ export function showImport() {
         const exitButton = document.getElementById('importExitOption');
         const lastFocusedElement = document.activeElement;
 
+        document.getElementById('export-hud').classList.add('hidden');
         importHUD.classList.remove('hidden');
         exitButton.focus();
 

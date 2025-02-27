@@ -156,7 +156,7 @@ function setTheme(theme) {
     document.getElementById('objSettingsTheme').textContent = displayTheme;
     if (Settings.theme.color != theme) {
         Settings.theme.color = theme;
-        sendClientMessage('setObjSettings', {
+        sendClientMessage('saveSettings', {
             theme: JSON.stringify(Settings.theme),
         });
     }
@@ -176,7 +176,7 @@ function setDividerStyle(divider) {
     document.getElementById('objSettingsDividerStyle').textContent = divider;
     if (Settings.theme.divider != divider) {
         Settings.theme.divider = divider;
-        sendClientMessage('setObjSettings', {
+        sendClientMessage('saveSettings', {
             theme: JSON.stringify(Settings.theme),
         });
     }
@@ -243,7 +243,7 @@ export function setBorder() {
     }
     if (Settings.theme.border != selected) {
         Settings.theme.border = selected;
-        sendClientMessage('setObjSettings', {
+        sendClientMessage('saveSettings', {
             theme: JSON.stringify(Settings.theme),
         });
     }
@@ -265,7 +265,7 @@ export function setCurvedBorderAmount() {
         }
         if (Settings.theme.borderradamount != borderRad) {
             Settings.theme.borderradamount = borderRad;
-            sendClientMessage('setObjSettings', {
+            sendClientMessage('saveSettings', {
                 theme: JSON.stringify(Settings.theme),
             });
         }
@@ -287,7 +287,7 @@ export function setCurvedBorder() {
 
     if (Settings.theme.borderrad != selected) {
         Settings.theme.borderrad = selected;
-        sendClientMessage('setObjSettings', {
+        sendClientMessage('saveSettings', {
             theme: JSON.stringify(Settings.theme),
         });
     }

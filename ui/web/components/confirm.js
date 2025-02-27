@@ -12,7 +12,7 @@ export function showConfirm(msg = 'Are you sure?', yes = 'Yes', no = 'No') {
         const noButton = document.getElementById('noOption');
         const lastFocusedElement = document.activeElement;
 
-        message.textContent = msg;
+        message.innerHTML = msg;
         yesButton.textContent = yes;
         noButton.textContent = no;
 

@@ -6,12 +6,16 @@ da_ui.callbacks({
     initAnimFlags = function() return { animflags = json.encode(dat.flags.anim) } end,
     initIKAnimFlags = function() return { animikflags = json.encode(dat.flags.ik) } end,
     initTaskFilters = function() return { taskfilters = json.encode(dat.taskFilter) } end,
-    initObjSettings = function() return {
-        nearby = kvp.rawget("setting:ui:nearby"),
-        tags = kvp.rawget("setting:ui:tags"),
-        theme = kvp.rawget("setting:ui:theme"),
-    } end,
-    initObjects = function() return {
+    fetchSettings = function(data)
+        local settings = {}
+        log.debug("fetch settings", data)
+        for category in pairs(data) do
+            log.debug("fetch settings", category)
+            settings[category] = kvp.rawget("setting:ui:"..category)
+        end
+        return settings
+    end,
+    fetchObjects = function() return {
         peds = json.encode(dat.ped),
         objects = json.encode(dat.object),
         pickups = json.encode(dat.pickup),
@@ -24,10 +28,10 @@ da_ui.events({
     activateMode = function(data) da_mode.activate(data.mode) end,
     deactivateMode = function(data) da_mode.deactivate(data.mode) end,
     toggleMode = function(data) da_mode.toggle(data.mode) end,
-    setObjSettings = function(data)
-        if data.nearby then kvp.rawset("setting:ui:nearby", data.nearby) end
-        if data.tags then kvp.rawset("setting:ui:tags", data.tags) end
-        if data.theme then kvp.rawset("setting:ui:theme", data.theme) end
+    saveSettings = function(data)
+        for category, values in pairs(data) do
+            kvp.rawset("setting:ui:".. category, values)
+        end
     end,
     playAnim = function(data)
         local entity = data.entity and tonumber(data.entity) or nil
