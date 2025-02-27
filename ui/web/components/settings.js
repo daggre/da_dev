@@ -1,6 +1,7 @@
 import { sendClientMessage } from '../utils/msg.js';
 import { initUIStyle } from '../utils/theme.js';
 
+// Centralized settings object
 export let Settings = {
     nearby: {
         range: 50,
@@ -17,9 +18,7 @@ export let Settings = {
         propsets: [],
         pickups: [],
     },
-    tag: {
-        sort: 'dist'
-    },
+    tag: { sort: 'dist' },
     theme: {
         color: 'retro_wave',
         divider: 'angle up',
@@ -29,31 +28,26 @@ export let Settings = {
     },
 };
 
-export function fetchSpawnData() {
-    sendClientMessage('initObjects', {}).then(function (resp) {
-        Settings.spawn.objects = JSON.parse(resp.objects);
-        Settings.spawn.peds = JSON.parse(resp.peds);
-        Settings.spawn.vehicles = JSON.parse(resp.vehicles);
-        Settings.spawn.propsets = JSON.parse(resp.propsets);
-        Settings.spawn.pickups = JSON.parse(resp.pickups);
+// Generic function to fetch settings from the client
+export async function fetchSettings(category) {
+    const response = await sendClientMessage(`fetchSettings`, Object.keys(Settings));
+    if (response[category]) {
+        Settings[category] = JSON.parse(response[category]);
+    }
+}
+
+// Fetch spawn data dynamically
+export async function fetchSpawnData() {
+    const response = await sendClientMessage('fetchObjects', {});
+    Object.keys(Settings.spawn).forEach(key => {
+        Settings.spawn[key] = JSON.parse(response[key]);
     });
 }
 
-export function initSettings() {
-    sendClientMessage('initObjSettings', {}).then(function (resp) {
-        Settings.nearby = JSON.parse(resp.nearby);
-        Settings.tag = JSON.parse(resp.tags);
-        Settings.theme = JSON.parse(resp.theme);
-
-        document.getElementById('button-nearby-object').classList.toggle('selected', Settings.nearby.object);
-        document.getElementById('button-nearby-ped').classList.toggle('selected', Settings.nearby.ped);
-        document.getElementById('button-nearby-vehicle').classList.toggle('selected', Settings.nearby.vehicle);
-        // document.getElementById('button-nearby-other').classList.toggle('selected', Settings.nearby.other);
-        document.getElementById('nearbyRange').textContent = Settings.nearby.range;
-        document.getElementById(`button-nearbyOrigin-${formatId(Settings.nearby.origin)}`).classList.add('selected');
-        document.getElementById('activeNearbyOrigin').textContent = Settings.nearby.origin;
-        document.getElementById(`button-tagsortby${Settings.tag.sort}`).classList.add('selected');
-    });
+// Apply settings dynamically
+export async function initSettings() {
+    await fetchSettings(['nearby','tag','theme']);
+    updateUI();
     initUIStyle(
         Settings.theme.color,
         Settings.theme.divider,
@@ -61,6 +55,21 @@ export function initSettings() {
         Settings.theme.borderrad,
         Settings.theme.borderradamount
     );
+}
+
+// Dynamically update UI elements
+function updateUI() {
+    for (const [key, value] of Object.entries(Settings.nearby)) {
+        const button = document.getElementById(`button-nearby-${key}`);
+        if (button) button.classList.toggle('selected', value);
+    }
+
+    const originButton = document.getElementById(`button-nearbyOrigin-${formatId(Settings.nearby.origin)}`);
+    if (originButton) originButton.classList.add('selected');
+
+    document.getElementById('nearbyRange').textContent = Settings.nearby.range;
+    document.getElementById('activeNearbyOrigin').textContent = Settings.nearby.origin;
+    document.getElementById(`button-tagsortby${Settings.tag.sort}`).classList.add('selected');
 }
 
 function formatId(str) {

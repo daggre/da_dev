@@ -115,7 +115,7 @@ export function getTrackedObjects() {
             document.getElementById('nearbyRange').textContent;
         if (currentNearbyRange !== Settings.nearby.range) {
             Settings.nearby.range = currentNearbyRange;
-            sendClientMessage('setObjSettings', {
+            sendClientMessage('saveSettings', {
                 nearby: JSON.stringify(Settings.nearby),
             });
         }
@@ -209,7 +209,7 @@ function selectSpawnObject(object) {
 export function toggleNearbyFilter(type) {
     const selected = document.getElementById(`button-nearby-${type}`).classList.toggle('selected');
     Settings.nearby[type] = selected;
-    sendClientMessage('setObjSettings', {
+    sendClientMessage('saveSettings', {
         nearby: JSON.stringify(Settings.nearby),
     });
 }
@@ -218,7 +218,7 @@ export function tagSelectSort(sortType) {
     document.getElementById(`button-tagsortby${Settings.tag.sort}`).classList.remove('selected');
     document.getElementById(`button-tagsortby${sortType}`).classList.add('selected');
     Settings.tag.sort = sortType;
-    sendClientMessage('setObjSettings', { tags: JSON.stringify(Settings.tag) });
+    sendClientMessage('saveSettings', { tags: JSON.stringify(Settings.tag) });
 }
 
 const PREFIX_OBJ_SPAWN = 'button-spawn';
@@ -315,7 +315,7 @@ export function selectNearbyOrigin(origin) {
                 'setNearbyOriginPos',
                 newValue === 'set position' ? {} : { remove: true }
             );
-            sendClientMessage('setObjSettings', {
+            sendClientMessage('saveSettings', {
                 nearby: JSON.stringify(Settings.nearby),
             });
         }
