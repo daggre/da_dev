@@ -618,9 +618,10 @@ function getActiveSection() {
     return null;
 }
 
-window.messagesReady = new Promise((resolve) => {
+
+window.messagesReady = window.messagesReady || new Deferred();
+{
     document.addEventListener('DOMContentLoaded', () => {
-        console.log("Running messagesReady");
         window.addEventListener('message', function (msg) {
             switch (msg.data.type) {
                 case 'ui_trie':
@@ -670,17 +671,16 @@ window.messagesReady = new Promise((resolve) => {
                     break;
             }
         });
-        console.log("Promise messagesReady resolved");
-        resolve();
+        window.messagesReady.resolve();
     });
 
-    window.netReady.then(() => {
-        console.log("netReady resolved: Running fetches and script.js init");
+    window.netReady = window.netReady || new Deferred();
+    window.netReady.promise.then(() => {
         fetchSpawnData();
         initSettings();
         registerListeners();
     });
-});
+}
 
 function handleKeyPress(event, hud) {
     const rawKey = event.key;

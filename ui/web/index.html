@@ -16,22 +16,26 @@
 
         <script>
         const isBrowser = typeof window.invokeNative === 'undefined';
+        class Deferred {
+            constructor() {
+                this.promise = new Promise((resolve, reject) => {
+                    this.resolve = resolve;
+                    this.reject = reject;
+                });
+            }
+        }
 
+        window.netReady = window.netReady || new Deferred();
         if (isBrowser) {
-            window.netReady = new Promise((resolve) => {
-                console.log('Promising netReady');
                 const script = document.createElement('script');
                 script.src = 'dev-mocks.js';
                 script.onload = () => {
                     console.log('Development script loaded. Promise netReady resolved');
-                    resolve(); // Mark as ready
                 };
                 script.onerror = () => {
                     console.warn('Failed to load dev-mocks.js.');
-                    resolve(); // Still resolve to avoid blocking
                 };
                 document.head.appendChild(script);
-            });
 
             // Create a link element for the favicon
             const favicon = document.createElement('link');
@@ -41,8 +45,8 @@
             document.head.appendChild(favicon);
         } else {
             console.log('Running in RedM Game environment.');
-            window.netReady = Promise.resolve(); // Immediately resolve in RedM environment
         }
+        window.netReady.resolve();
         </script>
 
         <!-- Your Scripts -->
