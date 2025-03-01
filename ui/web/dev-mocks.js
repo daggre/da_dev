@@ -416,8 +416,9 @@ window.endpointMute = {
 
 document.body.style.backgroundColor = '#333333';
 
-window.messagesReady.then(() => {
-    console.log('messagesReady resolved: sending mock game init messages');
+// Register global promise for messagesReady
+window.messagesReady = window.messagesReady || new Deferred();
+window.messagesReady.promise.then((data) => {
     sendMockEvent('message', {
         type: testHud,
         state: true,
