@@ -26,6 +26,9 @@ export let Settings = {
         borderrad: false,
         borderradamount: 8,
     },
+    form: {
+        evaluateformon: "enter",
+    }
 };
 
 // Generic function to fetch settings from the client

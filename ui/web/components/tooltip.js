@@ -1,6 +1,6 @@
 let TooltipEnabled = true;
 
-export function tooltipListener() {
+export function addTooltipListener() {
     const tooltip = document.createElement('div');
     tooltip.classList.add('hidden');
     tooltip.id = 'tooltip';

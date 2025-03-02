@@ -13,7 +13,7 @@ const defaultConfig = {
     rate: 0.0,
     flags: 0,
     ikflags: 0,
-    taskfilter: 'None',
+    taskfilter: 'none',
     delay: 0,
 }
 
@@ -74,10 +74,14 @@ export async function searchAnimDicts(searchValue) {
     const maxResults = 10000;
     let el = document.getElementById('animDictList');
     el.textContent = '';
+    el.scrollTop = 0;
+    el.scrollLeft = 0;
     el.style.minHeight = 0;
 
     let nameListEl = document.getElementById('animNameList');
     nameListEl.textContent = '';
+    nameListEl.scrollTop = 0;
+    nameListEl.scrollLeft = 0;
     nameListEl.style.minHeight = 0;
 
     searchValue = searchValue.trim().toLowerCase();
@@ -307,7 +311,7 @@ DropDownAdvOptions.animConfigureTaskfilter = () => {
         return taskfilters.map(taskfilter => ({
             name: taskfilter.name.toLowerCase(),
             tooltip: taskfilter.note,
-            value: anim === null ? 'None' : anim.config.taskfilter,
+            value: anim === null ? 'none' : anim.config.taskfilter,
             fn: () => {
                 if (anim === null) { return; }
                 anim.config.taskfilter = taskfilter.name.toLowerCase();

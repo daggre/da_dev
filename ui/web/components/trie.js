@@ -1,4 +1,4 @@
-import { KeyActions } from '../script.js';
+import { KeyActions } from './events.js';
 import { sendClientMessage } from '../utils/msg.js';
 
 let formatter = {

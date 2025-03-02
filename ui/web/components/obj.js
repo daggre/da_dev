@@ -1,6 +1,6 @@
 import { Settings } from './settings.js';
 import { DropDownOptions } from './dropdown.js';
-import { MouseDown } from '../script.js';
+import { MouseDown } from './events.js';
 import { sendClientMessage } from '../utils/msg.js';
 import { resetList, isVisible, } from '../utils/nav.js';
 

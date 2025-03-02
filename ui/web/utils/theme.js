@@ -199,7 +199,6 @@ const dividerStyles = {
     waveform: '',
 };
 
-// Generate the dropdown options object using Object.entries and Object.fromEntries
 DropDownOptions.objSettingsDividerStyle = Object.fromEntries(
     Object.entries(dividerStyles).map(([name]) => [
         name,
