@@ -553,20 +553,17 @@ const InputFields = {
     '#selectedScene': event => {
         console.log('selectedScene event triggered', event);
         if (event.key == 'Enter' || event.inputType == 'insertParagraph') {
-            event.preventDefault();
             saveScene();
         }
     },
     '#nearbyRange': event => {
         if (event.key == 'Enter' || event.inputType == 'insertParagraph') {
-            event.preventDefault();
             getTrackedObjects();
         }
     },
     '#objSettingsCurvedBorderAmount': () => setCurvedBorderAmount(),
     '#animSearch': event => {
         if (event.key == 'Enter' || event.inputType == 'insertParagraph') {
-            event.preventDefault();
 
             const dict = document.getElementById('animDictList');
             const anim = document.getElementById('animNameList');
@@ -585,12 +582,35 @@ const InputFields = {
     },
     '#animConfigureEntity': event => {
         if (event.key == 'Enter' || event.inputType == 'insertParagraph') {
-            event.preventDefault();
-            const value = document.getElementById('animConfigureEntity').innerHTML;
-            console.log('animConfigureEntity', value);
-            setSelectedAnimation('entity', value);
+            setSelectedAnimation('entity', document.getElementById('animConfigureEntity').innerHTML);
         }
-    }
+    },
+    '#animConfigureBlendIn': event => {
+        if (event.key == 'Enter' || event.inputType == 'insertParagraph') {
+            setSelectedAnimation('blendIn', document.getElementById('animConfigureBlendIn').innerHTML);
+        }
+    },
+    '#animConfigureBlendOut': event => {
+        if (event.key == 'Enter' || event.inputType == 'insertParagraph') {
+            setSelectedAnimation('blendOut', document.getElementById('animConfigureBlendOut').innerHTML);
+        }
+    },
+    '#animConfigureDuration': event => {
+        if (event.key == 'Enter' || event.inputType == 'insertParagraph') {
+            setSelectedAnimation('duration', document.getElementById('animConfigureDuration').innerHTML);
+        }
+    },
+    '#animConfigureRate': event => {
+        if (event.key == 'Enter' || event.inputType == 'insertParagraph') {
+            setSelectedAnimation('rate', document.getElementById('animConfigureRate').innerHTML);
+        }
+    },
+    '#animConfigureDelay': event => {
+        console.log("animConfigureDelay", event);
+        if (event.key == 'Enter' || event.inputType == 'insertParagraph') {
+            setSelectedAnimation('delay', document.getElementById('animConfigureDelay').innerHTML);
+        }
+    },
 };
 
 export function registerListeners() {
