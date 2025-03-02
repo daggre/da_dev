@@ -52,6 +52,7 @@ import {
     addAnimation,
     clearAnimation,
     deleteAllAnimations,
+    setSelectedAnimation,
 } from './components/anims.js';
 import {
     toggleAnimationHUD,
@@ -582,6 +583,14 @@ const InputFields = {
             searchAnimDicts(value);
         }
     },
+    '#animConfigureEntity': event => {
+        if (event.key == 'Enter' || event.inputType == 'insertParagraph') {
+            event.preventDefault();
+            const value = document.getElementById('animConfigureEntity').innerHTML;
+            console.log('animConfigureEntity', value);
+            setSelectedAnimation('entity', value);
+        }
+    }
 };
 
 export function registerListeners() {

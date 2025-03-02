@@ -3,6 +3,20 @@ import { showConfirm } from './confirm.js';
 import { sendClientMessage } from '../utils/msg.js';
 import { DropDownAdvOptions, DropDownMultiOptions } from './dropdown.js';
 
+let selectedAnimation = null;
+let confAnims = {};
+const defaultConfig = {
+    entity: 0,
+    blendIn: 0.0,
+    blendOut: 0.0,
+    duration: 0,
+    rate: 0.0,
+    flags: 0,
+    ikflags: 0,
+    taskfilter: 'None',
+    delay: 0,
+}
+
 async function fetchData(key, messageType, modifier) {
     if (!globalThis[key]) {
         const resp = await sendClientMessage(messageType, {});
@@ -215,14 +229,27 @@ export function addAnimation() {
         ul.setAttribute('id', 'animConfigureListUl');
         el.appendChild(ul);
     }
+
+    const uid = `${animDict}-${animName}-${Date.now()}`;
+
+    const animation = {
+        uid: uid,
+        dict: animDict,
+        name: animName,
+        config: { ...defaultConfig },
+    };
+    console.log(animation);
+    confAnims[uid] = animation;
+
     let li = document.createElement('li');
     li.textContent = animDict + ' - ' + animName;
     li.dataset.animDict = animDict;
     li.dataset.animName = animName;
+    li.dataset.uid = uid;
     li.setAttribute('tabindex', '13');
     li.setAttribute('id', 'anim-' + animDict + '-' + animName);
     li.addEventListener('click', function (event) {
-        console.log('clicked', animDict, animName);
+        console.log('clicked', animDict, animName, confAnims[uid]);
         selectAnimConfigure(li.dataset);
         if (event.ctrlKey) {
             ul.removeChild(li);
@@ -239,9 +266,8 @@ export function addAnimation() {
 
 export function clearAnimation() {
     document.getElementById('animConfigureRightColumn').classList.add('hidden');
-    document.getElementById('animConfigureEntity').textContent = '';
-    document.getElementById('animConfigureDict').textContent = '';
-    document.getElementById('animConfigureName').textContent = '';
+    updateAnimationConfigure({ dict: '', name: '', config: defaultConfig, });
+    selectedAnimation = null;
 }
 
 export function deleteAllAnimations() {
@@ -259,22 +285,18 @@ function previewAnimation(animDict, anim) {
     sendClientMessage('playAnimation', { animDict: animDict, anim: anim });
 }
 
-DropDownAdvOptions.animConfigureTaskfilter = getTaskfilterDropdowns;
-function getTaskfilterDropdowns() {
+DropDownAdvOptions.animConfigureTaskfilter = () => {
     return getTaskFilters().then(taskfilters => {
         return taskfilters.map(taskfilter => ({
             name: taskfilter.name.toLowerCase(),
             tooltip: taskfilter.note,
             value: taskfilter.value,
-            fn: () => {
-                return taskfilter.name.toLowerCase();
-            },
+            fn: () => taskfilter.name.toLowerCase(),
         }));
     });
 }
 
 function getFlagsTotal(flags) {
-    console.log(flags);
     return flags.reduce((total, flag) => {
         return flag.selected ? total + flag.value : total;
     }, 0);
@@ -282,7 +304,12 @@ function getFlagsTotal(flags) {
 
 DropDownMultiOptions.animConfigureAnimFlags = {
     fetch: getAnimFlagsDropdowns,
-    result: getAnimFlagsTotal,
+    result: () => getAnimFlags().then(flags => getFlagsTotal(flags)),
+};
+
+DropDownMultiOptions.animConfigureAnimIKFlags = {
+    fetch: getAnimIKFlagsDropdowns,
+    result: () => getAnimIKFlags().then(flags => getFlagsTotal(flags)),
 };
 
 function getAnimFlagsDropdowns() {
@@ -300,14 +327,6 @@ function getAnimFlagsDropdowns() {
     });
 }
 
-function getAnimFlagsTotal() {
-    return getAnimFlags().then(flags => getFlagsTotal(flags));
-}
-
-DropDownMultiOptions.animConfigureAnimIKFlags = {
-    fetch: getAnimIKFlagsDropdowns,
-    result: getAnimIKFlagsTotal,
-};
 function getAnimIKFlagsDropdowns() {
     return getAnimIKFlags().then(animFlags => {
         return animFlags.map((flag, index) => ({
@@ -323,14 +342,32 @@ function getAnimIKFlagsDropdowns() {
     });
 }
 
-function getAnimIKFlagsTotal() {
-    return getAnimIKFlags().then(flags => getFlagsTotal(flags));
+function selectAnimConfigure(data) {
+    const animation = confAnims[data.uid];
+    selectedAnimation = animation;
+    updateAnimationConfigure(animation);
+    document.getElementById('animConfigureRightColumn').classList.remove('hidden');
 }
 
+function updateAnimationConfigure(animation) {
+    document.getElementById('animConfigureDict').textContent = animation.dict;
+    document.getElementById('animConfigureName').textContent = animation.name;
+    document.getElementById('animConfigureEntity').textContent = animation.config.entity;
+    document.getElementById('animConfigureBlendIn').textContent = animation.config.blendIn;
+    document.getElementById('animConfigureBlendOut').textContent = animation.config.blendOut;
+    document.getElementById('animConfigureDuration').textContent = animation.config.duration;
+    document.getElementById('animConfigureRate').textContent = animation.config.rate;
 
-function selectAnimConfigure(data) {
-    document.getElementById('animConfigureEntity').textContent = 1;
-    document.getElementById('animConfigureDict').textContent = data.animDict;
-    document.getElementById('animConfigureName').textContent = data.animName;
-    document.getElementById('animConfigureRightColumn').classList.remove('hidden');
+    // TODO: fill out selected dropdowns
+    document.getElementById('animConfigureAnimFlags').textContent = animation.config.flags;
+    document.getElementById('animConfigureAnimIKFlags').textContent = animation.config.ikflags;
+    document.getElementById('animConfigureTaskfilter').textContent = animation.config.taskfilter;
+
+    document.getElementById('animConfigureDelay').textContent = animation.config.delay;
+}
+
+export function setSelectedAnimation(key, value) {
+    const animation = confAnims[selectedAnimation.uid];
+    selectedAnimation.config[key] = value;
+
 }
