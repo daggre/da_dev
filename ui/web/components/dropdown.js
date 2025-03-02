@@ -8,41 +8,32 @@ export function dropdownListeners() {
             let x = event.pageX;
             let y = event.pageY;
             if (DropDownOptions[dropdown.id]) {
-                showDropdown(
-                    Object.keys(DropDownOptions[dropdown.id]),
-                    x,
-                    y
-                ).then(option => {
-                    if (option === null) {
-                        return;
-                    }
-                    document.getElementById(dropdown.id).textContent = option;
-                    DropDownOptions[dropdown.id][option]();
-                });
-            } else if (DropDownAdvOptions[dropdown.id]) {
-                DropDownAdvOptions[dropdown.id]().then(options => {
-                    showDropdown(options, x, y).then(option => {
-                        if (option === null) {
-                            return;
-                        }
-                        console.log(option, dropdown);
-                        document.getElementById(dropdown.id).textContent = option.name;
+                showDropdown( Object.keys(DropDownOptions[dropdown.id]), x, y)
+                    .then(option => {
+                        if (option === null) { return; }
+                        document.getElementById(dropdown.id).textContent = option;
+                        DropDownOptions[dropdown.id][option]();
                     });
-                });
-            } else if (DropDownMultiOptions[dropdown.id]) {
-                DropDownMultiOptions[dropdown.id].fetch().then(options => {
-                    showDropdown(options, x, y, true).then(modifiedOptions => {
-                        if (modifiedOptions === null) {
-                            return;
-                        }
-                        modifiedOptions.forEach(option => option.fn());
-                        DropDownMultiOptions[dropdown.id]
-                            .result()
-                            .then(result => {
-                                console.log(result, dropdown);
-                                document.getElementById(dropdown.id).textContent = result;
+
+            } else if (DropDownAdvOptions[dropdown.id]) {
+                DropDownAdvOptions[dropdown.id]()
+                    .then(options => {
+                        showDropdown(options, x, y)
+                            .then(option => {
+                                if (option === null) { return; }
+                                if (option.fn) { option.fn(); }
+                                document.getElementById(dropdown.id).textContent = option.name;
                             });
                     });
+
+            } else if (DropDownMultiOptions[dropdown.id]) {
+                DropDownMultiOptions[dropdown.id].fetch().then(options => {
+                    showDropdown(options, x, y, true)
+                        .then(modifiedOptions => {
+                            if (modifiedOptions === null) { return; }
+                            modifiedOptions.forEach(option => option.fn());
+                            DropDownMultiOptions[dropdown.id]
+                        });
                 });
             }
         });
@@ -102,6 +93,9 @@ export function showDropdown(options, x, y, multiSelect = false) {
                 if (multiSelect) {
                     // Toggle selection without closing the menu.
                     selected = !selected;
+                    if (option.click) {
+                        option.click(selected);
+                    }
                     if (modifiedItems.has(option)) {
                         modifiedItems.delete(option);
                     } else {

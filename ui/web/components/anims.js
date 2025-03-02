@@ -249,7 +249,6 @@ export function addAnimation() {
     li.setAttribute('tabindex', '13');
     li.setAttribute('id', 'anim-' + animDict + '-' + animName);
     li.addEventListener('click', function (event) {
-        console.log('clicked', animDict, animName, confAnims[uid]);
         selectAnimConfigure(li.dataset);
         if (event.ctrlKey) {
             ul.removeChild(li);
@@ -286,12 +285,16 @@ function previewAnimation(animDict, anim) {
 }
 
 DropDownAdvOptions.animConfigureTaskfilter = () => {
+    const anim = selectedAnimation;
     return getTaskFilters().then(taskfilters => {
         return taskfilters.map(taskfilter => ({
             name: taskfilter.name.toLowerCase(),
             tooltip: taskfilter.note,
-            value: taskfilter.value,
-            fn: () => taskfilter.name.toLowerCase(),
+            value: anim === null ? 'None' : anim.config.taskfilter,
+            fn: () => {
+                if (anim === null) { return; }
+                anim.config.taskfilter = taskfilter.name.toLowerCase();
+            },
         }));
     });
 }
@@ -302,45 +305,57 @@ function getFlagsTotal(flags) {
     }, 0);
 }
 
+
+
 DropDownMultiOptions.animConfigureAnimFlags = {
-    fetch: getAnimFlagsDropdowns,
     result: () => getAnimFlags().then(flags => getFlagsTotal(flags)),
+    fetch: () => {
+        return getAnimFlags().then(animFlags => {
+            const anim = selectedAnimation;
+            return animFlags.map((flag, index) => ({
+                name: flag.name.toLowerCase(),
+                tooltip: `${flag.value}: ${flag.note}`,
+                value: flag.value,
+                click: () => {
+                    const el = document.getElementById('animConfigureAnimFlags');
+                    const cur = el.textContent;
+                    el.textContent = cur ^ flag.value;
+                },
+                selected: (anim.config.flags & flag.value) === flag.value,
+                fn: () => getAnimFlags().then(flags => {
+                    if (anim === null) { return; }
+                    anim.config.flags ^= flag.value;
+                    document.getElementById('animConfigureAnimFlags').textContent = anim.config.flags;
+                }),
+            }));
+        });
+    },
 };
 
 DropDownMultiOptions.animConfigureAnimIKFlags = {
-    fetch: getAnimIKFlagsDropdowns,
     result: () => getAnimIKFlags().then(flags => getFlagsTotal(flags)),
+    fetch: () => {
+        return getAnimIKFlags().then(animFlags => {
+            const anim = selectedAnimation;
+            return animFlags.map((flag, index) => ({
+                name: flag.name.toLowerCase(),
+                tooltip: `${flag.value}: ${flag.note}`,
+                value: flag.value,
+                click: () => {
+                    const el = document.getElementById('animConfigureAnimIKFlags');
+                    const cur = el.textContent;
+                    el.textContent = cur ^ flag.value;
+                },
+                selected: (anim.config.ikflags & flag.value) === flag.value,
+                fn: () => getAnimIKFlags().then(flags => {
+                    if (anim === null) { return; }
+                    anim.config.ikflags ^= flag.value;
+                    document.getElementById('animConfigureAnimIKFlags').textContent = anim.config.ikflags;
+                }),
+            }));
+        });
+    },
 };
-
-function getAnimFlagsDropdowns() {
-    return getAnimFlags().then(animFlags => {
-        return animFlags.map((flag, index) => ({
-            name: flag.name.toLowerCase(),
-            tooltip: `${flag.value}: ${flag.note}`,
-            value: flag.value,
-            selected: flag.selected,
-            fn: () =>
-                getAnimFlags().then(flags => {
-                    flags[index].selected = !flags[index].selected;
-                }),
-        }));
-    });
-}
-
-function getAnimIKFlagsDropdowns() {
-    return getAnimIKFlags().then(animFlags => {
-        return animFlags.map((flag, index) => ({
-            name: flag.name.toLowerCase(),
-            tooltip: `${flag.value}: ${flag.note}`,
-            value: flag.value,
-            selected: flag.selected,
-            fn: () =>
-                getAnimIKFlags().then(flags => {
-                    flags[index].selected = !flags[index].selected;
-                }),
-        }));
-    });
-}
 
 function selectAnimConfigure(data) {
     const animation = confAnims[data.uid];
@@ -369,5 +384,4 @@ function updateAnimationConfigure(animation) {
 export function setSelectedAnimation(key, value) {
     const animation = confAnims[selectedAnimation.uid];
     selectedAnimation.config[key] = value;
-
 }
