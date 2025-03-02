@@ -7,10 +7,10 @@ let selectedAnimation = null;
 let confAnims = {};
 const defaultConfig = {
     entity: 0,
-    blendIn: 0.0,
-    blendOut: 0.0,
-    duration: 0,
-    rate: 0.0,
+    blendin: 3.0,
+    blendout: 0.5,
+    duration: -1,
+    rate: 0,
     flags: 0,
     ikflags: 0,
     taskfilter: 'none',
@@ -212,7 +212,7 @@ async function selectAnimDict(animDict) {
 
     // Adjust height efficiently
     const resultCount = results.length;
-    animResults.style.minHeight = `${Math.min(resultCount * 0.4, 15.4)}vh`;
+    // animResults.style.minHeight = `${Math.min(resultCount * 0.4, 15.4)}vh`;
 
     // Reset scroll position properly
     animResults.scrollTop = 0;
@@ -242,7 +242,6 @@ export function addAnimation() {
         name: animName,
         config: { ...defaultConfig },
     };
-    console.log(animation);
     confAnims[uid] = animation;
 
     let li = document.createElement('li');
@@ -389,8 +388,8 @@ function updateAnimationConfig(animation) {
     document.getElementById('animConfigureDict').textContent = animation.dict;
     document.getElementById('animConfigureName').textContent = animation.name;
     document.getElementById('animConfigureEntity').textContent = animation.config.entity;
-    document.getElementById('animConfigureBlendIn').textContent = animation.config.blendIn;
-    document.getElementById('animConfigureBlendOut').textContent = animation.config.blendOut;
+    document.getElementById('animConfigureBlendIn').textContent = animation.config.blendin;
+    document.getElementById('animConfigureBlendOut').textContent = animation.config.blendout;
     document.getElementById('animConfigureDuration').textContent = animation.config.duration;
     document.getElementById('animConfigureRate').textContent = animation.config.rate;
     document.getElementById('animConfigureAnimFlags').textContent = animation.config.flags;
@@ -415,5 +414,5 @@ export function stopAnimation() {
 export function playSelectedAnimation() {
     const anim = selectedAnimation;
     if (!anim) { return; }
-    sendClientMessage('playAnimation', { animation: anim });
+    sendClientMessage('playAnimation', anim);
 }

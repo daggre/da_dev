@@ -65,8 +65,34 @@ local PlayAnimation = function(data)
     da_anim.ped(entity, data.animDict, data.anim)
 end
 
+local PlayConfiguredAnimations = function(data)
+    for _, anim in pairs(data.animations) do
+        local entity = anim.entity ~= 0 and anim.entity or PlayerPedId()
+        Citizen.CreateThread(function()
+            log.debug(anim)
+            if anim.config.delay then
+                Citizen.Wait(anim.config.delay)
+            end
+            da_anim.ped(
+                entity,
+                anim.dict,
+                anim.name,
+                anim.config.blendin,
+                anim.config.blendout,
+                anim.config.duration,
+                anim.config.flags,
+                anim.config.rate,
+                anim.config.ikflags,
+                anim.config.taskfilter
+            )
+        end)
+    end
+end
+
 da_ui.callbacks({
     playAnimation = function(data) PlayAnimation(data) end,
+    playAnimations = function(data) PlayConfiguredAnimations(data) end,
+    stopAnimation = function(data) da_anim.stop(data.entity or PlayerPedId()) end,
     activateMCP = function(data)
         log.debug("da_ui.events activateMCP", data)
         local retval = da_mode.activateMCP(data.mode)
