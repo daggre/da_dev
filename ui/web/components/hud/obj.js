@@ -1,4 +1,4 @@
-import { MCP } from '../../script.js';
+import { MCP } from '../events.js';
 import { toggleHUD, toggleSection } from './common.js';
 import { getScenes, trackSceneObjects } from '../scene.js';
 import { searchSpawnObject, getTrackedObjects } from '../obj.js';

@@ -1,8 +1,9 @@
+export let DropDownOptions = {};
+export let DropDownMapOptions = {};
 export let DropDownAdvOptions = {};
 export let DropDownMultiOptions = {};
-export let DropDownOptions = {};
 
-export function dropdownListeners() {
+export function addDropdownsListener() {
     document.querySelectorAll('.entry.dropdown').forEach(dropdown => {
         dropdown.addEventListener('click', event => {
             let x = event.pageX;
@@ -13,6 +14,14 @@ export function dropdownListeners() {
                         if (option === null) { return; }
                         document.getElementById(dropdown.id).textContent = option;
                         DropDownOptions[dropdown.id][option]();
+                    });
+
+            } else if (DropDownMapOptions[dropdown.id]) {
+                showDropdown(Object.values(DropDownMapOptions[dropdown.id]), x, y)
+                    .then(option => {
+                        if (option === null) { return; }
+                        document.getElementById(dropdown.id).textContent = option.name;
+                        if (option.fn) { option.fn(); }
                     });
 
             } else if (DropDownAdvOptions[dropdown.id]) {
@@ -172,3 +181,4 @@ export function showDropdown(options, x, y, multiSelect = false) {
         }
     });
 }
+

@@ -91,6 +91,7 @@ files {
     'ui/web/components/confirm.js',
     'ui/web/components/crosshair.js',
     'ui/web/components/dropdown.js',
+    'ui/web/components/events.js',
     'ui/web/components/obj.js',
     'ui/web/components/scene.js',
     'ui/web/components/settings.js',

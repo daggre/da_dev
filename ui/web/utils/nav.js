@@ -1,27 +1,3 @@
-import { EventActions } from '../script.js';
-
-export function clickElement(event) {
-    const { target } = event;
-    // If the target is an <li> with an onclick handler, trigger it.
-    if (target.tagName === 'LI') {
-        const clickEvent = new MouseEvent('click', {
-            bubbles: true,
-            cancelable: true,
-            ctrlKey: event.ctrlKey,
-            shiftKey: event.shiftKey,
-            altKey: event.altKey,
-        });
-        target.dispatchEvent(clickEvent);
-        return;
-    }
-    // Otherwise, use a keyed lookup for click handlers.
-    const eventId = `#${target.id}`;
-    const handler = EventActions.click[eventId];
-    if (handler) {
-        handler(event);
-    }
-}
-
 export function elementSetOnlyClass(elOrId, cls, classes) {
     const el =
         typeof elOrId === 'string' ? document.getElementById(elOrId) : elOrId;
