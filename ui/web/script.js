@@ -23,6 +23,7 @@ import {
     clearScene,
     reloadScene,
     deleteScene,
+    handleEscape,
 } from './components/scene.js';
 import {
     searchSpawnObject,
@@ -36,6 +37,7 @@ import {
     toggleCollision,
     setRotation,
     placeOnGround,
+    ObjectContextOptions,
 } from './components/obj.js';
 import {
     toggleObjectHUD,
@@ -51,6 +53,10 @@ import {
     searchAnimDicts,
     addAnimation,
     clearAnimation,
+    playConfiguredAnimations,
+    stopAnimation,
+    playSelectedAnimation,
+    resetSelectedAnimConfig,
     deleteAllAnimations,
     setSelectedAnimation,
 } from './components/anims.js';
@@ -82,21 +88,6 @@ const KeyTranslateMap = {
     "'": '4',
 };
 
-const ObjectContextOptions = {
-    // 'Info': (data) => { console.log("Info", data.handle); },
-    // 'Clone': (data) => { console.log("Clone", data.handle); },
-    Move: data => {
-        sendClientMessage('trackObject', {
-            handle: data.handle,
-            category: 'select',
-        });
-        sendClientMessage('toggleMode', { mode: 'gizmo' });
-    },
-    'Set Upright': data => setRotation(data.handle, 0, 0, null),
-    'Reset Rotation': data => setRotation(data.handle, 0, 0, 0),
-    'Place on Ground': data => placeOnGround(data.handle),
-};
-
 export let KeyActions = {
     'info-hud': {
         ' ': event => clickElement(event),
@@ -110,29 +101,15 @@ export let KeyActions = {
     },
     'dev-tree-hud': {},
     'anim-hud': {
-        ' ': event => {
-            clickElement(event);
-        },
+        ' ': event => clickElement(event),
+        1: () => toggleAnimationSearchHUD(),
+        2: () => toggleAnimationConfigureHUD(),
+        h: () => toggleHelp('animHelp'),
+        s: () => Pressed.Shift && !Pressed.Control && toggleSettingsHUD(),
+        '?': () => toggleHelp('animHelp'),
         escape: () => {
             sendClientMessage('deactivateMode', { mode: 'animation' });
             toggleSettingsHUD(false);
-        },
-        1: () => {
-            toggleAnimationSearchHUD();
-        },
-        2: () => {
-            toggleAnimationConfigureHUD();
-        },
-        h: () => {
-            toggleHelp('animHelp');
-        },
-        s: () => {
-            if (Pressed.Shift && !Pressed.Control) {
-                toggleSettingsHUD();
-            }
-        },
-        '?': () => {
-            toggleHelp('animHelp');
         },
     },
     gizmo: {
@@ -142,82 +119,33 @@ export let KeyActions = {
         },
     },
     'object-hud': {
-        ' ': event => {
-            clickElement(event);
-        },
-        1: () => {
-            toggleObjectSpawnHUD();
-        },
-        2: () => {
-            toggleObjectImportExportHUD();
-        },
-        3: () => {
-            toggleObjectNearbyHUD();
-        },
-        // 4: () => {
-        //     toggleObjectSettingsHUD();
-        // },
-        f: () => {
-            sendKey('f');
-        },
-        g: () => {
-            sendKey('g');
-        },
-        h: () => {
-            toggleHelp('objHelp');
-        },
-        '?': () => {
-            toggleHelp('objHelp');
-        },
-        r: () => {
-            sendKey('r');
-        },
+        ' ': event => clickElement(event),
+        1: () => toggleObjectSpawnHUD(),
+        2: () => toggleObjectImportExportHUD(),
+        3: () => toggleObjectNearbyHUD(),
+        f: () => sendKey('f'),
+        g: () => sendKey('g'),
+        h: () => toggleHelp('objHelp'),
+        '?': () => toggleHelp('objHelp'),
+        r: () => sendKey('r'),
         s: () => {
-            if (Pressed.Control) {
-                saveScene();
-            }
-            if (Pressed.Shift && !Pressed.Control) {
-                toggleSettingsHUD();
-            }
+            if (Pressed.Control) saveScene();
+            if (Pressed.Shift && !Pressed.Control) toggleSettingsHUD();
         },
-        t: () => {
-            sendKey('t');
-        },
-        x: () => {
-            sendKey('x');
-        },
+        t: () => sendKey('t'),
+        x: () => sendKey('x'),
         escape: () => {
             sendClientMessage('deactivateMode', { mode: 'object' });
             toggleSettingsHUD(false);
         },
     },
     'import-hud': {
-        ' ': event => {
-            clickElement(event);
-        },
-        escape: () => {
-            if (!document.getElementById('importContent').matches(':focus')) {
-                document.getElementById('import-hud').classList.add('hidden');
-            } else {
-                document.activeElement.blur();
-                window.getSelection().removeAllRanges();
-                document.getElementById('importExitOption').focus();
-            }
-        },
+        ' ': event => clickElement(event),
+        escape: () => handleEscape('importContent', 'import-hud', 'importExitOption'),
     },
     'export-hud': {
-        ' ': event => {
-            clickElement(event);
-        },
-        escape: () => {
-            if (!document.getElementById('exportContent').matches(':focus')) {
-                document.getElementById('export-hud').classList.add('hidden');
-            } else {
-                document.activeElement.blur();
-                window.getSelection().removeAllRanges();
-                document.getElementById('exportCopyOption').focus();
-            }
-        },
+        ' ': event => clickElement(event),
+        escape: () => handleEscape('exportContent', 'export-hud', 'exportExitOption'),
     },
     'camera-hud': {
         escape: () => {
@@ -226,17 +154,9 @@ export let KeyActions = {
             sendClientMessage('deactivateMode', { mode: 'noclip' });
             toggleSettingsHUD(false);
         },
-        '?': () => {
-            toggleHelp('camHelp', false);
-        },
-        h: () => {
-            toggleHelp('camHelp', false);
-        },
-        s: () => {
-            if (Pressed.Shift && !Pressed.Control) {
-                toggleSettingsHUD();
-            }
-        },
+        '?': () => toggleHelp('camHelp', false),
+        h: () => toggleHelp('camHelp', false),
+        s: () => Pressed.Shift && !Pressed.Control && toggleSettingsHUD(),
     },
 };
 
@@ -353,9 +273,14 @@ export const EventActions = {
         '#button-animsearch': () => toggleAnimationSearchHUD(),
         '#button-animconfigure': () => toggleAnimationConfigureHUD(),
 
-        '#button-animconfadd': () => addAnimation(),
-        '#button-animconfclearselected': () => clearAnimation(),
-        '#button-animconfdeleteall': () => deleteAllAnimations(),
+        '#button-animconf-play': () => playConfiguredAnimations(),
+        '#button-animconf-stop': () => stopAnimation(),
+
+        '#button-animconf-previewselected': () => playSelectedAnimation(),
+        '#button-animconf-add': () => addAnimation(),
+        '#button-animconf-resetselected': () => resetSelectedAnimConfig(),
+        '#button-animconf-clear': () => clearAnimation(),
+        '#button-animconf-deleteall': () => deleteAllAnimations(),
 
         // Object HUD
         '#button-spawn': () => toggleObjectSpawnHUD(),

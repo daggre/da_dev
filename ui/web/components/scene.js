@@ -335,3 +335,15 @@ export function showImport() {
         exitButton.addEventListener('click', handleExit);
     });
 }
+
+export function handleEscape(contentId, hudId, exitOptionId) {
+    const content = document.getElementById(contentId);
+    if (!content.matches(':focus')) {
+        document.getElementById(hudId).classList.add('hidden');
+    } else {
+        document.activeElement.blur();
+        window.getSelection().removeAllRanges();
+        document.getElementById(exitOptionId).focus();
+    }
+}
+

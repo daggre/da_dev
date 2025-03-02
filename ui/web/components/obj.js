@@ -7,6 +7,20 @@ import { resetList, isVisible, } from '../utils/nav.js';
 let TrackedObjectsLoopRunning = false;
 let SelectedObjectSpawnType = 'objects';
 
+
+export const ObjectContextOptions = {
+    Move: data => {
+        sendClientMessage('trackObject', {
+            handle: data.handle,
+            category: 'select',
+        });
+        sendClientMessage('toggleMode', { mode: 'gizmo' });
+    },
+    'Set Upright': data => setRotation(data.handle, 0, 0, null),
+    'Reset Rotation': data => setRotation(data.handle, 0, 0, 0),
+    'Place on Ground': data => placeOnGround(data.handle),
+};
+
 export function searchSpawnObject(searchString) {
     resetList('objSpawnList');
     searchObjects(

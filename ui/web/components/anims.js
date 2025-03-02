@@ -249,9 +249,14 @@ export function addAnimation() {
     li.setAttribute('tabindex', '13');
     li.setAttribute('id', 'anim-' + animDict + '-' + animName);
     li.addEventListener('click', function (event) {
-        selectAnimConfigure(li.dataset);
         if (event.ctrlKey) {
             ul.removeChild(li);
+        } else {
+            selectAnimConfigure(li.dataset);
+            for (let i = 0; i < ul.children.length; i++) {
+                ul.children[i].classList.remove('selected');
+            }
+            li.classList.add('selected');
         }
     });
     ul.appendChild(li);
@@ -265,8 +270,20 @@ export function addAnimation() {
 
 export function clearAnimation() {
     document.getElementById('animConfigureRightColumn').classList.add('hidden');
-    updateAnimationConfigure({ dict: '', name: '', config: defaultConfig, });
+    updateAnimationConfig({ dict: '', name: '', config: defaultConfig, });
     selectedAnimation = null;
+    let animListConfigureList = document.getElementById('animConfigureListUl');
+    animListConfigureList.querySelectorAll('.selected')
+        .forEach(el => el.classList.remove('selected'));
+}
+
+export function resetSelectedAnimConfig() {
+    // Reset the selected animations config
+    if (!selectedAnimation) { return; }
+    const animation = confAnims[selectedAnimation.uid];
+    if (!animation) { return; }
+    animation.config = { ...defaultConfig };
+    updateAnimationConfig(animation);
 }
 
 export function deleteAllAnimations() {
@@ -360,11 +377,11 @@ DropDownMultiOptions.animConfigureAnimIKFlags = {
 function selectAnimConfigure(data) {
     const animation = confAnims[data.uid];
     selectedAnimation = animation;
-    updateAnimationConfigure(animation);
+    updateAnimationConfig(animation);
     document.getElementById('animConfigureRightColumn').classList.remove('hidden');
 }
 
-function updateAnimationConfigure(animation) {
+function updateAnimationConfig(animation) {
     document.getElementById('animConfigureDict').textContent = animation.dict;
     document.getElementById('animConfigureName').textContent = animation.name;
     document.getElementById('animConfigureEntity').textContent = animation.config.entity;
@@ -372,16 +389,27 @@ function updateAnimationConfigure(animation) {
     document.getElementById('animConfigureBlendOut').textContent = animation.config.blendOut;
     document.getElementById('animConfigureDuration').textContent = animation.config.duration;
     document.getElementById('animConfigureRate').textContent = animation.config.rate;
-
-    // TODO: fill out selected dropdowns
     document.getElementById('animConfigureAnimFlags').textContent = animation.config.flags;
     document.getElementById('animConfigureAnimIKFlags').textContent = animation.config.ikflags;
     document.getElementById('animConfigureTaskfilter').textContent = animation.config.taskfilter;
-
     document.getElementById('animConfigureDelay').textContent = animation.config.delay;
 }
 
 export function setSelectedAnimation(key, value) {
     const animation = confAnims[selectedAnimation.uid];
     selectedAnimation.config[key] = value;
+}
+
+export function playConfiguredAnimations() {
+    sendClientMessage('playAnimations', { animations: confAnims });
+}
+
+export function stopAnimation() {
+    sendClientMessage('stopAnimation', {});
+}
+
+export function playSelectedAnimation() {
+    const anim = selectedAnimation;
+    if (!anim) { return; }
+    sendClientMessage('playAnimation', { animation: anim });
 }
