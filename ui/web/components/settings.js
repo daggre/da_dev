@@ -27,7 +27,7 @@ export let Settings = {
         borderradamount: 8,
     },
     form: {
-        evaluateformon: "enter",
+        evaluateformon: "any",
     }
 };
 
@@ -49,7 +49,7 @@ export async function fetchSpawnData() {
 
 // Apply settings dynamically
 export async function initSettings() {
-    await fetchSettings(['nearby','tag','theme']);
+    await fetchSettings(['nearby','tag','theme','form']);
     updateUI();
     initUIStyle(
         Settings.theme.color,
@@ -73,6 +73,7 @@ function updateUI() {
     document.getElementById('nearbyRange').textContent = Settings.nearby.range;
     document.getElementById('activeNearbyOrigin').textContent = Settings.nearby.origin;
     document.getElementById(`button-tagsortby${Settings.tag.sort}`).classList.add('selected');
+    document.getElementById('objSettingsSubmitFormEvent').textContent = Settings.form.evaluateformon;
 }
 
 function formatId(str) {

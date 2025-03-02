@@ -219,11 +219,13 @@ ul li {
 .list-secondary {
     margin-top: 0.3rem;
     flex: 1 1.5 auto;
+    max-height: 33vh;
 }
 
 .list-primary {
     flex: 1 1.2 auto;
     min-height: 0;
+    max-height: 70vh;
 }
 
 .mgb > ul > li {
