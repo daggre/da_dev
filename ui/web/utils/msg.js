@@ -1,3 +1,37 @@
+function handleMockRequest(endpoint) {
+    if (!window.endpointMute?.[endpoint]) {
+        console.log(`[Mock][NUI Send] sendClientMessage called to mockResource/${endpoint}`);
+    }
+
+    // Ensure we only wait once for `window.getMockResponse`
+    if (!window.mockReadyPromise) {
+        window.mockReadyPromise = new Promise((resolve, reject) => {
+            const timeout = 2000; // Max wait time
+            const interval = 50;
+            const startTime = Date.now();
+
+            function checkCondition() {
+                if (typeof window.getMockResponse === 'function') {
+                    resolve();
+                } else if (Date.now() - startTime >= timeout) {
+                    reject(new Error('Timed out waiting for mock response setup'));
+                } else {
+                    setTimeout(checkCondition, interval);
+                }
+            }
+
+            checkCondition();
+        });
+    }
+
+    return window.mockReadyPromise
+        .then(() => window.getMockResponse(endpoint))
+        .catch(error => {
+            console.error('Mock response setup error:', error.message);
+            return { error: true, message: error.message };
+        });
+}
+
 export function sendClientMessage(endpoint, data) {
     /* eslint-disable-next-line no-undef */
     const resourceName =
@@ -7,23 +41,8 @@ export function sendClientMessage(endpoint, data) {
 
     const url = `https://${resourceName}/${endpoint}`;
 
-    // Development mock response
-    if (
-        typeof GetParentResourceName === 'undefined' &&
-        typeof window.getMockResponse === 'function'
-    ) {
-        if (!window.endpointMute[endpoint]) {
-            console.log(
-                `[Mock][NUI Send] sendClientMessage called to ${url} with data:`,
-                data
-            );
-        }
-        try {
-            const mockResponse = window.getMockResponse(endpoint);
-            return Promise.resolve(mockResponse);
-        } catch (error) {
-            return Promise.reject(error);
-        }
+    if (resourceName === 'mockResource') {
+        return handleMockRequest(endpoint);
     }
 
     // Production logic for RedM
