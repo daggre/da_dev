@@ -329,6 +329,7 @@ export const EventActions = {
 
         '#button-animTimings': () => toggleAnimDetail('button-animTimings'),
         '#button-animFlags': () => toggleAnimDetail('button-animFlags'),
+        '#button-animExtras': () => toggleAnimDetail('button-animExtras'),
     },
     mousemove: event => {
         if (

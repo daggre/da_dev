@@ -116,6 +116,7 @@ const animikFlags = [
     { value: 1 << 30, name: 'AIK_0x0C1380EC', note: '' },
 ];
 const taskfilters = [
+    { value: false, name: 'false', note: 'Default, false (Different than "None")' },
     { value: '', name: 'None', note: 'Prevents some AnimFlags from working??' },
     { value: 'accessoriesonly_filter', name: 'Accessories Only', note: 'Animate Accessories Only', },
     { value: 'allfingers_and_hand_helpers_filter', name: 'Helper: Fingers, Hands', note: '', },

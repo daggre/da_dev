@@ -60,31 +60,28 @@ Citizen.CreateThread(function()
     })
 end)
 
-local PlayAnimation = function(data)
-    local entity = data.entity or PlayerPedId()
-    da_anim.ped(entity, data.animDict, data.anim)
+local PlayAnimation = function(anim)
+    local entity = anim.entity ~= 0 and anim.entity or PlayerPedId()
+    da_anim.ped(
+        entity,
+        anim.dict,
+        anim.name,
+        anim.config.blendin,
+        anim.config.blendout,
+        anim.config.duration,
+        anim.config.flags,
+        anim.config.rate,
+        anim.config.ikflags,
+        anim.config.taskfilter
+    )
 end
 
 local PlayConfiguredAnimations = function(data)
     for _, anim in pairs(data.animations) do
-        local entity = anim.entity ~= 0 and anim.entity or PlayerPedId()
         Citizen.CreateThread(function()
-            log.debug(anim)
-            if anim.config.delay then
-                Citizen.Wait(anim.config.delay)
-            end
-            da_anim.ped(
-                entity,
-                anim.dict,
-                anim.name,
-                anim.config.blendin,
-                anim.config.blendout,
-                anim.config.duration,
-                anim.config.flags,
-                anim.config.rate,
-                anim.config.ikflags,
-                anim.config.taskfilter
-            )
+            local delay = tonumber(anim.config.delay) and tonumber(anim.config.delay) or 0
+            if delay > 0 then Citizen.Wait(delay) end
+            PlayAnimation(anim)
         end)
     end
 end

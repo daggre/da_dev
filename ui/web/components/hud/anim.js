@@ -59,10 +59,10 @@ export function toggleAnimationConfigureHUD(state) {
 const AnimConfigureCategoryMap = new Map([
     ['button-animTimings', 'animConfigureTimings'],
     ['button-animFlags', 'animConfigureFlags'],
+    ['button-animExtras', 'animConfigureExtras'],
 ]);
 
 export function toggleAnimDetail(elId, state) {
-    console.log('toggleAnimConfigureCategory', elId, state);
     const el = document.getElementById(elId);
     if (state === undefined) {
         state = !el.classList.contains('selected');
