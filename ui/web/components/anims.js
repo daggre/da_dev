@@ -7,13 +7,13 @@ let selectedAnimation = null;
 let confAnims = {};
 const defaultConfig = {
     entity: 0,
-    blendin: 3.0,
-    blendout: 0.5,
+    blendin: 0.9,
+    blendout: 0.9,
     duration: -1,
     rate: 0,
     flags: 0,
     ikflags: 0,
-    taskfilter: 'none',
+    taskfilter: false,
     delay: 0,
 }
 
@@ -254,6 +254,10 @@ export function addAnimation() {
     li.addEventListener('click', function (event) {
         if (event.ctrlKey) {
             ul.removeChild(li);
+            confAnims[uid] = null;
+            if (selectedAnimation && selectedAnimation.uid === uid) {
+                clearAnimation();
+            }
         } else {
             selectAnimConfigure(li.dataset);
             for (let i = 0; i < ul.children.length; i++) {
@@ -294,14 +298,16 @@ export function deleteAllAnimations() {
         if (confirm) {
             clearAnimation();
             resetList('animListConfigureList');
+            confAnims = {};
+            console.log('Removed all animation configurations.');
         } else {
             console.log('Canceled delete all animations.');
         }
     });
 }
 
-function previewAnimation(animDict, anim) {
-    sendClientMessage('playAnimation', { animDict: animDict, anim: anim });
+function previewAnimation(dict, name) {
+    sendClientMessage('playAnimation', { dict: dict, name: name, config: {}, });
 }
 
 DropDownAdvOptions.animConfigureTaskfilter = () => {
@@ -310,10 +316,10 @@ DropDownAdvOptions.animConfigureTaskfilter = () => {
         return taskfilters.map(taskfilter => ({
             name: taskfilter.name.toLowerCase(),
             tooltip: taskfilter.note,
-            value: anim === null ? 'none' : anim.config.taskfilter,
+            value: anim === null ? false : anim.config.taskfilter,
             fn: () => {
                 if (anim === null) { return; }
-                anim.config.taskfilter = taskfilter.name.toLowerCase();
+                anim.config.taskfilter = taskfilter.value;
             },
         }));
     });
@@ -384,6 +390,11 @@ function selectAnimConfigure(data) {
     document.getElementById('animConfigureRightColumn').classList.remove('hidden');
 }
 
+function getTaskFilterName(value) {
+    const match = getTaskFilters().find(entry => entry.value === value);
+    return match ? match.name : value;
+}
+
 function updateAnimationConfig(animation) {
     document.getElementById('animConfigureDict').textContent = animation.dict;
     document.getElementById('animConfigureName').textContent = animation.name;
@@ -394,8 +405,11 @@ function updateAnimationConfig(animation) {
     document.getElementById('animConfigureRate').textContent = animation.config.rate;
     document.getElementById('animConfigureAnimFlags').textContent = animation.config.flags;
     document.getElementById('animConfigureAnimIKFlags').textContent = animation.config.ikflags;
-    document.getElementById('animConfigureTaskfilter').textContent = animation.config.taskfilter;
     document.getElementById('animConfigureDelay').textContent = animation.config.delay;
+    getTaskFilters().then(taskFilters => {
+        const match = taskFilters.find(entry => entry.value === animation.config.taskfilter);
+        document.getElementById('animConfigureTaskfilter').textContent = match ? match.name.toLowerCase() : animation.config.taskfilter;
+    });
 }
 
 export function setSelectedAnimation(key, value) {
