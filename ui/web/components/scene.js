@@ -263,9 +263,7 @@ export function showExport() {
         });
 
         function handleCopy() {
-            const content =
-                document.getElementById('exportContent').textContent;
-            clipboardCopy(content);
+            clipboardCopy(document.getElementById('exportContent').innerText);
         }
 
         function handleExit() {

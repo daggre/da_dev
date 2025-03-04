@@ -401,6 +401,7 @@ export const EventActions = {
             event.target.getAttribute('contenteditable') == 'true';
         Pressed[event.key] = true;
         // Check universal nav keys
+        if (event.target.classList.contains('contentbox')) { return; }
         switch (event.key) {
             case ' ':
                 if (typeof event.target.onclick == 'function') {
