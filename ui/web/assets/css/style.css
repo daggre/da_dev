@@ -514,7 +514,6 @@ ul li {
     max-height: 66vh;
     width: 30vw;
     overflow-y: auto;
-    white-space: nowrap;
 }
 
 .contentbox:focus {
