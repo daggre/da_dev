@@ -2,12 +2,15 @@ import { clipboardCopy } from '../utils/clipboard.js';
 import { resetList, isVisible } from '../utils/nav.js';
 import { showConfirm } from './confirm.js';
 import { sendClientMessage } from '../utils/msg.js';
+import { exportSceneFormat } from '../components/export.js';
+import { toggleSettingsHUD } from '../components/hud/settings.js';
 import { DropDownOptions } from './dropdown.js';
 import { MouseDown } from './events.js';
 import { Settings } from './settings.js';
 
 let DefaultScene = 'default';
 let ActiveScene = DefaultScene;
+let ExportFormat = 'YMAP';
 let SceneObjectsLoopRunning = false;
 
 DropDownOptions.importFormat = {
@@ -82,7 +85,7 @@ export function getScenes() {
         sceneList.forEach(scene => {
             const li = document.createElement('li');
             li.textContent = scene.name;
-            li.setAttribute('tabindex', '23');
+            li.setAttribute('tabindex', '14');
             li.dataset.sceneName = scene.name; // Store scene name for easy access
 
             if (scene.name === ActiveScene) {
@@ -231,15 +234,18 @@ export function importScene() {
     console.log('importScene', sceneName);
 }
 
-export function exportScene(type) {
-    const sceneName = ActiveScene;
-    console.log('exportScene', type, sceneName);
+export function exportScene(format) {
+    ExportFormat = format;
+    exportSceneFormat(ActiveScene, format);
 }
 
 /**
  * Popup dialog with export options
  */
 export function showExport() {
+    toggleSettingsHUD(false);
+    exportSceneFormat(ActiveScene, ExportFormat);
+
     return new Promise(resolve => {
         const exportHud = document.getElementById('export-hud');
         const copyButton = document.getElementById('exportCopyOption');
@@ -248,7 +254,7 @@ export function showExport() {
 
         document.getElementById('import-hud').classList.add('hidden');
         exportHud.classList.remove('hidden');
-        exitButton.focus();
+        copyButton.focus();
 
         // Create a MutationObserver to monitor if the popup becomes hidden
         const observer = new MutationObserver(() => {
@@ -264,6 +270,7 @@ export function showExport() {
 
         function handleCopy() {
             clipboardCopy(document.getElementById('exportContent').innerText);
+            copyButton.focus();
         }
 
         function handleExit() {
@@ -287,6 +294,8 @@ export function showExport() {
 }
 
 export function showImport() {
+    toggleSettingsHUD(false);
+
     return new Promise(resolve => {
         const importHUD = document.getElementById('import-hud');
         const importButton = document.getElementById('importOption');

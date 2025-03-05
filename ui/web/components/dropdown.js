@@ -181,4 +181,3 @@ export function showDropdown(options, x, y, multiSelect = false) {
         }
     });
 }
-
