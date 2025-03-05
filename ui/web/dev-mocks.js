@@ -448,18 +448,20 @@ function getMockResponse(endpoint) {
     if (mockResponses[endpoint]) {
         if (window.endpointMute && !window.endpointMute[endpoint]) {
             console.log(
-                `[Mock][Client Rx] Returning mock response for '${endpoint}' with data: `,
+                `[Mock][NUI Return] ${endpoint}: `,
                 mockResponses[endpoint]()
             );
         }
         return mockResponses[endpoint]();
     }
-    throw new Error(`No mock response defined for endpoint '${endpoint}'`);
+    console.warn(`No mock response defined for endpoint '${endpoint}'`);
+    return {};
+    // throw new Error(`No mock response defined for endpoint '${endpoint}'`);
 }
 
 function sendMockEvent(message, data) {
     console.log(
-        `[Mock][Client Send] Dispatched mock event '${message}' with data: `,
+        `[Mock][CLIENT Send] ${message}: `,
         data
     );
     const e = new MessageEvent(message, { data: data });

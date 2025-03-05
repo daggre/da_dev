@@ -12,7 +12,7 @@
         <link rel="stylesheet" href="assets/css/style.css" />
 
         <!-- External Libraries -->
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+        <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script> -->
 
         <script>
         const isBrowser = typeof window.invokeNative === 'undefined';
@@ -102,9 +102,9 @@
                         tabindex="99"
                         contenteditable="true"
                         class="blr bgt2 contentbox"
-                    >This is some content
-with multi lines
-testblah</pre>
+                        spellcheck="false"
+                    >
+                    </pre>
                     <ul class="row rowpad gap">
                         <li
                             id="exportCopyOption"
@@ -147,9 +147,9 @@ testblah</pre>
                         tabindex="99"
                         contenteditable="true"
                         class="blr bgt2 contentbox"
-                    >This is some content
-with multi lines
-testblah</pre>
+                        spellcheck="false"
+                    >
+                    </pre>
                     <ul class="row rowpad gap">
                         <li
                             id="importOption"
@@ -1736,216 +1736,6 @@ testblah</pre>
                     </ul>
                 </div>
             </section>
-            <!-- <section id="animHUD" class="hud hidden"> -->
-            <!--     <div id="animControlOptions" class="bgt1 blr gap"> -->
-            <!--         <ul class="row"> -->
-            <!--             <li id="animSettings" style="display: none"> -->
-            <!--                 <div -->
-            <!--                     id="button-search" -->
-            <!--                     class="control" -->
-            <!--                     tabindex="2" -->
-            <!--                     role="button" -->
-            <!--                     aria-pressed="false" -->
-            <!--                 > -->
-            <!--                      -->
-            <!--                 </div> -->
-            <!--                 <div -->
-            <!--                     id="button-timings" -->
-            <!--                     class="control" -->
-            <!--                     tabindex="3" -->
-            <!--                     role="button" -->
-            <!--                     aria-pressed="false" -->
-            <!--                 > -->
-            <!--                      -->
-            <!--                 </div> -->
-            <!--                 <div -->
-            <!--                     id="button-ikflags" -->
-            <!--                     class="control" -->
-            <!--                     tabindex="4" -->
-            <!--                     role="button" -->
-            <!--                     aria-pressed="false" -->
-            <!--                 > -->
-            <!--                      -->
-            <!--                 </div> -->
-            <!--                 <div -->
-            <!--                     id="button-flags" -->
-            <!--                     class="control" -->
-            <!--                     tabindex="5" -->
-            <!--                     role="button" -->
-            <!--                     aria-pressed="false" -->
-            <!--                 > -->
-            <!--                      -->
-            <!--                 </div> -->
-            <!--                 <div -->
-            <!--                     id="button-taskFilters" -->
-            <!--                     class="control" -->
-            <!--                     tabindex="6" -->
-            <!--                     role="button" -->
-            <!--                     aria-pressed="false" -->
-            <!--                 > -->
-            <!--                     󰤶 -->
-            <!--                 </div> -->
-            <!--                 <div -->
-            <!--                     id="button-entity" -->
-            <!--                     class="control" -->
-            <!--                     tabindex="7" -->
-            <!--                     role="button" -->
-            <!--                     aria-pressed="false" -->
-            <!--                 > -->
-            <!--                      -->
-            <!--                 </div> -->
-            <!--             </li> -->
-            <!--             <li> -->
-            <!--                 <div -->
-            <!--                     id="button-settings" -->
-            <!--                     class="control" -->
-            <!--                     tabindex="1" -->
-            <!--                     role="button" -->
-            <!--                     aria-pressed="false" -->
-            <!--                 > -->
-            <!--                      -->
-            <!--                 </div> -->
-            <!--                 <div -->
-            <!--                     id="button-play" -->
-            <!--                     class="control" -->
-            <!--                     tabindex="11" -->
-            <!--                     role="button" -->
-            <!--                     aria-pressed="false" -->
-            <!--                 > -->
-            <!--                      -->
-            <!--                 </div> -->
-            <!--                 <div -->
-            <!--                     id="button-stop" -->
-            <!--                     class="control" -->
-            <!--                     tabindex="11" -->
-            <!--                     role="button" -->
-            <!--                     aria-pressed="false" -->
-            <!--                 > -->
-            <!--                      -->
-            <!--                 </div> -->
-            <!--                 <div -->
-            <!--                     id="button-repeat" -->
-            <!--                     class="control" -->
-            <!--                     tabindex="11" -->
-            <!--                     role="button" -->
-            <!--                     aria-pressed="false" -->
-            <!--                 > -->
-            <!--                      -->
-            <!--                 </div> -->
-            <!--                 <div -->
-            <!--                     id="button-torso" -->
-            <!--                     class="control" -->
-            <!--                     tabindex="11" -->
-            <!--                     role="button" -->
-            <!--                     aria-pressed="false" -->
-            <!--                 > -->
-            <!--                      -->
-            <!--                 </div> -->
-            <!--             </li> -->
-            <!--         </ul> -->
-            <!--     </div> -->
-            <!--     <div id="animSearchLists" class="list-group top left"> -->
-            <!--         <div -->
-            <!--             id="animDictList" -->
-            <!--             class="list list-primary bggradient" -->
-            <!--         ></div> -->
-            <!--         <div -->
-            <!--             id="animList" -->
-            <!--             class="list list-secondary bggradient" -->
-            <!--         ></div> -->
-            <!--     </div> -->
-            <!--     <div id="animSearchField" class="searchField"> -->
-            <!--         <div class="label borderleft bgi" style="width: auto"> -->
-            <!--              -->
-            <!--         </div> -->
-            <!--         <div -->
-            <!--             id="valueAnimSearch" -->
-            <!--             class="entry borderright bgt1" -->
-            <!--             tabindex="2" -->
-            <!--             contenteditable="true" -->
-            <!--         ></div> -->
-            <!--     </div> -->
-            <!--     <div id="animTimingsOptions"> -->
-            <!--         <ul id="animTimings"> -->
-            <!--             <li> -->
-            <!--                 <div class="label borderleft bgi">Blend-In</div> -->
-            <!--                 <div -->
-            <!--                     id="timingBlendIn" -->
-            <!--                     class="entry borderright bgt1" -->
-            <!--                     contenteditable="true" -->
-            <!--                     tabindex="3" -->
-            <!--                 > -->
-            <!--                     1.0 -->
-            <!--                 </div> -->
-            <!--             </li> -->
-            <!--             <li> -->
-            <!--                 <div class="label borderleft bgi">Blend-Out</div> -->
-            <!--                 <div -->
-            <!--                     id="timingBlendOut" -->
-            <!--                     class="entry borderright bgt1" -->
-            <!--                     contenteditable="true" -->
-            <!--                     tabindex="3" -->
-            <!--                 > -->
-            <!--                     1.0 -->
-            <!--                 </div> -->
-            <!--             </li> -->
-            <!--             <li> -->
-            <!--                 <div class="label borderleft bgi">Playback</div> -->
-            <!--                 <div -->
-            <!--                     id="timingPlayback" -->
-            <!--                     class="entry borderright bgt1" -->
-            <!--                     contenteditable="true" -->
-            <!--                     tabindex="3" -->
-            <!--                 > -->
-            <!--                     0 -->
-            <!--                 </div> -->
-            <!--             </li> -->
-            <!--             <li> -->
-            <!--                 <div class="label borderleft bgi">Duration</div> -->
-            <!--                 <div -->
-            <!--                     id="timingDuration" -->
-            <!--                     class="entry borderright bgt1" -->
-            <!--                     contenteditable="true" -->
-            <!--                     tabindex="3" -->
-            <!--                 > -->
-            <!--                     -1 -->
-            <!--                 </div> -->
-            <!--             </li> -->
-            <!--         </ul> -->
-            <!--     </div> -->
-            <!--     <div id="animFlagsOptions" class="flagList"></div> -->
-            <!--     <div id="animIKFlagsOptions" class="flagList"></div> -->
-            <!--     <div id="animTaskFilterOptions" class="flagList"></div> -->
-            <!--     <div id="animEntityOptions"> -->
-            <!--         <ul id="animEntity"> -->
-            <!--             <li> -->
-            <!--                 <div class="label borderleft bgi">Entity</div> -->
-            <!--                 <div -->
-            <!--                     id="animEntityField" -->
-            <!--                     class="entry borderright bgt1" -->
-            <!--                     contenteditable="true" -->
-            <!--                     tabindex="6" -->
-            <!--                 ></div> -->
-            <!--             </li> -->
-            <!--         </ul> -->
-            <!--     </div> -->
-            <!--     <div id="activeAnimDisplay"> -->
-            <!--         <ul id="animActive"> -->
-            <!--             <li> -->
-            <!--                 <div class="label borderleft bgi">animDict</div> -->
-            <!--                 <div -->
-            <!--                     id="activeAnimDict" -->
-            <!--                     class="entry borderright bgt1" -->
-            <!--                 ></div> -->
-            <!--                 <div class="label borderleft bgi">anim</div> -->
-            <!--                 <div -->
-            <!--                     id="activeAnimName" -->
-            <!--                     class="entry borderright bgt1" -->
-            <!--                 ></div> -->
-            <!--             </li> -->
-            <!--         </ul> -->
-            <!--     </div> -->
-            <!-- </section> -->
         </main>
         <!-- TODO: Test new copy function and update this -->
         <div id="copyField" class="hidden">

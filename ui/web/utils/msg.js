@@ -1,6 +1,6 @@
-function handleMockRequest(endpoint) {
+function handleMockRequest(endpoint, data) {
     if (!window.endpointMute?.[endpoint]) {
-        console.log(`[Mock][NUI Send] sendClientMessage called to mockResource/${endpoint}`);
+        console.log(`[Mock][NUI Send] ${endpoint}: `, data);
     }
 
     // Ensure we only wait once for `window.getMockResponse`
@@ -27,7 +27,7 @@ function handleMockRequest(endpoint) {
     return window.mockReadyPromise
         .then(() => window.getMockResponse(endpoint))
         .catch(error => {
-            console.error('Mock response setup error:', error.message);
+            console.error('Mock response error:', error.message);
             return { error: true, message: error.message };
         });
 }
@@ -42,7 +42,7 @@ export function sendClientMessage(endpoint, data) {
     const url = `https://${resourceName}/${endpoint}`;
 
     if (resourceName === 'mockResource') {
-        return handleMockRequest(endpoint);
+        return handleMockRequest(endpoint, data);
     }
 
     // Production logic for RedM
