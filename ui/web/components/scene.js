@@ -229,7 +229,8 @@ function trackHandleClick(event) {
     });
 }
 
-export function importScene() {
+export function importScene(format) {
+    ImportFormat = format;
     const sceneName = ActiveScene;
     console.log('importScene', sceneName);
 }

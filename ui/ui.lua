@@ -96,7 +96,7 @@ Citizen.CreateThread(function()
     }
     setting.ui.tags = { sort = "dist" }
     setting.ui.theme = {
-        color = "retro wave",
+        color = "cherry blossom",
         divider = "angle up",
         border = true,
         borderrad = false,

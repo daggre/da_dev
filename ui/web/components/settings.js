@@ -20,7 +20,7 @@ export let Settings = {
     },
     tag: { sort: 'dist' },
     theme: {
-        color: 'retro_wave',
+        color: 'cherry_blossom',
         divider: 'angle up',
         border: true,
         borderrad: false,
