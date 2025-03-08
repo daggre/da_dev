@@ -2,30 +2,12 @@ import { clipboardCopy } from '../src/clipboard.js';
 import { resetList, isVisible } from '../src/nav.js';
 import { showConfirm } from '../src/confirm.js';
 import { sendClientMessage } from '../src/msg.js';
-import { exportSceneFormat, importSceneFormat } from '../src/export.js';
-import { toggleSettingsHUD } from '../src/hud/settings.js';
-import { DropDownOptions } from '../src/dropdown.js';
-import { MouseDown } from '../src/events.js';
+import { MouseDown, trackHandleHover, trackHandleClick } from '../src/events.js';
 import { Settings } from '../src/settings.js';
 
-let DefaultScene = 'default';
-let ActiveScene = DefaultScene;
-let ExportFormat = 'YMAP';
 let SceneObjectsLoopRunning = false;
-
-DropDownOptions.importFormat = {
-//     'Map Editor XML': () => importScene('MapEditorXML'),
-//     'Propplacer JSON': () => importScene('PropplacerJSON'),
-//     SpoonerDB: () => importScene('SpoonerDB'),
-    YMAP: () => importScene('YMAP'),
-};
-
-DropDownOptions.exportFormat = {
-    // 'Map Editor XML': () => exportScene('MapEditorXML', ActiveScene),
-    // 'Propplacer JSON': () => exportScene('PropplacerJSON', ActiveScene),
-    // SpoonerDB: () => exportScene('SpoonerDB', ActiveScene),
-    YMAP: () => exportScene('YMAP', ActiveScene),
-};
+let DefaultScene = 'default';
+export let ActiveScene = DefaultScene;
 
 export function saveScene() {
     const newSceneName = document.getElementById('selectedScene').textContent;
@@ -205,151 +187,5 @@ export function trackSceneObjects() {
         // Set minHeight dynamically
         el.style.minHeight = `${Math.min(objects.length * 0.3, 4.9)}vh`;
     }, 250);
-}
-
-function trackHandleHover(event) {
-    const li = event.target.closest('li');
-    if (!li) return;
-    event.type === 'pointerenter'
-        ? li.classList.add('li-hover')
-        : li.classList.remove('li-hover');
-    sendClientMessage('trackObject', {
-        handle: li.dataset.handle,
-        category: 'hover',
-        remove: event.type === 'pointerleave',
-    });
-}
-
-function trackHandleClick(event) {
-    const li = event.target.closest('li');
-    if (!li) return;
-    sendClientMessage('trackObject', {
-        handle: li.dataset.handle,
-        category: 'select',
-    });
-}
-
-export function importScene(sceneData) {
-    importSceneFormat("blah", sceneData);
-}
-
-export function exportScene(format) {
-    ExportFormat = format;
-    exportSceneFormat(ActiveScene, format);
-}
-
-/**
- * Popup dialog with export options
- */
-export function showExport() {
-    toggleSettingsHUD(false);
-    exportSceneFormat(ActiveScene, ExportFormat);
-
-    return new Promise(resolve => {
-        const exportHud = document.getElementById('export-hud');
-        const copyButton = document.getElementById('exportCopyOption');
-        const exitButton = document.getElementById('exportExitOption');
-        const lastFocusedElement = document.activeElement;
-
-        document.getElementById('import-hud').classList.add('hidden');
-        exportHud.classList.remove('hidden');
-        copyButton.focus();
-
-        // Create a MutationObserver to monitor if the popup becomes hidden
-        const observer = new MutationObserver(() => {
-            if (exportHud.classList.contains('hidden')) {
-                cleanup();
-                resolve(false);
-            }
-        });
-        observer.observe(exportHud, {
-            attributes: true,
-            attributeFilter: ['class'],
-        });
-
-        function handleCopy() {
-            clipboardCopy(document.getElementById('exportContent').innerText);
-            copyButton.focus();
-        }
-
-        function handleExit() {
-            cleanup();
-            resolve(false);
-        }
-
-        function cleanup() {
-            copyButton.removeEventListener('click', handleCopy);
-            exitButton.removeEventListener('click', handleExit);
-            observer.disconnect();
-            exportHud.classList.add('hidden');
-            if (lastFocusedElement) {
-                lastFocusedElement.focus();
-            }
-        }
-
-        copyButton.addEventListener('click', handleCopy);
-        exitButton.addEventListener('click', handleExit);
-    });
-}
-
-export function showImport() {
-    toggleSettingsHUD(false);
-
-    return new Promise(resolve => {
-        const importHUD = document.getElementById('import-hud');
-        const importButton = document.getElementById('importOption');
-        const exitButton = document.getElementById('importExitOption');
-        const lastFocusedElement = document.activeElement;
-
-        document.getElementById('export-hud').classList.add('hidden');
-        importHUD.classList.remove('hidden');
-        exitButton.focus();
-
-        // Create a MutationObserver to monitor if the popup becomes hidden
-        const observer = new MutationObserver(() => {
-            if (importHUD.classList.contains('hidden')) {
-                cleanup();
-                resolve(false);
-            }
-        });
-        observer.observe(importHUD, {
-            attributes: true,
-            attributeFilter: ['class'],
-        });
-
-        function handleImport() {
-            const sceneData = document.getElementById('importContent').textContent;
-            importScene(sceneData);
-        }
-
-        function handleExit() {
-            cleanup();
-            resolve(false);
-        }
-
-        function cleanup() {
-            importButton.removeEventListener('click', handleImport);
-            exitButton.removeEventListener('click', handleExit);
-            observer.disconnect();
-            importHUD.classList.add('hidden');
-            if (lastFocusedElement) {
-                lastFocusedElement.focus();
-            }
-        }
-
-        importButton.addEventListener('click', handleImport);
-        exitButton.addEventListener('click', handleExit);
-    });
-}
-
-export function handleEscape(contentId, hudId, exitOptionId) {
-    const content = document.getElementById(contentId);
-    if (!content.matches(':focus')) {
-        document.getElementById(hudId).classList.add('hidden');
-    } else {
-        document.activeElement.blur();
-        window.getSelection().removeAllRanges();
-        document.getElementById(exitOptionId).focus();
-    }
 }
 
