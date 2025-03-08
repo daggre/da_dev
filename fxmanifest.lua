@@ -58,7 +58,6 @@ client_scripts {
     -- 'src/kinematics_cl.lua',
     'src/environment_cl.lua',
     'src/fx_cl.lua',
-    -- 'src/heritage_cl.lua',
     'src/mode_anim_cl.lua',
     'src/mode_devtree_cl.lua',
     'src/mode_freecam_cl.lua',
@@ -83,7 +82,9 @@ files {
     'ui/web/assets/css/style.css',
     'ui/web/src/hud/anim.js',
     'ui/web/src/hud/common.js',
+    'ui/web/src/hud/export.js',
     'ui/web/src/hud/help.js',
+    'ui/web/src/hud/import.js',
     'ui/web/src/hud/obj.js',
     'ui/web/src/hud/settings.js',
     'ui/web/src/anims.js',
@@ -94,7 +95,6 @@ files {
     'ui/web/src/deferred.js',
     'ui/web/src/dropdown.js',
     'ui/web/src/events.js',
-    'ui/web/src/export.js',
     'ui/web/src/msg.js',
     'ui/web/src/nav.js',
     'ui/web/src/obj.js',
@@ -103,6 +103,7 @@ files {
     'ui/web/src/theme.js',
     'ui/web/src/tooltip.js',
     'ui/web/src/trie.js',
+    'ui/web/src/ymap.js',
 }
 
 ui_page {

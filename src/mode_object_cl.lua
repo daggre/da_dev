@@ -234,6 +234,27 @@ local function SaveScene(sceneName)
     kvp.encode("scenes:"..sceneName, storedScene)
 end
 
+local function ImportScene(scene)
+    local storedScene = { name = scene.name, objects = {}, }
+    for _, object in ipairs(scene.objects) do
+        local objData = {}
+        objData.coords_x = object.coords_x
+        objData.coords_y = object.coords_y
+        objData.coords_z = object.coords_z
+        objData.rotation_pitch = object.rotation_pitch
+        objData.rotation_roll = object.rotation_roll
+        objData.rotation_yaw = object.rotation_yaw
+        objData.visible = object.visible
+        objData.frozen = object.frozen
+        objData.collision = object.collision
+        table.insert(storedScene.objects, objData)
+    end
+    log.info("Importing scene", scene.name, storedScene)
+    kvp.encode("scenes:"..scene.name, storedScene)
+
+    return LoadScene(scene.name)
+end
+
 local function ClearScene(sceneName, force)
     log.info("Clearing scene", sceneName)
     if not force and not Scenes[sceneName].loaded then return false; end
@@ -818,6 +839,7 @@ da_ui.callbacks({
     clearScene = function(data) return ClearScene(data.scene) end,
     reloadScene = function(data) return ReloadScene(data.scene) end,
     deleteScene = function(data) return DeleteScene(data.scene) end,
+    importScene = function(data) return ImportScene(data) end,
     setVisible = function(data) return SetVisible(data) end,
     setFrozen = function(data) return SetFrozen(data) end,
     setCollision = function(data) return SetCollision(data) end,
