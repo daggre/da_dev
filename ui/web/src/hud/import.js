@@ -1,6 +1,9 @@
 import { toggleSettingsHUD } from '../../src/hud/settings.js';
 import { DropDownOptions } from '../../src/dropdown.js';
-import { importScene } from '../../src/import.js';
+import { sendClientMessage } from "../../src/msg.js";
+import { showConfirm } from "../../src/confirm.js";
+import { getScenes } from "../../src/scene.js";
+import { parseYMAP } from '../../src/ymap.js';
 
 DropDownOptions.importFormat = {
     YMAP: () => {},
@@ -54,5 +57,50 @@ export function showImport() {
 
         importButton.addEventListener('click', handleImport);
         exitButton.addEventListener('click', handleExit);
+    });
+}
+
+function importScene(sceneData) {
+    const { success, objects } = parseYMAP(sceneData);
+    console.log("Importing scene data...", success, objects);
+
+    if (!success) {
+        console.log("Failed to parse/import scene data.");
+        return;
+    }
+
+    const sceneName = document.getElementById("importName").textContent;
+    if (sceneName === "") {
+        console.log("Scene name is empty.");
+        return;
+    }
+    sendClientMessage('scenesList', {}).then(resp => {
+        const sceneList = JSON.parse(resp.scenes).sort((a, b) =>
+            a.name.localeCompare(b.name)
+        );
+
+        sceneList.forEach(scene => {
+            if (scene.name === sceneName) {
+                showConfirm(
+                    `Scene '${sceneName}' already exists.<br>Overwrite?`
+                ).then(confirm => {
+                        if (!confirm) {
+                            console.log("Import cancelled.");
+                            return;
+                        }
+                    });
+            }
+        });
+        sendClientMessage("importScene", {
+            name: sceneName,
+            objects: objects,
+        }).then(resp => {
+                if (resp.success) {
+                    console.log("Scene imported successfully.");
+                } else {
+                    console.log("Client failed to import scene data.");
+                }
+            });
+        getScenes();
     });
 }

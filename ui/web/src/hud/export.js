@@ -1,8 +1,13 @@
 import { toggleSettingsHUD } from '../../src/hud/settings.js';
 import { clipboardCopy } from '../../src/clipboard.js';
-import { exportScene } from '../../src/export.js';
 import { DropDownOptions } from '../../src/dropdown.js';
 import { ActiveScene } from '../../src/scene.js';
+import { sendClientMessage } from '../../src/msg.js';
+import { exportYMAP } from '../../src/ymap.js';
+
+const ExportTypes = {
+    'YMAP': (objects) => exportYMAP({objects: objects}),
+}
 
 DropDownOptions.exportFormat = {
     YMAP: () => changeFormat('YMAP', ActiveScene),
@@ -62,4 +67,20 @@ export function showExport() {
 function changeFormat(format, scene) {
     exportScene(scene, format);
     document.getElementById('exportFormat').textContent = format;
+}
+
+async function exportScene(sceneName, format) {
+    try {
+        const resp = await sendClientMessage('getScene', { scene: sceneName }) || {};
+        const objects = resp.objects ?? [];
+        if (!Array.isArray(objects)) {
+            console.error("Invalid response format: objects is not an array", resp);
+            return;
+        }
+
+        const exportString = ExportTypes[format](objects);
+        document.getElementById("exportContent").textContent = exportString;
+    } catch (error) {
+        console.error("Failed to get scene data:", error);
+    }
 }

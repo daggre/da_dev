@@ -520,10 +520,9 @@ ul li {
     max-height: 66vh;
     width: 30vw;
     overflow-y: auto;
-    spellcheck: false;
 }
 
-.contentbox:focus {
+.data:focus {
     text-shadow: none;
 }
 
