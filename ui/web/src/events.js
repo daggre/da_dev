@@ -2,7 +2,9 @@ import { toggleAnimationHUD, toggleAnimationSearchHUD, toggleAnimationConfigureH
 import { searchAnimDicts, playConfiguredAnimations, stopAnimation, playSelectedAnimation, addAnimation, resetSelectedAnimConfig, clearAnimation, deleteAllAnimations, setSelectedAnimation } from '../src/anims.js';
 import { toggleCrosshair, toggleObjectSpawnHUD, toggleObjectNearbyHUD, toggleObjectImportExportHUD, toggleObjectDetail, toggleObjectHUD, updateObjectDetails } from './hud/obj.js';
 import { selectSpawnType, selectNearbyOrigin, toggleNearbyFilter, getTrackedObjects, toggleVisible, toggleFrozen, toggleCollision } from '../src/obj.js';
-import { saveScene, clearScene, showExport, showImport, reloadScene, deleteScene, handleEscape } from '../src/scene.js';
+import { saveScene, clearScene, reloadScene, deleteScene } from '../src/scene.js';
+import { showImport } from '../src/hud/import.js';
+import { showExport } from '../src/hud/export.js';
 import { setTooltips } from '../src/tooltip.js';
 import { toggleHideCamera, updateCamera } from '../src/camera.js';
 import { setBorder, setCurvedBorder, setCurvedBorderAmount } from '../src/theme.js';
@@ -577,3 +579,40 @@ export function clickElement(event) {
         handler(event);
     }
 }
+
+// Handle hover events (pointerenter, pointerleave)
+export function trackHandleHover(event) {
+    const li = event.target.closest('li');
+    if (!li) return;
+    event.type === 'pointerenter'
+        ? li.classList.add('li-hover')
+        : li.classList.remove('li-hover');
+    sendClientMessage('trackObject', {
+        handle: li.dataset.handle,
+        category: 'hover',
+        remove: event.type === 'pointerleave',
+    });
+}
+
+// Handle object selection (click event)
+export function trackHandleClick(event) {
+    const li = event.target.closest('li');
+    if (!li) return;
+    li.classList.add('li-select');
+    sendClientMessage('trackObject', {
+        handle: li.dataset.handle,
+        category: 'select',
+    });
+}
+
+function handleEscape(contentId, hudId, exitOptionId) {
+    const content = document.getElementById(contentId);
+    if (!content.matches(':focus')) {
+        document.getElementById(hudId).classList.add('hidden');
+    } else {
+        document.activeElement.blur();
+        window.getSelection().removeAllRanges();
+        document.getElementById(exitOptionId).focus();
+    }
+}
+

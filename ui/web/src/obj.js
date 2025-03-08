@@ -1,8 +1,8 @@
-import { Settings } from '../src/settings.js';
 import { DropDownOptions } from '../src/dropdown.js';
-import { MouseDown } from '../src/events.js';
+import { MouseDown, trackHandleHover, trackHandleClick } from '../src/events.js';
 import { sendClientMessage } from '../src/msg.js';
 import { resetList, isVisible, } from '../src/nav.js';
+import { Settings } from '../src/settings.js';
 
 let TrackedObjectsLoopRunning = false;
 let SelectedObjectSpawnType = 'objects';
@@ -187,32 +187,6 @@ export function getTrackedObjects() {
         // Set minHeight dynamically
         el.style.minHeight = `${Math.min(filteredLength * 0.4, 15.4)}vh`;
     }, 250);
-}
-
-// Handle hover events (pointerenter, pointerleave)
-function trackHandleHover(event) {
-    const li = event.target.closest('li');
-    if (!li) return;
-    event.type === 'pointerenter'
-        ? li.classList.add('li-hover')
-        : li.classList.remove('li-hover');
-    sendClientMessage('trackObject', {
-        handle: li.dataset.handle,
-        category: 'hover',
-        remove: event.type === 'pointerleave',
-    });
-}
-
-// Handle object selection (click event)
-function trackHandleClick(event) {
-    const li = event.target.closest('li');
-    if (!li) return;
-    console.log('trackHandleClick', li);
-    li.classList.add('li-select');
-    sendClientMessage('trackObject', {
-        handle: li.dataset.handle,
-        category: 'select',
-    });
 }
 
 function selectSpawnObject(object) {
