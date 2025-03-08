@@ -25,6 +25,8 @@ const ObjectHUD = {
         'objSceneTagOptions',
         'objSceneObjectsList',
         'objSettings',
+        'import-hud',
+        'export-hud',
     ],
     visible: ['objControlOptions'], // Default visible elements
     buttons: {

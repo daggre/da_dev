@@ -95,24 +95,33 @@ ul li {
     padding-right: 2px;
 }
 
-.borderleft {
-    padding-left: 0.5rem;
+.brdl {
     border-radius: var(--brd-rad) 0 0 var(--brd-rad);
 }
 
-.borderright {
-    padding-right: 0.5rem;
+.brdr {
     border-radius: 0 var(--brd-rad) var(--brd-rad) 0;
 }
 
-.blr {
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
+.brdlr {
     border-left: var(--brd-size) solid var(--primary);
     border-right: var(--brd-size) solid var(--primary);
 }
 
-.gap {
+.plr05 {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+}
+
+.pl05 {
+    padding-left: 0.5rem;
+}
+
+.pr05 {
+    padding-right: 0.5rem;
+}
+
+.mb03 {
     margin-bottom: 0.3rem;
 }
 
@@ -158,9 +167,10 @@ ul li {
     left: 2vh;
 }
 
-.pad {
+.p1 {
     padding: 1rem;
 }
+
 
 .list-group {
     display: flex;
@@ -179,19 +189,16 @@ ul li {
     overflow-y: auto;
 }
 
-.title {
+.f15 {
     font-size: 1.5vh;
 }
 
-.subtitle {
-    font-size: 0.7vh;
+.f4 {
+    font-size: 4vh;
 }
 
-.bigicon {
-    font-size: 4vh;
+.clr2l {
     color: var(--secondary-light);
-
-    /* margin-bottom: 1vh; */
 }
 
 .list {
@@ -208,7 +215,7 @@ ul li {
     text-overflow: ellipsis;
 }
 
-.rowpad li {
+.m1li li {
     margin: 1rem;
 }
 
@@ -228,16 +235,15 @@ ul li {
     max-height: 70vh;
 }
 
-.mgb > ul > li {
+.mb03li li {
     margin-bottom: 0.3rem;
 }
 
-#info-description {
-    margin-top: 1rem;
-    margin-bottom: 0.8rem;
+.mtb1 {
+    margin: 1rem 0;
 }
 
-.noflex {
+.flxsh0 {
     flex-shrink: 0;
 }
 
@@ -247,7 +253,7 @@ ul li {
     overflow-y: hidden;
 }
 
-.entry.borderright::before {
+.entry.brdr::before {
     content: var(--divider, '|');
     color: var(--primary);
     pointer-events: none;
@@ -257,7 +263,7 @@ ul li {
         0 0 18px var(--primary);
 }
 
-.entry.borderright::after {
+.entry.brdr::after {
     color: transparent;
     pointer-events: none;
     content: '';
@@ -267,12 +273,12 @@ ul li {
     width: min-content;
 }
 
-.check.borderright.selected::after {
+.check.brdr.selected::after {
     content: '';
     color: var(--primary);
 }
 
-.check.borderright::after {
+.check.brdr::after {
     content: '';
     color: var(--primary);
 }
@@ -506,7 +512,7 @@ ul li {
     border-radius: var(--brd-rad);
 }
 
-.contentbox {
+.data {
     display: block;
     padding: 0.5rem;
     text-align: left;

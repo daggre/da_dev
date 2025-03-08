@@ -1,4 +1,4 @@
-import { elementSetOnlyClass } from '../utils/nav.js';
+import { elementSetOnlyClass } from '../src/nav.js';
 
 const crosshairElement = document.getElementById('crosshair');
 

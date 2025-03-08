@@ -1,5 +1,5 @@
-import { sendClientMessage } from '../utils/msg.js';
-import { initUIStyle } from '../utils/theme.js';
+import { sendClientMessage } from '../src/msg.js';
+import { initUIStyle } from '../src/theme.js';
 
 // Centralized settings object
 export let Settings = {

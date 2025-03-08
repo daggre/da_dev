@@ -1,5 +1,5 @@
-import { toggleCrosshair } from "./obj.js";
-import { isVisible } from "../../utils/nav.js";
+import { toggleCrosshair } from "../../src/hud/obj.js";
+import { isVisible } from "../../src/nav.js";
 
 export function toggleHelp(elementId, state) {
     if (state === undefined) {

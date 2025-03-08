@@ -1,12 +1,12 @@
-import { clipboardCopy } from '../utils/clipboard.js';
-import { resetList, isVisible } from '../utils/nav.js';
-import { showConfirm } from './confirm.js';
-import { sendClientMessage } from '../utils/msg.js';
-import { exportSceneFormat } from '../components/export.js';
-import { toggleSettingsHUD } from '../components/hud/settings.js';
-import { DropDownOptions } from './dropdown.js';
-import { MouseDown } from './events.js';
-import { Settings } from './settings.js';
+import { clipboardCopy } from '../src/clipboard.js';
+import { resetList, isVisible } from '../src/nav.js';
+import { showConfirm } from '../src/confirm.js';
+import { sendClientMessage } from '../src/msg.js';
+import { exportSceneFormat, importSceneFormat } from '../src/export.js';
+import { toggleSettingsHUD } from '../src/hud/settings.js';
+import { DropDownOptions } from '../src/dropdown.js';
+import { MouseDown } from '../src/events.js';
+import { Settings } from '../src/settings.js';
 
 let DefaultScene = 'default';
 let ActiveScene = DefaultScene;
@@ -14,16 +14,16 @@ let ExportFormat = 'YMAP';
 let SceneObjectsLoopRunning = false;
 
 DropDownOptions.importFormat = {
-    'Map Editor XML': () => importScene('MapEditorXML'),
-    'Propplacer JSON': () => importScene('PropplacerJSON'),
-    SpoonerDB: () => importScene('SpoonerDB'),
+//     'Map Editor XML': () => importScene('MapEditorXML'),
+//     'Propplacer JSON': () => importScene('PropplacerJSON'),
+//     SpoonerDB: () => importScene('SpoonerDB'),
     YMAP: () => importScene('YMAP'),
 };
 
 DropDownOptions.exportFormat = {
-    'Map Editor XML': () => exportScene('MapEditorXML', ActiveScene),
-    'Propplacer JSON': () => exportScene('PropplacerJSON', ActiveScene),
-    SpoonerDB: () => exportScene('SpoonerDB', ActiveScene),
+    // 'Map Editor XML': () => exportScene('MapEditorXML', ActiveScene),
+    // 'Propplacer JSON': () => exportScene('PropplacerJSON', ActiveScene),
+    // SpoonerDB: () => exportScene('SpoonerDB', ActiveScene),
     YMAP: () => exportScene('YMAP', ActiveScene),
 };
 
@@ -229,10 +229,8 @@ function trackHandleClick(event) {
     });
 }
 
-export function importScene(format) {
-    ImportFormat = format;
-    const sceneName = ActiveScene;
-    console.log('importScene', sceneName);
+export function importScene(sceneData) {
+    importSceneFormat("blah", sceneData);
 }
 
 export function exportScene(format) {
@@ -320,8 +318,8 @@ export function showImport() {
         });
 
         function handleImport() {
-            // const sceneData = document.getElementById('importContent').textContent;
-            importScene();
+            const sceneData = document.getElementById('importContent').textContent;
+            importScene(sceneData);
         }
 
         function handleExit() {
