@@ -50,7 +50,7 @@
         </script>
 
         <!-- Your Scripts -->
-        <script type="module" src="./assets/gizmo.js" defer></script>
+        <script type="module" src="assets/gizmo.js" defer></script>
         <script type="module" src="script.js" defer></script>
 
     </head>
@@ -58,118 +58,115 @@
     <body>
         <main>
             <section id="info-hud" class="hud hidden">
-                <div class="pad center blr bgt2">
-                    <div class="bigicon"></div>
-                    <div id="info-description" class="">Are you sure?</div>
-                    <ul class="row rowpad gap">
+                <div class="p1 center brdlr plr05 bgt2">
+                    <div class="f4 clr2l"></div>
+                    <div id="info-description" class="mtb1">Are you sure?</div>
+                    <ul class="row m1li mb03">
                         <li
                             id="yesOption"
                             tabindex="99"
-                            class="control blr bgt2"
-                        >
-                            Yes
-                        </li>
+                            class="control brdlr plr05 bgt2"
+                        >Yes</li>
                         <li
                             id="noOption"
                             tabindex="99"
-                            class="control blr bgt2"
-                        >
-                            No
-                        </li>
+                            class="control brdlr plr05 bgt2"
+                        >No</li>
                     </ul>
                 </div>
             </section>
             <section id="export-hud" class="hud hidden">
-                <div class="center blr bgt2 pad">
-                    <div id="exportIcon" class="bigicon">󰈝</div>
-                    <div id="exportDescription" class="gap">Export Scene</div>
+                <div class="center brdlr plr05 bgt2 p1">
+                    <div id="exportIcon" class="f4 clr2l">󰈝</div>
+                    <div id="exportDescription" class="mb03">Export Scene</div>
                     <p></p>
-                    <ul class="row gap contentleft">
+                    <ul class="row mb03 contentleft">
                         <li style="overflow: hidden">
-                            <div class="label borderleft bgi">format</div>
+                            <div class="label brdl pl05 bgi">format</div>
                             <div
                                 id="exportFormat"
                                 tabindex="99"
-                                ,
-                                class="entry dropdown borderright bgt2"
-                            >
-                                YMAP
-                            </div>
+                                class="entry dropdown brdr pr05 bgt2"
+                                aria-label="Export Format"
+                            >YMAP</div>
                         </li>
                     </ul>
                     <pre
                         id="exportContent"
                         tabindex="99"
                         contenteditable="true"
-                        class="blr bgt2 contentbox"
+                        class="brdlr plr05 bgt2 data"
                         spellcheck="false"
-                    >
-                    </pre>
-                    <ul class="row rowpad gap">
+                    ></pre>
+                    <ul class="row m1li mb03">
                         <li
                             id="exportCopyOption"
                             tabindex="99"
-                            class="blr bgt2"
-                        >
-                            Copy
-                        </li>
+                            class="brdlr plr05 bgt2"
+                            aria-label="Copy Output to Clipboard"
+                        >Export</li>
                         <li
                             id="exportExitOption"
                             tabindex="99"
-                            class="blr bgt2"
-                        >
-                            Close
-                        </li>
+                            class="brdlr plr05 bgt2"
+                            aria-label="Close Export Menu"
+                        >Close</li>
                     </ul>
                 </div>
             </section>
             <section id="import-hud" class="hud hidden">
-                <div class="center blr bgt2 pad">
-                    <div id="importIcon" class="bigicon">󰈠</div>
-                    <div id="importDescription" class="gap">Import Scene</div>
+                <div class="center brdlr plr05 bgt2 p1">
+                    <div id="importIcon" class="f4 clr2l">󰈠</div>
+                    <div id="importDescription" class="mb03">Import Scene</div>
                     <p></p>
-                    <ul class="row gap contentleft">
+                    <ul class="row mb03 contentleft">
                         <li style="overflow: hidden">
-                            <div class="label borderleft bgi">format</div>
-                            <!-- TODO: autodetect format -->
+                            <div class="label brdl pl05 bgi">format</div>
                             <div
                                 id="importFormat"
                                 tabindex="99"
-                                ,
-                                class="entry dropdown borderright bgt2"
-                            >
-                                YMAP
-                            </div>
+                                class="entry dropdown brdr pr05 bgt2"
+                                aria-label="Import Format"
+                            >YMAP</div>
+                        </li>
+                    </ul>
+                    <ul class="row mb03 contentleft">
+                        <li>
+                            <div class="label brdl pl05 bgi">scene</div>
+                            <div
+                                id="importName"
+                                tabindex="99"
+                                contenteditable="true",
+                                class="entry brdr pr05 bgt2"
+                                aria-label="Name of Imported Scene"
+                            >unnamed</div>
                         </li>
                     </ul>
                     <pre
                         id="importContent"
                         tabindex="99"
                         contenteditable="true"
-                        class="blr bgt2 contentbox"
+                        class="brdlr plr05 bgt2 data"
                         spellcheck="false"
-                    >
-                    </pre>
-                    <ul class="row rowpad gap">
+                    ></pre>
+                    <ul class="row m1li mb03">
                         <li
                             id="importOption"
                             tabindex="99"
-                            class="blr bgt2"
-                        >
-                            Import
-                        </li>
+                            class="brdlr plr05 bgt2"
+                            aria-label="Import Scene from Content Box"
+                        >Import</li>
                         <li
                             id="importExitOption"
                             tabindex="99"
-                            class="blr bgt2"
-                        >
-                            Close
-                        </li>
+                            class="brdlr plr05 bgt2"
+                            aria-label="Close Import Menu"
+                        >Close</li>
                     </ul>
                 </div>
             </section>
             <section id="gizmo" class="hud hidden"></section>
-            <section id="dev-tree-hud" class="hud blr bgt1 hidden">
+            <section id="dev-tree-hud" class="hud brdlr plr05 bgt1 hidden">
                 <div id="menuOptionsContainer">
                     <ul id="menuOptions" class="options-list"></ul>
                 </div>
@@ -178,126 +175,126 @@
                 </div>
             </section>
             <section id="object-hud" class="hud hidden">
-                <div id="objHelp" class="center bgt2 pad blr hidden mgb">
-                    <div class="title">Object Editor</div>
-                    <div class="bigicon"></div>
+                <div id="objHelp" class="center bgt2 p1 brdlr mb03li hidden">
+                    <div class="f15">Object Editor</div>
+                    <div class="f4 clr2l"></div>
                     <ul>
                         <li>
-                            <div class="label borderleft bgi">LMB</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">LMB</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Select Object Under Crosshair
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">MMB (Click)</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">MMB (Click)</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Toggle Control Passthrough
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">MMB (Hold)</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">MMB (Hold)</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Enable Control Passthrough
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">Shift LMB</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">Shift LMB</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Spawn Object
                             </div>
                         </li>
                         <li> </li>
                         <li>
-                            <div class="label borderleft bgi">1</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">1</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Switch View to Object Spawn
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">2</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">2</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Switch View to Nearby Objects
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">3</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">3</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Switch View to Scene Import/Export
                             </div>
                         </li>
                         <li> </li>
                         <li>
-                            <div class="label borderleft bgi">f</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">f</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Focus Selected Object
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">h</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">h</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Toggle Help Panel
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">r</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">r</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Move/Rotate Selected Object
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">x</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">x</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Reset Values to Defaults
                             </div>
                         </li>
                         <li> </li>
                         <li>
-                            <div class="label borderleft bgi">Ctrl r</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">Ctrl r</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Set Selected to Hovered Object Rotation
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">Ctrl x</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">Ctrl x</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Set Selected to Hovered Object Position
                             </div>
                         </li>
                         <li>
-                        <div class="label borderleft bgi">Ctrl z</div>
-                        <div class="entry borderright bgt1">
+                        <div class="label brdl pl05 bgi">Ctrl z</div>
+                        <div class="entry brdr pr05 bgt1">
                             Set Selected to Hovered Object Height
                         </div>
                     </li>
                         <li> </li>
                         <li>
-                            <div class="label borderleft bgi">Shift x</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">Shift x</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Delete Selected Object
                             </div>
                         </li>
                         <li> </li>
                         <li>
-                            <div class="label borderleft bgi">?</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">?</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Toggle Help Panel
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">Esc</div>
-                            <div class="entry borderright bgt1">Exit</div>
+                            <div class="label brdl pl05 bgi">Esc</div>
+                            <div class="entry brdr pr05 bgt1">Exit</div>
                         </li>
                         <li> </li>
                         <li>
-                            <div class="label borderleft bgi">Alt r</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">Alt r</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Move/Rotate Hovered Object
                             </div>
                         </li>
                     </ul>
                 </div>
                 <div id="crosshair" class="inactive hidden">+</div>
-                <div id="objControlOptions" class="bgt1 centerwidth top blr">
+                <div id="objControlOptions" class="bgt1 centerwidth top brdlr plr05">
                     <ul class="row">
                         <li>
                             <div
@@ -307,9 +304,7 @@
                                 role="button"
                                 aria-pressed="false"
                                 aria-label="Spawn Objects"
-                            >
-                                󰒕
-                            </div>
+                            >󰒕</div>
                             <div
                                 id="button-importexport"
                                 class="control"
@@ -317,9 +312,7 @@
                                 role="button"
                                 aria-pressed="false"
                                 aria-label="Import/Export"
-                            >
-                                
-                            </div>
+                            ></div>
                             <div
                                 id="button-trackedobjlist"
                                 class="control"
@@ -327,9 +320,7 @@
                                 role="button"
                                 aria-pressed="false"
                                 aria-label="Track Objects"
-                            >
-                                󰹤
-                            </div>
+                            >󰹤</div>
                             <!-- <div id="button-scenecontrol" class="control" tabindex="31" role="button" aria-pressed="false" >󱞔</div> -->
                             <!-- <div id="button-scenetags" class="control" tabindex="32" role="button" aria-pressed="false" >󰜢</div> -->
                         </li>
@@ -338,29 +329,29 @@
                 <div id="objSpawnLeftColumn" class="list-group top left">
                     <div
                         id="objSpawnName"
-                        class="row gap noflex list-entry-field"
+                        class="row mb03 flxsh0 list-entry-field"
                     >
-                        <div class="label borderleft bgi">+</div>
+                        <div class="label brdl pl05 bgi">+</div>
                         <div
                             id="activeObject"
-                            class="entry borderright bgt1"
+                            class="entry brdr pr05 bgt1"
                             aria-label="Selected Spawn Object"
                         ></div>
                     </div>
                     <div
                         id="objSearchField"
-                        class="row gap noflex list-entry-field"
+                        class="row mb03 flxsh0 list-entry-field"
                     >
-                        <div class="label borderleft bgi"></div>
+                        <div class="label brdl pl05 bgi"></div>
                         <div
                             id="objSearch"
-                            class="entry borderright bgt1"
+                            class="entry brdr pr05 bgt1"
                             tabindex="2"
                             contenteditable="true"
                             aria-label="Spawn Object Search"
                         ></div>
                     </div>
-                    <div id="objSpawnOptions" class="bgt1 blr gap noflex">
+                    <div id="objSpawnOptions" class="bgt1 brdlr plr05 mb03 flxsh0">
                         <ul class="row">
                             <li>
                                 <div
@@ -370,9 +361,7 @@
                                     role="button"
                                     aria-pressed="false"
                                     aria-label="Preview Spawn Object"
-                                >
-                                    󰈈
-                                </div>
+                                >󰈈</div>
                                 <div
                                     id="button-spawnobjects"
                                     class="control selected"
@@ -380,9 +369,7 @@
                                     role="button"
                                     aria-pressed="false"
                                     aria-label="Search Objects"
-                                >
-                                    󰠱
-                                </div>
+                                >󰠱</div>
                                 <div
                                     id="button-spawnpeds"
                                     class="control"
@@ -390,9 +377,7 @@
                                     role="button"
                                     aria-pressed="false"
                                     aria-label="Search Peds"
-                                >
-                                    
-                                </div>
+                                ></div>
                                 <div
                                     id="button-spawnvehicles"
                                     class="control"
@@ -400,9 +385,7 @@
                                     role="button"
                                     aria-pressed="false"
                                     aria-label="Search Vehicles"
-                                >
-                                    󱢑
-                                </div>
+                                >󱢑</div>
                                 <div
                                     id="button-spawnpropsets"
                                     class="control"
@@ -410,9 +393,7 @@
                                     role="button"
                                     aria-pressed="false"
                                     aria-label="Search Propsets"
-                                >
-                                    
-                                </div>
+                                ></div>
                                 <div
                                     id="button-spawnpickups"
                                     class="control"
@@ -420,9 +401,7 @@
                                     role="button"
                                     aria-pressed="false"
                                     aria-label="Search Pickups"
-                                >
-                                    
-                                </div>
+                                ></div>
                                 <div
                                     id="button-spawnother"
                                     class="control"
@@ -430,9 +409,7 @@
                                     role="button"
                                     aria-pressed="false"
                                     aria-label="Search Custom Entities"
-                                >
-                                    󱝤
-                                </div>
+                                >󱝤</div>
                                 <div
                                     id="button-spawnfavs"
                                     class="control"
@@ -440,9 +417,7 @@
                                     role="button"
                                     aria-pressed="false"
                                     aria-label="Filter Favorites"
-                                >
-                                    󰓎
-                                </div>
+                                >󰓎</div>
                             </li>
                         </ul>
                     </div>
@@ -452,7 +427,7 @@
                     ></div>
                 </div>
                 <div id="objScenesLeftColumn" class="list-group top left">
-                    <div id="objSceneControlOptions" class="bgt1 blr gap">
+                    <div id="objSceneControlOptions" class="bgt1 brdlr plr05 mb03">
                         <ul class="row">
                             <li>
                                 <div
@@ -462,9 +437,7 @@
                                     role="button"
                                     aria-pressed="false"
                                     aria-label="Save Scene"
-                                >
-                                    󰆓
-                                </div>
+                                >󰆓</div>
                                 <div
                                     id="button-reloadscene"
                                     class="control"
@@ -472,9 +445,7 @@
                                     role="button"
                                     aria-pressed="false"
                                     aria-label="Reload Scene"
-                                >
-                                    
-                                </div>
+                                ></div>
                                 <div
                                     id="button-clearscene"
                                     class="control"
@@ -482,9 +453,7 @@
                                     role="button"
                                     aria-pressed="false"
                                     aria-label="Unload Scene"
-                                >
-                                    󱋽
-                                </div>
+                                >󱋽</div>
                                 <div
                                     id="button-export"
                                     class="control"
@@ -492,9 +461,7 @@
                                     role="button"
                                     aria-pressed="false"
                                     aria-label="Export Scene"
-                                >
-                                    󰈝
-                                </div>
+                                >󰈝</div>
                                 <div
                                     id="button-import"
                                     class="control"
@@ -502,9 +469,7 @@
                                     role="button"
                                     aria-pressed="false"
                                     aria-label="Import Scene"
-                                >
-                                    󰈠
-                                </div>
+                                >󰈠</div>
                                 <div
                                     id="button-deletescene"
                                     class="control"
@@ -512,32 +477,28 @@
                                     role="button"
                                     aria-pressed="false"
                                     aria-label="Permanently Delete Scene"
-                                >
-                                    󰗨
-                                </div>
+                                >󰗨</div>
                             </li>
                         </ul>
                     </div>
                     <div
                         id="sceneSelected"
-                        class="row gap noflex list-entry-field"
+                        class="row mb03 flxsh0 list-entry-field"
                     >
-                        <div class="label borderleft bgi">scene</div>
+                        <div class="label brdl pl05 bgi">scene</div>
                         <div
                             id="selectedScene"
-                            class="entry borderright bgt1"
+                            class="entry brdr pr05 bgt1"
                             tabindex="13"
                             contenteditable="true"
                             aria-label="Selected Scene"
-                        >
-                            autosave
-                        </div>
+                        >autosave</div>
                     </div>
                     <div
                         id="objScenesList"
-                        class="list list-primary bggradient gap"
+                        class="list list-primary bggradient mb03"
                     ></div>
-                    <div id="objSceneTagOptions" class="bgt1 blr gap">
+                    <div id="objSceneTagOptions" class="bgt1 brdlr plr05 mb03">
                         <ul class="row">
                             <li>
                                 <div
@@ -547,9 +508,7 @@
                                     role="button"
                                     aria-pressed="false"
                                     aria-label="Sort Scene Objects By Distance"
-                                >
-                                    󰣰
-                                </div>
+                                >󰣰</div>
                                 <div
                                     id="button-tagsortbyname"
                                     class="control"
@@ -557,19 +516,17 @@
                                     role="button"
                                     aria-pressed="false"
                                     aria-label="Sort Scene Objects Alphabetically"
-                                >
-                                    󰖽
-                                </div>
+                                >󰖽</div>
                             </li>
                         </ul>
                     </div>
                     <div
                         id="objSceneObjectsList"
-                        class="list list-primary bggradient gap"
+                        class="list list-primary bggradient mb03"
                     ></div>
                 </div>
                 <div id="objNearbyLeftColumn" class="list-group top left">
-                    <div id="objNearbyOrigin" class="bgt1 blr gap noflex">
+                    <div id="objNearbyOrigin" class="bgt1 brdlr plr05 mb03 flxsh0">
                         <ul class="row">
                             <li>
                                 <div
@@ -579,9 +536,7 @@
                                     role="button"
                                     aria-pressed="false"
                                     aria-label="Set Origin to Camera"
-                                >
-                                    
-                                </div>
+                                ></div>
                                 <div
                                     id="button-nearbyOrigin-offset"
                                     class="control"
@@ -589,9 +544,7 @@
                                     role="button"
                                     aria-pressed="false"
                                     aria-label="Set Origin Offset Forward of Camera"
-                                >
-                                    󱣿
-                                </div>
+                                >󱣿</div>
                                 <div
                                     id="button-nearbyOrigin-player"
                                     class="control"
@@ -599,9 +552,7 @@
                                     role="button"
                                     aria-pressed="false"
                                     aria-label="Set Origin to Player"
-                                >
-                                    
-                                </div>
+                                ></div>
                                 <div
                                     id="button-nearbyOrigin-raycast"
                                     class="control"
@@ -609,9 +560,7 @@
                                     role="button"
                                     aria-pressed="false"
                                     aria-label="Set Origin to Crosshair"
-                                >
-                                    
-                                </div>
+                                ></div>
                                 <div
                                     id="button-nearbyOrigin-set-position"
                                     class="control"
@@ -619,9 +568,7 @@
                                     role="button"
                                     aria-pressed="false"
                                     aria-label="Set Origin to Position at Current Crosshair"
-                                >
-                                    
-                                </div>
+                                ></div>
                                 <div
                                     id="button-nearbyOrigin-select"
                                     class="control"
@@ -629,26 +576,22 @@
                                     role="button"
                                     aria-pressed="false"
                                     aria-label="Set Origin to Selected Object"
-                                >
-                                    
-                                </div>
+                                ></div>
                             </li>
                         </ul>
                     </div>
                     <div
                         id="selectedNearbyOrigin"
-                        class="row gap noflex list-entry-field"
+                        class="row mb03 flxsh0 list-entry-field"
                     >
-                        <div class="label borderleft bgi">origin</div>
+                        <div class="label brdl pl05 bgi">origin</div>
                         <div
                             id="activeNearbyOrigin"
-                            class="entry dropdown borderright bgt1"
+                            class="entry dropdown brdr pr05 bgt1"
                             aria-label="Current Origin Setting"
-                        >
-                            camera
-                        </div>
+                        >camera</div>
                     </div>
-                    <div id="objNearbyFilter" class="bgt1 blr gap noflex">
+                    <div id="objNearbyFilter" class="bgt1 brdlr plr05 mb03 flxsh0">
                         <ul class="row">
                             <li>
                                 <div
@@ -658,9 +601,7 @@
                                     role="button"
                                     aria-pressed="false"
                                     aria-label="Filter Objects"
-                                >
-                                    󰠱
-                                </div>
+                                >󰠱</div>
                                 <div
                                     id="button-nearby-ped"
                                     class="control selected"
@@ -668,9 +609,7 @@
                                     role="button"
                                     aria-pressed="false"
                                     aria-label="Filter Peds"
-                                >
-                                    
-                                </div>
+                                ></div>
                                 <div
                                     id="button-nearby-vehicle"
                                     class="control selected"
@@ -678,9 +617,7 @@
                                     role="button"
                                     aria-pressed="false"
                                     aria-label="Filter Vehicles"
-                                >
-                                    󱢑
-                                </div>
+                                >󱢑</div>
                                 <!-- <div id="button-nearbypropset" class="control selected" tabindex="13" role="button" aria-pressed="false" aria-label="Filter Propsets"></div> -->
                                 <div
                                     id="button-nearby-scene"
@@ -689,26 +626,22 @@
                                     role="button"
                                     aria-pressed="false"
                                     aria-label="Filter Scene Objects"
-                                >
-                                    󱝤
-                                </div>
+                                >󱝤</div>
                             </li>
                         </ul>
                     </div>
                     <div
                         id="objNearbyRange"
-                        class="row gap noflex list-entry-field"
+                        class="row mb03 flxsh0 list-entry-field"
                     >
-                        <div class="label borderleft bgi">range</div>
+                        <div class="label brdl pl05 bgi">range</div>
                         <div
                             id="nearbyRange"
-                            class="entry borderright bgt1"
+                            class="entry brdr pr05 bgt1"
                             tabindex="24"
                             contenteditable="true"
                             aria-label="Distance Limit"
-                        >
-                            50
-                        </div>
+                        >50</div>
                     </div>
                     <div
                         id="objNearbyResults"
@@ -716,7 +649,7 @@
                     ></div>
                 </div>
                 <div id="objDetails" class="list-group top right hidden">
-                    <div id="objDetailsOptions" class="bgt1 blr gap">
+                    <div id="objDetailsOptions" class="bgt1 brdlr plr05 mb03">
                         <ul class="row">
                             <li>
                                 <div
@@ -726,9 +659,7 @@
                                     role="button"
                                     aria-pressed="false"
                                     aria-label="Toggle Entity Position"
-                                >
-                                    󰵉
-                                </div>
+                                >󰵉</div>
                                 <div
                                     id="button-objDetailsStatus"
                                     class="control selected"
@@ -736,146 +667,132 @@
                                     role="button"
                                     aria-pressed="false"
                                     aria-label="Toggle Entity Attributes"
-                                >
-                                    󱖫
-                                </div>
+                                >󱖫</div>
                             </li>
                         </ul>
                     </div>
-                    <div id="objDetailsList" class="mgb">
+                    <div id="objDetailsList" class="mb03li">
                         <ul>
                             <li>
-                                <div class="label borderleft bgi">entity</div>
+                                <div class="label brdl pl05 bgi">entity</div>
                                 <div
                                     id="objDetailsEntityHandle"
-                                    class="entry borderright bgt1"
+                                    class="entry brdr pr05 bgt1"
                                     contenteditable="false"
                                     aria-label="Entity Handle"
                                 ></div>
                             </li>
                             <li>
-                                <div class="label borderleft bgi">model</div>
+                                <div class="label brdl pl05 bgi">model</div>
                                 <div
                                     id="objDetailsEntityModelName"
-                                    class="entry borderright bgt1"
+                                    class="entry brdr pr05 bgt1"
                                     contenteditable="false"
                                     aria-label="Entity Model Name"
                                 ></div>
                             </li>
                             <li>
-                                <div class="label borderleft bgi">network id</div>
+                                <div class="label brdl pl05 bgi">network id</div>
                                 <div
                                     id="objDetailsEntityNetworkId"
-                                    class="entry borderright bgt1"
+                                    class="entry brdr pr05 bgt1"
                                     contenteditable="false"
                                     aria-label="Entity Network ID"
                                 ></div>
                             </li>
                         </ul>
                     </div>
-                    <div id="objDetailsListPosition" class="mgb">
+                    <div id="objDetailsListPosition" class="mb03li">
                         <ul>
                             <li>
-                                <div class="label borderleft bgi">x</div>
+                                <div class="label brdl pl05 bgi">x</div>
                                 <div
                                     id="objDetailsEntityPosX"
-                                    class="entry borderright bgt1"
+                                    class="entry brdr pr05 bgt1"
                                     contenteditable="true"
                                     tabindex="60"
                                     aria-label="Entity X Coordinate"
-                                >
-                                    0
-                                </div>
+                                >0</div>
                             </li>
                             <li>
-                                <div class="label borderleft bgi">y</div>
+                                <div class="label brdl pl05 bgi">y</div>
                                 <div
                                     id="objDetailsEntityPosY"
-                                    class="entry borderright bgt1"
+                                    class="entry brdr pr05 bgt1"
                                     contenteditable="true"
                                     tabindex="61"
                                     aria-label="Entity Y Coordinate"
-                                >
-                                    0
-                                </div>
+                                >0</div>
                             </li>
                             <li>
-                                <div class="label borderleft bgi">z</div>
+                                <div class="label brdl pl05 bgi">z</div>
                                 <div
                                     id="objDetailsEntityPosZ"
-                                    class="entry borderright bgt1"
+                                    class="entry brdr pr05 bgt1"
                                     contenteditable="true"
                                     tabindex="62"
                                     aria-label="Entity Z Coordinate"
-                                >
-                                    0
-                                </div>
+                                >0</div>
                             </li>
                             <li>
-                                <div class="label borderleft bgi">pitch</div>
+                                <div class="label brdl pl05 bgi">pitch</div>
                                 <div
                                     id="objDetailsEntityRotPitch"
-                                    class="entry borderright bgt1"
+                                    class="entry brdr pr05 bgt1"
                                     contenteditable="true"
                                     tabindex="63"
                                     aria-label="Entity Pitch"
-                                >
-                                    0
-                                </div>
+                                >0</div>
                             </li>
                             <li>
-                                <div class="label borderleft bgi">roll</div>
+                                <div class="label brdl pl05 bgi">roll</div>
                                 <div
                                     id="objDetailsEntityRotRoll"
-                                    class="entry borderright bgt1"
+                                    class="entry brdr pr05 bgt1"
                                     contenteditable="true"
                                     tabindex="64"
                                     aria-label="Entity Roll"
-                                >
-                                    0
-                                </div>
+                                >0</div>
                             </li>
                             <li>
-                                <div class="label borderleft bgi">yaw</div>
+                                <div class="label brdl pl05 bgi">yaw</div>
                                 <div
                                     id="objDetailsEntityRotYaw"
-                                    class="entry borderright bgt1"
+                                    class="entry brdr pr05 bgt1"
                                     contenteditable="true"
                                     tabindex="65"
                                     aria-label="Entity Yaw"
-                                >
-                                    0
-                                </div>
+                                >0</div>
                             </li>
                         </ul>
                     </div>
-                    <div id="objDetailsListStatus" class="mgb">
+                    <div id="objDetailsListStatus" class="mb03li">
                         <ul>
                             <li>
-                                <div class="label borderleft bgi">visible</div>
+                                <div class="label brdl pl05 bgi">visible</div>
                                 <div
                                     id="objDetailsEntityVisible"
-                                    class="entry check borderright bgt1"
+                                    class="entry check brdr pr05 bgt1"
                                     tabindex="66"
                                     aria-label="Entity Visibility Enabled"
                                 ></div>
                             </li>
                             <li>
-                                <div class="label borderleft bgi">frozen</div>
+                                <div class="label brdl pl05 bgi">frozen</div>
                                 <div
                                     id="objDetailsEntityFrozen"
-                                    class="entry check borderright bgt1"
+                                    class="entry check brdr pr05 bgt1"
                                     tabindex="66"
                                     aria-label="Freeze Entity Enabled"
                                 ></div>
                             </li>
                             <li>
-                                <div class="label borderleft bgi">
+                                <div class="label brdl pl05 bgi">
                                     collision
                                 </div>
                                 <div
                                     id="objDetailsEntityCollision"
-                                    class="entry check borderright bgt1"
+                                    class="entry check brdr pr05 bgt1"
                                     tabindex="67"
                                     aria-label="Entity Collision Enabled"
                                 ></div>
@@ -884,195 +801,195 @@
                     </div>
                 </div>
                 <div id="objSettings" class="list-group top left">
-                    <div id="objSettingsOptions" class="mgb">
+                    <div id="objSettingsOptions" class="mb03li">
                     </div>
                 </div>
             </section>
             <section id="anim-hud" class="hud hidden">
-                <div id="animHelp" class="center bgt2 pad blr hidden mgb">
+                <div id="animHelp" class="center bgt2 p1 brdlr hidden mb03li">
                     <div class="title">Animation Developer Kit</div>
-                    <div class="bigicon"></div>
+                    <div class="f4 clr2l"></div>
                     <ul>
                         <li>
-                            <div class="label borderleft bgi">q</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">q</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Play/Restart Animation
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">r</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">r</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Play/Restart Animation
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">s</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">s</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Stop Animation
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">k</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">k</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Stop Animation
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">Backspace</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">Backspace</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Stop Animation
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">MMB (Hold)</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">MMB (Hold)</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Game Control (Keyboard/Mouse)
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">LMB (Click)</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">LMB (Click)</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Copy Entry to Clipboard
                             </div>
                         </li>
                         <li> </li>
                         <li>
-                            <div class="label borderleft bgi">1</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">1</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Search/Select Animations
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">2</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">2</div>
+                            <div class="entry brdr pr05 bgt1">
                                 View/Edit Timing Options
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">3</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">3</div>
+                            <div class="entry brdr pr05 bgt1">
                                 View/Edit Inverse Kinematics Flags
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">4</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">4</div>
+                            <div class="entry brdr pr05 bgt1">
                                 View/Edit Animation Flags
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">5</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">5</div>
+                            <div class="entry brdr pr05 bgt1">
                                 View/Edit Entity ID
                             </div>
                         </li>
                         <li> </li>
                         <li>
-                            <div class="label borderleft bgi">?</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">?</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Toggle Help Panel
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">h</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">h</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Toggle Help Panel
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">c</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">c</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Toggle Anim Control Panel
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">f</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">f</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Open Search Menu
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">f(x2)</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">f(x2)</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Open Search Menu and Focus Search Field
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">F</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">F</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Focus Search Field
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">t</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">t</div>
+                            <div class="entry brdr pr05 bgt1">
                                 View/Edit Timing Options
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">i</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">i</div>
+                            <div class="entry brdr pr05 bgt1">
                                 View/Edit Inverse Kinematics Flags
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">o</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">o</div>
+                            <div class="entry brdr pr05 bgt1">
                                 View/Edit Animation Flags
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">e</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">e</div>
+                            <div class="entry brdr pr05 bgt1">
                                 View/Edit Entity ID
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">l</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">l</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Quick Toggle Animation Loop
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">u</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">u</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Quick Toggle Upper Body + Movement Flags
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">x</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">x</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Reset Active Menu to Default Values
                             </div>
                         </li>
                         <li> </li>
                         <li>
-                            <div class="label borderleft bgi">Esc</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">Esc</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Exit Active Menu
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">Tab</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">Tab</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Cycle Focused Element
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">Spacebar</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">Spacebar</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Toggle Focused Element
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">Spacebar</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">Spacebar</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Play/Restart Animation (No Focused Element)
                             </div>
                         </li>
                     </ul>
                 </div>
-                <div id="animHUDControls" class="bgt1 centerwidth top blr">
+                <div id="animHUDControls" class="bgt1 centerwidth top brdlr plr05">
                     <ul class="row">
                         <li>
                             <div
@@ -1082,9 +999,7 @@
                                 role="button"
                                 aria-pressed="false"
                                 aria-label="Search Animations"
-                            >
-                                
-                            </div>
+                            ></div>
                             <div
                                 id="button-animconfigure"
                                 class="control"
@@ -1092,43 +1007,41 @@
                                 role="button"
                                 aria-pressed="false"
                                 aria-label="Configure Animations"
-                            >
-                                󰑮
-                            </div>
+                            >󰑮</div>
                         </li>
                     </ul>
                 </div>
                 <div id="animSearchLeftColumn" class="list-group top left">
                     <div
                         id="animSearchDict"
-                        class="row gap noflex list-entry-field"
+                        class="row mb03 flxsh0 list-entry-field"
                     >
-                        <div class="label borderleft bgi">dict</div>
+                        <div class="label brdl pl05 bgi">dict</div>
                         <div
                             id="animSelectedDict"
-                            class="entry borderright bgt1"
+                            class="entry brdr pr05 bgt1"
                             aria-label="Animation Dictionary"
                         ></div>
                     </div>
                     <div
                         id="animSearchName"
-                        class="row gap noflex list-entry-field"
+                        class="row mb03 flxsh0 list-entry-field"
                     >
-                        <div class="label borderleft bgi">name</div>
+                        <div class="label brdl pl05 bgi">name</div>
                         <div
                             id="animSelectedName"
-                            class="entry borderright bgt1"
+                            class="entry brdr pr05 bgt1"
                             aria-label="Animation Name"
                         ></div>
                     </div>
                     <div
                         id="animSearchField"
-                        class="row gap noflex list-entry-field"
+                        class="row mb03 flxsh0 list-entry-field"
                     >
-                        <div class="label borderleft bgi"></div>
+                        <div class="label brdl pl05 bgi"></div>
                         <div
                             id="animSearch"
-                            class="entry borderright bgt1"
+                            class="entry brdr pr05 bgt1"
                             tabindex="2"
                             contenteditable="true"
                             aria-label="Search Animations"
@@ -1147,7 +1060,7 @@
                     id="animListConfigureLeftColumn"
                     class="list-group top left"
                 >
-                    <div id="animListConfigureControls" class="bgt1 blr gap">
+                    <div id="animListConfigureControls" class="bgt1 brdlr plr05 mb03">
                         <ul class="row">
                             <li>
                                 <div
@@ -1157,9 +1070,7 @@
                                     role="button"
                                     aria-pressed="false"
                                     aria-label="Play Configured Animations"
-                                >
-                                    
-                                </div>
+                                ></div>
                                 <div
                                     id="button-animconf-stop"
                                     class="control"
@@ -1167,36 +1078,34 @@
                                     role="button"
                                     aria-pressed="false"
                                     aria-label="Stop Animations"
-                                >
-                                    
-                                </div>
+                                ></div>
                                 <!-- <div id="button-animconfremove" class="control" tabindex="12" role="button" aria-pressed="false">󱜁</div> -->
                             </li>
                         </ul>
                     </div>
                     <div
                         id="animListConfigureDict"
-                        class="row gap noflex list-entry-field"
+                        class="row mb03 flxsh0 list-entry-field"
                     >
-                        <div class="label borderleft bgi">dict</div>
+                        <div class="label brdl pl05 bgi">dict</div>
                         <div
                             id="animConfSelectedDict"
-                            class="entry borderright bgt1"
+                            class="entry brdr pr05 bgt1"
                             aria-label="Animation Dictionary"
                         ></div>
                     </div>
                     <div
                         id="animListConfigureName"
-                        class="row gap noflex list-entry-field"
+                        class="row mb03 flxsh0 list-entry-field"
                     >
-                        <div class="label borderleft bgi">name</div>
+                        <div class="label brdl pl05 bgi">name</div>
                         <div
                             id="animConfSelectedName"
-                            class="entry borderright bgt1"
+                            class="entry brdr pr05 bgt1"
                             aria-label="Animation Name"
                         ></div>
                     </div>
-                    <div id="animListConfigureOptions" class="bgt1 blr gap">
+                    <div id="animListConfigureOptions" class="bgt1 brdlr plr05 mb03">
                         <ul class="row">
                             <li>
                                 <div
@@ -1206,9 +1115,7 @@
                                     role="button"
                                     aria-pressed="false"
                                     aria-label="Preview Configured Animation"
-                                >
-                                    󰈈
-                                </div>
+                                >󰈈</div>
                                 <div
                                     id="button-animconf-add"
                                     class="control"
@@ -1216,9 +1123,7 @@
                                     role="button"
                                     aria-pressed="false"
                                     aria-label="Add Selected Animation"
-                                >
-                                    󰜄
-                                </div>
+                                >󰜄</div>
                                 <div
                                     id="button-animconf-resetselected"
                                     class="control"
@@ -1226,9 +1131,7 @@
                                     role="button"
                                     aria-pressed="false"
                                     aria-label="Reset Current Config To Default"
-                                >
-                                    󰇾
-                                </div>
+                                >󰇾</div>
                                 <div
                                     id="button-animconf-clear"
                                     class="control"
@@ -1236,9 +1139,7 @@
                                     role="button"
                                     aria-pressed="false"
                                     aria-label="Clear Selection"
-                                >
-                                    󰎟
-                                </div>
+                                >󰎟</div>
                                 <div
                                     id="button-animconf-deleteall"
                                     class="control"
@@ -1246,21 +1147,19 @@
                                     role="button"
                                     aria-pressed="false"
                                     aria-label="Remove All Configured Animations"
-                                >
-                                    󰗨
-                                </div>
+                                >󰗨</div>
                                 <!-- <div id="button-animconfremove" class="control" tabindex="12" role="button" aria-pressed="false">󱜁</div> -->
                             </li>
                         </ul>
                     </div>
                     <div
                         id="animListConfigureList"
-                        class="list list-primary bggradient gap"
+                        class="list list-primary bggradient mb03"
                     >
                         <ul id="animConfigureListUl"></ul>
                     </div>
                     <div id="animConfigureRightColumn" class="hidden">
-                        <div id="animConfigureButtons" class="bgt1 blr gap fit">
+                        <div id="animConfigureButtons" class="bgt1 brdlr plr05 mb03 fit">
                             <ul class="row">
                                 <li>
                                     <div
@@ -1270,9 +1169,7 @@
                                         role="button"
                                         aria-pressed="false"
                                         aria-label="Animation Timings"
-                                    >
-                                        󱎫
-                                    </div>
+                                    >󱎫</div>
                                     <div
                                         id="button-animFlags"
                                         class="control selected"
@@ -1280,9 +1177,7 @@
                                         role="button"
                                         aria-pressed="false"
                                         aria-label="Animation Flags"
-                                    >
-                                        
-                                    </div>
+                                    ></div>
                                     <div
                                         id="button-animExtras"
                                         class="control selected"
@@ -1290,41 +1185,39 @@
                                         role="button"
                                         aria-pressed="false"
                                         aria-label="Animation Extras"
-                                    >
-                                        󱡡
-                                    </div>
+                                    >󱡡</div>
                                 </li>
                             </ul>
                         </div>
-                        <div id="animConfigureNames" class="mgb">
+                        <div id="animConfigureNames" class="mb03li">
                             <ul>
                                 <li>
-                                    <div class="label borderleft bgi">
+                                    <div class="label brdl pl05 bgi">
                                         entity
                                     </div>
                                     <div
                                         id="animConfigureEntity"
-                                        class="entry borderright bgt1"
+                                        class="entry brdr pr05 bgt1"
                                         tabindex="13"
                                         contenteditable="true"
                                         aria-label="Entity Handle"
                                     ></div>
                                 </li>
                                 <li>
-                                    <div class="label borderleft bgi">dict</div>
+                                    <div class="label brdl pl05 bgi">dict</div>
                                     <div
                                         id="animConfigureDict"
-                                        class="entry borderright bgt1"
+                                        class="entry brdr pr05 bgt1"
                                         tabindex="13"
                                         contenteditable="false"
                                         aria-label="Animation Dictionary Name"
                                     ></div>
                                 </li>
                                 <li>
-                                    <div class="label borderleft bgi">name</div>
+                                    <div class="label brdl pl05 bgi">name</div>
                                     <div
                                         id="animConfigureName"
-                                        class="entry borderright bgt1"
+                                        class="entry brdr pr05 bgt1"
                                         tabindex="13"
                                         contenteditable="false"
                                         aria-label="Animation Name"
@@ -1332,122 +1225,106 @@
                                 </li>
                             </ul>
                         </div>
-                        <div id="animConfigureTimings" class="mgb">
+                        <div id="animConfigureTimings" class="mb03li">
                             <ul>
                                 <li>
-                                    <div class="label borderleft bgi">
+                                    <div class="label brdl pl05 bgi">
                                         blend-in
                                     </div>
                                     <div
                                         id="animConfigureBlendIn"
-                                        class="entry borderright bgt1"
+                                        class="entry brdr pr05 bgt1"
                                         contenteditable="true"
                                         tabindex="13"
                                         aria-label="Blend In Speed"
-                                    >
-                                        0.0
-                                    </div>
+                                    >0.0</div>
                                 </li>
                                 <li>
-                                    <div class="label borderleft bgi">
+                                    <div class="label brdl pl05 bgi">
                                         blend-out
                                     </div>
                                     <div
                                         id="animConfigureBlendOut"
-                                        class="entry borderright bgt1"
+                                        class="entry brdr pr05 bgt1"
                                         contenteditable="true"
                                         tabindex="13"
                                         aria-label="Blend Out Speed"
-                                    >
-                                        0.0
-                                    </div>
+                                    >0.0</div>
                                 </li>
                                 <li>
-                                    <div class="label borderleft bgi">
+                                    <div class="label brdl pl05 bgi">
                                         duration
                                     </div>
                                     <div
                                         id="animConfigureDuration"
-                                        class="entry borderright bgt1"
+                                        class="entry brdr pr05 bgt1"
                                         contenteditable="true"
                                         tabindex="13"
                                         aria-label="Animation Duration"
-                                    >
-                                        0
-                                    </div>
+                                    >0</div>
                                 </li>
                                 <li>
-                                    <div class="label borderleft bgi">rate</div>
+                                    <div class="label brdl pl05 bgi">rate</div>
                                     <div
                                         id="animConfigureRate"
-                                        class="entry borderright bgt1"
+                                        class="entry brdr pr05 bgt1"
                                         contenteditable="true"
                                         tabindex="13"
                                         aria-label="Animation Rate"
-                                    >
-                                        0
-                                    </div>
+                                    >0</div>
                                 </li>
                             </ul>
                         </div>
-                        <div id="animConfigureFlags" class="mgb">
+                        <div id="animConfigureFlags" class="mb03li">
                             <ul>
                                 <li>
-                                    <div class="label borderleft bgi">
+                                    <div class="label brdl pl05 bgi">
                                         flags
                                     </div>
                                     <div
                                         id="animConfigureAnimFlags"
-                                        class="entry dropdown borderright bgt1"
+                                        class="entry dropdown brdr pr05 bgt1"
                                         tabindex="13"
                                         aria-label="Animation Flags"
-                                    >
-                                        0
-                                    </div>
+                                    >0</div>
                                 </li>
                                 <li>
-                                    <div class="label borderleft bgi">
+                                    <div class="label brdl pl05 bgi">
                                         ik-flags
                                     </div>
                                     <div
                                         id="animConfigureAnimIKFlags"
-                                        class="entry dropdown borderright bgt1"
+                                        class="entry dropdown brdr pr05 bgt1"
                                         tabindex="13"
                                         aria-label="Animation Inverse Kinematics Flags"
-                                    >
-                                        0
-                                    </div>
+                                    >0</div>
                                 </li>
                                 <li>
-                                    <div class="label borderleft bgi">
+                                    <div class="label brdl pl05 bgi">
                                         taskfilter
                                     </div>
                                     <div
                                         id="animConfigureTaskfilter"
-                                        class="entry dropdown borderright bgt1"
+                                        class="entry dropdown brdr pr05 bgt1"
                                         tabindex="13"
                                         aria-label="Animation Taskfilter"
-                                    >
-                                        false
-                                    </div>
+                                    >false</div>
                                 </li>
                             </ul>
                         </div>
-                        <div id="animConfigureExtras" class="mgb">
+                        <div id="animConfigureExtras" class="mb03li">
                             <ul>
                                 <li>
-                                    <div class="label borderleft bgi">
+                                    <div class="label brdl pl05 bgi">
                                         delay
                                     </div>
                                     <div
                                         id="animConfigureDelay"
-                                        class="entry borderright bgt1"
+                                        class="entry brdr pr05 bgt1"
                                         contenteditable="true"
                                         tabindex="13"
                                         aria-label="Start Delay"
-                                    >
-                                        0
-                                    </div>
+                                    >0</div>
                                 </li>
                             </ul>
                         </div>
@@ -1455,93 +1332,87 @@
                 </div>
             </section>
             <section id="settings-hud" class="hud hidden">
-                <div id="settings-popup" class="center bgt2 pad blr hidden mgb">
+                <div id="settings-popup" class="center bgt2 p1 brdlr hidden mb03li">
                     <div class="title">Settings</div>
-                    <div class="bigicon"></div>
+                    <div class="f4 clr2l"></div>
                     <ul>
                         <li>
-                            <div class="label borderleft bgi">theme</div>
+                            <div class="label brdl pl05 bgi">theme</div>
                             <div
                                 id="objSettingsTheme"
-                                class="entry dropdown borderright bgt1"
+                                class="entry dropdown brdr pr05 bgt1"
                                 tabindex="92"
                                 aria-label="Change Color Theme"
-                            >
-                                default
-                            </div>
+                            >default</div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">divider</div>
+                            <div class="label brdl pl05 bgi">divider</div>
                             <div
                                 id="objSettingsDividerStyle"
-                                class="entry dropdown borderright bgt1"
+                                class="entry dropdown brdr pr05 bgt1"
                                 tabindex="92"
                                 aria-label="Change UI Divider Style"
-                            >
-                                chevron
-                            </div>
+                            >chevron</div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">
+                            <div class="label brdl pl05 bgi">
                                 left/right border
                             </div>
                             <div
                                 id="objSettingsBorder"
-                                class="entry check borderright bgt1 selected"
+                                class="entry check brdr pr05 bgt1 selected"
                                 tabindex="92"
                                 aria-label="Enable UI Borders"
                             ></div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">
+                            <div class="label brdl pl05 bgi">
                                 rounded edges
                             </div>
                             <div
                                 id="objSettingsCurvedBorder"
-                                class="entry check borderright bgt1 selected"
+                                class="entry check brdr pr05 bgt1 selected"
                                 tabindex="92"
                                 aria-label="Enable UI Rounded Edges"
                             ></div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">
+                            <div class="label brdl pl05 bgi">
                                 roundness
                             </div>
                             <div
                                 id="objSettingsCurvedBorderAmount"
-                                class="entry borderright bgt1"
+                                class="entry brdr pr05 bgt1"
                                 tabindex="92"
                                 contenteditable="true"
                                 aria-label="Modify UI Rounded Edges"
-                            >
-                                8
-                            </div>
+                            >8</div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">
+                            <div class="label brdl pl05 bgi">
                                 autohide camera speed
                             </div>
                             <div
                                 id="objSettingsHideCamera"
-                                class="entry check borderright bgt1 selected"
+                                class="entry check brdr pr05 bgt1 selected"
                                 tabindex="92"
                                 aria-label="Toggle Autohide on Camera Speed UI"
                             ></div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">tooltips</div>
+                            <div class="label brdl pl05 bgi">tooltips</div>
                             <div
                                 id="objSettingsTooltip"
-                                class="entry check borderright bgt1 selected"
+                                class="entry check brdr pr05 bgt1 selected"
                                 tabindex="92"
                                 aria-label="Enable Tooltips"
                             ></div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">submit form on</div>
+                            <div class="label brdl pl05 bgi">submit form on</div>
                             <div
                                 id="objSettingsSubmitFormEvent"
-                                class="entry dropdown borderright bgt1"
+                                class="entry dropdown brdr pr05 bgt1"
                                 tabindex="92"
                                 aria-label="Submit Form on Configured Event"
                             >enter</div>
@@ -1551,174 +1422,174 @@
 
             </section>
             <section id="camera-hud" class="hud hidden">
-                <div id="camHelp" class="center bgt2 pad blr hidden mgb">
+                <div id="camHelp" class="center bgt2 p1 brdlr hidden mb03li">
                     <div class="title">FreeCam and NoClip</div>
-                    <div class="bigicon"> </div>
+                    <div class="f4 clr2l"> </div>
                     <ul>
                         <li>
-                            <div class="label borderleft bgi">w</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">w</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Move Forward
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">a</div>
-                            <div class="entry borderright bgt1">Move Left</div>
+                            <div class="label brdl pl05 bgi">a</div>
+                            <div class="entry brdr pr05 bgt1">Move Left</div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">s</div>
-                            <div class="entry borderright bgt1">Move Back</div>
+                            <div class="label brdl pl05 bgi">s</div>
+                            <div class="entry brdr pr05 bgt1">Move Back</div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">d</div>
-                            <div class="entry borderright bgt1">Move Right</div>
+                            <div class="label brdl pl05 bgi">d</div>
+                            <div class="entry brdr pr05 bgt1">Move Right</div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">e</div>
-                            <div class="entry borderright bgt1">Move Up</div>
+                            <div class="label brdl pl05 bgi">e</div>
+                            <div class="entry brdr pr05 bgt1">Move Up</div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">q</div>
-                            <div class="entry borderright bgt1">Move Down</div>
+                            <div class="label brdl pl05 bgi">q</div>
+                            <div class="entry brdr pr05 bgt1">Move Down</div>
                         </li>
                         <li> </li>
                         <li>
-                            <div class="label borderleft bgi">Wheel Up</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">Wheel Up</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Increase Camera Speed
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">Wheel Down</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">Wheel Down</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Decrease Camera Speed
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">
+                            <div class="label brdl pl05 bgi">
                                 Spacebar (HOLD)
                             </div>
-                            <div class="entry borderright bgt1">
+                            <div class="entry brdr pr05 bgt1">
                                 Fine Adjustment Speed ( 0.33x )
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">
+                            <div class="label brdl pl05 bgi">
                                 LSHIFT (HOLD)
                             </div>
-                            <div class="entry borderright bgt1">
+                            <div class="entry brdr pr05 bgt1">
                                 Quick Adjustment Speed ( 3x )
                             </div>
                         </li>
                         <li> </li>
                         <li>
-                            <div class="label borderleft bgi">
+                            <div class="label brdl pl05 bgi">
                                 LSHIFT + Mouse Forward
                             </div>
-                            <div class="entry borderright bgt1">
+                            <div class="entry brdr pr05 bgt1">
                                 Move Camera Up
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">
+                            <div class="label brdl pl05 bgi">
                                 LSHIFT + Mouse Back
                             </div>
-                            <div class="entry borderright bgt1">
+                            <div class="entry brdr pr05 bgt1">
                                 Move Camera Down
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">
+                            <div class="label brdl pl05 bgi">
                                 LSHIFT + Mouse Left
                             </div>
-                            <div class="entry borderright bgt1">
+                            <div class="entry brdr pr05 bgt1">
                                 Move Camera Left
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">
+                            <div class="label brdl pl05 bgi">
                                 LSHIFT + Mouse Right
                             </div>
-                            <div class="entry borderright bgt1">
+                            <div class="entry brdr pr05 bgt1">
                                 Move Camera Right
                             </div>
                         </li>
                         <li> </li>
                         <li>
-                            <div class="label borderleft bgi">
+                            <div class="label brdl pl05 bgi">
                                 LCTRL + Mouse Forward
                             </div>
-                            <div class="entry borderright bgt1">
+                            <div class="entry brdr pr05 bgt1">
                                 Move Camera Forward
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">
+                            <div class="label brdl pl05 bgi">
                                 LCTRL + Mouse Back
                             </div>
-                            <div class="entry borderright bgt1">
+                            <div class="entry brdr pr05 bgt1">
                                 Move Camera Backward
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">
+                            <div class="label brdl pl05 bgi">
                                 LCTRL + Mouse Left
                             </div>
-                            <div class="entry borderright bgt1">
+                            <div class="entry brdr pr05 bgt1">
                                 Move Camera Left
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">
+                            <div class="label brdl pl05 bgi">
                                 LCTRL + Mouse Right
                             </div>
-                            <div class="entry borderright bgt1">
+                            <div class="entry brdr pr05 bgt1">
                                 Move Camera Right
                             </div>
                         </li>
                         <li> </li>
                         <li>
-                            <div class="label borderleft bgi">
+                            <div class="label brdl pl05 bgi">
                                 LALT + Mouse Up
                             </div>
-                            <div class="entry borderright bgt1">
+                            <div class="entry brdr pr05 bgt1">
                                 Decrease FreeCam FOV
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">
+                            <div class="label brdl pl05 bgi">
                                 LALT + Mouse Down
                             </div>
-                            <div class="entry borderright bgt1">
+                            <div class="entry brdr pr05 bgt1">
                                 Increase FreeCam FOV
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">LALT + x</div>
-                            <div class="entry borderright bgt1">Reset FOV</div>
+                            <div class="label brdl pl05 bgi">LALT + x</div>
+                            <div class="entry brdr pr05 bgt1">Reset FOV</div>
                         </li>
                         <li> </li>
                         <li>
-                            <div class="label borderleft bgi">z</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">z</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Open Dev Tree Menu
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">?</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">?</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Toggle Help Panel
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">h</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">h</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Toggle Help Panel
                             </div>
                         </li>
                         <li>
-                            <div class="label borderleft bgi">Esc</div>
-                            <div class="entry borderright bgt1">
+                            <div class="label brdl pl05 bgi">Esc</div>
+                            <div class="entry brdr pr05 bgt1">
                                 Exit FreeCam/NoClip
                             </div>
                         </li>
@@ -1727,17 +1598,16 @@
                 <div id="camStatus" class="toplow centerwidth">
                     <ul id="row">
                         <li>
-                            <div class="label borderleft bgi"></div>
+                            <div class="label brdl pl05 bgi"></div>
                             <div
                                 id="cam-speed"
-                                class="entry borderright bgt1"
+                                class="entry brdr pr05 bgt1"
                             ></div>
                         </li>
                     </ul>
                 </div>
             </section>
         </main>
-        <!-- TODO: Test new copy function and update this -->
         <div id="copyField" class="hidden">
             <div id="copyAnimDict"></div>
             <div id="copyAnim"></div>

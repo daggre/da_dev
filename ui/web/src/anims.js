@@ -1,7 +1,7 @@
-import { resetList } from '../utils/nav.js';
-import { showConfirm } from './confirm.js';
-import { sendClientMessage } from '../utils/msg.js';
-import { DropDownAdvOptions, DropDownMultiOptions } from './dropdown.js';
+import { resetList } from '../src/nav.js';
+import { showConfirm } from '../src/confirm.js';
+import { sendClientMessage } from '../src/msg.js';
+import { DropDownAdvOptions, DropDownMultiOptions } from '../src/dropdown.js';
 
 let selectedAnimation = null;
 let confAnims = {};

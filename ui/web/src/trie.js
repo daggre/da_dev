@@ -1,5 +1,5 @@
-import { KeyActions } from './events.js';
-import { sendClientMessage } from '../utils/msg.js';
+import { KeyActions } from '../src/events.js';
+import { sendClientMessage } from '../src/msg.js';
 
 let formatter = {
     menu: {

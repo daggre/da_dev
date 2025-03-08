@@ -1,8 +1,8 @@
-import { Settings } from './settings.js';
-import { DropDownOptions } from './dropdown.js';
-import { MouseDown } from './events.js';
-import { sendClientMessage } from '../utils/msg.js';
-import { resetList, isVisible, } from '../utils/nav.js';
+import { Settings } from '../src/settings.js';
+import { DropDownOptions } from '../src/dropdown.js';
+import { MouseDown } from '../src/events.js';
+import { sendClientMessage } from '../src/msg.js';
+import { resetList, isVisible, } from '../src/nav.js';
 
 let TrackedObjectsLoopRunning = false;
 let SelectedObjectSpawnType = 'objects';

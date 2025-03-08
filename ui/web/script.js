@@ -1,7 +1,7 @@
-import { addMessageListener, addEventActionsListener } from './components/events.js';
-import { fetchSpawnData, initSettings } from './components/settings.js';
-import { addTooltipListener } from './components/tooltip.js';
-import { addDropdownsListener } from './components/dropdown.js';
+import { addMessageListener, addEventActionsListener } from './src/events.js';
+import { fetchSpawnData, initSettings } from './src/settings.js';
+import { addTooltipListener } from './src/tooltip.js';
+import { addDropdownsListener } from './src/dropdown.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     addMessageListener();

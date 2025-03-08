@@ -1,6 +1,6 @@
-import { DropDownOptions } from '../components/dropdown.js';
-import { sendClientMessage } from './msg.js';
-import { Settings } from '../components/settings.js';
+import { DropDownOptions } from '../src/dropdown.js';
+import { sendClientMessage } from '../src/msg.js';
+import { Settings } from '../src/settings.js';
 
 // TODO: Add other settings save and edit functions
 // TODO: Revise settings to make them easier to add
