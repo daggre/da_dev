@@ -121,12 +121,14 @@ const ObjectDetailsFields = new Map([
     ['objDetailsEntityNetworkId', 'networkID'],
     // ["objDetailsEntityModelHash", "modelHash"],
     ['objDetailsEntityModelName', 'modelName'],
-    ['objDetailsEntityPosX', 'coords_x'],
-    ['objDetailsEntityPosY', 'coords_y'],
-    ['objDetailsEntityPosZ', 'coords_z'],
-    ['objDetailsEntityRotPitch', 'rotation_pitch'],
-    ['objDetailsEntityRotRoll', 'rotation_roll'],
-    ['objDetailsEntityRotYaw', 'rotation_yaw'],
+]);
+const ObjectDetailsFloats = new Map([
+    ['objDetailsEntityPosX', 'pos_x'],
+    ['objDetailsEntityPosY', 'pos_y'],
+    ['objDetailsEntityPosZ', 'pos_z'],
+    ['objDetailsEntityRotPitch', 'rot_x'],
+    ['objDetailsEntityRotRoll', 'rot_y'],
+    ['objDetailsEntityRotYaw', 'rot_z'],
 ]);
 
 const ObjectDetailsOptions = new Map([
@@ -137,6 +139,9 @@ const ObjectDetailsOptions = new Map([
 
 function clearObjectDetails() {
     ObjectDetailsFields.forEach((value, key) => {
+        document.getElementById(key).textContent = '';
+    });
+    ObjectDetailsFloats.forEach((value, key) => {
         document.getElementById(key).textContent = '';
     });
     ObjectDetailsOptions.forEach((value, key) => {
@@ -154,6 +159,9 @@ export function updateObjectDetails(data) {
 
     ObjectDetailsFields.forEach((value, key) => {
         document.getElementById(key).textContent = data.selectData[value];
+    });
+    ObjectDetailsFloats.forEach((value, key) => {
+        document.getElementById(key).textContent = data.selectData[value].toFixed(3).replace(/\.?0+$/, '');
     });
     ObjectDetailsOptions.forEach((value, key) => {
         document.getElementById(key).classList.toggle('selected', data.selectData[value]);

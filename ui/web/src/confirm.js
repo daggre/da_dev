@@ -44,9 +44,19 @@ export function showConfirm(msg = 'Are you sure?', yes = 'Yes', no = 'No') {
             resolve(false);
         }
 
+        function handleKeydown(event) {
+            if (event.key === 'Tab') {
+                event.preventDefault();
+                if (document.activeElement === noButton) {
+                    yesButton.focus();
+                }
+            }
+        }
+
         function cleanup() {
             yesButton.removeEventListener('click', handleYes);
             noButton.removeEventListener('click', handleNo);
+            noButton.removeEventListener('keydown', handleKeydown);
             observer.disconnect();
             infoHud.classList.remove('clear');
             infoHud.classList.add('hidden');
@@ -57,5 +67,6 @@ export function showConfirm(msg = 'Are you sure?', yes = 'Yes', no = 'No') {
 
         yesButton.addEventListener('click', handleYes);
         noButton.addEventListener('click', handleNo);
+        noButton.addEventListener('keydown', handleKeydown);
     });
 }

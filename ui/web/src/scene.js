@@ -19,7 +19,7 @@ export function saveScene() {
 export function clearScene() {
     const sceneName = ActiveScene;
     showConfirm(
-        `Unsaved changes will be lost.<br>Remove scene '${sceneName}' objects?`
+        `Unload scene '${sceneName}' objects?<br>Unsaved changes will be lost.`
     ).then(confirm => {
         if (confirm) {
             // TODO: implement clearScene
@@ -27,6 +27,21 @@ export function clearScene() {
             trackSceneObjects();
         } else {
             console.log('Clear scene cancelled');
+        }
+    });
+}
+
+export function clearAllScenes() {
+    const sceneName = ActiveScene;
+    showConfirm(
+        `Unload all scenes objects?<br>Unsaved changes will be lost.`
+    ).then(confirm => {
+        if (confirm) {
+            // TODO: implement clearScene
+            sendClientMessage('clearAllScenes', {});
+            trackSceneObjects();
+        } else {
+            console.log('Clear all scenes cancelled');
         }
     });
 }
@@ -140,7 +155,9 @@ export function trackSceneObjects() {
         const resp = await sendClientMessage('getScene', {
             scene: ActiveScene,
         });
-        const objects = resp.objects || [];
+        // TODO: Fix getting NaN for rot_x/y/z when having only quaternions
+        resp.objects = resp.objects.replace(/NaN/g, 'null'); // Convert NaN → null
+        const objects = JSON.parse(resp.objects) || [];
 
         el.textContent = '';
         const ul = document.createElement('ul');

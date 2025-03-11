@@ -1,4 +1,4 @@
-const DECIMAL_PRECISION = 5;
+// TODO: YMAP is using bad rotation, might be going CW vs CCW
 const STREAMING_EXTENTS_PADDING = 400;
 const DEFAULT_LOD = 500;
 
@@ -40,6 +40,18 @@ function hasFlag(flags, flag) {
     return (flags & flag) !== 0;
 }
 
+function toRadians(degrees) {
+    return degrees * (Math.PI / 180);
+}
+
+function toDegrees(radians) {
+    return radians * (180 / Math.PI);
+}
+
+function normalizeAngle(angle) {
+    return ((angle + 180) % 360) - 180;
+}
+
 export function parseYMAP(xmlString) {
     try {
         const parser = new DOMParser();
@@ -70,30 +82,37 @@ export function parseYMAP(xmlString) {
                 z: parseFloat(positionNode.getAttribute("z")) || 0
             } : { x: 0, y: 0, z: 0 };
 
-            const rotation = rotationNode ? {
+            const quaternion = rotationNode ? {
                 w: parseFloat(rotationNode.getAttribute("w")) || 1,
                 x: parseFloat(rotationNode.getAttribute("x")) || 0,
                 y: parseFloat(rotationNode.getAttribute("y")) || 0,
                 z: parseFloat(rotationNode.getAttribute("z")) || 0
             } : { w: 1, x: 0, y: 0, z: 0 };
 
-            const euler = toEuler(rotation);
+            // const euler = quaternionToEuler(
+            //     quaternion.x,
+            //     quaternion.y,
+            //     quaternion.z,
+            //     quaternion.w,
+            // );
+
             const flagsValue = parseInt(flagsNode?.getAttribute("value")) || 0;
 
             sceneObjects.push({
                 modelName,
-                coords_x: position.x,
-                coords_y: position.y,
-                coords_z: position.z,
-                rotation_w: rotation.w,
-                rotation_x: rotation.x,
-                rotation_y: rotation.y,
-                rotation_z: rotation.z,
-                rotation_pitch: euler.pitch,
-                rotation_roll: euler.roll,
-                rotation_yaw: euler.yaw,
+                pos_x: position.x,
+                pos_y: position.y,
+                pos_z: position.z,
+                quaternion_x: quaternion.x,
+                quaternion_y: quaternion.y,
+                quaternion_z: quaternion.z,
+                quaternion_w: quaternion.w,
+                // rot_x: euler.roll, // Use quaternion on import
+                // rot_y: euler.pitch, // Use quaternion on import
+                // rot_z: euler.yaw, // Use quaternion on import
                 frozen: hasFlag(flagsValue, EntityFlags.FROZEN),
-                visible: !hasFlag(flagsValue, EntityFlags.INVISIBLE),
+                visible: true,
+                // visible: !hasFlag(flagsValue, EntityFlags.INVISIBLE),
                 collision: !hasFlag(flagsValue, EntityFlags.NO_COLLISION),
             });
         });
@@ -127,32 +146,36 @@ export function exportYMAP(scene) {
         let flags = 1572865; // Default entity flags
 
         if (obj.frozen) flags = setFlag(flags, EntityFlags.FROZEN);
-        if (!obj.visible) flags = setFlag(flags, EntityFlags.INVISIBLE);
+        // if (!obj.visible) flags = setFlag(flags, EntityFlags.INVISIBLE);
         if (!obj.collision) flags = setFlag(flags, EntityFlags.NO_COLLISION);
 
-        const q = toQuaternion(obj.rotation_pitch, obj.rotation_roll, obj.rotation_yaw);
+        const q = eulerToQuaternion(
+            obj.rot_x,
+            obj.rot_y,
+            obj.rot_z
+        );
 
-        minX = minX === undefined ? obj.coords_x : Math.min(minX, obj.coords_x);
-        maxX = maxX === undefined ? obj.coords_x : Math.max(maxX, obj.coords_x);
-        minY = minY === undefined ? obj.coords_y : Math.min(minY, obj.coords_y);
-        maxY = maxY === undefined ? obj.coords_y : Math.max(maxY, obj.coords_y);
-        minZ = minZ === undefined ? obj.coords_z : Math.min(minZ, obj.coords_z);
-        maxZ = maxZ === undefined ? obj.coords_z : Math.max(maxZ, obj.coords_z);
+        minX = minX === undefined ? obj.pos_x : Math.min(minX, obj.pos_x);
+        maxX = maxX === undefined ? obj.pos_x : Math.max(maxX, obj.pos_x);
+        minY = minY === undefined ? obj.pos_y : Math.min(minY, obj.pos_y);
+        maxY = maxY === undefined ? obj.pos_y : Math.max(maxY, obj.pos_y);
+        minZ = minZ === undefined ? obj.pos_z : Math.min(minZ, obj.pos_z);
+        maxZ = maxZ === undefined ? obj.pos_z : Math.max(maxZ, obj.pos_z);
 
         const itemNode = createElement("Item", { type: "CEntityDef" });
 
         itemNode.appendChild(createElement("archetypeName", {}, obj.modelName));
         itemNode.appendChild(createElement("flags", { value: flags }));
         itemNode.appendChild(createElement("position", {
-            x: obj.coords_x.toFixed(DECIMAL_PRECISION),
-            y: obj.coords_y.toFixed(DECIMAL_PRECISION),
-            z: obj.coords_z.toFixed(DECIMAL_PRECISION)
+            x: obj.pos_x,
+            y: obj.pos_y,
+            z: obj.pos_z,
         }));
         itemNode.appendChild(createElement("rotation", {
-            w: q.w.toFixed(DECIMAL_PRECISION),
-            x: q.x.toFixed(DECIMAL_PRECISION),
-            y: q.y.toFixed(DECIMAL_PRECISION),
-            z: q.z.toFixed(DECIMAL_PRECISION)
+            w: q.w,
+            x: q.x,
+            y: q.y,
+            z: q.z,
         }));
         itemNode.appendChild(createElement("scaleXY", { value: "1" }));
         itemNode.appendChild(createElement("scaleZ", { value: "1" }));
@@ -238,12 +261,36 @@ function formatXML(xmlString) {
     return formatted.trim(); // Remove trailing newlines
 }
 
-function toQuaternion(pitch, roll, yaw) {
-    const degToRad = Math.PI / 180;
-    pitch *= degToRad;
-    roll *= degToRad;
-    yaw *= degToRad;
+function eulerToQuaternion_DEPRECATED(pitch, roll, yaw) {
+    // Convert degrees to radians
+    const p = toRadians(-pitch);
+    const r = toRadians(-yaw);
+    const y = toRadians(-roll);
 
+    // Precompute trigonometric values
+    const cy = Math.cos(y * 0.5);
+    const sy = Math.sin(y * 0.5);
+    const cr = Math.cos(r * 0.5);
+    const sr = Math.sin(r * 0.5);
+    const cp = Math.cos(p * 0.5);
+    const sp = Math.sin(p * 0.5);
+
+    // Compute quaternion components
+    return {
+        x: cy * sp * cr + sy * cp * sr,
+        y: sy * cp * cr - cy * sp * sr,
+        z: cy * cp * sr - sy * sp * cr,
+        w: cy * cp * cr + sy * sp * sr
+    };
+}
+
+function eulerToQuaternion(eul_x, eul_y, eul_z) {
+    // Convert degrees to radians
+    const yaw = toRadians(-eul_z);  // Yaw (Z-axis)
+    const roll = toRadians(-eul_x); // Roll (X-axis)
+    const pitch = toRadians(-eul_y); // Pitch (Y-axis)
+
+    // Precompute trigonometric values
     const cy = Math.cos(yaw * 0.5);
     const sy = Math.sin(yaw * 0.5);
     const cr = Math.cos(roll * 0.5);
@@ -251,36 +298,37 @@ function toQuaternion(pitch, roll, yaw) {
     const cp = Math.cos(pitch * 0.5);
     const sp = Math.sin(pitch * 0.5);
 
+    // Quaternion components (ROT_ZXY order: Yaw → Roll → Pitch)
     return {
-        w: cy * cr * cp + sy * sr * sp,
-        x: cy * sr * cp - sy * cr * sp,
-        y: cy * cr * sp + sy * sr * cp,
-        z: sy * cr * cp - cy * sr * sp,
+        w: cr * cp * cy - sr * sp * sy, // Scalar component
+        x: sr * cp * cy + cr * sp * sy, // Roll (X)
+        y: cr * sp * cy - sr * cp * sy, // Pitch (Y)
+        z: cr * cp * sy + sr * sp * cy, // Yaw (Z)
     };
 }
 
-function toEuler(q) {
-    const radToDeg = 180 / Math.PI;
+function quaternionToEuler(x, y, z, w) {
+    // Normalize quaternion to prevent floating-point issues
+    const norm = Math.sqrt(x * x + y * y + z * z + w * w);
+    x /= norm;
+    y /= norm;
+    z /= norm;
+    w /= norm;
 
-    // Roll (X-axis rotation)
-    const sinr_cosp = 2 * (q.w * q.x + q.y * q.z);
-    const cosr_cosp = 1 - 2 * (q.x * q.x + q.y * q.y);
-    const roll = Math.atan2(sinr_cosp, cosr_cosp) * radToDeg;
-
-    // Pitch (Y-axis rotation)
+    // Compute Pitch (Y-axis)
+    const sinp = 2 * (w * y - z * x);
     let pitch;
-    const sinp = 2 * (q.w * q.y - q.z * q.x);
     if (Math.abs(sinp) >= 1) {
-        pitch = (Math.sign(sinp) * 90); // Clamp to 90 degrees if out of range
+        pitch = Math.sign(sinp) * 90; // Clamp at ±90° (gimbal lock case)
     } else {
-        pitch = Math.asin(sinp) * radToDeg;
+        pitch = toDegrees(Math.asin(sinp));
     }
 
-    // Yaw (Z-axis rotation)
-    const siny_cosp = 2 * (q.w * q.z + q.x * q.y);
-    const cosy_cosp = 1 - 2 * (q.y * q.y + q.z * q.z);
-    const yaw = Math.atan2(siny_cosp, cosy_cosp) * radToDeg;
+    // Compute Yaw (Z-axis)
+    const yaw = toDegrees(Math.atan2(2 * (w * z + x * y), 1 - 2 * (y * y + z * z)));
+
+    // Compute Roll (X-axis)
+    const roll = toDegrees(Math.atan2(2 * (w * x + y * z), 1 - 2 * (x * x + y * y)));
 
     return { pitch, roll, yaw };
 }
-

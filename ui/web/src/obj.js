@@ -19,6 +19,7 @@ export const ObjectContextOptions = {
     'Set Upright': data => setRotation(data.handle, 0, 0, null),
     'Reset Rotation': data => setRotation(data.handle, 0, 0, 0),
     'Place on Ground': data => placeOnGround(data.handle),
+    'Clone Object': data => copyObject(data.handle),
 };
 
 export function searchSpawnObject(searchString) {
@@ -344,7 +345,7 @@ export function toggleCollision(
     sendClientMessage('setCollision', { handle: handle, state: !state });
 }
 
-export function setRotation(
+function setRotation(
     handle = document.getElementById('objDetailsEntityHandle')?.textContent,
     x,
     y,
@@ -353,8 +354,14 @@ export function setRotation(
     sendClientMessage('setRotation', { handle: handle, x: x, y: y, z: z });
 }
 
-export function placeOnGround(
+function placeOnGround(
     handle = document.getElementById('objDetailsEntityHandle')?.textContent
 ) {
     sendClientMessage('placeOnGround', { handle: handle });
+}
+
+function copyObject(
+    handle = document.getElementById('objDetailsEntityHandle')?.textContent
+) {
+    sendClientMessage('copyObject', { handle: handle });
 }

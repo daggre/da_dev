@@ -2,7 +2,7 @@ import { toggleAnimationHUD, toggleAnimationSearchHUD, toggleAnimationConfigureH
 import { searchAnimDicts, playConfiguredAnimations, stopAnimation, playSelectedAnimation, addAnimation, resetSelectedAnimConfig, clearAnimation, deleteAllAnimations, setSelectedAnimation } from '../src/anims.js';
 import { toggleCrosshair, toggleObjectSpawnHUD, toggleObjectNearbyHUD, toggleObjectImportExportHUD, toggleObjectDetail, toggleObjectHUD, updateObjectDetails } from './hud/obj.js';
 import { selectSpawnType, selectNearbyOrigin, toggleNearbyFilter, getTrackedObjects, toggleVisible, toggleFrozen, toggleCollision } from '../src/obj.js';
-import { saveScene, clearScene, reloadScene, deleteScene } from '../src/scene.js';
+import { saveScene, clearScene, clearAllScenes, reloadScene, deleteScene } from '../src/scene.js';
 import { showImport } from '../src/hud/import.js';
 import { showExport } from '../src/hud/export.js';
 import { setTooltips } from '../src/tooltip.js';
@@ -15,7 +15,7 @@ import { toggleSettingsHUD } from './hud/settings.js';
 import { toggleHelp } from './hud/help.js';
 import { initTrie } from '../src/trie.js';
 import { DropDownMapOptions, showDropdown } from '../src/dropdown.js';
-import { searchSpawnObject, tagSelectSort, placeOnGround, setRotation } from '../src/obj.js';
+import { searchSpawnObject, tagSelectSort, ObjectContextOptions } from '../src/obj.js';
 import { updateCrosshair } from '../src/crosshair.js';
 import { Settings } from '../src/settings.js';
 
@@ -313,6 +313,7 @@ export const EventActions = {
 
         '#button-savescene': () => saveScene(),
         '#button-clearscene': () => clearScene(),
+        '#button-clearallscenes': () => clearAllScenes(),
         '#button-export': () => showExport(),
         '#button-import': () => showImport(),
         '#button-reloadscene': () => reloadScene(),

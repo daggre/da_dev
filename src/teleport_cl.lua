@@ -13,6 +13,7 @@ local TeleportLocations = {
     ["Mt Shan"] = { key = "m", location = vector3(-1976.458, 31.508, 330.356), },
     ["Rhodes"] = { key = "r", location = vector3(1373.57, -1293.563, 77.077), category = "towns", },
     ["Wapiti"] = { key = "r", location = vector4(478.767, 2219.107, 247.071, 118.443), },
+    ["Spawn"] = { key = "s", location = vector4(-2805.181, -723.352, 272.668, 173.700), },
     ["Strawberry"] = { key = "s", location = vector3(-1787.239, -370.698, 159.9), category = "towns", },
     ["Tumbleweed"] = { key = "t", location = vector3(-5530.891, -2964.492, -1.245), category = "towns", },
     ["Valentine"] = { key = "v", location = vector3(-280.086, 798.556, 119.349), category = "towns", },

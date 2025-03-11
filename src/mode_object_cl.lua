@@ -39,6 +39,13 @@ lazy.uiUpdate = function(select, hover, objData)
     })
 end
 
+local ResetDefaultScene = function()
+    ActiveScene = DefaultScene
+    Scenes[DefaultScene] = { name = DefaultScene, objects = {} }
+    kvp.encode("scenes:"..DefaultScene, Scenes[DefaultScene])
+end
+
+-- TODO: Prioritize sending pertinent info only to NUI, we end up passing large amounts of data for large scenes
 
 -- TODO: Find a way to cache this information and utilize cache on frozen or
 -- objects that haven't moved, maybe we invalidate cache for objects when making
@@ -52,22 +59,22 @@ local GetObjData = function(entityHandle)
     local networkID = NetworkGetEntityIsNetworked(entityHandle) and NetworkGetNetworkIdFromEntity(entityHandle) or false
     local modelHash = GetEntityModel(entityHandle)
     local modelName = dat.getName(modelHash)
-    local x,y,z = table.unpack(GetEntityCoords(entityHandle))
-    local pitch, roll, yaw = table.unpack(GetEntityRotation(entityHandle, 2))
+    local pos_x, pos_y, pos_z = table.unpack(GetEntityCoords(entityHandle))
+    local rot_x, rot_y, rot_z = table.unpack(GetEntityRotation(entityHandle, 2))
     local visible = IsEntityVisible(entityHandle) == 1
     local frozen = IsEntityFrozen(entityHandle) == 1
     local collision = GetEntityCollisionDisabled(entityHandle) == false
 
     objData.handle = entityHandle
-    objData.modelHash = modelHash
     objData.networkID = networkID ~= false and networkID or "-"
+    objData.modelHash = modelHash
     objData.modelName = modelName
-    objData.coords_x = tonumber(string.format("%.2f", x))
-    objData.coords_y = tonumber(string.format("%.2f", y))
-    objData.coords_z = tonumber(string.format("%.2f", z))
-    objData.rotation_pitch = tonumber(string.format("%.2f", pitch))
-    objData.rotation_roll = tonumber(string.format("%.2f", roll))
-    objData.rotation_yaw = tonumber(string.format("%.2f", yaw))
+    objData.pos_x = pos_x
+    objData.pos_y = pos_y
+    objData.pos_z = pos_z
+    objData.rot_x = rot_x
+    objData.rot_y = rot_y
+    objData.rot_z = rot_z
     objData.visible = visible
     objData.frozen = frozen
     objData.collision = collision
@@ -119,6 +126,28 @@ local RaycastCursor = function(x, y, dist)
     return hit, obj, endPos
 end
 
+local function ClearScene(sceneName, force)
+    log.info("Clearing scene", sceneName)
+    if not force and not Scenes[sceneName].loaded then return false; end
+    for _, obj in ipairs(Scenes[sceneName].objects) do
+        if DoesEntityExist(obj.handle) then
+            log.spam("Deleting object", obj.handle)
+            DeleteEntity(obj.handle)
+        else
+            log.spam("Object does not exist", obj.handle)
+        end
+    end
+    Scenes[sceneName].objects = {}
+    Scenes[sceneName].loaded = false
+    return true
+end
+
+local function ClearAllScenes()
+    for sceneName in pairs(Scenes) do
+        ClearScene(sceneName, true)
+    end
+end
+
 local function LoadScene(sceneName)
     log.info("Loading scene objects", sceneName)
     local successfulLoad = true
@@ -132,17 +161,25 @@ local function LoadScene(sceneName)
     end
     for _, obj in ipairs(Scenes[sceneName].objects) do
         log.spam("Creating object", handle, obj.data)
+        local quaternion = obj.quaternion_x and obj.quaternion_y and obj.quaternion_z and obj.quaternion_w and {
+            x = obj.quaternion_x,
+            y = obj.quaternion_y,
+            z = obj.quaternion_z,
+            w = obj.quaternion_w,
+        } or nil
         local handle = da_obj.create(
             obj.modelHash,
-            vector3(obj.coords_x, obj.coords_y, obj.coords_z),
+            vector3(obj.pos_x, obj.pos_y, obj.pos_z),
             {
                 collision = obj.collision,
                 frozen = obj.frozen,
                 rotation = {
-                    x = obj.rotation_pitch,
-                    y = obj.rotation_roll,
-                    z = obj.rotation_yaw,
+                    x = obj.rot_x,
+                    y = obj.rot_y,
+                    z = obj.rot_z,
                 },
+                rotation_order = 2,
+                quaternion = quaternion,
             }
         )
         obj.handle = handle
@@ -180,7 +217,11 @@ local function GetScene(sceneName)
     log.spam("Getting scene objects data", sceneName)
     if not Scenes[sceneName] then
         log.error("Scene not found", sceneName)
-        return false
+        if sceneName == DefaultScene then
+            ResetDefaultScene()
+        end
+        ActiveScene = DefaultScene
+        return { objects = json.encode({}) }
     end
     ActiveScene = sceneName
     local sceneObjects = {}
@@ -189,18 +230,18 @@ local function GetScene(sceneName)
     for _, obj in ipairs(Scenes[sceneName].objects) do
         local objData = GetObjData(obj.handle)
         if objData then
-            local objCoords = vector3(objData.coords_x, objData.coords_y, objData.coords_z)
+            local objCoords = vector3(objData.pos_x, objData.pos_y, objData.pos_z)
             objData.distance = #(coords - objCoords)
             table.insert(sceneObjects, objData)
         else
-            log.error("Failed to get data for " .. obj)
+            log.error("Failed to get data for ", obj)
             warn = warn + 1
         end
     end
     if warn > 0 then
         log.warn("Failed to get data for " .. warn .. " objects in scene " .. sceneName)
     end
-    return { objects = sceneObjects }
+    return { objects = json.encode(sceneObjects) }
 end
 
 local function CheckRename(sceneName)
@@ -238,12 +279,18 @@ local function ImportScene(scene)
     local storedScene = { name = scene.name, objects = {}, }
     for _, object in ipairs(scene.objects) do
         local objData = {}
-        objData.coords_x = object.coords_x
-        objData.coords_y = object.coords_y
-        objData.coords_z = object.coords_z
-        objData.rotation_pitch = object.rotation_pitch
-        objData.rotation_roll = object.rotation_roll
-        objData.rotation_yaw = object.rotation_yaw
+        -- objData.modelName = object.modelName
+        objData.modelHash = GetHashKey(object.modelName)
+        objData.pos_x = object.pos_x
+        objData.pos_y = object.pos_y
+        objData.pos_z = object.pos_z
+        objData.rot_x = object.rot_x
+        objData.rot_y = object.rot_y
+        objData.rot_z = object.rot_z
+        objData.quaternion_x = object.quaternion_x
+        objData.quaternion_y = object.quaternion_y
+        objData.quaternion_z = object.quaternion_z
+        objData.quaternion_w = object.quaternion_w
         objData.visible = object.visible
         objData.frozen = object.frozen
         objData.collision = object.collision
@@ -255,28 +302,17 @@ local function ImportScene(scene)
     return LoadScene(scene.name)
 end
 
-local function ClearScene(sceneName, force)
-    log.info("Clearing scene", sceneName)
-    if not force and not Scenes[sceneName].loaded then return false; end
-    for _, obj in ipairs(Scenes[sceneName].objects) do
-        if DoesEntityExist(obj.handle) then
-            log.spam("Deleting object", obj.handle)
-            DeleteEntity(obj.handle)
-        else
-            log.spam("Object does not exist", obj.handle)
-        end
-    end
-    Scenes[sceneName].objects = {}
-    Scenes[sceneName].loaded = false
-    return true
-end
-
 local function DeleteScene(sceneName)
     if not sceneName then return false; end
     ClearScene(sceneName, true)
     kvp.delete("scenes:"..sceneName)
     Scenes[sceneName] = nil
     log.info("Deleted scene", sceneName)
+    if sceneName == DefaultScene then
+        ResetDefaultScene()
+        ActiveScene = DefaultScene
+    end
+    if sceneName == ActiveScene then ActiveScene = DefaultScene; end
     return true
 end
 
@@ -789,6 +825,26 @@ local function PlaceOnGround(data)
     da_obj.set(entityHandle, { ground = true })
 end
 
+local function CopyObject(data)
+    local model = GetEntityModel(data.handle)
+    local coords = GetEntityCoords(data.handle)
+    local rotation = GetEntityRotation(data.handle, 2)
+
+    if not ActiveScene then ActiveScene = DefaultScene; end
+    if not Scenes[ActiveScene] then Scenes[ActiveScene] = { objects = {}, }; end
+    local obj = da_obj.create(model, coords, {
+        rotation = rotation,
+        rotation_order = 2,
+    })
+    log.debug("Cloned object", ActiveScene, {
+        obj = obj,
+        model = model,
+        coords = coords,
+        rot = rotation,
+    })
+    table.insert(Scenes[ActiveScene].objects, GetObjData(obj))
+end
+
 local function RemovePreviewObject()
     local lastObj = PreviewObject
     if lastObj then da_obj.delete(lastObj); end
@@ -837,6 +893,7 @@ da_ui.callbacks({
     getScene = function(data) return GetScene(data.scene) end,
     loadScene = function(data) return LoadScene(data.scene) end,
     clearScene = function(data) return ClearScene(data.scene) end,
+    clearAllScenes = function(data) return ClearAllScenes() end,
     reloadScene = function(data) return ReloadScene(data.scene) end,
     deleteScene = function(data) return DeleteScene(data.scene) end,
     importScene = function(data) return ImportScene(data) end,
@@ -845,6 +902,7 @@ da_ui.callbacks({
     setCollision = function(data) return SetCollision(data) end,
     setRotation = function(data) return SetRotation(data) end,
     placeOnGround = function(data) return PlaceOnGround(data) end,
+    copyObject = function(data) return CopyObject(data) end,
     getRaycast = function(data) return GetRaycast(data) end,
 })
 da_ui.events({

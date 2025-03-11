@@ -14,13 +14,28 @@ export function showImport() {
 
     return new Promise(resolve => {
         const importHUD = document.getElementById('import-hud');
+        const importName = document.getElementById('importName');
         const importButton = document.getElementById('importOption');
-        const lastFocusedElement = document.activeElement;
         const exitButton = document.getElementById('importExitOption');
+        const lastFocusedElement = document.activeElement;
 
         document.getElementById('export-hud').classList.add('hidden');
         importHUD.classList.remove('hidden');
-        exitButton.focus();
+
+        // Ensure the element is visible and focusable
+        importName.focus();
+
+        // Use a short delay to ensure the element is ready before selection
+        setTimeout(() => {
+            if (importName.textContent.trim().length > 0) {
+                const range = document.createRange();
+                const selection = window.getSelection();
+
+                range.selectNodeContents(importName); // Selects all text inside
+                selection.removeAllRanges();
+                selection.addRange(range);
+            }
+        }, 10); // Small delay to allow the DOM to update
 
         // Create a MutationObserver to monitor if the popup becomes hidden
         const observer = new MutationObserver(() => {
@@ -39,6 +54,14 @@ export function showImport() {
             importScene(sceneData);
         }
 
+        function handleKeydown(event) {
+            if (event.key === 'Tab') {
+                event.preventDefault();
+                if (document.activeElement === exitButton) {
+                    document.getElementById('importFormat').focus();
+                }
+            }
+        }
 
         function handleExit() {
             cleanup();
@@ -48,6 +71,7 @@ export function showImport() {
         function cleanup() {
             importButton.removeEventListener('click', handleImport);
             exitButton.removeEventListener('click', handleExit);
+            exitButton.removeEventListener('keydown', handleKeydown);
             observer.disconnect();
             importHUD.classList.add('hidden');
             if (lastFocusedElement) {
@@ -57,6 +81,7 @@ export function showImport() {
 
         importButton.addEventListener('click', handleImport);
         exitButton.addEventListener('click', handleExit);
+        exitButton.addEventListener('keydown', handleKeydown);
     });
 }
 
@@ -91,6 +116,7 @@ function importScene(sceneData) {
                     });
             }
         });
+        // TODO: This doesnt wait for confirm
         sendClientMessage("importScene", {
             name: sceneName,
             objects: objects,
