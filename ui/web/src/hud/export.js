@@ -49,9 +49,19 @@ export function showExport() {
             resolve(false);
         }
 
+        function handleKeydown(event) {
+            if (event.key === 'Tab') {
+                event.preventDefault();
+                if (document.activeElement === exitButton) {
+                    document.getElementById('exportFormat').focus();
+                }
+            }
+        }
+
         function cleanup() {
             copyButton.removeEventListener('click', handleCopy);
             exitButton.removeEventListener('click', handleExit);
+            exitButton.removeEventListener('keydown', handleKeydown);
             observer.disconnect();
             exportHud.classList.add('hidden');
             if (lastFocusedElement) {
@@ -61,6 +71,7 @@ export function showExport() {
 
         copyButton.addEventListener('click', handleCopy);
         exitButton.addEventListener('click', handleExit);
+        exitButton.addEventListener('keydown', handleKeydown);
     });
 }
 

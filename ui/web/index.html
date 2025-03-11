@@ -57,6 +57,115 @@
 
     <body>
         <main>
+            <section id="gizmo" class="hud hidden"></section>
+            <section id="export-hud" class="hud hidden">
+                <div class="center brdlr plr05 bgt2 p1">
+                    <div id="exportIcon" class="f4 clr2l">󰈝</div>
+                    <div id="exportDescription" class="mb03">Export Scene</div>
+                    <p></p>
+                    <ul class="row mb03 contentleft">
+                        <li style="overflow: hidden">
+                            <div class="label brdl pl05 bgi">format</div>
+                            <div
+                                id="exportFormat"
+                                tabindex="99"
+                                class="entry dropdown brdr pr05 bgt2"
+                                aria-label="Export Format"
+                            >YMAP</div>
+                        </li>
+                    </ul>
+                    <pre
+                        id="exportContent"
+                        tabindex="99"
+                        contenteditable="true"
+                        class="brdlr plr05 bgt2 data"
+                        spellcheck="false"
+                    ></pre>
+                    <ul class="row m1li mb03">
+                        <li
+                            id="exportCopyOption"
+                            tabindex="99"
+                            class="brdlr plr05 bgt2"
+                            aria-label="Copy Output to Clipboard"
+                        >Export</li>
+                        <li
+                            id="exportExitOption"
+                            tabindex="99"
+                            class="brdlr plr05 bgt2"
+                            aria-label="Close Export Menu"
+                        >Close</li>
+                    </ul>
+                </div>
+            </section>
+            <section id="import-hud" class="hud hidden">
+                <div class="center brdlr plr05 bgt2 p1">
+                    <div id="importIcon" class="f4 clr2l">󰈠</div>
+                    <div id="importDescription" class="mb03">Import Scene</div>
+                    <p></p>
+                    <ul class="row mb03 contentleft">
+                        <li style="overflow: hidden">
+                            <div class="label brdl pl05 bgi">format</div>
+                            <div
+                                id="importFormat"
+                                tabindex="99"
+                                class="entry dropdown brdr pr05 bgt2"
+                                aria-label="Import Format"
+                            >YMAP</div>
+                        </li>
+                    </ul>
+                    <ul class="row mb03 contentleft">
+                        <li>
+                            <div class="label brdl pl05 bgi">scene</div>
+                            <div
+                                id="importName"
+                                tabindex="99"
+                                contenteditable="true",
+                                class="entry brdr pr05 bgt2"
+                                aria-label="Name of Imported Scene"
+                            >unnamed</div>
+                        </li>
+                    </ul>
+                    <pre
+                        id="importContent"
+                        tabindex="99"
+                        contenteditable="true"
+                        class="brdlr plr05 bgt2 data"
+                        spellcheck="false"
+                    ></pre>
+                    <ul class="row m1li mb03">
+                        <li
+                            id="importOption"
+                            tabindex="99"
+                            class="brdlr plr05 bgt2"
+                            aria-label="Import Scene from Content Box"
+                        >Import</li>
+                        <li
+                            id="importExitOption"
+                            tabindex="99"
+                            class="brdlr plr05 bgt2"
+                            aria-label="Close Import Menu"
+                        >Close</li>
+                    </ul>
+                </div>
+            </section>
+            <section id="info-hud" class="hud hidden">
+                <div class="p1 center brdlr plr05 bgt1">
+                    <div class="f4 clr2l"></div>
+                    <div id="info-description" class="mtb1">Are you sure?</div>
+                    <ul class="row m1li mb03">
+                        <li
+                            id="yesOption"
+                            tabindex="99"
+                            class="control brdlr plr05 bgt2"
+                        >Yes</li>
+                        <li
+                            id="noOption"
+                            tabindex="99"
+                            class="control brdlr plr05 bgt2"
+                        >No</li>
+                    </ul>
+                </div>
+            </section>
             <section id="dev-tree-hud" class="hud brdlr plr05 bgt1 hidden">
                 <div id="menuOptionsContainer">
                     <ul id="menuOptions" class="options-list"></ul>
@@ -346,6 +455,14 @@
                                     aria-label="Unload Scene"
                                 >󱋽</div>
                                 <div
+                                    id="button-clearallscenes"
+                                    class="control"
+                                    tabindex="12"
+                                    role="button"
+                                    aria-pressed="false"
+                                    aria-label="Unload All Scenes"
+                                ></div>
+                                <div
                                     id="button-export"
                                     class="control"
                                     tabindex="12"
@@ -602,7 +719,7 @@
                                     class="entry brdr pr05 bgt1"
                                     contenteditable="true"
                                     tabindex="60"
-                                    aria-label="Entity X Coordinate"
+                                    aria-label="Translate X-Coord (+/Forward/North)/(-/Backward/South)"
                                 >0</div>
                             </li>
                             <li>
@@ -612,7 +729,7 @@
                                     class="entry brdr pr05 bgt1"
                                     contenteditable="true"
                                     tabindex="61"
-                                    aria-label="Entity Y Coordinate"
+                                    aria-label="Translate Y-Coord (+/Right/East)/(-/Left/West)"
                                 >0</div>
                             </li>
                             <li>
@@ -622,27 +739,27 @@
                                     class="entry brdr pr05 bgt1"
                                     contenteditable="true"
                                     tabindex="62"
-                                    aria-label="Entity Z Coordinate"
-                                >0</div>
-                            </li>
-                            <li>
-                                <div class="label brdl pl05 bgi">pitch</div>
-                                <div
-                                    id="objDetailsEntityRotPitch"
-                                    class="entry brdr pr05 bgt1"
-                                    contenteditable="true"
-                                    tabindex="63"
-                                    aria-label="Entity Pitch"
+                                    aria-label="Translate Z-Coord (+/Up)/(-/Down)"
                                 >0</div>
                             </li>
                             <li>
                                 <div class="label brdl pl05 bgi">roll</div>
                                 <div
+                                    id="objDetailsEntityRotPitch"
+                                    class="entry brdr pr05 bgt1"
+                                    contenteditable="true"
+                                    tabindex="63"
+                                    aria-label="Roll/Rotate CCW on X-Axis (+/Roll Right)/(-/Roll Left)"
+                                >0</div>
+                            </li>
+                            <li>
+                                <div class="label brdl pl05 bgi">pitch</div>
+                                <div
                                     id="objDetailsEntityRotRoll"
                                     class="entry brdr pr05 bgt1"
                                     contenteditable="true"
                                     tabindex="64"
-                                    aria-label="Entity Roll"
+                                    aria-label="Pitch/Rotate CCW on Y-Axis (+/Pitch Down)/(-/Pitch Up)"
                                 >0</div>
                             </li>
                             <li>
@@ -652,7 +769,7 @@
                                     class="entry brdr pr05 bgt1"
                                     contenteditable="true"
                                     tabindex="65"
-                                    aria-label="Entity Yaw"
+                                    aria-label="Yaw/Heading/Rotate CCW on Z-Axis (+/Tilt Left)/(-/Tilt Right)"
                                 >0</div>
                             </li>
                         </ul>
@@ -1498,115 +1615,6 @@
                     </ul>
                 </div>
             </section>
-            <section id="export-hud" class="hud hidden">
-                <div class="center brdlr plr05 bgt2 p1">
-                    <div id="exportIcon" class="f4 clr2l">󰈝</div>
-                    <div id="exportDescription" class="mb03">Export Scene</div>
-                    <p></p>
-                    <ul class="row mb03 contentleft">
-                        <li style="overflow: hidden">
-                            <div class="label brdl pl05 bgi">format</div>
-                            <div
-                                id="exportFormat"
-                                tabindex="99"
-                                class="entry dropdown brdr pr05 bgt2"
-                                aria-label="Export Format"
-                            >YMAP</div>
-                        </li>
-                    </ul>
-                    <pre
-                        id="exportContent"
-                        tabindex="99"
-                        contenteditable="true"
-                        class="brdlr plr05 bgt2 data"
-                        spellcheck="false"
-                    ></pre>
-                    <ul class="row m1li mb03">
-                        <li
-                            id="exportCopyOption"
-                            tabindex="99"
-                            class="brdlr plr05 bgt2"
-                            aria-label="Copy Output to Clipboard"
-                        >Export</li>
-                        <li
-                            id="exportExitOption"
-                            tabindex="99"
-                            class="brdlr plr05 bgt2"
-                            aria-label="Close Export Menu"
-                        >Close</li>
-                    </ul>
-                </div>
-            </section>
-            <section id="import-hud" class="hud hidden">
-                <div class="center brdlr plr05 bgt2 p1">
-                    <div id="importIcon" class="f4 clr2l">󰈠</div>
-                    <div id="importDescription" class="mb03">Import Scene</div>
-                    <p></p>
-                    <ul class="row mb03 contentleft">
-                        <li style="overflow: hidden">
-                            <div class="label brdl pl05 bgi">format</div>
-                            <div
-                                id="importFormat"
-                                tabindex="99"
-                                class="entry dropdown brdr pr05 bgt2"
-                                aria-label="Import Format"
-                            >YMAP</div>
-                        </li>
-                    </ul>
-                    <ul class="row mb03 contentleft">
-                        <li>
-                            <div class="label brdl pl05 bgi">scene</div>
-                            <div
-                                id="importName"
-                                tabindex="99"
-                                contenteditable="true",
-                                class="entry brdr pr05 bgt2"
-                                aria-label="Name of Imported Scene"
-                            >unnamed</div>
-                        </li>
-                    </ul>
-                    <pre
-                        id="importContent"
-                        tabindex="99"
-                        contenteditable="true"
-                        class="brdlr plr05 bgt2 data"
-                        spellcheck="false"
-                    ></pre>
-                    <ul class="row m1li mb03">
-                        <li
-                            id="importOption"
-                            tabindex="99"
-                            class="brdlr plr05 bgt2"
-                            aria-label="Import Scene from Content Box"
-                        >Import</li>
-                        <li
-                            id="importExitOption"
-                            tabindex="99"
-                            class="brdlr plr05 bgt2"
-                            aria-label="Close Import Menu"
-                        >Close</li>
-                    </ul>
-                </div>
-            </section>
-            <section id="info-hud" class="hud hidden">
-                <div class="p1 center brdlr plr05 bgt1">
-                    <div class="f4 clr2l"></div>
-                    <div id="info-description" class="mtb1">Are you sure?</div>
-                    <ul class="row m1li mb03">
-                        <li
-                            id="yesOption"
-                            tabindex="99"
-                            class="control brdlr plr05 bgt2"
-                        >Yes</li>
-                        <li
-                            id="noOption"
-                            tabindex="99"
-                            class="control brdlr plr05 bgt2"
-                        >No</li>
-                    </ul>
-                </div>
-            </section>
-            <section id="gizmo" class="hud hidden"></section>
         </main>
         <div id="copyField" class="hidden">
             <div id="copyAnimDict"></div>
