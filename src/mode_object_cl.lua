@@ -197,11 +197,14 @@ local function LoadScene(sceneName)
 end
 
 local function GetScenesList()
-        local scenes = {}
-        for sceneName in pairs(Scenes) do
-            table.insert(scenes, { name = sceneName })
-            log.debug("Adding cached scene", _)
-        end
+    local scenes = {}
+    for sceneName, sceneData in pairs(Scenes) do
+        table.insert(scenes, {
+            name = sceneName,
+            loaded = sceneData.loaded,
+        })
+        log.debug("Adding cached scene", _)
+    end
 
         local sceneNames = kvp.search("scenes:")
         for _, scene in ipairs(sceneNames) do

@@ -83,7 +83,10 @@ function changeFormat(format, scene) {
 async function exportScene(sceneName, format) {
     try {
         const resp = await sendClientMessage('getScene', { scene: sceneName }) || {};
-        const objects = resp.objects ?? [];
+
+        resp.objects = resp.objects.replace(/NaN/g, 'null'); // Convert NaN → null
+        const objects = JSON.parse(resp.objects) || [];
+
         if (!Array.isArray(objects)) {
             console.error("Invalid response format: objects is not an array", resp);
             return;
