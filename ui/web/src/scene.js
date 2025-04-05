@@ -21,14 +21,17 @@ export function clearScene() {
     showConfirm(
         `Unload scene '${sceneName}' objects?<br>Unsaved changes will be lost.`
     ).then(confirm => {
-        if (confirm) {
-            // TODO: implement clearScene
-            sendClientMessage('clearScene', { scene: sceneName });
-            trackSceneObjects();
-        } else {
-            console.log('Clear scene cancelled');
-        }
-    });
+            if (confirm) {
+                sendClientMessage('clearScene', { scene: sceneName });
+                trackSceneObjects();
+                const li = document.querySelector(`li[data-scene-name="${sceneName}"]`);
+                if (li) {
+                    li.classList.remove('li-select'); // Remove selection class
+                }
+            } else {
+                console.log('Clear scene cancelled');
+            }
+        });
 }
 
 export function clearAllScenes() {
@@ -36,19 +39,25 @@ export function clearAllScenes() {
     showConfirm(
         `Unload all scenes objects?<br>Unsaved changes will be lost.`
     ).then(confirm => {
-        if (confirm) {
-            // TODO: implement clearScene
-            sendClientMessage('clearAllScenes', {});
-            trackSceneObjects();
-        } else {
-            console.log('Clear all scenes cancelled');
-        }
-    });
+            if (confirm) {
+                sendClientMessage('clearAllScenes', {});
+                trackSceneObjects();
+                document.querySelectorAll('li[data-scene-name].li-select').forEach(li => {
+                    li.classList.remove('li-select');
+                });
+            } else {
+                console.log('Clear all scenes cancelled');
+            }
+        });
 }
 
 export function reloadScene() {
     const sceneName = ActiveScene;
     sendClientMessage('reloadScene', { scene: sceneName });
+    const li = document.querySelector(`li[data-scene-name="${sceneName}"]`);
+    if (li) {
+        li.classList.add('li-select'); // Add selection class
+    }
 }
 
 export function deleteScene() {
@@ -77,7 +86,6 @@ export function getScenes() {
 
         const ul = document.createElement('ul');
         const fragment = document.createDocumentFragment();
-        let selectedLi = null; // Keep track of the selected `<li>`
 
         sceneList.forEach(scene => {
             const li = document.createElement('li');
@@ -85,9 +93,8 @@ export function getScenes() {
             li.setAttribute('tabindex', '14');
             li.dataset.sceneName = scene.name; // Store scene name for easy access
 
-            if (scene.name === ActiveScene) {
+            if (scene.loaded) {
                 li.classList.add('li-select');
-                selectedLi = li; // Store the selected `<li>`
             }
 
             fragment.appendChild(li);
@@ -122,9 +129,7 @@ export function getScenes() {
             ActiveScene = li.dataset.sceneName;
 
             // Remove previous selection
-            if (selectedLi) selectedLi.classList.remove('li-select');
             li.classList.add('li-select');
-            selectedLi = li; // Update selected `<li>`
 
             document.getElementById('selectedScene').textContent = ActiveScene;
             sendClientMessage('loadScene', { scene: ActiveScene });

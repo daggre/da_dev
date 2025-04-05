@@ -200,7 +200,7 @@ end
 local Translate = function(x, y, z, rot_x, rot_z, dist, strafe)
     local math_rot_x, math_rot_y, math_rot_z, res_x, res_y, res_z
     -- if da_mode.isActive("focus") then rot_x = 0; end -- Treat movement as if we are looking straight in focus mode
-    rot_x = 0 -- Always treat movement as if we are looking straight (TODO toggle for above behavior later)
+    -- rot_x = 0 -- Always treat movement as if we are looking straight (TODO toggle for above behavior later)
 
     if strafe then
         rot_z = rot_z + 90 -- Strafe calculation, calculate speed 90 degrees from aim
@@ -244,7 +244,7 @@ local CheckMovementControls = function(x, y, z, rot_x, rot_y, rot_z, fov)
     local modifier = Speed.Current
 
     -- Mouse Controls
-    if pressed.ctrl and not (pressed.w or pressed.a or pressed.s or pressed.d or pressed.q or pressed.e) then
+    if pressed.ctrl and not (pressed.shift or pressed.w or pressed.a or pressed.s or pressed.d or pressed.q or pressed.e) then
         enableMouseAim = false
         -- Pressed Ctrl move camera on X/Y coordinate plane
         if deltaLR ~= 0.0 then
@@ -253,7 +253,7 @@ local CheckMovementControls = function(x, y, z, rot_x, rot_y, rot_z, fov)
         if deltaUD ~= 0.0 then
             x, y, _ = Translate(x, y, z, rot_x, rot_z, 0-(deltaUD*modifier*2))
         end
-    elseif pressed.shift and not (pressed.w or pressed.a or pressed.s or pressed.d or pressed.q or pressed.e) then
+    elseif pressed.shift and not (pressed.ctrl or pressed.w or pressed.a or pressed.s or pressed.d or pressed.q or pressed.e) then
         enableMouseAim = false
         -- Press Shift move camera on X/Z coordinate plane
         if deltaLR ~= 0.0 then
@@ -261,6 +261,15 @@ local CheckMovementControls = function(x, y, z, rot_x, rot_y, rot_z, fov)
         end
         if deltaUD ~= 0.0 then
             z = z - deltaUD*modifier*2
+        end
+    elseif pressed.shift and pressed.ctrl and not (pressed.w or pressed.a or pressed.s or pressed.d or pressed.q or pressed.e) then
+        enableMouseAim = false
+        -- Press Shift+Ctrl move camera on Y/Z coordinate plane
+        if deltaLR ~= 0.0 then
+            x, y, z = Translate(x, y, z, rot_x, rot_z, 0-(deltaLR*modifier*2), true)
+        end
+        if deltaUD ~= 0.0 then
+            x, y, z = Translate(x, y, z, rot_x, rot_z, 0-(deltaUD*modifier*2))
         end
     elseif pressed.alt then
         -- Press Alt adjust FOV on Mouse Up/Down
