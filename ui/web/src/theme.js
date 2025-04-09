@@ -213,8 +213,6 @@ export function initUIStyle(
     borderrad,
     borderradamount
 ) {
-    console.log(theme, divider, border, borderrad, borderradamount);
-    console.log(Settings.theme);
     setTheme(theme);
     setDividerStyle(divider);
     document

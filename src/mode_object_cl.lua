@@ -502,6 +502,14 @@ da_mode.register({
             end
         },
         {
+            key = "g",
+            event = "justPressed",
+            primary = true,
+            fn = function()
+                if Select then CopyObject({handle = Select}) end
+            end,
+        },
+        {
             key = "h",
             event = "justPressed",
             primary = true,
@@ -559,19 +567,19 @@ da_mode.register({
                 if Select then SetAlpha(Select) end
             end,
         },
-        {
-            key = "x",
-            event = "justPressed",
-            primary = true,
-            modifiers = { ctrl = true },
-            fn = function()
-                if Hover and Select then
-                    local sPos = GetEntityCoords(Select)
-                    local hPos = GetEntityCoords(Hover)
-                    SetEntityCoords(Select, hPos.x, hPos.y, sPos.z)
-                end
-            end,
-        },
+        -- {
+        --     key = "x",
+        --     event = "justPressed",
+        --     primary = true,
+        --     modifiers = { ctrl = true },
+        --     fn = function()
+        --         if Hover and Select then
+        --             local sPos = GetEntityCoords(Select)
+        --             local hPos = GetEntityCoords(Hover)
+        --             SetEntityCoords(Select, hPos.x, hPos.y, sPos.z)
+        --         end
+        --     end,
+        -- },
         {
             key = "x",
             event = "justPressed",
@@ -590,19 +598,19 @@ da_mode.register({
                 Select = nil
             end,
         },
-        {
-            key = "z",
-            event = "justPressed",
-            primary = true,
-            modifiers = { ctrl = true, },
-            fn = function()
-                if Hover and Select then
-                    local sPos = GetEntityCoords(Select)
-                    local hPos = GetEntityCoords(Hover)
-                    SetEntityCoords(Select, sPos.x, sPos.y, hPos.z)
-                end
-            end,
-        },
+        -- {
+        --     key = "z",
+        --     event = "justPressed",
+        --     primary = true,
+        --     modifiers = { ctrl = true, },
+        --     fn = function()
+        --         if Hover and Select then
+        --             local sPos = GetEntityCoords(Select)
+        --             local hPos = GetEntityCoords(Hover)
+        --             SetEntityCoords(Select, sPos.x, sPos.y, hPos.z)
+        --         end
+        --     end,
+        -- },
         {
             key = "1",
             event = "justPressed",
@@ -625,14 +633,6 @@ da_mode.register({
             active = true,
             fn = function()
                 da_ui.send("keyPress", { mode = "object-hud", key = "3" })
-            end,
-        },
-        {
-            key = "4",
-            event = "justPressed",
-            active = true,
-            fn = function()
-                da_ui.send("keyPress", { mode = "object-hud", key = "4" })
             end,
         },
     },
@@ -1046,5 +1046,3 @@ da_trie.addOpt("obj set", "pos xy", "x",
     function()
         return Select ~= nil and Hover ~= nil
     end)
-
-

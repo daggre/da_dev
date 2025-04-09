@@ -177,12 +177,18 @@
             <section id="object-hud" class="hud hidden">
                 <div id="objHelp" class="center bgt2 p1 brdlr mb03li hidden">
                     <div class="f15">Object Editor</div>
-                    <div class="f4 clr2l"></div>
+                    <div class="p1 f4 clr2l"></div>
                     <ul>
                         <li>
                             <div class="label brdl pl05 bgi">LMB</div>
                             <div class="entry brdr pr05 bgt1">
-                                Select Object Under Crosshair
+                                Select Object Under Cursor/Crosshair
+                            </div>
+                        </li>
+                        <li>
+                            <div class="label brdl pl05 bgi">RMB</div>
+                            <div class="entry brdr pr05 bgt1">
+                                Open Dropdown Menu For Object Under Cursor
                             </div>
                         </li>
                         <li>
@@ -207,19 +213,19 @@
                         <li>
                             <div class="label brdl pl05 bgi">1</div>
                             <div class="entry brdr pr05 bgt1">
-                                Switch View to Object Spawn
+                                Toggle Object Spawn HUD
                             </div>
                         </li>
                         <li>
                             <div class="label brdl pl05 bgi">2</div>
                             <div class="entry brdr pr05 bgt1">
-                                Switch View to Nearby Objects
+                                Toggle Scene Control HUD
                             </div>
                         </li>
                         <li>
                             <div class="label brdl pl05 bgi">3</div>
                             <div class="entry brdr pr05 bgt1">
-                                Switch View to Scene Import/Export
+                                Toggle Nearby Object HUD
                             </div>
                         </li>
                         <li> </li>
@@ -227,6 +233,12 @@
                             <div class="label brdl pl05 bgi">f</div>
                             <div class="entry brdr pr05 bgt1">
                                 Focus Selected Object
+                            </div>
+                        </li>
+                        <li>
+                            <div class="label brdl pl05 bgi">g</div>
+                            <div class="entry brdr pr05 bgt1">
+                                Clone Selected Object
                             </div>
                         </li>
                         <li>
@@ -238,35 +250,41 @@
                         <li>
                             <div class="label brdl pl05 bgi">r</div>
                             <div class="entry brdr pr05 bgt1">
-                                Move/Rotate Selected Object
-                            </div>
-                        </li>
-                        <li>
-                            <div class="label brdl pl05 bgi">x</div>
-                            <div class="entry brdr pr05 bgt1">
-                                Reset Values to Defaults
+                                Toggle Move/Rotate Tool
                             </div>
                         </li>
                         <li> </li>
+                        <li>
+                            <div class="label brdl pl05 bgi">Ctrl f</div>
+                            <div class="entry brdr pr05 bgt1">
+                                Toggle Selected Object Frozen State
+                            </div>
+                        </li>
                         <li>
                             <div class="label brdl pl05 bgi">Ctrl r</div>
                             <div class="entry brdr pr05 bgt1">
-                                Set Selected to Hovered Object Rotation
+                                Reload Current Scene From Save
                             </div>
                         </li>
                         <li>
-                            <div class="label brdl pl05 bgi">Ctrl x</div>
+                            <div class="label brdl pl05 bgi">Ctrl s</div>
                             <div class="entry brdr pr05 bgt1">
-                                Set Selected to Hovered Object Position
+                                Save Current Scene
                             </div>
                         </li>
                         <li>
-                        <div class="label brdl pl05 bgi">Ctrl z</div>
-                        <div class="entry brdr pr05 bgt1">
-                            Set Selected to Hovered Object Height
-                        </div>
-                    </li>
+                            <div class="label brdl pl05 bgi">Ctrl t</div>
+                            <div class="entry brdr pr05 bgt1">
+                                Toggle Object Transparency (Does Not Save)
+                            </div>
+                        </li>
                         <li> </li>
+                        <li>
+                            <div class="label brdl pl05 bgi">Shift s</div>
+                            <div class="entry brdr pr05 bgt1">
+                                Toggle Settings
+                            </div>
+                        </li>
                         <li>
                             <div class="label brdl pl05 bgi">Shift x</div>
                             <div class="entry brdr pr05 bgt1">
@@ -282,13 +300,8 @@
                         </li>
                         <li>
                             <div class="label brdl pl05 bgi">Esc</div>
-                            <div class="entry brdr pr05 bgt1">Exit</div>
-                        </li>
-                        <li> </li>
-                        <li>
-                            <div class="label brdl pl05 bgi">Alt r</div>
                             <div class="entry brdr pr05 bgt1">
-                                Move/Rotate Hovered Object
+                                Exit Active Menu
                             </div>
                         </li>
                     </ul>
@@ -306,12 +319,12 @@
                                 aria-label="Spawn Objects"
                             >󰒕</div>
                             <div
-                                id="button-importexport"
+                                id="button-scenecontrol"
                                 class="control"
                                 tabindex="11"
                                 role="button"
                                 aria-pressed="false"
-                                aria-label="Import/Export"
+                                aria-label="Scene Control"
                             ></div>
                             <div
                                 id="button-trackedobjlist"
@@ -321,8 +334,6 @@
                                 aria-pressed="false"
                                 aria-label="Track Objects"
                             >󰹤</div>
-                            <!-- <div id="button-scenecontrol" class="control" tabindex="31" role="button" aria-pressed="false" >󱞔</div> -->
-                            <!-- <div id="button-scenetags" class="control" tabindex="32" role="button" aria-pressed="false" >󰜢</div> -->
                         </li>
                     </ul>
                 </div>
@@ -815,89 +826,35 @@
             </section>
             <section id="anim-hud" class="hud hidden">
                 <div id="animHelp" class="center bgt2 p1 brdlr hidden mb03li">
-                    <div class="title">Animation Developer Kit</div>
-                    <div class="f4 clr2l"></div>
+                    <div class="title">Animation Editor</div>
+                    <div class="p1 f4 clr2l"></div>
                     <ul>
                         <li>
-                            <div class="label brdl pl05 bgi">q</div>
+                            <div class="label brdl pl05 bgi">MMB (Click)</div>
                             <div class="entry brdr pr05 bgt1">
-                                Play/Restart Animation
-                            </div>
-                        </li>
-                        <li>
-                            <div class="label brdl pl05 bgi">r</div>
-                            <div class="entry brdr pr05 bgt1">
-                                Play/Restart Animation
-                            </div>
-                        </li>
-                        <li>
-                            <div class="label brdl pl05 bgi">s</div>
-                            <div class="entry brdr pr05 bgt1">
-                                Stop Animation
-                            </div>
-                        </li>
-                        <li>
-                            <div class="label brdl pl05 bgi">k</div>
-                            <div class="entry brdr pr05 bgt1">
-                                Stop Animation
-                            </div>
-                        </li>
-                        <li>
-                            <div class="label brdl pl05 bgi">Backspace</div>
-                            <div class="entry brdr pr05 bgt1">
-                                Stop Animation
+                                Toggle Control Passthrough
                             </div>
                         </li>
                         <li>
                             <div class="label brdl pl05 bgi">MMB (Hold)</div>
                             <div class="entry brdr pr05 bgt1">
-                                Game Control (Keyboard/Mouse)
-                            </div>
-                        </li>
-                        <li>
-                            <div class="label brdl pl05 bgi">LMB (Click)</div>
-                            <div class="entry brdr pr05 bgt1">
-                                Copy Entry to Clipboard
+                                Enable Control Passthrough
                             </div>
                         </li>
                         <li> </li>
                         <li>
                             <div class="label brdl pl05 bgi">1</div>
                             <div class="entry brdr pr05 bgt1">
-                                Search/Select Animations
+                                Toggle Animation Search HUD
                             </div>
                         </li>
                         <li>
                             <div class="label brdl pl05 bgi">2</div>
                             <div class="entry brdr pr05 bgt1">
-                                View/Edit Timing Options
-                            </div>
-                        </li>
-                        <li>
-                            <div class="label brdl pl05 bgi">3</div>
-                            <div class="entry brdr pr05 bgt1">
-                                View/Edit Inverse Kinematics Flags
-                            </div>
-                        </li>
-                        <li>
-                            <div class="label brdl pl05 bgi">4</div>
-                            <div class="entry brdr pr05 bgt1">
-                                View/Edit Animation Flags
-                            </div>
-                        </li>
-                        <li>
-                            <div class="label brdl pl05 bgi">5</div>
-                            <div class="entry brdr pr05 bgt1">
-                                View/Edit Entity ID
+                                Toggle Animation Configuration HUD
                             </div>
                         </li>
                         <li> </li>
-                        <li>
-                            <div class="label brdl pl05 bgi">?</div>
-                            <div class="entry brdr pr05 bgt1">
-                                Toggle Help Panel
-                            </div>
-                        </li>
                         <li>
                             <div class="label brdl pl05 bgi">h</div>
                             <div class="entry brdr pr05 bgt1">
@@ -905,69 +862,15 @@
                             </div>
                         </li>
                         <li>
-                            <div class="label brdl pl05 bgi">c</div>
+                            <div class="label brdl pl05 bgi">?</div>
                             <div class="entry brdr pr05 bgt1">
-                                Toggle Anim Control Panel
+                                Toggle Help Panel
                             </div>
                         </li>
                         <li>
-                            <div class="label brdl pl05 bgi">f</div>
+                            <div class="label brdl pl05 bgi">Shift s</div>
                             <div class="entry brdr pr05 bgt1">
-                                Open Search Menu
-                            </div>
-                        </li>
-                        <li>
-                            <div class="label brdl pl05 bgi">f(x2)</div>
-                            <div class="entry brdr pr05 bgt1">
-                                Open Search Menu and Focus Search Field
-                            </div>
-                        </li>
-                        <li>
-                            <div class="label brdl pl05 bgi">F</div>
-                            <div class="entry brdr pr05 bgt1">
-                                Focus Search Field
-                            </div>
-                        </li>
-                        <li>
-                            <div class="label brdl pl05 bgi">t</div>
-                            <div class="entry brdr pr05 bgt1">
-                                View/Edit Timing Options
-                            </div>
-                        </li>
-                        <li>
-                            <div class="label brdl pl05 bgi">i</div>
-                            <div class="entry brdr pr05 bgt1">
-                                View/Edit Inverse Kinematics Flags
-                            </div>
-                        </li>
-                        <li>
-                            <div class="label brdl pl05 bgi">o</div>
-                            <div class="entry brdr pr05 bgt1">
-                                View/Edit Animation Flags
-                            </div>
-                        </li>
-                        <li>
-                            <div class="label brdl pl05 bgi">e</div>
-                            <div class="entry brdr pr05 bgt1">
-                                View/Edit Entity ID
-                            </div>
-                        </li>
-                        <li>
-                            <div class="label brdl pl05 bgi">l</div>
-                            <div class="entry brdr pr05 bgt1">
-                                Quick Toggle Animation Loop
-                            </div>
-                        </li>
-                        <li>
-                            <div class="label brdl pl05 bgi">u</div>
-                            <div class="entry brdr pr05 bgt1">
-                                Quick Toggle Upper Body + Movement Flags
-                            </div>
-                        </li>
-                        <li>
-                            <div class="label brdl pl05 bgi">x</div>
-                            <div class="entry brdr pr05 bgt1">
-                                Reset Active Menu to Default Values
+                                Toggle Settings
                             </div>
                         </li>
                         <li> </li>
@@ -987,12 +890,6 @@
                             <div class="label brdl pl05 bgi">Spacebar</div>
                             <div class="entry brdr pr05 bgt1">
                                 Toggle Focused Element
-                            </div>
-                        </li>
-                        <li>
-                            <div class="label brdl pl05 bgi">Spacebar</div>
-                            <div class="entry brdr pr05 bgt1">
-                                Play/Restart Animation (No Focused Element)
                             </div>
                         </li>
                     </ul>
@@ -1431,8 +1328,8 @@
             </section>
             <section id="camera-hud" class="hud hidden">
                 <div id="camHelp" class="center bgt2 p1 brdlr hidden mb03li">
-                    <div class="title">FreeCam and NoClip</div>
-                    <div class="f4 clr2l"> </div>
+                    <div class="title">FreeCam Control</div>
+                    <div class="p1 f4 clr2l"> </div>
                     <ul>
                         <li>
                             <div class="label brdl pl05 bgi">w</div>
@@ -1442,23 +1339,33 @@
                         </li>
                         <li>
                             <div class="label brdl pl05 bgi">a</div>
-                            <div class="entry brdr pr05 bgt1">Move Left</div>
+                            <div class="entry brdr pr05 bgt1">
+                                Move Left
+                            </div>
                         </li>
                         <li>
                             <div class="label brdl pl05 bgi">s</div>
-                            <div class="entry brdr pr05 bgt1">Move Back</div>
+                            <div class="entry brdr pr05 bgt1">
+                                Move Back
+                            </div>
                         </li>
                         <li>
                             <div class="label brdl pl05 bgi">d</div>
-                            <div class="entry brdr pr05 bgt1">Move Right</div>
+                            <div class="entry brdr pr05 bgt1">
+                                Move Right
+                            </div>
                         </li>
                         <li>
                             <div class="label brdl pl05 bgi">e</div>
-                            <div class="entry brdr pr05 bgt1">Move Up</div>
+                            <div class="entry brdr pr05 bgt1">
+                                Move Up
+                            </div>
                         </li>
                         <li>
                             <div class="label brdl pl05 bgi">q</div>
-                            <div class="entry brdr pr05 bgt1">Move Down</div>
+                            <div class="entry brdr pr05 bgt1">
+                                Move Down
+                            </div>
                         </li>
                         <li> </li>
                         <li>
@@ -1550,6 +1457,39 @@
                         <li>
                             <div class="label brdl pl05 bgi">
                                 LCTRL + Mouse Right
+                            </div>
+                            <div class="entry brdr pr05 bgt1">
+                                Move Camera Right
+                            </div>
+                        </li>
+                        <li> </li>
+                        <li>
+                            <div class="label brdl pl05 bgi">
+                                LSHIFT + LCTRL + Mouse Forward
+                            </div>
+                            <div class="entry brdr pr05 bgt1">
+                                Move Camera Front
+                            </div>
+                        </li>
+                        <li>
+                            <div class="label brdl pl05 bgi">
+                                LSHIFT + LCTRL + Mouse Back
+                            </div>
+                            <div class="entry brdr pr05 bgt1">
+                                Move Camera Rear
+                            </div>
+                        </li>
+                        <li>
+                            <div class="label brdl pl05 bgi">
+                                LSHIFT + LCTRL + Mouse Left
+                            </div>
+                            <div class="entry brdr pr05 bgt1">
+                                Move Camera Left
+                            </div>
+                        </li>
+                        <li>
+                            <div class="label brdl pl05 bgi">
+                                LSHIFT + LCTRL + Mouse Right
                             </div>
                             <div class="entry brdr pr05 bgt1">
                                 Move Camera Right

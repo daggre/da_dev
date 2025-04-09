@@ -32,7 +32,7 @@ const ObjectHUD = {
     buttons: {
         spawn: 'button-spawn',
         tracked: 'button-trackedobjlist',
-        importExport: 'button-importexport',
+        sceneControl: 'button-scenecontrol',
     },
     sections: {
         spawn: [
@@ -50,7 +50,7 @@ const ObjectHUD = {
             'objNearbyRange',
             'objNearbyResults',
         ],
-        importExport: [
+        sceneControl: [
             'objScenesLeftColumn',
             'objScenesList',
             'sceneSelected',
@@ -83,12 +83,12 @@ export function toggleObjectNearbyHUD(state) {
     );
 }
 
-export function toggleObjectImportExportHUD(state) {
+export function toggleObjectSceneControlHUD(state) {
     toggleHUD(
         state,
         ObjectHUD,
-        'importExport',
-        ObjectHUD.buttons.importExport,
+        'sceneControl',
+        ObjectHUD.buttons.sceneControl,
         () => {
             getScenes();
             trackSceneObjects();
@@ -172,4 +172,3 @@ export function updateObjectDetails(data) {
 export function toggleCrosshair(state) {
     document.getElementById('crosshair').classList.toggle('hidden', !state || !MCP);
 }
-
