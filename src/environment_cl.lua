@@ -22,7 +22,7 @@ end
 
 local weatherTypes = {
     blizzard = "b",
-    cloudy = "c",
+    -- cloudy = "c", -- TODO: NOT WORKING
     drizzle = "d",
     fog = "f",
     groundblizzard = "g",
@@ -34,7 +34,7 @@ local weatherTypes = {
     overcastdark = "k",
     rain = "r",
     sandstorm = "s",
-    showers = "w",
+    -- showers = "w", -- TODO: NOT WORKING
     sleet = "l",
     snow = "n",
     snowlight = "i",
