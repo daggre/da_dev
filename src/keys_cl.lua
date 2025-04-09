@@ -1,5 +1,5 @@
 local KeysThread = false
-local KeyLog = {}
+local Inputs = {}
 
 local GetKeys = function()
     return {
@@ -791,26 +791,26 @@ function StartKeyDiscovery(state)
 
     if KeysThread then
         local allKeys = GetKeys()
-        Citizen.SetTimeout(15000, function()
-            log.debug(KeyLog)
+        Citizen.SetTimeout(5000, function()
+            log.debug(Inputs)
             KeysThread = false
         end)
         Citizen.CreateThread(function()
-            log.debug("Key Discovery ^2ON^7")
+            log.debug("Get Key Hash ^2ON (5s)^7")
             while KeysThread do
                 for name, keyHash in pairs(allKeys) do
                     if IsControlPressed(0, keyHash) then
                         log.debug(name)
-                        KeyLog[keyHash] = name
+                        Inputs[keyHash] = name
                     end
                 end
                 Citizen.Wait(100)
             end
             KeysThread = false
-            log.debug("Key Discovery ^1OFF^7")
-            KeyLog = {}
+            log.debug("Get Key Hash ^1OFF^7")
+            Inputs = {}
         end)
     end
 end
 
-da_trie.addOpt("misc", "keylog", "k", function() StartKeyDiscovery() end)
+da_trie.addOpt("misc", "key hash", "k", function() StartKeyDiscovery() end)
