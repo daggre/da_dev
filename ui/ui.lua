@@ -8,9 +8,7 @@ da_ui.callbacks({
     initTaskFilters = function() return { taskfilters = json.encode(dat.taskFilter) } end,
     fetchSettings = function(data)
         local settings = {}
-        log.debug("fetch settings", data)
-        for category in pairs(data) do
-            log.debug("fetch settings", category)
+        for _, category in ipairs(data) do
             settings[category] = kvp.rawget("setting:ui:"..category)
         end
         return settings
@@ -102,6 +100,7 @@ Citizen.CreateThread(function()
         borderrad = false,
         borderradamount = 8,
     }
+    setting.ui.objFavorites = { }
 
     -- Init settings
     for k1, category in pairs(setting) do

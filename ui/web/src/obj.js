@@ -44,8 +44,9 @@ function searchObjects(searchValue, searchList, elementId, tabIndex) {
 
     // Optimize filter by pre-lowering searchValue once
     const searchLower = searchValue.toLowerCase();
+    const favOnly = document.getElementById('button-spawnfavs').classList.contains('selected');
     const results = searchList.filter(str =>
-        str.toLowerCase().includes(searchLower)
+        str.toLowerCase().includes(searchLower) && (!favOnly || Settings.objFavorites.has(str))
     );
 
     // Create fragment for efficient DOM updates
@@ -53,12 +54,15 @@ function searchObjects(searchValue, searchList, elementId, tabIndex) {
     const fragment = document.createDocumentFragment();
 
     results.slice(0, maxResults).forEach(name => {
+
         const li = document.createElement('li');
         li.dataset.name = name; // Store name in dataset
         li.textContent = name;
 
         if (name === selectedObject) {
             li.classList.add('li-select');
+        } else if (Settings.objFavorites.has(name)) {
+            li.classList.add('fav');
         }
 
         if (tabIndex) li.setAttribute('tabindex', tabIndex);
@@ -72,6 +76,7 @@ function searchObjects(searchValue, searchList, elementId, tabIndex) {
     ul.addEventListener('pointerenter', searchHandleHover, true);
     ul.addEventListener('pointerleave', searchHandleHover, true);
     ul.addEventListener('click', searchHandleClick);
+    ul.addEventListener('contextmenu', searchHandleRightClick);
 
     // Set minHeight dynamically
     el.style.minHeight = `${Math.min(results.length * 0.4, 30)}vh`;
@@ -108,6 +113,23 @@ function searchHandleClick(event) {
 
     li.classList.add('li-select');
     selectSpawnObject(li.dataset.name);
+}
+
+// Handle object favorite toggle (right-click event)
+function searchHandleRightClick(event) {
+    const li = event.target.closest('li');
+    if (!li) return;
+
+    if (Settings.objFavorites.has(li.dataset.name)) {
+        Settings.objFavorites.delete(li.dataset.name);
+        li.classList.remove('fav');
+    } else {
+        Settings.objFavorites.add(li.dataset.name);
+        li.classList.add('fav');
+    }
+    sendClientMessage('saveSettings', {
+        objFavorites: JSON.stringify([...Settings.objFavorites]),
+    });
 }
 
 export function getTrackedObjects() {

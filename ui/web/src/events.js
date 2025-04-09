@@ -1,6 +1,6 @@
 import { toggleAnimationHUD, toggleAnimationSearchHUD, toggleAnimationConfigureHUD, toggleAnimDetail } from './hud/anim.js';
 import { searchAnimDicts, playConfiguredAnimations, stopAnimation, playSelectedAnimation, addAnimation, resetSelectedAnimConfig, clearAnimation, deleteAllAnimations, setSelectedAnimation } from '../src/anims.js';
-import { toggleCrosshair, toggleObjectSpawnHUD, toggleObjectNearbyHUD, toggleObjectImportExportHUD, toggleObjectDetail, toggleObjectHUD, updateObjectDetails } from './hud/obj.js';
+import { toggleCrosshair, toggleObjectSpawnHUD, toggleObjectNearbyHUD, toggleObjectSceneControlHUD, toggleObjectDetail, toggleObjectHUD, updateObjectDetails } from './hud/obj.js';
 import { selectSpawnType, selectNearbyOrigin, toggleNearbyFilter, getTrackedObjects, toggleVisible, toggleFrozen, toggleCollision } from '../src/obj.js';
 import { saveScene, clearScene, clearAllScenes, reloadScene, deleteScene } from '../src/scene.js';
 import { showImport } from '../src/hud/import.js';
@@ -220,7 +220,7 @@ export let KeyActions = {
     'object-hud': {
         ' ': event => clickElement(event),
         1: () => toggleObjectSpawnHUD(),
-        2: () => toggleObjectImportExportHUD(),
+        2: () => toggleObjectSceneControlHUD(),
         3: () => toggleObjectNearbyHUD(),
         f: () => sendKey('f'),
         g: () => sendKey('g'),
@@ -277,7 +277,7 @@ export const EventActions = {
         // Object HUD
         '#button-spawn': () => toggleObjectSpawnHUD(),
         '#button-trackedobjlist': () => toggleObjectNearbyHUD(),
-        '#button-importexport': () => toggleObjectImportExportHUD(),
+        '#button-scenecontrol': () => toggleObjectSceneControlHUD(),
 
         '#button-objDetailsPosition': () =>
             toggleObjectDetail('button-objDetailsPosition'),
@@ -289,6 +289,7 @@ export const EventActions = {
         },
         '#button-spawnfavs': () => {
             document.getElementById('button-spawnfavs').classList.toggle('selected');
+            searchSpawnObject(document.getElementById('objSearch').textContent);
         },
         '#button-spawnobjects': () => selectSpawnType('objects'),
         '#button-spawnpeds': () => selectSpawnType('peds'),
@@ -505,6 +506,7 @@ const MessageActions = {
     ui_object: data => toggleObjectHUD(data.state),
     ui_camera: data => {
         document.getElementById('camera-hud').classList.toggle('hidden', data.state == false);
+        document.getElementById('camStatus').classList.toggle('hidden', data.state == false);
     },
     updateCrosshair: data => {
         updateCrosshair(data);
@@ -616,4 +618,3 @@ function handleEscape(contentId, hudId, exitOptionId) {
         document.getElementById(exitOptionId).focus();
     }
 }
-

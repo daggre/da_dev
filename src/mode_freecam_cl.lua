@@ -52,6 +52,10 @@ da_mode.register({
 
         if not da_mode.isActive("object") and not da_mode.isActive("noclip") then
             da_ui.send("ui_camera", { state = false })
+            da_ui.send("toggleHelp", {
+                mode = "camHelp",
+                state = false,
+            })
         end
     end,
     keymaps = {
@@ -59,7 +63,7 @@ da_mode.register({
             key = "f",
             event = "justPressed",
             active = true,
-            modifier = { ctrl = false, shift = false },
+            modifiers = { ctrl = false, shift = false },
             fn = function()
                 da_mode.toggle("focus")
             end

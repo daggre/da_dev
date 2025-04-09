@@ -1,5 +1,3 @@
---- Copyright © 2024 Joshua Nelson
-
 fx_version 'cerulean'
 games {'rdr3'}
 rdr3_warning 'I acknowledge that this is a prerelease build of RedM, and I am aware my resources *will* become incompatible once RedM ships.'
@@ -8,11 +6,10 @@ author 'daggre_actual'
 description 'Development Kit for RedM'
 version '0.0.1'
 lua54 'yes'
--- this_is_a_map 'yes'
 
 shared_scripts {
     '@da_log/log_sh.lua',
-    '@da_lib/lib/cli_sh.lua',
+    '@da_lib/features/cli/cli_sh.lua',
     'src/cli_sh.lua',
 }
 
@@ -44,7 +41,7 @@ client_scripts {
     '@da_lib/features/net/net_cl.lua',
     '@da_lib/features/api/api_sh.lua',
     '@da_lib/features/kvp/kvp_sh.lua',
-    '@da_lib/features/fs/fx_cl.lua',
+    '@da_lib/features/fx/fx_cl.lua',
 
     '@polyzone/client.lua',
     '@polyzone/CircleZone.lua',

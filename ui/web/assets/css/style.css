@@ -440,6 +440,13 @@ ul li {
     border-right: 2px solid var(--secondary-light);
 }
 
+.fav {
+    color: gold;
+    text-shadow:
+        0 0 15px gold,
+        0 0 17px gold;
+}
+
 #info-hud ul li {
     flex: 1;
     justify-content: center;

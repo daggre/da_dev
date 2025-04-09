@@ -28,14 +28,19 @@ export let Settings = {
     },
     form: {
         evaluateformon: "any",
-    }
+    },
+    objFavorites: new Set(),
 };
 
 // Generic function to fetch settings from the client
-export async function fetchSettings(category) {
+export async function fetchSettings() {
     const response = await sendClientMessage(`fetchSettings`, Object.keys(Settings));
-    if (response[category]) {
-        Settings[category] = JSON.parse(response[category]);
+    for (const [key, value] of Object.entries(response)) {
+        let parsed = JSON.parse(value);
+        if (key === 'objFavorites') {
+            parsed = new Set(parsed);
+        }
+        Settings[key] = parsed;
     }
 }
 
@@ -49,7 +54,7 @@ export async function fetchSpawnData() {
 
 // Apply settings dynamically
 export async function initSettings() {
-    await fetchSettings(['nearby','tag','theme','form']);
+    await fetchSettings();
     updateUI();
     initUIStyle(
         Settings.theme.color,
