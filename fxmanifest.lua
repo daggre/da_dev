@@ -38,10 +38,6 @@ client_scripts {
     '@da_lib/features/kvp/kvp_sh.lua',
     '@da_lib/features/fx/fx_cl.lua',
 
-    '@polyzone/client.lua',
-    '@polyzone/CircleZone.lua',
-    '@da_lib/features/polyzone/polyzone_cl.lua',
-
     '@da_lib/features/trie/trie_cl.lua',
     'ui/ui.lua',
 
