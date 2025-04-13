@@ -6,7 +6,6 @@ local TeleportLocations = {
     ["Blackwater"] = { key = "b", location = vector4(-805.785, -1272.71, 43.668, 208.795), category = "towns", },
     ["Butcher Creek"] = { key = "c", location = vector3(2576.028, 768.841, 80.947), },
     ["St Denis"] = { key = "d", location = vector3(2628.322, -1221.465, 59.598), category = "towns", },
-    ["Mother Tree"] = { key = "e", location = vector3(-2238.192, 610.82, 118.201), },
     ["Emerald Farm"] = { key = "f", location = vector4(1432.459, 320.61, 88.769, 87.306), },
     ["Hanging Dog"] = { key = "h", location = vector4(-2204.896, 711.084, 122.266, 240.798), },
     ["Van Horn"] = { key = "h", location = vector3(2930.864, 512.522, 45.882), category = "towns", },
@@ -18,11 +17,6 @@ local TeleportLocations = {
     ["Tumbleweed"] = { key = "t", location = vector3(-5530.891, -2964.492, -1.245), category = "towns", },
     ["Valentine"] = { key = "v", location = vector3(-280.086, 798.556, 119.349), category = "towns", },
     ["Wallace"] = { key = "w", location = vector4(-1303.765, 393.19, 95.439, 257.936), },
-    ["Arikoan"] = { key = "z", location = vector3(-2534.068, -98.345, 166.177), },
-    ["Graverobbing"] = { key = "g", location = vector4(2413.753, 1772.332, 89.543, 300.794), category = "npc", },
-    ["Coal Chute"] = { key = "c", location = vector4(2945.651, 1378.808, 51.357, 79.818), category = "npc", },
-    ["Mining Fence"] = { key = "f", location = vector4(2731.39, 1368.416, 68.47, 107.077), category = "npc" },
-    ["Music Vendor"] = { key = "m", location = vector4(2655.914, -1379.673, 48.532, 225.987), category = "npc" },
 }
 
 da_trie.add("devRoot", "teleport", "t")

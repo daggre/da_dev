@@ -10,7 +10,6 @@ lua54 'yes'
 shared_scripts {
     '@da_log/log_sh.lua',
     '@da_lib/features/cli/cli_sh.lua',
-    'src/cli_sh.lua',
 }
 
 client_scripts {
@@ -47,10 +46,7 @@ client_scripts {
     'ui/ui.lua',
 
     'src/menu_cl.lua',
-    'src/keys_cl.lua',
-    -- 'src/kinematics_cl.lua',
     'src/environment_cl.lua',
-    'src/fx_cl.lua',
     'src/mode_anim_cl.lua',
     'src/mode_devtree_cl.lua',
     'src/mode_freecam_cl.lua',
@@ -58,13 +54,6 @@ client_scripts {
     'src/mode_object_cl.lua',
     'src/teleport_cl.lua',
     'src/ped_cl.lua',
-    'src/zone_cl.lua',
-    'src/debug_cl.lua',
-    'dat/bones.lua',
-    'src/bone_cl.lua',
-
-    -- Testing
-    'test/test_debug.lua',
 }
 
 files {
