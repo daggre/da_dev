@@ -13,10 +13,6 @@ shared_scripts {
     'src/cli_sh.lua',
 }
 
-server_scripts {
-    -- 'src/db_inv_etl.lua',
-}
-
 client_scripts {
     '@da_lib/data/animation.lua',
     '@da_lib/data/flags_af.lua',
