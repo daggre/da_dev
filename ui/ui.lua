@@ -14,11 +14,11 @@ da_ui.callbacks({
         return settings
     end,
     fetchObjects = function() return {
-        peds = json.encode(dat.ped),
-        objects = json.encode(dat.object),
-        pickups = json.encode(dat.pickup),
-        vehicles = json.encode(dat.vehicle),
-        propsets = json.encode(dat.propset),
+        ped = json.encode(dat.ped),
+        object = json.encode(dat.object),
+        pickup = json.encode(dat.pickup),
+        vehicle = json.encode(dat.vehicle),
+        propset = json.encode(dat.propset),
     } end,
 })
 

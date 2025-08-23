@@ -12,6 +12,7 @@ local ObjectThread = {}
 local Distance = 1000.0
 local UntrackedModels = { [0] = true, }
 local Spawn = nil
+local SpawnType = nil
 local HitCoords = nil
 local NearbyOriginPos = nil
 local DefaultScene = "default"
@@ -160,30 +161,26 @@ local function LoadScene(sceneName)
         return false
     end
     for _, obj in ipairs(Scenes[sceneName].objects) do
-        log.spam("Creating object", handle, obj.data)
         local quaternion = obj.quaternion_x and obj.quaternion_y and obj.quaternion_z and obj.quaternion_w and {
             x = obj.quaternion_x,
             y = obj.quaternion_y,
             z = obj.quaternion_z,
             w = obj.quaternion_w,
         } or nil
-        local handle = da_obj.create(
-            obj.modelHash,
-            vector3(obj.pos_x, obj.pos_y, obj.pos_z),
-            {
-                collision = obj.collision,
-                frozen = obj.frozen,
-                rotation = {
-                    x = obj.rot_x,
-                    y = obj.rot_y,
-                    z = obj.rot_z,
-                },
-                rotation_order = 2,
-                quaternion = quaternion,
-            }
-        )
-        obj.handle = handle
-        if not handle then
+        local opts = {
+            collision = obj.collision,
+            frozen = obj.frozen,
+            rotation = {
+                x = obj.rot_x,
+                y = obj.rot_y,
+                z = obj.rot_z,
+            },
+            rotation_order = 2,
+            quaternion = quaternion,
+        }
+        log.spam("Creating object", obj)
+        obj.handle = da_obj.create(obj.modelHash, vector3(obj.pos_x, obj.pos_y, obj.pos_z), opts)
+        if not obj.handle then
             log.error("Failed to create object", obj.modelHash, obj.pos)
             successfulLoad = false
         end
@@ -372,6 +369,32 @@ local SelectModeTick = function()
     lazy(30).uiUpdate(Select, Hover, GetObjData(Select))
 end
 
+local function CopyObject(data)
+    local model = GetEntityModel(data.handle)
+    local coords = GetEntityCoords(data.handle)
+    local rotation = GetEntityRotation(data.handle, 2)
+
+    if not ActiveScene then ActiveScene = DefaultScene; end
+    if not Scenes[ActiveScene] then Scenes[ActiveScene] = {
+        objects = {},
+        ped = {},
+        vehicle = {},
+    }; end
+    local obj = nil
+    -- TODO: Add extra options for peds and vehicles, maybe use GetObjData?
+    obj = da_obj.create(model, coords, {
+        rotation = rotation,
+        rotation_order = 2,
+    })
+    log.debug("Cloned object", ActiveScene, {
+        obj = obj,
+        model = model,
+        coords = coords,
+        rot = rotation,
+    })
+    table.insert(Scenes[ActiveScene].objects, GetObjData(obj))
+end
+
 local ObjectModeThread = function()
     local id = _getUID()
     ObjectThread = {}
@@ -481,11 +504,17 @@ da_mode.register({
             primary = true,
             modifiers = { shift = true, },
             fn = function()
-                if not Spawn or not HitCoords then return; end
+                local obj = nil
+                if not Spawn or not SpawnType or not HitCoords then return; end
                 if not ActiveScene then ActiveScene = DefaultScene; end
                 if not Scenes[ActiveScene] then Scenes[ActiveScene] = { objects = {}, }; end
-                local obj = da_obj.create(Spawn, HitCoords, { ground = true, })
-                log.spam("Spawned object", ActiveScene, obj, Spawn, HitCoords)
+                local opts = {}
+                if SpawnType == "entity" then
+                    opts.ground = true
+                end
+                log.debug("Spawning", SpawnType, ActiveScene, Spawn, HitCoords, opts)
+                local obj = da_obj.create(Spawn, HitCoords, opts, SpawnType)
+                log.spam("Spawned", obj)
                 table.insert(Scenes[ActiveScene].objects, GetObjData(obj))
                 Select = obj
             end
@@ -828,36 +857,17 @@ local function PlaceOnGround(data)
     da_obj.set(entityHandle, { ground = true })
 end
 
-local function CopyObject(data)
-    local model = GetEntityModel(data.handle)
-    local coords = GetEntityCoords(data.handle)
-    local rotation = GetEntityRotation(data.handle, 2)
-
-    if not ActiveScene then ActiveScene = DefaultScene; end
-    if not Scenes[ActiveScene] then Scenes[ActiveScene] = { objects = {}, }; end
-    local obj = da_obj.create(model, coords, {
-        rotation = rotation,
-        rotation_order = 2,
-    })
-    log.debug("Cloned object", ActiveScene, {
-        obj = obj,
-        model = model,
-        coords = coords,
-        rot = rotation,
-    })
-    table.insert(Scenes[ActiveScene].objects, GetObjData(obj))
-end
-
 local function RemovePreviewObject()
     local lastObj = PreviewObject
     if lastObj then da_obj.delete(lastObj); end
 end
 
--- TODO: Handle peds versus objects
-local function SpawnPreviewObject(name)
+local function SpawnPreviewObject(name, objType)
+    if not objType then return; end
     local hit, _, pos = RaycastXhair(1000.0, PlayerPedId())
     if not hit then return; end
-    local obj = da_obj.create(GetHashKey(name), pos, {})
+    local obj = nil
+    obj = da_obj.create(GetHashKey(name), pos, {}, objType)
     local lastObj = PreviewObject
     PreviewObject = obj
     if lastObj then da_obj.delete(lastObj); end
@@ -909,11 +919,14 @@ da_ui.callbacks({
     getRaycast = function(data) return GetRaycast(data) end,
 })
 da_ui.events({
-    spawnPreviewObject = function(data) SpawnPreviewObject(data.name) end,
+    spawnPreviewObject = function(data) SpawnPreviewObject(data.name, data.objType) end,
     removePreviewObject = function() RemovePreviewObject() end,
     dispatchKeyEvents = function(data) DispatchKeyEvents(data) end,
     sendCursorPos = function(data) MouseX = data.x; MouseY = data.y end,
-    selectSpawnObject = function(data) Spawn = GetHashKey(data.name) end,
+    selectSpawnObject = function(data)
+        Spawn = GetHashKey(data.name)
+        SpawnType = data.objType
+    end,
     trackObject = TrackObject,
     setNearbyOriginPos = SetNearbyOriginPos,
     saveScene = function(data) CheckRename(data.scene); SaveScene(data.scene) end,

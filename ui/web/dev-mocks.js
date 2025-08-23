@@ -325,27 +325,27 @@ const mockScene = {
 }
 
 const mockData = {
-    peds: Array.from(
+    ped: Array.from(
         { length: 100 },
         () =>
             `${getRandomElement(pedPrefixes)}_${getRandomElement(pedPrefixes)}_${randomSuffix()}`
     ),
-    objects: Array.from(
+    object: Array.from(
         { length: 100 },
         () =>
             `${getRandomElement(objectPrefixes)}_${getRandomElement(objectPrefixes)}_${randomSuffix()}`
     ),
-    pickups: Array.from(
+    pickup: Array.from(
         { length: 100 },
         () =>
             `${getRandomElement(pickupPrefixes)}_${getRandomElement(pickupPrefixes)}_${randomSuffix()}`
     ),
-    vehicles: Array.from(
+    vehicle: Array.from(
         { length: 100 },
         () =>
             `${getRandomElement(vehiclePrefixes)}_${getRandomElement(vehiclePrefixes)}_${randomSuffix()}`
     ),
-    propsets: Array.from(
+    propset: Array.from(
         { length: 100 },
         () =>
             `${getRandomElement(propsetPrefixes)}_${getRandomElement(propsetPrefixes)}_${randomSuffix()}`
@@ -378,11 +378,11 @@ const mockResponses = {
         }),
     }),
     fetchObjects: () => ({
-        peds: JSON.stringify(mockData.peds),
-        objects: JSON.stringify(mockData.objects),
-        pickups: JSON.stringify(mockData.pickups),
-        vehicles: JSON.stringify(mockData.vehicles),
-        propsets: JSON.stringify(mockData.propsets),
+        ped: JSON.stringify(mockData.ped),
+        object: JSON.stringify(mockData.object),
+        pickup: JSON.stringify(mockData.pickup),
+        vehicle: JSON.stringify(mockData.vehicle),
+        propset: JSON.stringify(mockData.propset),
     }),
     scenesList: () => ({
         scenes: JSON.stringify([
