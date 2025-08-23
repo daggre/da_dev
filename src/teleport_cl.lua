@@ -17,6 +17,7 @@ local TeleportLocations = {
     ["Tumbleweed"] = { key = "t", location = vector3(-5530.891, -2964.492, -1.245), category = "towns", },
     ["Valentine"] = { key = "v", location = vector3(-280.086, 798.556, 119.349), category = "towns", },
     ["Wallace"] = { key = "w", location = vector4(-1303.765, 393.19, 95.439, 257.936), },
+    ["My spot"] = { key = "]", location = vector4(-2176.654, 676.479, 119.898, 185.286), },
 }
 
 da_trie.add("devRoot", "teleport", "t")

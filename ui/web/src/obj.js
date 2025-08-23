@@ -5,7 +5,7 @@ import { resetList, isVisible, } from '../src/nav.js';
 import { Settings } from '../src/settings.js';
 
 let TrackedObjectsLoopRunning = false;
-let SelectedObjectSpawnType = 'objects';
+let SelectedObjectSpawnType = 'object';
 
 
 export const ObjectContextOptions = {
@@ -44,7 +44,7 @@ function searchObjects(searchValue, searchList, elementId, tabIndex) {
 
     // Optimize filter by pre-lowering searchValue once
     const searchLower = searchValue.toLowerCase();
-    const favOnly = document.getElementById('button-spawnfavs').classList.contains('selected');
+    const favOnly = document.getElementById('button-spawnfav').classList.contains('selected');
     const results = searchList.filter(str =>
         str.toLowerCase().includes(searchLower) && (!favOnly || Settings.objFavorites.has(str))
     );
@@ -93,7 +93,10 @@ function searchHandleHover(event) {
     if (event.type === 'pointerenter') {
         li.classList.add('li-hover');
         if (isPreviewSelected) {
-            sendClientMessage('spawnPreviewObject', { name: li.dataset.name });
+            sendClientMessage('spawnPreviewObject', {
+                name: li.dataset.name,
+                objType: SelectedObjectSpawnType,
+            });
         }
     } else {
         li.classList.remove('li-hover');
@@ -112,7 +115,7 @@ function searchHandleClick(event) {
     el.querySelectorAll('li').forEach(li => li.classList.remove('li-select'));
 
     li.classList.add('li-select');
-    selectSpawnObject(li.dataset.name);
+    selectSpawnObject(li.dataset.name, SelectedObjectSpawnType);
 }
 
 // Handle object favorite toggle (right-click event)
@@ -212,9 +215,12 @@ export function getTrackedObjects() {
     }, 250);
 }
 
-function selectSpawnObject(object) {
+function selectSpawnObject(object, objType) {
     document.getElementById('activeObject').textContent = object;
-    sendClientMessage('selectSpawnObject', { name: object });
+    sendClientMessage('selectSpawnObject', {
+        name: object,
+        objType: objType,
+    });
 }
 
 export function toggleNearbyFilter(type) {
@@ -235,11 +241,11 @@ export function tagSelectSort(sortType) {
 const PREFIX_OBJ_SPAWN = 'button-spawn';
 const PREFIX_NEARBY_ORIGIN = 'button-nearbyOrigin-';
 const validSpawns = new Set([
-    'objects',
-    'peds',
-    'vehicles',
-    'propsets',
-    'pickups',
+    'object',
+    'ped',
+    'vehicle',
+    'propset',
+    'pickup',
     'other',
 ]);
 const validOrigins = new Set([

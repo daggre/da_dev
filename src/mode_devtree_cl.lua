@@ -1,4 +1,5 @@
 local SkipNext = false
+local devTreeKeyMap = "z"
 CurrentTree = "devRoot"
 
 da_mode.register({
@@ -20,7 +21,7 @@ da_mode.register({
     end,
     keymaps = {
         {
-            key = "z",
+            key = devTreeKeyMap,
             event = "justReleased",
             modifiers = { ctrl = false },
             fn = function()
@@ -33,7 +34,7 @@ da_mode.register({
             end
         },
         {
-            key = "z",
+            key = devTreeKeyMap,
             event = "justPressed",
             active = true,
             fn = function()
@@ -55,4 +56,3 @@ da_net.events({
         end
     end,
 })
-

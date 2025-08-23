@@ -287,15 +287,15 @@ export const EventActions = {
         '#button-spawnpreview': () => {
             document.getElementById('button-spawnpreview').classList.toggle('selected');
         },
-        '#button-spawnfavs': () => {
-            document.getElementById('button-spawnfavs').classList.toggle('selected');
+        '#button-spawnfav': () => {
+            document.getElementById('button-spawnfav').classList.toggle('selected');
             searchSpawnObject(document.getElementById('objSearch').textContent);
         },
-        '#button-spawnobjects': () => selectSpawnType('objects'),
-        '#button-spawnpeds': () => selectSpawnType('peds'),
-        '#button-spawnvehicles': () => selectSpawnType('vehicles'),
-        '#button-spawnpropsets': () => selectSpawnType('propsets'),
-        '#button-spawnpickups': () => selectSpawnType('pickups'),
+        '#button-spawnobject': () => selectSpawnType('object'),
+        '#button-spawnped': () => selectSpawnType('ped'),
+        '#button-spawnvehicle': () => selectSpawnType('vehicle'),
+        '#button-spawnpropset': () => selectSpawnType('propset'),
+        '#button-spawnpickup': () => selectSpawnType('pickup'),
         '#button-spawnother': () => selectSpawnType('other'),
 
         '#button-nearbyOrigin-camera': () => selectNearbyOrigin('camera'),

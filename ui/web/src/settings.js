@@ -12,11 +12,11 @@ export let Settings = {
         origin: 'camera',
     },
     spawn: {
-        objects: [],
-        peds: [],
-        vehicles: [],
-        propsets: [],
-        pickups: [],
+        object: [],
+        ped: [],
+        vehicle: [],
+        propset: [],
+        pickup: [],
     },
     tag: { sort: 'dist' },
     theme: {

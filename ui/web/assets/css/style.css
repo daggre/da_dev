@@ -15,7 +15,7 @@
     --bg-t1: #04101dab;
     --bg-t2: #04101d75;
     --bg-t3: #04101d22;
-    --font-size: 16px;
+    --font-size: 1rem;
     --brd-rad: 8px;
     --brd-size: 2px;
     /* stylelint-disable-next-line no-irregular-whitespace */
@@ -61,10 +61,10 @@ ul li {
 #dev-tree-hud {
     gap: 0.5rem;
     height: auto;
-    width: 10vh;
+    width: 10rem;
     position: fixed;
-    right: 12vw;
-    bottom: 8vh;
+    right: 12rem;
+    bottom: 8rem;
     text-transform: lowercase;
 }
 
@@ -175,7 +175,7 @@ ul li {
 .list-group {
     display: flex;
     justify-content: flex-start;
-    min-width: 8vw;
+    min-width: 10rem;
     max-width: 33vw;
     flex-direction: column;
     border-radius: 0;
@@ -452,14 +452,14 @@ ul li {
     justify-content: center;
 }
 
-#button-spawnfavs.selected {
+#button-spawnfav.selected {
     color: gold;
     text-shadow:
         0 0 15px gold,
         0 0 17px gold;
 }
 
-#button-spawnfavs.selected:hover {
+#button-spawnfav.selected:hover {
     text-shadow:
         0 0 10px gold,
         0 0 12px gold,
@@ -467,7 +467,7 @@ ul li {
         0 0 17px gold;
 }
 
-#button-spawnfavs.selected:focus {
+#button-spawnfav.selected:focus {
     outline: none;
     text-shadow:
         0 0 1px var(--bg),
@@ -478,7 +478,7 @@ ul li {
         0 0 15px gold;
 }
 
-#button-spawnfavs:focus {
+#button-spawnfav:focus {
     outline: none;
     color: var(--secondary-light);
     text-shadow: 0 0 15px gold;
