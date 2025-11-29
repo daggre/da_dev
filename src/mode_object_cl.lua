@@ -279,7 +279,7 @@ local function SaveScene(sceneName)
             end
         end
     end
-    log.info("Saving scene", sceneName, storedScene)
+    log.debug("Saving scene", sceneName, storedScene)
     kvp.encode("scenes:"..sceneName, storedScene)
 end
 
