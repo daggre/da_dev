@@ -113,7 +113,7 @@ export function toggleObjectDetail(elId, state) {
     }
     el.classList.toggle('selected', state);
     const listEl = ObjectDetailsCategoryMap.get(elId);
-    listEl.classList.toggle('hidden', !state);
+    document.getElementById(listEl).classList.toggle('hidden', !state);
 }
 
 const ObjectDetailsFields = new Map([
