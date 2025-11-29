@@ -210,4 +210,3 @@ export function trackSceneObjects() {
         el.style.minHeight = `${Math.min(objects.length * 0.3, 4.9)}vh`;
     }, 250);
 }
-
