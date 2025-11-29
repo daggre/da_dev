@@ -53,16 +53,40 @@ local function GetObjectTypeStr(entity)
     return "other"
 end
 
--- TODO: Prioritize sending pertinent info only to NUI, we end up passing large amounts of data for large scenes
+local GetTrackedObjData = function(entityHandle)
+    -- This is a slimmed down version of GetObjData for performant calls
+    local objData = {}
+    if entityHandle == nil then return nil; end
+
+    local networkID = NetworkGetEntityIsNetworked(entityHandle) and NetworkGetNetworkIdFromEntity(entityHandle) or false
+    local modelHash = GetEntityModel(entityHandle)
+    local modelName = dat.getName(modelHash)
+    local pos_x, pos_y, pos_z = table.unpack(GetEntityCoords(entityHandle))
+
+    objData.handle = entityHandle
+    objData.networkID = networkID ~= false and networkID or "-"
+    objData.modelHash = modelHash
+    objData.modelName = modelName
+    objData.pos_x = pos_x
+    objData.pos_y = pos_y
+    objData.pos_z = pos_z
+
+
+    if entityHandle == Hover then
+        objData.hover = true
+    elseif entityHandle == Select then
+        objData.select = true
+    end
+
+    return objData
+end
 
 -- TODO: Find a way to cache this information and utilize cache on frozen or
 -- objects that haven't moved, maybe we invalidate cache for objects when making
 -- changes
--- TODO: Alternatively, if this isn't a constantly called code, then dont worry about it
 local GetObjData = function(entityHandle)
     local objData = {}
     if entityHandle == nil then return nil; end
-    -- if not DoesEntityExist(entityHandle) then return objData; end
 
     local networkID = NetworkGetEntityIsNetworked(entityHandle) and NetworkGetNetworkIdFromEntity(entityHandle) or false
     local modelHash = GetEntityModel(entityHandle)
@@ -236,7 +260,7 @@ local function GetScene(sceneName)
     local coords = GetEntityCoords(PlayerPedId())
     local warn = 0
     for _, obj in ipairs(Scenes[sceneName].objects) do
-        local objData = GetObjData(obj.handle)
+        local objData = GetTrackedObjData(obj.handle)
         if objData then
             local objCoords = vector3(objData.pos_x, objData.pos_y, objData.pos_z)
             objData.distance = #(coords - objCoords)
