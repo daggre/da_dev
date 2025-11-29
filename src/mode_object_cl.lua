@@ -66,7 +66,7 @@ local GetTrackedObjData = function(entityHandle)
     objData.handle = entityHandle
     objData.networkID = networkID ~= false and networkID or "-"
     objData.modelHash = modelHash
-    objData.modelName = modelName
+    objData.modelName = tostring(modelName)
     objData.pos_x = pos_x
     objData.pos_y = pos_y
     objData.pos_z = pos_z
@@ -101,7 +101,7 @@ local GetObjData = function(entityHandle)
     objData.handle = entityHandle
     objData.networkID = networkID ~= false and networkID or "-"
     objData.modelHash = modelHash
-    objData.modelName = modelName
+    objData.modelName = tostring(modelName)
     objData.objType = objType
     objData.pos_x = pos_x
     objData.pos_y = pos_y
