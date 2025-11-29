@@ -57,6 +57,6 @@ export function addTooltipListener() {
 export function setTooltips() {
     TooltipEnabled = document.getElementById('objSettingsTooltip').classList.toggle('selected');
     if (!TooltipEnabled) {
-        ducoment.getElementById('tooltip').classList.add('hidden');
+        document.getElementById('tooltip').classList.add('hidden');
     }
 }
