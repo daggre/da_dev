@@ -46,6 +46,13 @@ local ResetDefaultScene = function()
     kvp.encode("scenes:"..DefaultScene, Scenes[DefaultScene])
 end
 
+local function GetObjectTypeStr(entity)
+    if IsEntityAPed(entity) then return "ped"; end
+    if IsEntityAVehicle(entity) then return "vehicle"; end
+    if IsEntityAnObject(entity) then return "object"; end
+    return "other"
+end
+
 -- TODO: Prioritize sending pertinent info only to NUI, we end up passing large amounts of data for large scenes
 
 -- TODO: Find a way to cache this information and utilize cache on frozen or
@@ -65,11 +72,13 @@ local GetObjData = function(entityHandle)
     local visible = IsEntityVisible(entityHandle) == 1
     local frozen = IsEntityFrozen(entityHandle) == 1
     local collision = GetEntityCollisionDisabled(entityHandle) == false
+    local objType = GetObjectTypeStr(entityHandle)
 
     objData.handle = entityHandle
     objData.networkID = networkID ~= false and networkID or "-"
     objData.modelHash = modelHash
     objData.modelName = modelName
+    objData.objType = objType
     objData.pos_x = pos_x
     objData.pos_y = pos_y
     objData.pos_z = pos_z
@@ -179,9 +188,9 @@ local function LoadScene(sceneName)
             quaternion = quaternion,
         }
         log.spam("Creating object", obj)
-        obj.handle = da_obj.create(obj.modelHash, vector3(obj.pos_x, obj.pos_y, obj.pos_z), opts)
+        obj.handle = da_obj.create(obj.modelHash, vector3(obj.pos_x, obj.pos_y, obj.pos_z), opts, obj.objType)
         if not obj.handle then
-            log.error("Failed to create object", obj.modelHash, obj.pos)
+            log.error("Failed to create object", obj)
             successfulLoad = false
         end
     end
@@ -214,7 +223,6 @@ local function GetScenesList()
 end
 
 local function GetScene(sceneName)
-    log.spam("Getting scene objects data", sceneName)
     if not Scenes[sceneName] then
         log.error("Scene not found", sceneName)
         if sceneName == DefaultScene then
@@ -504,16 +512,17 @@ da_mode.register({
             primary = true,
             modifiers = { shift = true, },
             fn = function()
-                local obj = nil
-                if not Spawn or not SpawnType or not HitCoords then return; end
+                local objHash = Spawn
+                local objType = SpawnType
+                if not objHash or not objType or not HitCoords then return; end
                 if not ActiveScene then ActiveScene = DefaultScene; end
                 if not Scenes[ActiveScene] then Scenes[ActiveScene] = { objects = {}, }; end
                 local opts = {}
-                if SpawnType == "entity" then
+                if objType == "entity" then
                     opts.ground = true
                 end
-                log.debug("Spawning", SpawnType, ActiveScene, Spawn, HitCoords, opts)
-                local obj = da_obj.create(Spawn, HitCoords, opts, SpawnType)
+                log.debug("Spawning", objType, ActiveScene, objHash, HitCoords, opts)
+                local obj = da_obj.create(objHash, HitCoords, opts, objType)
                 log.spam("Spawned", obj)
                 table.insert(Scenes[ActiveScene].objects, GetObjData(obj))
                 Select = obj
@@ -681,13 +690,6 @@ local function TrackObject(data)
         elseif data.category == "select" then Select = tonumber(data.handle)
         end
     end
-end
-
-local function GetObjectTypeStr(entity)
-    if IsEntityAPed(entity) then return "ped"; end
-    if IsEntityAVehicle(entity) then return "vehicle"; end
-    if IsEntityAnObject(entity) then return "object"; end
-    return "other"
 end
 
 local function GetNearbyObjects(range, origin)
