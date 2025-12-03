@@ -86,17 +86,7 @@ const MouseActions = {
         middleClick: () => {},
     },
     'anim-hud': {
-        leftClick: event => {
-            // TODO: convert this to EventActions click
-            if (
-                event.target.id === 'activeAnimDict' ||
-                event.target.id === 'activeAnimName'
-            ) {
-                if (event.target.innerHTML !== '') {
-                    clipboardCopy(event.target.innerHTML);
-                }
-            }
-        },
+        leftClick: () => {},
         middleClick: () => {
             if (MCP) {
                 sendClientMessage('deactivateMCP', {}).then(mcpState => {
@@ -274,6 +264,11 @@ export const EventActions = {
         '#button-animconf-clear': () => clearAnimation(),
         '#button-animconf-deleteall': () => deleteAllAnimations(),
 
+        '#animSelectedDict': (event) => clipboardCopy(event.target.innerHTML),
+        '#animSelectedName': (event) => clipboardCopy(event.target.innerHTML),
+        '#animConfSelectedDict': (event) => clipboardCopy(event.target.innerHTML),
+        '#animConfSelectedName': (event) => clipboardCopy(event.target.innerHTML),
+
         // Object HUD
         '#button-spawn': () => toggleObjectSpawnHUD(),
         '#button-trackedobjlist': () => toggleObjectNearbyHUD(),
@@ -334,6 +329,10 @@ export const EventActions = {
         '#button-animTimings': () => toggleAnimDetail('button-animTimings'),
         '#button-animFlags': () => toggleAnimDetail('button-animFlags'),
         '#button-animExtras': () => toggleAnimDetail('button-animExtras'),
+
+        '#objDetailsEntityHandle': (event) => clipboardCopy(event.target.innerHTML),
+        '#objDetailsEntityModelName': (event) => clipboardCopy(event.target.innerHTML),
+        '#objDetailsEntityNetworkId': (event) => clipboardCopy(event.target.innerHTML),
     },
     mousemove: event => {
         if (
