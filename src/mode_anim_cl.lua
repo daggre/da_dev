@@ -61,19 +61,41 @@ Citizen.CreateThread(function()
 end)
 
 local PlayAnimation = function(anim)
-    local entity = anim.entity ~= 0 and anim.entity or PlayerPedId()
-    da_anim.ped(
-        entity,
-        anim.dict,
-        anim.name,
-        anim.config.blendin,
-        anim.config.blendout,
-        anim.config.duration,
-        anim.config.flags,
-        anim.config.rate,
-        anim.config.ikflags,
-        anim.config.taskfilter
-    )
+    local entity = tonumber(anim.config.entity) ~= 0 and tonumber(anim.config.entity) or PlayerPedId()
+    local objType = da_obj.getType(GetEntityModel(entity))
+    if objType == nil or objType == "object" then
+        da_anim.object(
+            entity,
+            anim.dict,
+            anim.name,
+            nil,
+            anim.config.loop,
+            anim.config.stayInAnim,
+            nil,
+            anim.config.delta,
+            anim.config.bitset
+        )
+    elseif objType == "ped" then
+        da_anim.ped(
+            entity,
+            anim.dict,
+            anim.name,
+            anim.config.blendin,
+            anim.config.blendout,
+            anim.config.duration,
+            anim.config.flags,
+            anim.config.rate,
+            anim.config.ikflags,
+            anim.config.taskfilter
+        )
+    elseif objType == "vehicle" then
+        log.warn("Animations are not supported for vehicles")
+    elseif objType == "propset" then
+        log.warn("Animations are not supported for propsets")
+    elseif objType == "pickup" then
+        log.warn("Animations are not supported for pickup")
+    end
+    log.debug("da_mode_anim_cl PlayAnimation played", anim, objType)
 end
 
 local PlayConfiguredAnimations = function(data)
@@ -81,6 +103,7 @@ local PlayConfiguredAnimations = function(data)
         Citizen.CreateThread(function()
             local delay = tonumber(anim.config.delay) and tonumber(anim.config.delay) or 0
             if delay > 0 then Citizen.Wait(delay) end
+            log.debug("da_mode_anim_cl PlayConfiguredAnimations playing", anim)
             PlayAnimation(anim)
         end)
     end
@@ -90,6 +113,12 @@ da_ui.callbacks({
     playAnimation = function(data) PlayAnimation(data) end,
     playAnimations = function(data) PlayConfiguredAnimations(data) end,
     stopAnimation = function(data) da_anim.stop(data.entity or PlayerPedId()) end,
+    getEntityType = function(data)
+        local entity = tonumber(data.entity) ~= 0 and tonumber(data.entity) or PlayerPedId()
+        local objType = da_obj.getType(GetEntityModel(entity))
+        log.debug("da_ui.events getEntityType", entity, objType)
+        return { entityType = objType or "ped" }
+    end,
     activateMCP = function(data)
         log.debug("da_ui.events activateMCP", data)
         local retval = da_mode.activateMCP(data.mode)

@@ -436,6 +436,13 @@ ul li {
         0 0 9px var(--secondary-light);
 }
 
+.list li.selected {
+    color: var(--secondary-light);
+    text-shadow:
+        0 0 3px var(--secondary-light),
+        0 0 9px var(--secondary-light);
+}
+
 .entry:focus {
     border-right: 2px solid var(--secondary-light);
 }
