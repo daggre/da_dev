@@ -7,6 +7,8 @@ let selectedAnimation = null;
 let confAnims = {};
 const defaultConfig = {
     entity: 0,
+    entityType: 'ped', // 'ped' or 'object'
+    // Ped parameters
     blendin: 0.9,
     blendout: 0.9,
     duration: -1,
@@ -14,6 +16,12 @@ const defaultConfig = {
     flags: 0,
     ikflags: 0,
     taskfilter: false,
+    // Object parameters
+    loop: 0,
+    stayInAnim: 0,
+    delta: 0.0,
+    bitset: 0,
+    // Common
     delay: 0,
 }
 
@@ -236,12 +244,24 @@ export function addAnimation() {
 
     const uid = `${animDict}-${animName}-${Date.now()}`;
 
+    // Create animation with default config
     const animation = {
         uid: uid,
         dict: animDict,
         name: animName,
         config: { ...defaultConfig },
     };
+
+    // Detect entity type if entity is specified
+    const entityHandle = document.getElementById('animConfigureEntity').textContent;
+    if (entityHandle && entityHandle != '0') {
+        animation.config.entity = entityHandle;
+        // Get cached/default type immediately, update in background if needed
+        animation.config.entityType = detectEntityType(entityHandle, (detectedType) => {
+            animation.config.entityType = detectedType;
+        });
+    }
+
     confAnims[uid] = animation;
 
     let li = document.createElement('li');
@@ -395,26 +415,104 @@ function getTaskFilterName(value) {
     return match ? match.name : value;
 }
 
+function toggleAnimParamsByEntityType(entityType) {
+    const pedParams = document.querySelectorAll('.anim-ped-params');
+    const objectParams = document.querySelectorAll('.anim-object-params');
+
+    if (entityType === 'object') {
+        pedParams.forEach(el => el.classList.add('hidden'));
+        objectParams.forEach(el => el.classList.remove('hidden'));
+    } else {
+        pedParams.forEach(el => el.classList.remove('hidden'));
+        objectParams.forEach(el => el.classList.add('hidden'));
+    }
+}
+
+// Cache entity types to avoid repeated lookups
+const entityTypeCache = new Map();
+
+function detectEntityType(entityHandle, callback) {
+    if (!entityHandle || entityHandle == 0) {
+        return 'ped'; // Default to ped if no entity specified
+    }
+
+    // Check cache first
+    if (entityTypeCache.has(entityHandle)) {
+        return entityTypeCache.get(entityHandle);
+    }
+
+    // Fetch in background and call callback when done
+    sendClientMessage('getEntityType', { entity: entityHandle })
+        .then(result => {
+            const entityType = result.entityType || 'ped';
+            entityTypeCache.set(entityHandle, entityType);
+            if (callback) callback(entityType);
+        })
+        .catch(e => {
+            console.warn('Failed to detect entity type:', e);
+            const defaultType = 'ped';
+            entityTypeCache.set(entityHandle, defaultType);
+            if (callback) callback(defaultType);
+        });
+
+    // Return default immediately (will update via callback if different)
+    return 'ped';
+}
+
 function updateAnimationConfig(animation) {
     document.getElementById('animConfigureDict').textContent = animation.dict;
     document.getElementById('animConfigureName').textContent = animation.name;
     document.getElementById('animConfigureEntity').textContent = animation.config.entity;
+
+    // Update ped parameters
     document.getElementById('animConfigureBlendIn').textContent = animation.config.blendin;
     document.getElementById('animConfigureBlendOut').textContent = animation.config.blendout;
     document.getElementById('animConfigureDuration').textContent = animation.config.duration;
     document.getElementById('animConfigureRate').textContent = animation.config.rate;
     document.getElementById('animConfigureAnimFlags').textContent = animation.config.flags;
     document.getElementById('animConfigureAnimIKFlags').textContent = animation.config.ikflags;
+
+    // Update object parameters
+    document.getElementById('animConfigureLoop').textContent = animation.config.loop;
+    document.getElementById('animConfigureStayInAnim').textContent = animation.config.stayInAnim;
+    document.getElementById('animConfigureDelta').textContent = animation.config.delta;
+    document.getElementById('animConfigureBitset').textContent = animation.config.bitset;
+
+    // Update common parameters
     document.getElementById('animConfigureDelay').textContent = animation.config.delay;
+
     getTaskFilters().then(taskFilters => {
         const match = taskFilters.find(entry => entry.value === animation.config.taskfilter);
         document.getElementById('animConfigureTaskfilter').textContent = match ? match.name.toLowerCase() : animation.config.taskfilter;
     });
+
+    // Toggle visibility based on entity type
+    toggleAnimParamsByEntityType(animation.config.entityType);
 }
 
 export function setSelectedAnimation(key, value) {
     const animation = confAnims[selectedAnimation.uid];
     selectedAnimation.config[key] = value;
+}
+
+export function updateSelectedAnimationEntity(entityHandle) {
+    if (!selectedAnimation) return;
+
+    const animation = confAnims[selectedAnimation.uid];
+    animation.config.entity = entityHandle;
+
+    // Detect entity type (returns cached or default immediately)
+    const entityType = detectEntityType(entityHandle, (detectedType) => {
+        // Callback updates UI if type changed
+        if (animation.config.entityType !== detectedType) {
+            animation.config.entityType = detectedType;
+            toggleAnimParamsByEntityType(detectedType);
+        }
+    });
+
+    // Update immediately with cached/default value
+    animation.config.entityType = entityType;
+    toggleAnimParamsByEntityType(entityType);
 }
 
 export function playConfiguredAnimations() {
