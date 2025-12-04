@@ -371,7 +371,7 @@ const mockResponses = {
         }),
         theme: JSON.stringify({
             color: 'retro_wave',
-            divider: 'angle_up',
+            divider: 'chevron',
             border: true,
             borderrad: false,
             borderradamount: 8,

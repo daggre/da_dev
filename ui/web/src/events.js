@@ -1,5 +1,5 @@
 import { toggleAnimationHUD, toggleAnimationSearchHUD, toggleAnimationConfigureHUD, toggleAnimDetail } from './hud/anim.js';
-import { searchAnimDicts, playConfiguredAnimations, stopAnimation, playSelectedAnimation, addAnimation, resetSelectedAnimConfig, clearAnimation, deleteAllAnimations, setSelectedAnimation } from '../src/anims.js';
+import { searchAnimDicts, playConfiguredAnimations, stopAnimation, playSelectedAnimation, addAnimation, resetSelectedAnimConfig, clearAnimation, deleteAllAnimations, setSelectedAnimation, updateSelectedAnimationEntity } from '../src/anims.js';
 import { toggleCrosshair, toggleObjectSpawnHUD, toggleObjectNearbyHUD, toggleObjectSceneControlHUD, toggleObjectDetail, toggleObjectHUD, updateObjectDetails } from './hud/obj.js';
 import { selectSpawnType, selectNearbyOrigin, toggleNearbyFilter, getTrackedObjects, toggleVisible, toggleFrozen, toggleCollision } from '../src/obj.js';
 import { saveScene, clearScene, clearAllScenes, reloadScene, deleteScene } from '../src/scene.js';
@@ -71,11 +71,18 @@ const InputFields = {
     // '#selectedScene': event => saveScene(),
     '#nearbyRange': event => getTrackedObjects(),
     '#animSearch': event => searchAnimDicts(document.getElementById('animSearch').textContent),
-    '#animConfigureEntity': event => setSelectedAnimation('entity', document.getElementById('animConfigureEntity').textContent),
+    '#animConfigureEntity': event => updateSelectedAnimationEntity(document.getElementById('animConfigureEntity').textContent),
+    // Ped parameters
     '#animConfigureBlendIn': event => setSelectedAnimation('blendin', document.getElementById('animConfigureBlendIn').textContent),
     '#animConfigureBlendOut': event => setSelectedAnimation('blendout', document.getElementById('animConfigureBlendOut').textContent),
     '#animConfigureDuration': event => setSelectedAnimation('duration', document.getElementById('animConfigureDuration').textContent),
     '#animConfigureRate': event => setSelectedAnimation('rate', document.getElementById('animConfigureRate').textContent),
+    // Object parameters
+    '#animConfigureLoop': event => setSelectedAnimation('loop', document.getElementById('animConfigureLoop').textContent),
+    '#animConfigureStayInAnim': event => setSelectedAnimation('stayInAnim', document.getElementById('animConfigureStayInAnim').textContent),
+    '#animConfigureDelta': event => setSelectedAnimation('delta', document.getElementById('animConfigureDelta').textContent),
+    '#animConfigureBitset': event => setSelectedAnimation('bitset', document.getElementById('animConfigureBitset').textContent),
+    // Common
     '#animConfigureDelay': event => setSelectedAnimation('delay', document.getElementById('animConfigureDelay').textContent),
     '#objSettingsCurvedBorderAmount': () => setCurvedBorderAmount(),
 };
@@ -86,17 +93,7 @@ const MouseActions = {
         middleClick: () => {},
     },
     'anim-hud': {
-        leftClick: event => {
-            // TODO: convert this to EventActions click
-            if (
-                event.target.id === 'activeAnimDict' ||
-                event.target.id === 'activeAnimName'
-            ) {
-                if (event.target.innerHTML !== '') {
-                    clipboardCopy(event.target.innerHTML);
-                }
-            }
-        },
+        leftClick: () => {},
         middleClick: () => {
             if (MCP) {
                 sendClientMessage('deactivateMCP', {}).then(mcpState => {
@@ -274,6 +271,11 @@ export const EventActions = {
         '#button-animconf-clear': () => clearAnimation(),
         '#button-animconf-deleteall': () => deleteAllAnimations(),
 
+        '#animSelectedDict': (event) => clipboardCopy(event.target.innerHTML),
+        '#animSelectedName': (event) => clipboardCopy(event.target.innerHTML),
+        '#animConfSelectedDict': (event) => clipboardCopy(event.target.innerHTML),
+        '#animConfSelectedName': (event) => clipboardCopy(event.target.innerHTML),
+
         // Object HUD
         '#button-spawn': () => toggleObjectSpawnHUD(),
         '#button-trackedobjlist': () => toggleObjectNearbyHUD(),
@@ -334,6 +336,10 @@ export const EventActions = {
         '#button-animTimings': () => toggleAnimDetail('button-animTimings'),
         '#button-animFlags': () => toggleAnimDetail('button-animFlags'),
         '#button-animExtras': () => toggleAnimDetail('button-animExtras'),
+
+        '#objDetailsEntityHandle': (event) => clipboardCopy(event.target.innerHTML),
+        '#objDetailsEntityModelName': (event) => clipboardCopy(event.target.innerHTML),
+        '#objDetailsEntityNetworkId': (event) => clipboardCopy(event.target.innerHTML),
     },
     mousemove: event => {
         if (
