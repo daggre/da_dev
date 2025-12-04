@@ -113,6 +113,12 @@ da_ui.callbacks({
     playAnimation = function(data) PlayAnimation(data) end,
     playAnimations = function(data) PlayConfiguredAnimations(data) end,
     stopAnimation = function(data) da_anim.stop(data.entity or PlayerPedId()) end,
+    getEntityType = function(data)
+        local entity = tonumber(data.entity) ~= 0 and tonumber(data.entity) or PlayerPedId()
+        local objType = da_obj.getType(GetEntityModel(entity))
+        log.debug("da_ui.events getEntityType", entity, objType)
+        return { entityType = objType or "ped" }
+    end,
     activateMCP = function(data)
         log.debug("da_ui.events activateMCP", data)
         local retval = da_mode.activateMCP(data.mode)
