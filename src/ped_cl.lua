@@ -420,3 +420,55 @@ cli.add_subcmd("ped outfit", "set", {
         SetPedOutfitPreset(PlayerPedId(), tonumber(args.outfit), false)
     end,
 })
+
+da_trie.addOpt("devRoot", "horse", "h", function()
+    local playerPedId = PlayerPedId()
+    local horse = {
+        entity = nil,
+        model = `a_c_horse_turkoman_silver`,
+        gender = 1, -- Female
+        name = "Horse",
+    }
+    local pos = da_util.GetGroundPositionForward(
+        GetEntityCoords(PlayerPedId()),
+        6.0
+    )
+    horse.entity = da_obj.createPed(horse.model, pos)
+    if not horse.entity then
+        log.error("Failed to create horse entity")
+        return
+    end
+
+    SetPedNameDebug(horse.entity, horse.name)
+    SetPedPromptName(horse.entity, horse.name)
+    SetEntityAsMissionEntity(horse.entity, true, true)
+    Citizen.InvokeNative(0x77FF8D35EEC6BBC4, horse.entity, 0, 0) -- EquipMetaPedOutfitPreset
+    Citizen.InvokeNative(0x8FBF9EDB378CCB8C, PlayerId(), horse.entity) -- SetPedActivePlayerHorse
+    Citizen.InvokeNative(0xD2CB0FB0FDCB473D, PlayerId(), horse.entity) -- SetPedAsSaddleHorseForPlayer
+    Citizen.InvokeNative(0x06D26A96CA1BCA75, horse.entity, 3, 0.0, 0) -- SetPedMotivation
+    Citizen.InvokeNative(0xADB3F206518799E8, horse.entity, `PLAYER`) -- SetPedRelationshipGroupDefaultHash
+    Citizen.InvokeNative(0x4DB9D03AC4E1FA84, horse.entity, -1, -1, 0) -- SetPedWrithingDuration
+    Citizen.InvokeNative(0xBCC76708E5677E1D9, horse.entity, 0) -- ?
+    Citizen.InvokeNative(0xB8B6430EAD2D2437, horse.entity, `PLAYER_HORSE`)
+    Citizen.InvokeNative(0xFD6943B6DF77E449, horse.entity, false) -- SetPedCanBeLassoed
+    SetPedConfigFlag(horse.entity, 324, true)
+    SetPedConfigFlag(horse.entity, 211, true)
+    SetPedConfigFlag(horse.entity, 208, true)
+    SetPedConfigFlag(horse.entity, 209, true)
+    SetPedConfigFlag(horse.entity, 400, true)
+    SetPedConfigFlag(horse.entity, 297, true)
+    SetPedConfigFlag(horse.entity, 136, false)
+    SetPedConfigFlag(horse.entity, 312, false)
+    SetPedConfigFlag(horse.entity, 113, false)
+    SetPedConfigFlag(horse.entity, 301, false)
+    SetPedConfigFlag(horse.entity, 277, true)
+    -- SetPedConfigFlag(horse.entity, 319, true) -- "Jump to horse"
+    SetPedConfigFlag(horse.entity, 6, true)
+    SetPedConfigFlag(horse.entity, 214, true)
+    Citizen.InvokeNative(0x5653AB26C82938CF, horse.entity, 0xA28B, horse.gender+0.0) -- SetPedFaceFeature -- Set horse Gender using the face components system.
+    Citizen.InvokeNative(0xCC8CA3E88256E58F, horse.entity, 0, 1, 1, 1, 0) -- UpdatePedVariation
+    SetEntityAlpha(horse.entity, 255, false)
+    SetEntityVisible(horse.entity, true, false)
+    SetAttributePoints(horse.entity, 7, 99999)
+    Citizen.InvokeNative(0x931B241409216C1F, playerPedId, horse.entity, false) -- SetPedOwnsAnimal to false - enables full bonding bonus attributes
+end)
