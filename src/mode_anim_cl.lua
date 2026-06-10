@@ -5,6 +5,7 @@ Citizen.CreateThread(function()
         priority = 70,
         onActivate = function()
             SetNuiFocus(true, true)
+            SetCursorLocation(0.5, 0.5)
             da_ui.send("ui_animation", {})
             if animMCPState then
                 da_mode.activateMCP("animation")

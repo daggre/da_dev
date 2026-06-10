@@ -471,6 +471,7 @@ da_mode.register({
     end,
     onPrimary = function()
         if SelectMode == "Cursor" then
+            SetCursorLocation(0.5, 0.5)
             SetNuiFocus(true, true)
             SetNuiFocusKeepInput(false)
         else
@@ -718,16 +719,18 @@ end
 
 local function GetNearbyObjects(range, origin)
     -- TODO: Add params to only collect filtered objects data
-    local pos = GetFinalRenderedCamCoord()
+    local orig_pos = GetFinalRenderedCamCoord()
+    local pos = orig_pos
     if origin == "offset" then
         local rot = GetFinalRenderedCamRot()
         pos = GetOffsetFromCoordAndHeadingInWorldCoords(pos.x, pos.y, pos.z, rot.z, 0.0, 6.0, 0.0)
     elseif origin == "player" then
         pos = GetEntityCoords(PlayerPedId())
     elseif origin == "raycast" then
-        hit, obj, pos = RaycastXhair(1000.0, PlayerPedId())
+        local hit
+        hit, _, pos = RaycastXhair(1000.0, PlayerPedId())
         if not hit then
-            pos = GetFinalRenderedCamCoord()
+            pos = orig_pos
         end
     elseif origin == "set position" then
         pos = NearbyOriginPos ~= nil and NearbyOriginPos or pos
@@ -811,7 +814,7 @@ local SetNearbyOriginPos = function(data)
 
     local timeout = GetGameTimer() + 5000
     while not NearbyOriginPos and GetGameTimer() < timeout do
-        local hit, obj, pos = RaycastXhair(1000.0, PlayerPedId())
+        local hit, _, pos = RaycastXhair(1000.0, PlayerPedId())
         if hit then NearbyOriginPos = pos end
         Citizen.Wait(0)
     end
@@ -820,7 +823,7 @@ local SetNearbyOriginPos = function(data)
 end
 
 local GetRaycast = function(data)
-    local hit, obj, pos = RaycastCursor(data.x, data.y, Distance)
+    local hit, obj, _ = RaycastCursor(data.x, data.y, Distance)
     if not hit then return {}; end
     local model = GetEntityModel(obj)
     if not model or UntrackedModels[model] then return {}; end
