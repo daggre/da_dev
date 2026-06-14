@@ -24,7 +24,6 @@ function appendOptionsToContainer(trieName, type, optionsArray) {
     }
 
     const container = document.querySelector(fmt.selector);
-    console.log(container);
     if (!container) {
         console.error(`Container not found for selector: ${fmt.selector}`);
         return;

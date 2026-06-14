@@ -23,11 +23,13 @@ client_scripts {
     '@da_lib/data/propset.lua',
     '@da_lib/data/taskFilter.lua',
     '@da_lib/data/vehicle.lua',
+    '@da_lib/data/weapon.lua',
 
     '@da_lib/features/nui/nui_cl.lua',
     '@da_lib/features/cache/cache_delay.lua',
     '@da_lib/features/cache/cache_lazy.lua',
     '@da_lib/features/util/util_cl.lua',
+    '@da_lib/features/util/dataview.lua',
     '@da_lib/features/anim/anim_cl.lua',
     '@da_lib/features/draw/draw_cl.lua',
     '@da_lib/features/control/control_cl.lua',
@@ -39,6 +41,8 @@ client_scripts {
     '@da_lib/features/fx/fx_cl.lua',
 
     '@da_lib/features/trie/trie_cl.lua',
+    '@da_lib/features/default/default_cl.lua',
+    '@da_lib/features/weapon/weapon_cl.lua',
     'ui/ui.lua',
 
     'src/menu_cl.lua',
@@ -50,6 +54,9 @@ client_scripts {
     'src/mode_object_cl.lua',
     'src/teleport_cl.lua',
     'src/ped_cl.lua',
+    'src/bullride_cl.lua',
+    'src/event_cl.lua',
+    'src/weapon_cl.lua',
 }
 
 files {
