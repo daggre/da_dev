@@ -41,7 +41,6 @@ client_scripts {
     '@da_lib/features/fx/fx_cl.lua',
 
     '@da_lib/features/trie/trie_cl.lua',
-    '@da_lib/features/default/default_cl.lua',
     '@da_lib/features/weapon/weapon_cl.lua',
     'ui/ui.lua',
 

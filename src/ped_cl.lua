@@ -1,5 +1,9 @@
 local peds = {
-    fear = { key = "f", model = `mp_g_m_m_armyoffear_01`, outfit = 0 },
+    john = { key = "j", model = `player_zero`, outfit = 0 },
+    arthur = { key = "a", model = `player_three`, outfit = 0 },
+    male = { key = "m", model = `mp_male`, outfit = 4 },
+    female = { key = "f", model = `mp_female`, outfit = 4 },
+    fear = { key = "1", model = `mp_g_m_m_armyoffear_01`, outfit = 0 },
     eagle = { key = "e", model = `a_c_eagle_01`, outfit = 2 },
     coyote = { key = "c", model = `a_c_coyote_01`, outfit = 1 },
     robot = { key = "r", model = `cs_crackpotrobot`, outfit = 2 },
