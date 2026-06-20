@@ -70,7 +70,7 @@ end
 da_trie.addOpt("weapons", "refill", "r", function()
     for _, w in ipairs(dat.weapon) do
         if da_weapon.has(w.hash) then
-            da_weapon.setReserve(w.hash, 9999)
+            da_weapon.ammo.setReserve(w.hash, 9999)
         end
     end
 end)
@@ -79,7 +79,7 @@ end)
 local infiniteClip = false
 da_trie.addOpt("weapons", "inf ammo", "i", function()
     infiniteClip = not infiniteClip
-    da_weapon.setInfiniteClip(infiniteClip)
+    da_weapon.ammo.setInfiniteClip(infiniteClip)
     log.debug("Infinite clip", infiniteClip)
 end)
 

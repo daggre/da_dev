@@ -490,7 +490,7 @@ da_mode.register({
         return da_mcp.activate({
             key = dat.keyHash['MouseScrollClick'],
             activate = function()
-                log.debug("Activating MCP for object mode")
+                log.spam("Activating MCP for object mode")
                 SelectMode = "Crosshair"
                 objectMCPState = true
                 if not da_mode.isPrimary("object") then return; end
@@ -498,7 +498,7 @@ da_mode.register({
                 SetNuiFocusKeepInput(true)
             end,
             deactivate = function()
-                log.debug("Deactivating MCP for object mode")
+                log.spam("Deactivating MCP for object mode")
                 SelectMode = "Cursor"
                 da_control.waitForRelease(da_control.keys)
                 da_ui.send("mcp", { active = false, })
