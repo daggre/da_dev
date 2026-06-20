@@ -23,7 +23,7 @@ function GizmoThread()
             }})
             Citizen.Wait(0)
         end
-        if da_mode.isActive("gizmo") then da_mode.stop("gizmo") end
+        if da_mode.isActive("gizmo") then da_mode.deactivate("gizmo") end
         GizmoThreadStarted = false
     end)
 end
