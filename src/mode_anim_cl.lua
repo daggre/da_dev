@@ -121,15 +121,13 @@ da_ui.callbacks({
         return { entityType = objType or "ped" }
     end,
     activateMCP = function(data)
-        log.debug("da_ui.events activateMCP", data)
         local retval = da_mode.activateMCP(data.mode)
-        log.debug("da_ui.events activateMCP retval", retval)
+        log.spam("da_ui.events activateMCP retval", data, retval)
         return retval
     end,
     deactivateMCP = function(data)
-        log.debug("da_ui.events deactivateMCP", data)
         local retval = da_mcp.deactivate()
-        log.debug("da_ui.events deactivateMCP retval", retval)
+        log.spam("da_ui.events deactivateMCP retval", data, retval)
         return retval
     end,
 })

@@ -152,7 +152,7 @@ const MouseActions = {
         middleClick: () => {
             if (MCP) {
                 sendClientMessage('deactivateMCP', {}).then(mcpState => {
-                    console.log('deactivateMCP', mcpState);
+                    // console.log('deactivateMCP', mcpState);
                     toggleMCP(mcpState);
                 });
             } else {
@@ -162,7 +162,7 @@ const MouseActions = {
                 }, QuickPress.Timeout);
                 sendClientMessage('activateMCP', { mode: 'object' }).then(
                     mcpState => {
-                        console.log('activateMCP', mcpState);
+                        // console.log('activateMCP', mcpState);
                         toggleMCP(mcpState);
                     }
                 );
@@ -502,7 +502,7 @@ export function addMessageListener() {
 
 const MessageActions = {
     ui_trie: data => {
-        console.log('trie', data.trie);
+        // console.log('trie', data.trie);
         if (data.trie) {
             initTrie(data.trie);
         }
