@@ -59,8 +59,9 @@ for _, weapData in ipairs(dat.weapon) do
     else
         local label = displayName(weapData.name)
         da_trie.addOpt(menu.label, label, menu.nextKey(label), function()
-            da_weapon.setAmmo(weapData.hash, 100)
-            da_weapon.give(weapData.hash, {})
+            -- give() resolves the correct attach point from the game (melee auto-places),
+            -- and seeds reserve ammo via opts.ammo. See ADR-0005.
+            da_weapon.give(weapData.hash, { ammo = 100 })
         end)
     end
 end
@@ -69,7 +70,7 @@ end
 da_trie.addOpt("weapons", "refill", "r", function()
     for _, w in ipairs(dat.weapon) do
         if da_weapon.has(w.hash) then
-            da_weapon.setAmmo(w.hash, 9999)
+            da_weapon.setReserve(w.hash, 9999)
         end
     end
 end)
