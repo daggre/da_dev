@@ -57,6 +57,7 @@ client_scripts {
     'src/bullride_cl.lua',
     'src/event_cl.lua',
     'src/weapon_cl.lua',
+    'src/wardrobe_cl.lua',
 }
 
 files {
