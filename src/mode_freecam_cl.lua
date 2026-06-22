@@ -14,6 +14,7 @@ Fov.RateChange = 6
 
 local radian = math.pi / 180
 local CamHandle = nil
+local reframeCam = nil   -- in-flight da_cam spline during a reframe (released on stop)
 
 GizmoMovedRecently = nil
 
@@ -21,10 +22,16 @@ da_mode.register({
     name = "freecam",
     priority = 20,
     onActivate = function()
-        SetNuiFocus(true, false)
-        SetNuiFocusKeepInput(true)
-
-        da_ui.send("ui_camera", {})
+        -- When another mode (e.g. the wardrobe/tack editor) engaged freecam just
+        -- for its camera, that mode owns NUI focus and its own HUD — so don't grab
+        -- focus or push da_dev's camera HUD. We still set up the scripted cam and
+        -- the control thread: the thread is input-starved under a cursor and only
+        -- drives the cam during the editor's MCP passthrough.
+        if da_mode.isPrimary("freecam") then
+            SetNuiFocus(true, false)
+            SetNuiFocusKeepInput(true)
+            da_ui.send("ui_camera", {})
+        end
 
         local x, y, z = table.unpack(GetGameplayCamCoord())
         local pitch, roll, yaw = table.unpack(GetGameplayCamRot(2))
@@ -40,6 +47,8 @@ da_mode.register({
     onDeactivate = function()
         SetNuiFocus(false, false)
         SetNuiFocusKeepInput(false)
+
+        if reframeCam then da_cam.release(reframeCam); reframeCam = nil end
 
         if not da_mode.isActive("noclip") then
             CameraControlThread:Stop()
@@ -184,7 +193,11 @@ local SetCoords = function(ped, x, y, z, rot_x, rot_y, rot_z, fov)
                 da_mode.deactivate("focus")
             end
         end
-    else
+    elseif da_mode.isActive("noclip") then
+        -- Only noclip moves the PLAYER. (Guard, not `else`: on freecam teardown the
+        -- controller clears mode.active before onDeactivate, so the control thread
+        -- runs one last frame with neither mode active — an `else` here would
+        -- rotate/teleport the player to the final camera pose.)
         SetEntityRotation(ped, 0, 0, rot_z)
         SetEntityCoordsNoOffset(ped, x, y, z, true, true, true)
     end
@@ -343,7 +356,7 @@ function CameraControlThread:Start()
     local playerPedId = PlayerPedId()
     local x, y, z = GetCoords(playerPedId)
     local rot_x, rot_y, rot_z = table.unpack(GetFinalRenderedCamRot())
-	local fov = GetGameplayCamFov()
+	local fov = GetFinalRenderedCamFov()  -- seed from the rendered cam so a reframed fov survives a control resume
     self.active = true
     Citizen.CreateThread(function()
         while self.active do
@@ -361,6 +374,44 @@ end
 function CameraControlThread:Stop()
     self.active = false
 end
+
+-- ---- external camera control (wardrobe/tack cinematic framing) ----
+-- freecam stays the owner of CamHandle (one scripted cam, no conflicts). An
+-- editor engages freecam, then drives smooth moves through these exports, which
+-- use da_cam's spline to fly CamHandle between framed poses.
+local function reframeFreecam(toPose, duration, smoothing)
+    if not da_mode.isActive("freecam") or not CamHandle or type(toPose) ~= "table" then return end
+    -- pause WASD control, spline the view from here to the target pose, then hand
+    -- the freecam cam back at the destination and resume control seeded there.
+    CameraControlThread:Stop()
+    if reframeCam then da_cam.release(reframeCam); reframeCam = nil end
+    -- Read the start pose while CamHandle is still the rendered cam, THEN hand the
+    -- render to the spline cam (deactivate CamHandle so it isn't competing for the
+    -- render — otherwise the spline plays on an unshown cam and the move cuts).
+    local from = da_cam.currentPose()
+    SetCamActive(CamHandle, false)
+    reframeCam = da_cam.splineFromTo(from, toPose, { duration = duration or 1100, smoothing = smoothing or 0 })
+    local cam = reframeCam
+    Citizen.CreateThread(function()
+        da_cam.waitSpline(cam, (duration or 1100) + 1500)
+        if reframeCam ~= cam then return end   -- superseded or torn down mid-move
+        reframeCam = nil
+        if da_mode.isActive("freecam") and CamHandle then
+            SetCamCoord(CamHandle, toPose.pos.x, toPose.pos.y, toPose.pos.z)
+            SetCamRot(CamHandle, toPose.rot.x, toPose.rot.y, toPose.rot.z, 2)
+            SetCamFov(CamHandle, (toPose.fov or 45.0) + 0.0)
+            SetCamActive(CamHandle, true)
+            da_cam.release(cam)
+            CameraControlThread:Start()
+        else
+            da_cam.release(cam)
+        end
+    end)
+end
+
+exports("startFreecam", function() if not da_mode.isActive("freecam") then da_mode.activate("freecam") end end)
+exports("stopFreecam", function() if da_mode.isActive("freecam") then da_mode.deactivate("freecam") end end)
+exports("reframeFreecam", function(toPose, duration, smoothing) reframeFreecam(toPose, duration, smoothing) end)
 
 AddEventHandler('onResourceStop', function(resourceName)
     GizmoThreadStarted = false
