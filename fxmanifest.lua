@@ -43,6 +43,7 @@ client_scripts {
 
     '@da_lib/features/trie/trie_cl.lua',
     '@da_lib/features/weapon/weapon_cl.lua',
+    '@da_lib/features/camera/camera_cl.lua',
     'ui/ui.lua',
 
     'src/menu_cl.lua',
@@ -58,6 +59,7 @@ client_scripts {
     'src/event_cl.lua',
     'src/weapon_cl.lua',
     'src/wardrobe_cl.lua',
+    'src/tack_cl.lua',
 }
 
 files {
