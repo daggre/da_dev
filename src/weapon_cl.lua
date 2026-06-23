@@ -83,6 +83,18 @@ da_trie.addOpt("weapons", "inf ammo", "i", function()
     log.debug("Infinite clip", infiniteClip)
 end)
 
+-- Toggle every carried back weapon / sidearm to the other slot of its attach-point
+-- pair: long guns swap back-left<->back-right; pistols and revolvers swap holster
+-- sides. da_weapon.swapAttach skips weapons that aren't back/sidearm (returns nil),
+-- so this needs no group filter here.
+da_trie.addOpt("weapons", "swap attach", "a", function()
+    local moved = 0
+    for _, w in ipairs(dat.weapon) do
+        if da_weapon.swapAttach(w.hash) then moved = moved + 1 end
+    end
+    log.debug("swap attach: moved", moved)
+end)
+
 -- Strip all weapons from the player.
 da_trie.addOpt("weapons", "remove all", "x", function()
     da_weapon.removeAll()

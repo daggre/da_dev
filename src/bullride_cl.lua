@@ -353,7 +353,7 @@ local BullRideLoop = function()
     end)
 end
 
-da_trie.add("devRoot", "bullride", "q")
+da_trie.add("devRoot", "bullride", "[")
 da_trie.addOpt("bullride", "spawnbull", "s", function()
     Bull.player = PlayerPedId()
 

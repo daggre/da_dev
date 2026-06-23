@@ -1,6 +1,6 @@
 import { MCP } from '../events.js';
 import { toggleHUD, toggleSection } from './common.js';
-import { getScenes, trackSceneObjects } from '../scene.js';
+import { getScenes, getLoadedScenes, renderFocusedScene, trackSceneObjects } from '../scene.js';
 import { searchSpawnObject, getTrackedObjects } from '../obj.js';
 
 const ObjectHUD = {
@@ -22,6 +22,7 @@ const ObjectHUD = {
         'objScenesLeftColumn',
         'objScenesList',
         'sceneSelected',
+        'objObjectsLeftColumn',
         'objSceneTagOptions',
         'objSceneObjectsList',
         'objSettings',
@@ -33,6 +34,7 @@ const ObjectHUD = {
         spawn: 'button-spawn',
         tracked: 'button-trackedobjlist',
         sceneControl: 'button-scenecontrol',
+        objects: 'button-objects',
     },
     sections: {
         spawn: [
@@ -50,10 +52,15 @@ const ObjectHUD = {
             'objNearbyRange',
             'objNearbyResults',
         ],
+        // scenes tab = scene management (saved + loaded lists)
         sceneControl: [
             'objScenesLeftColumn',
             'objScenesList',
             'sceneSelected',
+        ],
+        // objects tab = browse the focused scene's objects
+        objects: [
+            'objObjectsLeftColumn',
             'objSceneTagOptions',
             'objSceneObjectsList',
         ],
@@ -91,6 +98,19 @@ export function toggleObjectSceneControlHUD(state) {
         ObjectHUD.buttons.sceneControl,
         () => {
             getScenes();
+            getLoadedScenes();
+        }
+    );
+}
+
+export function toggleObjectObjectsHUD(state) {
+    toggleHUD(
+        state,
+        ObjectHUD,
+        'objects',
+        ObjectHUD.buttons.objects,
+        () => {
+            renderFocusedScene();
             trackSceneObjects();
         }
     );

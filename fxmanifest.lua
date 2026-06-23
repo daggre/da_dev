@@ -67,6 +67,7 @@ files {
     'ui/web/script.js',
     'ui/web/assets/gizmo.js',
     'ui/web/assets/fonts/LiterationMonoNerd.ttf',
+    'ui/web/assets/css/base.css',
     'ui/web/assets/css/style.css',
     'ui/web/src/hud/anim.js',
     'ui/web/src/hud/common.js',

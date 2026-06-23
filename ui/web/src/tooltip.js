@@ -49,9 +49,13 @@ export function addTooltipListener() {
         }
     }
 
-    document.addEventListener('mouseover', handleHover);
-    document.addEventListener('focusin', handleFocus);
-    document.addEventListener('focusout', handleFocusOut);
+    // Tooltips are disabled: the HUD now uses explicit text buttons instead of
+    // icons, so hover labels are redundant. (Listeners left here, commented, in
+    // case icon-driven tooltips are wanted again.)
+    // document.addEventListener('mouseover', handleHover);
+    // document.addEventListener('focusin', handleFocus);
+    // document.addEventListener('focusout', handleFocusOut);
+    void handleHover; void handleFocus; void handleFocusOut;
 }
 
 export function setTooltips() {

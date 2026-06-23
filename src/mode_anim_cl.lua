@@ -132,4 +132,4 @@ da_ui.callbacks({
     end,
 })
 
-da_trie.addOpt("devRoot", "anim mode", "a", function() da_mode.toggle("animation") end)
+da_trie.addOpt("devRoot", "animation", "a", function() da_mode.toggle("animation") end)

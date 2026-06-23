@@ -2,6 +2,7 @@ import { addMessageListener, addEventActionsListener } from './src/events.js';
 import { fetchSpawnData, initSettings } from './src/settings.js';
 import { addTooltipListener } from './src/tooltip.js';
 import { addDropdownsListener } from './src/dropdown.js';
+import { addTriePaletteListener } from './src/trie.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     addMessageListener();
@@ -15,5 +16,6 @@ window.netReady.promise.then(() => {
     initSettings();
     addTooltipListener();
     addDropdownsListener();
+    addTriePaletteListener();
     addEventActionsListener();
 });
