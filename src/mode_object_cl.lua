@@ -21,6 +21,11 @@ local Scenes = {
     [ActiveScene] = { name = ActiveScene, objects = {} },
 }
 local PreviewObject = nil
+-- Preview spawn is async (da_obj.create yields while the model streams). These
+-- guard against a load finishing AFTER the user has hovered off / onto another
+-- model, which would otherwise orphan the just-loaded model in the world.
+local PreviewWanted = false  -- a preview should currently be shown
+local PreviewSeq = 0         -- bumped on every spawn/remove request (generation)
 local Theme = {
     Primary = {r=0, g=218, b=175, a=255},
     Secondary = {r=80, g=193, b=238, a=255},
@@ -44,6 +49,28 @@ local ResetDefaultScene = function()
     ActiveScene = DefaultScene
     Scenes[DefaultScene] = { name = DefaultScene, objects = {} }
     kvp.encode("scenes:"..DefaultScene, Scenes[DefaultScene])
+end
+
+-- Unsaved-change tracking: a scene is "dirty" once its objects are added,
+-- removed, moved, or edited since the last save/reload/load. Cleared on persist.
+local function MarkSceneDirty(sceneName)
+    if sceneName and Scenes[sceneName] then
+        Scenes[sceneName].dirty = true
+    end
+end
+
+-- Global so the gizmo (mode_gizmo_cl.lua) can flag the owning scene on a drag,
+-- without knowing which scene a moved entity belongs to.
+function MarkSceneDirtyByHandle(handle)
+    if not handle then return; end
+    for sceneName, scene in pairs(Scenes) do
+        for _, obj in ipairs(scene.objects) do
+            if obj.handle == handle then
+                MarkSceneDirty(sceneName)
+                return
+            end
+        end
+    end
 end
 
 local function GetObjectTypeStr(entity)
@@ -173,6 +200,7 @@ local function ClearScene(sceneName, force)
     end
     Scenes[sceneName].objects = {}
     Scenes[sceneName].loaded = false
+    Scenes[sceneName].loading = nil
     return true
 end
 
@@ -193,6 +221,14 @@ local function LoadScene(sceneName)
         log.debug("Scene already loaded", sceneName)
         return false
     end
+    -- Re-entry guard: da_obj.create yields (model streaming), so a second
+    -- loadScene call can land mid-load and re-create every object (orphaning the
+    -- first batch). Bail while a load is already in flight for this scene.
+    if Scenes[sceneName].loading then
+        log.debug("Scene already loading", sceneName)
+        return false
+    end
+    Scenes[sceneName].loading = true
     for _, obj in ipairs(Scenes[sceneName].objects) do
         local quaternion = obj.quaternion_x and obj.quaternion_y and obj.quaternion_z and obj.quaternion_w and {
             x = obj.quaternion_x,
@@ -218,8 +254,10 @@ local function LoadScene(sceneName)
             successfulLoad = false
         end
     end
+    Scenes[sceneName].loading = nil
     if successfulLoad then
         Scenes[sceneName].loaded = true
+        Scenes[sceneName].dirty = nil
     else
         ClearScene(sceneName, true)
     end
@@ -229,18 +267,32 @@ end
 local function GetScenesList()
     local scenes = {}
     for sceneName, sceneData in pairs(Scenes) do
+        -- `count`: objects live in the world right now (0 when unloaded).
+        -- `savedCount`: the persisted total on disk (retained while unloaded).
+        local stored = kvp.decode("scenes:"..sceneName)
+        local savedCount = (stored and stored.objects) and #stored.objects or 0
         table.insert(scenes, {
             name = sceneName,
+            -- `active`: resident in memory (in the world now) — the working/default
+            -- scene plus anything loaded. `loaded`: materialized from kvp.
+            active = true,
             loaded = sceneData.loaded,
+            loading = sceneData.loading and true or false,
+            dirty = sceneData.dirty and true or false,
+            count = sceneData.objects and #sceneData.objects or 0,
+            savedCount = savedCount,
         })
-        log.debug("Adding cached scene", _)
+        log.debug("Adding cached scene", sceneName)
     end
 
         local sceneNames = kvp.search("scenes:")
         for _, scene in ipairs(sceneNames) do
             local sceneName = scene:sub(8)
             if not Scenes[sceneName] then
-                table.insert(scenes, { name = sceneName })
+                -- saved-only scene: not in the world, so its only count is on disk
+                local stored = kvp.decode("scenes:"..sceneName)
+                local count = (stored and stored.objects) and #stored.objects or 0
+                table.insert(scenes, { name = sceneName, count = 0, savedCount = count })
             end
         end
         return { scenes = json.encode(scenes) }
@@ -305,6 +357,7 @@ local function SaveScene(sceneName)
     end
     log.debug("Saving scene", sceneName, storedScene)
     kvp.encode("scenes:"..sceneName, storedScene)
+    if Scenes[sceneName] then Scenes[sceneName].dirty = nil end
 end
 
 local function ImportScene(scene)
@@ -425,6 +478,7 @@ local function CopyObject(data)
         rot = rotation,
     })
     table.insert(Scenes[ActiveScene].objects, GetObjData(obj))
+    MarkSceneDirty(ActiveScene)
 end
 
 local ObjectModeThread = function()
@@ -550,6 +604,7 @@ da_mode.register({
                 local obj = da_obj.create(objHash, HitCoords, opts, objType)
                 log.spam("Spawned", obj)
                 table.insert(Scenes[ActiveScene].objects, GetObjData(obj))
+                MarkSceneDirty(ActiveScene)
                 Select = obj
             end
         },
@@ -654,6 +709,7 @@ da_mode.register({
                 for i, obj in ipairs(Scenes[ActiveScene].objects) do
                     if obj.handle == Select then
                         table.remove(Scenes[ActiveScene].objects, i)
+                        MarkSceneDirty(ActiveScene)
                         break
                     end
                 end
@@ -853,16 +909,19 @@ end
 local function SetVisible(data)
     local entityHandle = tonumber(data.handle)
     da_obj.set(entityHandle, { visible = data.state })
+    MarkSceneDirtyByHandle(entityHandle)
 end
 
 local function SetFrozen(data)
     local entityHandle = tonumber(data.handle)
     da_obj.set(entityHandle, { frozen = data.state })
+    MarkSceneDirtyByHandle(entityHandle)
 end
 
 local function SetCollision(data)
     local entityHandle = tonumber(data.handle)
     da_obj.set(entityHandle, { collision = data.state })
+    MarkSceneDirtyByHandle(entityHandle)
 end
 
 local function SetRotation(data)
@@ -879,15 +938,20 @@ local function SetRotation(data)
         y = data.y,
         z = data.z
     }})
+    MarkSceneDirtyByHandle(entityHandle)
 end
 
 local function PlaceOnGround(data)
     local entityHandle = tonumber(data.handle)
     da_obj.set(entityHandle, { ground = true })
+    MarkSceneDirtyByHandle(entityHandle)
 end
 
 local function RemovePreviewObject()
+    PreviewWanted = false
+    PreviewSeq = PreviewSeq + 1  -- invalidate any in-flight load (see Spawn guard)
     local lastObj = PreviewObject
+    PreviewObject = nil
     if lastObj then da_obj.delete(lastObj); end
 end
 
@@ -895,11 +959,24 @@ local function SpawnPreviewObject(name, objType)
     if not objType then return; end
     local hit, _, pos = RaycastXhair(1000.0, PlayerPedId())
     if not hit then return; end
-    local obj = nil
-    obj = da_obj.create(GetHashKey(name), pos, {}, objType)
-    local lastObj = PreviewObject
+
+    PreviewWanted = true
+    PreviewSeq = PreviewSeq + 1
+    local mySeq = PreviewSeq
+    local prevObj = PreviewObject  -- keep showing the old one until the new loads
+
+    -- yields while the model streams; a remove/newer spawn can land meanwhile
+    local obj = da_obj.create(GetHashKey(name), pos, {}, objType)
+
+    if mySeq ~= PreviewSeq or not PreviewWanted then
+        -- stale: the user hovered off or onto another model during the load.
+        -- Delete what we just made instead of orphaning it in the world.
+        if obj then da_obj.delete(obj); end
+        return
+    end
+
     PreviewObject = obj
-    if lastObj then da_obj.delete(lastObj); end
+    if prevObj then da_obj.delete(prevObj); end
 end
 
 local function hexStringToNumber(hexStr)
@@ -932,6 +1009,7 @@ end
 da_ui.callbacks({
     nearbyObjects = function(data) return { nearbyObjects = GetNearbyObjects(data.range, data.origin) } end,
     scenesList = function(data) return GetScenesList() end,
+    focusedScene = function(data) return { scene = ActiveScene } end,
     getScene = function(data) return GetScene(data.scene) end,
     loadScene = function(data) return LoadScene(data.scene) end,
     clearScene = function(data) return ClearScene(data.scene) end,
@@ -978,11 +1056,11 @@ da_net.events({
 
 -- UI Tree
 
-da_trie.addOpt("devRoot", "obj mode", "e",
+da_trie.addOpt("devRoot", "editor", "e",
     function() da_mode.activate("object") end,
     function() return not da_mode.isActive("object") end)
 
-da_trie.addOpt("objRoot", "exit mode", "e",
+da_trie.addOpt("objRoot", "exit editor", "e",
     function() da_mode.deactivate("object") end,
     function() return da_mode.isActive("object") end)
 
@@ -997,7 +1075,7 @@ da_trie.addOpt("objRoot", "reset rot", "]",
     end,
     function() return Hover ~= nil or Select ~= nil end)
 
-da_trie.addOpt("objRoot", "frz", "f",
+da_trie.addOpt("objRoot", "freeze", "f",
     function()
         local obj = Hover ~= nil and Hover or Select
         FreezeEntityPosition(obj, true)
@@ -1006,7 +1084,7 @@ da_trie.addOpt("objRoot", "frz", "f",
         return obj ~= nil and IsEntityFrozen(obj) == 0
     end)
 
-da_trie.addOpt("objRoot", "unfrz", "f",
+da_trie.addOpt("objRoot", "unfreeze", "f",
     function()
         local obj = Hover ~= nil and Hover or Select
         FreezeEntityPosition(obj, false)
@@ -1016,9 +1094,9 @@ da_trie.addOpt("objRoot", "unfrz", "f",
     end)
 
 
-da_trie.add("objRoot", "clip", "q")
+da_trie.add("objRoot", "clipboard", "q")
 
-da_trie.addOpt("clip", "pos v3", "3",
+da_trie.addOpt("clipboard", "pos v3", "3",
     function()
         local v3 = GetEntityCoords(Select)
         da_ui.send("clipboard", {
@@ -1027,7 +1105,7 @@ da_trie.addOpt("clip", "pos v3", "3",
     end,
     function() return Select ~= nil end)
 
-da_trie.addOpt("clip", "pos v4", "4",
+da_trie.addOpt("clipboard", "pos v4", "4",
     function()
         local v3 = GetEntityCoords(Select)
         local hdg = GetEntityHeading(Select)
@@ -1037,7 +1115,7 @@ da_trie.addOpt("clip", "pos v4", "4",
     end,
     function() return Select ~= nil end)
 
-da_trie.addOpt("clip", "rot v3", "5",
+da_trie.addOpt("clipboard", "rot v3", "5",
     function()
         local v3 = GetEntityRotation(Select)
         da_ui.send("clipboard", {
@@ -1046,15 +1124,15 @@ da_trie.addOpt("clip", "rot v3", "5",
     end,
     function() return Select ~= nil end)
 
-da_trie.addOpt("clip", "entity id", "e",
+da_trie.addOpt("clipboard", "entity id", "e",
     function() da_ui.send("clipboard", { text = Select }) end,
     function() return Select ~= nil end)
 
-da_trie.addOpt("clip", "model hash", "m",
+da_trie.addOpt("clipboard", "model hash", "m",
     function() da_ui.send("clipboard", { text = GetEntityModel(Select) }) end,
     function() return Select ~= nil end)
 
-da_trie.addOpt("clip", "model name", "n",
+da_trie.addOpt("clipboard", "model name", "n",
     function() da_ui.send("clipboard", { text = dat.getName(GetEntityModel(Select)) }) end,
     function() return Select ~= nil end)
 

@@ -20,10 +20,10 @@ export let Settings = {
     },
     tag: { sort: 'dist' },
     theme: {
-        color: 'cherry_blossom',
+        color: 'da',
         divider: 'angle up',
         border: true,
-        borderrad: false,
+        borderrad: true,
         borderradamount: 8,
     },
     form: {

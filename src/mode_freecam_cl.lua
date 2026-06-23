@@ -18,6 +18,19 @@ local reframeCam = nil   -- in-flight da_cam spline during a reframe (released o
 
 GizmoMovedRecently = nil
 
+-- Cursor-grab lock: while a mouse-driven mode (dev menu hold, da_xinteracts) owns
+-- the NUI cursor, freecam must not consume the mouse — otherwise the mouse both
+-- moves the cursor and rotates the camera (freecam reads the *disabled* mouse, so
+-- DisableControlAction alone won't stop it). Owner-keyed so overlapping grabs
+-- (e.g. dev menu + interact) don't clear each other.
+CursorGrab = false
+local cursorGrabOwners = {}
+AddEventHandler("da_dev:cursorGrab", function(owner, active)
+    if not owner then return end
+    cursorGrabOwners[owner] = active and true or nil
+    CursorGrab = next(cursorGrabOwners) ~= nil
+end)
+
 da_mode.register({
     name = "freecam",
     priority = 20,
@@ -155,7 +168,7 @@ da_mode.register({
     end,
 })
 
-da_trie.addOpt("devRoot", "cam mode", "c", function() da_mode.toggle("freecam") end)
+da_trie.addOpt("devRoot", "freecam", "f", function() da_mode.toggle("freecam") end)
 da_trie.addOpt("devRoot", "noclip", "z", function() da_mode.toggle("noclip") end)
 da_trie.addOpt("objRoot", "noclip", "z", function() da_mode.toggle("noclip") end)
 
@@ -251,6 +264,11 @@ end
 ---@return number fov Translated Field of View
 local CheckMovementControls = function(x, y, z, rot_x, rot_y, rot_z, fov)
     DisableAllControlActions(0)
+    -- A cursor-grab mode owns the mouse: freeze freecam (no mouse aim, no movement)
+    -- so the pointer only drives the menu, not the camera.
+    if CursorGrab then
+        return x, y, z, rot_x, rot_y, rot_z, fov
+    end
     local enableMouseAim = not da_mode.isActive("freecam")
 
     local deltaLR = GetDisabledControlNormal(0, dat.keyHash['MouseLR'])
@@ -390,7 +408,9 @@ local function reframeFreecam(toPose, duration, smoothing)
     -- render — otherwise the spline plays on an unshown cam and the move cuts).
     local from = da_cam.currentPose()
     SetCamActive(CamHandle, false)
-    reframeCam = da_cam.splineFromTo(from, toPose, { duration = duration or 1100, smoothing = smoothing or 0 })
+    -- arc around the subject (not a straight chord) for big swings — e.g. coming
+    -- to the front from the side/behind, where a 2-node spline skims the head.
+    reframeCam = da_cam.splineArc(from, toPose, { duration = duration or 1100, smoothing = smoothing or 0 })
     local cam = reframeCam
     Citizen.CreateThread(function()
         da_cam.waitSpline(cam, (duration or 1100) + 1500)

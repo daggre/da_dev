@@ -1,6 +1,6 @@
 import { toggleAnimationHUD, toggleAnimationSearchHUD, toggleAnimationConfigureHUD, toggleAnimDetail } from './hud/anim.js';
 import { searchAnimDicts, playConfiguredAnimations, stopAnimation, playSelectedAnimation, addAnimation, resetSelectedAnimConfig, clearAnimation, deleteAllAnimations, setSelectedAnimation, updateSelectedAnimationEntity } from '../src/anims.js';
-import { toggleCrosshair, toggleObjectSpawnHUD, toggleObjectNearbyHUD, toggleObjectSceneControlHUD, toggleObjectDetail, toggleObjectHUD, updateObjectDetails } from './hud/obj.js';
+import { toggleCrosshair, toggleObjectSpawnHUD, toggleObjectNearbyHUD, toggleObjectSceneControlHUD, toggleObjectObjectsHUD, toggleObjectDetail, toggleObjectHUD, updateObjectDetails } from './hud/obj.js';
 import { selectSpawnType, selectNearbyOrigin, toggleNearbyFilter, getTrackedObjects, toggleVisible, toggleFrozen, toggleCollision } from '../src/obj.js';
 import { saveScene, clearScene, clearAllScenes, reloadScene, deleteScene } from '../src/scene.js';
 import { showImport } from '../src/hud/import.js';
@@ -13,7 +13,7 @@ import { isVisible, isInterruptingElement } from '../src/nav.js';
 import { clipboardCopy } from '../src/clipboard.js';
 import { toggleSettingsHUD } from './hud/settings.js';
 import { toggleHelp } from './hud/help.js';
-import { initTrie } from '../src/trie.js';
+import { initTrie, setDevTreeCursor, isDevTreeCursorMode } from '../src/trie.js';
 import { DropDownMapOptions, showDropdown } from '../src/dropdown.js';
 import { searchSpawnObject, tagSelectSort, ObjectContextOptions } from '../src/obj.js';
 import { updateCrosshair } from '../src/crosshair.js';
@@ -218,7 +218,8 @@ export let KeyActions = {
         ' ': event => clickElement(event),
         1: () => toggleObjectSpawnHUD(),
         2: () => toggleObjectSceneControlHUD(),
-        3: () => toggleObjectNearbyHUD(),
+        3: () => toggleObjectObjectsHUD(),
+        4: () => toggleObjectNearbyHUD(),
         f: () => sendKey('f'),
         g: () => sendKey('g'),
         h: () => toggleHelp('objHelp'),
@@ -280,6 +281,7 @@ export const EventActions = {
         '#button-spawn': () => toggleObjectSpawnHUD(),
         '#button-trackedobjlist': () => toggleObjectNearbyHUD(),
         '#button-scenecontrol': () => toggleObjectSceneControlHUD(),
+        '#button-objects': () => toggleObjectObjectsHUD(),
 
         '#button-objDetailsPosition': () =>
             toggleObjectDetail('button-objDetailsPosition'),
@@ -318,6 +320,7 @@ export const EventActions = {
         '#button-clearscene': () => clearScene(),
         '#button-clearallscenes': () => clearAllScenes(),
         '#button-export': () => showExport(),
+        '#button-export-objects': () => showExport(),
         '#button-import': () => showImport(),
         '#button-reloadscene': () => reloadScene(),
         '#button-deletescene': () => deleteScene(),
@@ -503,10 +506,18 @@ export function addMessageListener() {
 const MessageActions = {
     ui_trie: data => {
         // console.log('trie', data.trie);
-        if (data.trie) {
-            initTrie(data.trie);
+        const hud = document.getElementById('dev-tree-hud');
+        const wasHidden = hud.classList.contains('hidden');
+        if (data.state === false) {
+            setDevTreeCursor(false);
+        } else if (wasHidden) {
+            // Fresh open — adopt the session's input mode (hold = cursor/mouse).
+            setDevTreeCursor(data.cursor);
         }
-        document.getElementById('dev-tree-hud').classList.toggle('hidden', data.state == false);
+        if (data.trie) {
+            initTrie(data.trie, wasHidden);
+        }
+        hud.classList.toggle('hidden', data.state == false);
     },
     ui_animation: data => toggleAnimationHUD(data.state),
     ui_object: data => toggleObjectHUD(data.state),
@@ -543,6 +554,11 @@ function getActiveSection() {
 function handleKeyPress(event, hud) {
     const rawKey = event.key;
     if (!hud) {
+        return;
+    }
+    // Hold/cursor dev-menu session: mouse-only, ignore all keyboard shortcuts
+    // (the held `z` would otherwise instantly fire the menu's `z` option).
+    if (hud === 'dev-tree-hud' && isDevTreeCursorMode()) {
         return;
     }
     const lowercaseKey = rawKey.toLowerCase();

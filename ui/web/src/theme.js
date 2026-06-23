@@ -6,6 +6,12 @@ import { Settings } from '../src/settings.js';
 // TODO: Revise settings to make them easier to add
 
 const themes = {
+    da: [
+        ['primary', '#8fb8ff'],
+        ['secondary', '#4a6fa5'],
+        ['secondary-light', '#d7e6ff'],
+        ['bg', '#05101e'],
+    ],
     oasis: [
         ['primary', '#50c1ee'],
         ['secondary', '#00daaf'],

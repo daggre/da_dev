@@ -1,20 +1,13 @@
-@font-face {
-    font-family: LiterationMonoNerd;
-    src: url('../fonts/LiterationMonoNerd.ttf');
-}
+/* Tokens, font, and the base primitives now live in the shared assets/css/base.css
+   (loaded before this file); theme.js still overrides the theme vars at runtime.
+   Only da_dev-specific styles remain here. */
 
 .test {
     border: 1px solid red;
 }
 
 :root {
-    --primary: #aac7ff;
-    --secondary: #705575;
-    --secondary-light: #fad8fd;
-    --bg: #04101d;
-    --bg-t1: #04101dab;
-    --bg-t2: #04101d75;
-    --bg-t3: #04101d22;
+    /* theme colours/alphas come from base.css (+ theme.js at runtime) */
     --font-size: 1rem;
     --brd-rad: 8px;
     --brd-size: 2px;
@@ -58,30 +51,86 @@ ul li {
     clear: both;
 }
 
+/* dev tree: left-edge title bar + column, matching the wardrobe/tack idiom */
 #dev-tree-hud {
-    gap: 0.5rem;
-    height: auto;
-    width: 10rem;
     position: fixed;
-    right: 12rem;
-    bottom: 8rem;
+    top: auto;
+    left: 50%;
+    right: auto;
+    bottom: 14px;
+    transform: translateX(-50%);
+    width: auto;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--gap);
+    padding: 0;
     text-transform: lowercase;
+}
+/* Title bar doubles as a fuzzy-find input: shows the "dev" label via the
+   data-label placeholder when empty, accepts text when focused/typed into. */
+#devtree-title {
+    width: 16rem;
+    text-align: center;
+    color: var(--text);
+    letter-spacing: 0.08em;
+    caret-color: var(--primary);
+    outline: none;
+}
+#devtree-title:empty::before {
+    content: attr(data-label);
+    color: var(--primary);
+    text-shadow: var(--glow);
+}
+#devtree-title:focus {
+    color: var(--accent-hi);
+    background: var(--soft);
+}
+#devtree-body {
+    width: 16rem;
+    max-height: 80vh;
+    overflow-y: auto;
+    padding: 6px 0;
+    gap: 4px;
+}
+/* keybind column dim + name/key pushed to the edges */
+#devtree-body .row {
+    justify-content: space-between;
+    padding: 2px 8px;
+    cursor: pointer;
+}
+#devtree-body .key {
+    color: var(--dim);
+}
+/* command-palette highlighted row (keyboard caret / fuzzy top match) */
+#devtree-body .row.active {
+    color: var(--accent-hi);
+    background: var(--soft);
+    box-shadow: inset 2px 0 0 var(--primary);
+}
+#devtree-body .row:hover {
+    color: var(--accent-hi);
+    background: var(--soft);
 }
 
 .bgt1 {
     border-radius: var(--brd-rad);
     background: var(--bg-t1);
     overflow: hidden;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
 }
 
 .bgt2 {
     border-radius: var(--brd-rad);
     background: var(--bg-t2);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
 }
 
 .bggradient {
     border-radius: var(--brd-rad);
     background: linear-gradient(to right, var(--bg-t1), var(--bg-t3));
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
 }
 
 .bgi {
@@ -147,12 +196,23 @@ ul li {
     right: 50vw;
 }
 
+/* .center is the centered modal/overlay card (settings, export, import, confirm,
+   help panels). Now styled as the new card: surface, left accent, rounded right. */
 .center {
-    text-align: center;
+    text-align: left;
     position: absolute;
     transform: translate(-50%, -50%);
     left: 50vw;
     top: 50vh;
+    background: var(--surface);
+    border-left: var(--brd-size) solid var(--primary);
+    border-right: none;
+    border-radius: 0 8px 8px 0;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.5);
+    color: var(--text);
+    padding: 12px 14px;
+    max-height: 86vh;
+    overflow-y: auto;
 }
 
 .right {
@@ -172,22 +232,43 @@ ul li {
 }
 
 
+/* a list-group is a vertical STACK of gapped cards (matches the wardrobe/tack
+   idiom): the group itself is just a transparent flex container, and each direct
+   child becomes its own floating card with the themed left accent + rounded
+   right edge + shadow. The gaps between them are part of the look. */
 .list-group {
     display: flex;
-    justify-content: flex-start;
-    min-width: 10rem;
-    max-width: 33vw;
     flex-direction: column;
-    border-radius: 0;
-    background: none;
+    gap: var(--gap);
+    width: fit-content;
+    min-width: 12rem;
+    max-width: 33vw;
     max-height: 95vh;
+    background: none;
+    border: none;
+    box-shadow: none;
+    overflow: visible;
 }
 
-.list-group > div {
-    width: fit-content;
-    max-width: 100%;
-    overflow-y: auto;
+/* each section = a card */
+.list-group > * {
+    width: 100%;
+    margin: 0;
+    background: var(--surface);
+    border-left: var(--brd-size) solid var(--primary);
+    border-radius: 0 var(--rad) var(--rad) 0;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+    overflow: hidden;
 }
+
+/* the section card owns the border/fill now — strip the inner boxes' own
+   backgrounds, shadows, radii AND their left/right borders so they don't double
+   up or leave stray edges (this is the "leftover borders on the icons" fix). */
+.list-group .bgt1,
+.list-group .bgt2,
+.list-group .bggradient { background: none; box-shadow: none; border-radius: 0; }
+.list-group .brdlr { border-left: none; border-right: none; }
+.list-group .list { border-left: none; }
 
 .f15 {
     font-size: 1.5vh;
@@ -491,29 +572,33 @@ ul li {
     text-shadow: 0 0 15px gold;
 }
 
+/* popup menu (flag/ik/taskfilter dropdowns, object context menu) — brought in
+   line with the new style: surface fill, single left accent, rounded right,
+   near-white text, classic left-bar highlight on hover (no fill wash). */
 .context-menu {
     position: absolute;
-    background: var(--bg-t1);
+    background: var(--bg);
     border-left: var(--brd-size) solid var(--primary);
-    border-right: var(--brd-size) solid var(--primary);
-    box-shadow: 2px 2px 10px rgb(0 0 0 / 20%);
-    z-index: 1000t;
-    border-radius: var(--brd-rad);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    border-radius: 0 8px 8px 0;
     overflow: hidden;
+    color: var(--text);
+    padding: 3px 0;
 }
 
 .context-menu-item {
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
+    padding: 2px 12px;
     cursor: pointer;
+    color: var(--text);
+    white-space: nowrap;
 }
 
 .context-menu-item:hover {
-    color: var(--bg);
-    text-shadow:
-        0 0 1px,
-        0 0 1px;
-    background: var(--secondary-light);
+    color: var(--accent-hi);
+    text-shadow: var(--glow);
+    background: none;
+    box-shadow: inset 2px 0 0 var(--primary);
 }
 
 #tooltip {
@@ -551,3 +636,351 @@ ul li {
 .hidden {
     display: none;
 }
+
+/* =========================================================================
+   OBJECT HUD — rebuilt on the same wardrobe idiom as the anim HUD: a left-edge
+   stack of gapped cards (nav -> active mode column) plus a right-edge entity
+   details panel. Text controls, the 4-state interaction model, near-white text.
+   Keeps .label/.entry/.control classes so UI clicks count as "interrupting"
+   (isInterruptingElement) and don't raycast into the world. All ids preserved.
+   ========================================================================= */
+#object-hud {
+    --rad: 8px; --brd-rad: 8px;
+    position: fixed; inset: 0; width: 100vw; height: 100vh;
+    color: var(--text); text-transform: none; letter-spacing: normal;
+}
+#object-hud .leftstack {
+    position: absolute; top: 14px; left: 14px;
+    display: flex; flex-direction: column; align-items: flex-start;
+    gap: var(--gap); max-height: 92vh;
+}
+#object-hud .objdetails {
+    position: absolute; top: 14px; right: 14px;
+    align-items: stretch; min-width: 13rem; max-width: 22rem; max-height: 92vh;
+}
+#object-hud .atitle {
+    color: var(--primary); letter-spacing: .08em; text-transform: lowercase;
+    text-shadow: var(--glow); margin-right: 4px;
+}
+
+/* transparent stack -> gapped section cards */
+#object-hud .colstack {
+    display: flex; flex-direction: column; gap: var(--gap);
+    align-items: stretch; min-width: 13rem; max-width: 29rem;
+    background: none; border: none; box-shadow: none;
+}
+#object-hud .card {
+    background: var(--surface);
+    border-left: var(--brd-size) solid var(--primary);
+    border-radius: 0 var(--rad) var(--rad) 0;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+    overflow: hidden;
+}
+#object-hud .colgroup { display: flex; flex-direction: column; padding: 6px 0; min-height: 0; }
+#object-hud .cardlabel {
+    color: var(--muted); font-size: 10px; text-transform: lowercase;
+    letter-spacing: .06em; padding: 2px 8px;
+}
+
+/* button rows */
+#object-hud .subbar { display: flex; align-items: center; gap: 6px; padding: 5px 8px; }
+#object-hud .subbar.wrap { flex-wrap: wrap; }
+
+/* label / value field rows */
+#object-hud .field { display: flex; align-items: center; gap: 8px; padding: 2px 8px; min-width: 0; }
+#object-hud .label { flex: none; min-width: 4.75rem; color: var(--muted); font-size: 11px; }
+#object-hud .entry {
+    flex: 1; min-width: 0; color: var(--text);
+    background: var(--surface-2); border-radius: 6px; padding: 2px 8px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; outline: none;
+}
+#object-hud .entry.dropdown { cursor: pointer; }
+#object-hud .entry.check { cursor: pointer; background: none; flex: none; }
+#object-hud .entry.check::after { content: "off"; color: var(--dim); }
+#object-hud .entry.check.selected::after { content: "on"; color: var(--accent-hi); }
+
+/* keep the legacy help overlay readable (it still uses .bgi / .entry.brdr) */
+#object-hud .bgi { background: none; color: var(--muted); text-shadow: none; }
+#object-hud .entry.brdr::before,
+#object-hud .entry.brdr::after { content: none; }
+
+/* lists */
+#object-hud .list { border-left: none; overflow-y: auto; padding: 2px 0; max-height: 34vh; }
+/* saved scenes: compact (≈half the old 18vh); loaded scenes: a little taller */
+#object-hud #objScenesList { max-height: 9vh; }
+#object-hud #objLoadedScenesList { max-height: 18vh; }
+/* the focused-scene object browser is allowed to grow tall (≥75% of screen) */
+#object-hud .list.tall { max-height: 75vh; }
+
+/* scene-row count badge (dim, right-aligned) + unsaved-changes dot.
+   id+id selectors beat the generic `#object-hud .list li { display:block }`. */
+#object-hud #objScenesList li,
+#object-hud #objLoadedScenesList li { display: flex; align-items: center; gap: 6px; }
+#object-hud .scene-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+#object-hud .scene-count { flex: none; color: var(--dim); font-size: 10px; }
+#object-hud .scene-count.scene-loading { color: var(--accent-hi); font-style: italic; opacity: 0.8; }
+#object-hud .scene-dirty { flex: none; color: var(--accent-hi); font-size: 8px; text-shadow: var(--glow); }
+#object-hud #objFocusedScene .scene-count { margin-left: 2px; }
+#object-hud #objFocusedScene .scene-dirty { margin-left: 4px; }
+#object-hud .list ul { margin: 0; padding: 0; list-style: none; }
+#object-hud .list li {
+    display: block; padding: 2px 10px; color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer;
+}
+
+/* ---- interaction states (same four-state model as the anim HUD) ---- */
+#object-hud :hover { color: inherit; text-shadow: none; }
+#object-hud :focus { outline: none; }
+#object-hud .control {
+    font-size: 1rem; margin: 0; padding: 2px 10px; border-radius: 6px;
+    color: var(--muted); cursor: pointer; text-transform: lowercase;
+}
+#object-hud .control.selected {
+    color: var(--accent-hi); text-shadow: var(--glow);
+    background: none; box-shadow: inset 0 -2px 0 var(--primary);
+}
+#object-hud .control:hover,
+#object-hud .control:focus { color: var(--accent-hi); text-shadow: var(--glow); background: var(--soft); }
+
+#object-hud .list li.li-select,
+#object-hud .list li.li-pseudo-focus {
+    color: var(--accent-hi); text-shadow: var(--glow); box-shadow: inset 2px 0 0 var(--primary);
+}
+#object-hud .list li:hover,
+#object-hud .list li.li-hover,
+#object-hud .list li:focus { color: var(--accent-hi); text-shadow: var(--glow); background: var(--soft); }
+#object-hud .list li.fav { color: gold; text-shadow: 0 0 8px gold; }
+#object-hud .entry:focus {
+    color: var(--accent-hi); text-shadow: none; box-shadow: inset 0 0 0 1px var(--primary);
+}
+
+/* =========================================================================
+   ANIMATION HUD — rebuilt on the wardrobe idiom: a left-edge stack of cards
+   (nav bar -> mode column -> nested params), near-white text, subtle glow.
+   Every element id + JS-toggled class (.hidden/.selected/.li-hover/.li-select/
+   .entry/.dropdown/.anim-ped-params/.anim-object-params) is preserved.
+   ========================================================================= */
+
+#anim-hud {
+    /* a reimagined surface: always rounded, regardless of the legacy
+       border-radius toggle (theme.js drives --brd-rad; we pin it here) */
+    --rad: 8px;
+    --brd-rad: 8px;
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--gap);
+    padding: 14px;
+    color: var(--text);
+    text-transform: none;
+    letter-spacing: normal;
+}
+
+/* nav bar (.bar) — title + the two mode toggles, now text not icons */
+#anim-hud .atitle {
+    color: var(--primary);
+    letter-spacing: 0.08em;
+    text-transform: lowercase;
+    text-shadow: var(--glow);
+    margin-right: 4px;
+}
+
+/* a mode column is a transparent STACK of gapped section cards (search has
+   search / dict+results / name+results; configure has transport / working-set /
+   params). The stack itself carries no surface — each .card does. */
+#anim-hud .colstack {
+    display: flex; flex-direction: column; gap: var(--gap);
+    align-items: stretch; max-height: 88vh;
+    background: none; border: none; box-shadow: none;
+}
+#anim-hud .card {
+    background: var(--surface);
+    border-left: var(--brd-size) solid var(--primary);
+    border-radius: 0 var(--rad) var(--rad) 0;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+    overflow: hidden;
+}
+#anim-hud .colgroup { display: flex; flex-direction: column; padding: 6px 0; min-height: 0; }
+#anim-hud .searchcard { padding: 6px 8px; }
+
+/* lists sit transparent inside the section card (this restores the bg the old
+   flattened markup was losing) and scroll within their own bounds */
+#anim-hud .list { border-left: none; overflow-y: auto; padding: 2px 0; }
+#anim-hud #animDictList { max-height: 34vh; }
+#anim-hud #animNameList { max-height: 24vh; }
+#anim-hud #animListConfigureList { max-height: 30vh; }
+#anim-hud .list ul { margin: 0; padding: 0; list-style: none; }
+#anim-hud .list li {
+    display: block;
+    padding: 2px 10px;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+}
+
+/* action button rows inside a column (play/stop, preview/add/…, tabs) */
+#anim-hud .subbar { display: flex; align-items: center; gap: 4px; padding: 4px 8px; }
+#anim-hud .tabs { gap: 6px; }
+
+/* label / value field rows */
+#anim-hud .fieldset { display: flex; flex-direction: column; padding: 2px 0; }
+#anim-hud .field { display: flex; align-items: center; gap: 8px; padding: 2px 8px; min-width: 0; }
+#anim-hud .flabel { flex: none; min-width: 4.75rem; color: var(--muted); font-size: 11px; }
+#anim-hud .fval {
+    flex: 1; min-width: 0; color: var(--text); cursor: pointer;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#anim-hud .fval:empty::before { content: "—"; color: var(--dim); }
+#anim-hud .entry,
+#anim-hud .searchbox {
+    flex: 1; min-width: 0; color: var(--text);
+    background: var(--surface-2); border-radius: 6px; padding: 2px 8px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; outline: none;
+}
+#anim-hud .entry.dropdown { cursor: pointer; }
+#anim-hud .searchbox:empty::before { content: attr(data-placeholder); color: var(--dim); }
+
+/* ---- interaction states: tame da_dev's heavy global glow, lean wardrobe ---- */
+#anim-hud :hover { color: inherit; text-shadow: none; }
+#anim-hud :focus { outline: none; }
+
+/* controls (nav + tabs): selected = classic underline accent + near-white text;
+   keyboard focus (Tab iteration) = near-white text so the cursor is visible as
+   you step through options/controls, distinct from the underlined selection. */
+/* four distinct states:
+   - unselected: muted, no fill, no underline
+   - selected/enabled: near-white text + underline accent (no fill)
+   - hover / tab-select: near-white text + subtle background fill (no underline)
+   These stack: a selected control that's also tab-focused shows BOTH the
+   underline (selected) and the fill (focus), so they never look identical.
+   (.selected is listed first so the hover/focus fill wins on the shared edge.) */
+#anim-hud .control {
+    font-size: 1rem; margin: 0; padding: 2px 10px; border-radius: 6px;
+    color: var(--muted); cursor: pointer; text-transform: lowercase;
+}
+#anim-hud .control.selected {
+    color: var(--accent-hi); text-shadow: var(--glow);
+    background: none; box-shadow: inset 0 -2px 0 var(--primary);
+}
+#anim-hud .control:hover,
+#anim-hud .control:focus {
+    color: var(--accent-hi); text-shadow: var(--glow); background: var(--soft);
+}
+
+/* list rows: selected = left accent bar; hover / tab-select = subtle fill.
+   Bar and fill are different properties, so a selected+focused row shows both. */
+#anim-hud .fval:hover { color: var(--accent-hi); text-shadow: var(--glow); }
+#anim-hud .list li.selected,
+#anim-hud .list li.li-select {
+    color: var(--accent-hi); text-shadow: var(--glow);
+    box-shadow: inset 2px 0 0 var(--primary);
+}
+#anim-hud .list li:hover,
+#anim-hud .list li.li-hover,
+#anim-hud .list li:focus { color: var(--accent-hi); text-shadow: var(--glow); background: var(--soft); }
+#anim-hud .entry:focus,
+#anim-hud .searchbox:focus {
+    color: var(--accent-hi); text-shadow: none; border: none;
+    box-shadow: inset 0 0 0 1px var(--primary);
+}
+
+/* popup menu: keyboard focus while iterating = near-white text */
+.context-menu-item:focus {
+    outline: none; color: var(--accent-hi); text-shadow: var(--glow);
+    box-shadow: inset 2px 0 0 var(--primary);
+}
+
+/* =========================================================================
+   MODAL / OVERLAY CARDS — settings, export, import, confirm dialog, keybind
+   help panels, and the camera status readout. Same language as the main HUDs:
+   surface card (.center, above), near-white text, clean fields, text buttons.
+   ========================================================================= */
+
+/* tame the global heavy glow inside every overlay */
+.center :hover, #camStatus :hover { color: inherit; text-shadow: none; }
+.center :focus, #camStatus :focus { outline: none; }
+
+.center .title {
+    color: var(--primary); text-transform: lowercase; letter-spacing: .08em;
+    text-shadow: var(--glow); margin-bottom: 8px; font-size: 1rem;
+}
+.center .f4 { color: var(--muted); text-shadow: none; }   /* decorative header icon, dimmed */
+.center #exportDescription,
+.center #importDescription,
+.center #info-description { color: var(--text); margin-bottom: 8px; }
+
+/* field rows */
+.center ul { list-style: none; margin: 4px 0; padding: 0; }
+.center li { display: flex; align-items: center; gap: 8px; padding: 2px 0; }
+.center .label, #camStatus .label {
+    flex: none; min-width: 5rem; color: var(--muted); font-size: 11px;
+    background: none; text-shadow: none;
+}
+.center .bgi, #camStatus .bgi { background: none; color: var(--muted); text-shadow: none; }
+.center .entry, #camStatus .entry {
+    flex: 1; min-width: 0; color: var(--text);
+    background: var(--surface-2); border-radius: 6px; padding: 2px 8px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; outline: none;
+}
+.center .entry.brdr::before, .center .entry.brdr::after,
+#camStatus .entry.brdr::before, #camStatus .entry.brdr::after { content: none; }
+.center .entry.dropdown { cursor: pointer; }
+.center .entry.check { background: none; flex: none; cursor: pointer; }
+.center .entry.check::after { content: "off"; color: var(--dim); }
+.center .entry.check.selected::after { content: "on"; color: var(--accent-hi); }
+.center .entry:hover, .center .entry:focus {
+    color: var(--accent-hi); box-shadow: inset 0 0 0 1px var(--primary);
+}
+
+/* code box (export / import content) — bounded + scrollable so a large YMAP
+   payload scrolls inside the box instead of stretching the card off-screen */
+.center .data {
+    background: var(--surface-2); border-radius: 6px; color: var(--text);
+    padding: 8px; white-space: pre; text-align: left;
+    min-width: 24rem; max-width: 60vw; max-height: 42vh; overflow: auto;
+}
+
+/* action buttons (export/import close+copy, confirm yes/no) */
+.center .row.m1li { display: flex; gap: 8px; justify-content: center; margin-top: 10px; }
+.center .row.m1li li, .center .control {
+    flex: none; padding: 3px 14px; border-radius: 6px; cursor: pointer;
+    color: var(--muted); text-transform: lowercase; background: none;
+}
+.center .row.m1li li:hover, .center .row.m1li li:focus,
+.center .control:hover, .center .control:focus {
+    color: var(--accent-hi); text-shadow: var(--glow); background: var(--soft);
+}
+
+/* modal dialogs — true modals. #object-hud / #anim-hud are full-screen
+   position:fixed overlays, so without an explicit z-index they paint OVER these
+   dialogs and swallow their hover/click (keyboard still works because the
+   dialogs come first in DOM order). Lift them above with a dim backdrop. This
+   is why the export/import popups' buttons only worked "sometimes". */
+#info-hud, #export-hud, #import-hud {
+    position: fixed; inset: 0; z-index: 3000;
+    background: rgba(0, 0, 0, 0.45);
+}
+#info-hud .confirm-card {
+    min-width: 14rem; max-width: 24rem; text-align: center;
+}
+#info-hud .confirm-card .title.f4 {
+    display: block; color: var(--primary); text-shadow: var(--glow);
+    font-size: 1.6rem; margin-bottom: 6px;
+}
+#info-hud #info-description { text-align: center; margin-bottom: 8px; }
+#info-hud .row.m1li { justify-content: center; }
+
+/* camera speed readout — a small floating card */
+#camera-hud #camStatus {
+    background: var(--surface); border-left: var(--brd-size) solid var(--primary);
+    border-radius: 0 8px 8px 0; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+    padding: 2px 8px; color: var(--text);
+}
+#camera-hud #camStatus ul { list-style: none; margin: 0; padding: 0; }
+#camera-hud #camStatus li { display: flex; align-items: center; gap: 6px; }

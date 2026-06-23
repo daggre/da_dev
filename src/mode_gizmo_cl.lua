@@ -113,6 +113,8 @@ da_ui.events({
             if DoesEntityExist(data.handle) then
                 SetEntityCoords(data.handle, data.position.x, data.position.y, data.position.z)
                 SetEntityRotation(data.handle, data.rotation.x, data.rotation.y, data.rotation.z)
+                -- flag the owning scene as having unsaved changes (mode_object_cl)
+                if MarkSceneDirtyByHandle then MarkSceneDirtyByHandle(data.handle) end
             end
         end
         gizmoMovementEndTime = GetGameTimer() + 100

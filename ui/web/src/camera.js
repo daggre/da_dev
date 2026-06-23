@@ -15,6 +15,9 @@ export function updateCamera(camera) {
 }
 
 export function toggleHideCamera() {
-    const hideCamera = document.getElementById('objSettingsHideCamera').classList.toggle('selected');
+    // Assign the module-level `hideCamera` (no `const`/`let`) so the autohide
+    // timer in updateCamera() actually sees the setting change. Previously a
+    // shadowing local meant the readout always autohid regardless of the toggle.
+    hideCamera = document.getElementById('objSettingsHideCamera').classList.toggle('selected');
     document.getElementById('camStatus').classList.toggle('hidden', hideCamera);
 }

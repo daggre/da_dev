@@ -1,6 +1,6 @@
-da_trie.add("devRoot", "environ", "w")
-da_trie.add("environ", "time", "t")
-da_trie.add("environ", "weather", "w")
+da_trie.add("devRoot", "world", "w")
+da_trie.add("world", "time", "t")
+da_trie.add("world", "weather", "w")
 
 local timeOptions = {
     { name = "dawn", hour = 5, minute = 30 },

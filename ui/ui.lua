@@ -77,6 +77,14 @@ da_ui.events({
     selectTrieMenu = function(data)
         da_ui.send("ui_trie", { trie = da_trie.get(data.menu) })
     end,
+    runCli = function(data)
+        -- Dev-menu command palette fallback: when the typed text matches no menu
+        -- option, run it as a console/CLI command (e.g. "mode active").
+        if data.text and data.text ~= "" then
+            ExecuteCommand(data.text)
+        end
+        da_mode.deactivate("devTree")
+    end,
     exit = function()
         da_mode.deactivate("animation"); da_mode.deactivate("devTree")
     end,
