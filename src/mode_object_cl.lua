@@ -754,6 +754,14 @@ da_mode.register({
                 da_ui.send("keyPress", { mode = "object-hud", key = "3" })
             end,
         },
+        {
+            key = "4",
+            event = "justPressed",
+            active = true,
+            fn = function()
+                da_ui.send("keyPress", { mode = "object-hud", key = "4" })
+            end,
+        },
     },
 })
 
