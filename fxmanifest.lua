@@ -14,6 +14,7 @@ shared_scripts {
 
 client_scripts {
     '@da_lib/data/animation.lua',
+    '@da_lib/data/bones.lua',
     '@da_lib/data/flags_af.lua',
     '@da_lib/data/flags_aik.lua',
     '@da_lib/data/key.lua',
@@ -56,6 +57,7 @@ client_scripts {
     'src/teleport_cl.lua',
     'src/ped_cl.lua',
     'src/bullride_cl.lua',
+    'src/skeleton_cl.lua',
     'src/event_cl.lua',
     'src/weapon_cl.lua',
     'src/wardrobe_cl.lua',
