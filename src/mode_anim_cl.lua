@@ -3,6 +3,7 @@ Citizen.CreateThread(function()
     da_mode.register({
         name = "animation",
         priority = 70,
+        disableGame = true, -- suppress baseline Game keymaps (e.g. xanims x) while active
         onActivate = function()
             SetNuiFocus(true, true)
             SetCursorLocation(0.5, 0.5)

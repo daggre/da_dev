@@ -500,6 +500,7 @@ local objectMCPState = false
 da_mode.register({
     name = "object",
     priority = 70,
+    disableGame = true, -- suppress baseline Game keymaps (e.g. xanims x) while active
     onActivate = function()
         CurrentTree = "objRoot"
         da_mode.deactivate("animation")

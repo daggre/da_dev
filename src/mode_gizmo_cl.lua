@@ -48,6 +48,7 @@ end
 da_mode.register({
     name = "gizmo",
     priority = 100,
+    disableGame = true, -- suppress baseline Game keymaps (e.g. xanims x) while active
     onActivate = function()
         local entity = Select
         if not entity then return; end
