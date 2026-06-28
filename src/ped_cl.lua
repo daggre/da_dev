@@ -437,7 +437,7 @@ da_trie.addOpt("devRoot", "horse", "h", function()
         GetEntityCoords(PlayerPedId()),
         6.0
     )
-    horse.entity = da_obj.createPed(horse.model, pos)
+    horse.entity = da_obj.createPed(horse.model, pos, { network = true })
     if not horse.entity then
         log.error("Failed to create horse entity")
         return

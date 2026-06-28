@@ -34,6 +34,7 @@ end)
 da_mode.register({
     name = "freecam",
     priority = 20,
+    disableGame = true, -- suppress baseline Game keymaps (e.g. xanims x) while active
     onActivate = function()
         -- When another mode (e.g. the wardrobe/tack editor) engaged freecam just
         -- for its camera, that mode owns NUI focus and its own HUD — so don't grab
@@ -114,6 +115,7 @@ da_mode.register({
 da_mode.register({
     name = "noclip",
     priority = 10,
+    disableGame = true, -- suppress baseline Game keymaps (e.g. xanims x) while active
     onActivate = function()
         local playerPedId = PlayerPedId()
         SetNuiFocus(true, false)

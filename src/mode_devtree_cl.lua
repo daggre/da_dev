@@ -29,6 +29,7 @@ end
 da_mode.register({
     name = "devTree",
     priority = 80,
+    disableGame = true, -- suppress baseline Game keymaps (e.g. xanims x) while active
     onActivate = function()
         applyFocus()
         -- `cursor` tells the UI this is a hold/mouse session so it ignores keyboard
