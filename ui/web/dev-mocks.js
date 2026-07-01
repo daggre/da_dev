@@ -110,7 +110,7 @@ const animikFlags = [
     { value: 1 << 24, name: 'AIK_DISABLE_CONTOUR_IK', note: '' },
     { value: 1 << 25, name: 'AIK_0xF9E28A5F', note: '' },
     { value: 1 << 26, name: 'AIK_0x983AE6C1', note: '' },
-    { value: 1 << 27, name: 'AIK_0x5B5D2BEF', note: '' },
+    { value: 1 << 27, name: 'AIK_0x5B5D2BEF', note: 'Seems to dampen the facing direction' },
     { value: 1 << 28, name: 'AIK_0xA4F64B54', note: '' },
     { value: 1 << 29, name: 'AIK_DISABLE_TWO_BONE_IK', note: 'Only use one bone in IK?', },
     { value: 1 << 30, name: 'AIK_0x0C1380EC', note: '' },
