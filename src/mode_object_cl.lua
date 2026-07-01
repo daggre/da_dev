@@ -518,6 +518,7 @@ da_mode.register({
         da_mode.deactivate("focus")
         ObjectThread = {}
         da_ui.send("ui_object", { state = false })
+        if da_bones_reset then da_bones_reset() end -- stop inspect bone draw / restore alpha
         da_mcp.deactivate()
         if not da_mode.isActive("noclip") then
             da_ui.send("ui_camera", { state = false, })
@@ -761,6 +762,14 @@ da_mode.register({
             active = true,
             fn = function()
                 da_ui.send("keyPress", { mode = "object-hud", key = "4" })
+            end,
+        },
+        {
+            key = "5",
+            event = "justPressed",
+            active = true,
+            fn = function()
+                da_ui.send("keyPress", { mode = "object-hud", key = "5" })
             end,
         },
     },

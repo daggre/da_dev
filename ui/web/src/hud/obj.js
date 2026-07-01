@@ -2,6 +2,7 @@ import { MCP } from '../events.js';
 import { toggleHUD, toggleSection } from './common.js';
 import { getScenes, getLoadedScenes, renderFocusedScene, trackSceneObjects } from '../scene.js';
 import { searchSpawnObject, getTrackedObjects } from '../obj.js';
+import { showInspect } from '../inspect.js';
 
 const ObjectHUD = {
     all: [
@@ -25,6 +26,7 @@ const ObjectHUD = {
         'objObjectsLeftColumn',
         'objSceneTagOptions',
         'objSceneObjectsList',
+        'objInspectLeftColumn',
         'objSettings',
         'import-hud',
         'export-hud',
@@ -35,6 +37,7 @@ const ObjectHUD = {
         tracked: 'button-trackedobjlist',
         sceneControl: 'button-scenecontrol',
         objects: 'button-objects',
+        inspect: 'button-inspect',
     },
     sections: {
         spawn: [
@@ -64,6 +67,10 @@ const ObjectHUD = {
             'objSceneTagOptions',
             'objSceneObjectsList',
         ],
+        // inspect tab = entity bones / skeleton viewer (children hide with the container)
+        inspect: [
+            'objInspectLeftColumn',
+        ],
     },
 };
 
@@ -72,6 +79,28 @@ export function toggleObjectHUD(state) {
     state = state ?? objectHudEl.classList.contains('hidden');
     toggleSection(state, ObjectHUD.visible, [], ObjectHUD.all);
     objectHudEl.classList.toggle('hidden', !state);
+    if (state) restoreSelectedObjectTab();
+}
+
+// On (re)open, the previously-selected tab button keeps its `.selected` highlight, but
+// toggleObjectHUD hides every column — so the active tab looks selected yet shows
+// nothing, and its onShow (e.g. showInspect, which populates the inspect column) never
+// runs. Re-open the selected tab so its column and content are restored.
+const ObjectTabToggles = {
+    'button-spawn': () => toggleObjectSpawnHUD(true),
+    'button-scenecontrol': () => toggleObjectSceneControlHUD(true),
+    'button-objects': () => toggleObjectObjectsHUD(true),
+    'button-trackedobjlist': () => toggleObjectNearbyHUD(true),
+    'button-inspect': () => toggleObjectInspectHUD(true),
+};
+function restoreSelectedObjectTab() {
+    for (const [id, openTab] of Object.entries(ObjectTabToggles)) {
+        const el = document.getElementById(id);
+        if (el && el.classList.contains('selected')) {
+            openTab();
+            return;
+        }
+    }
 }
 
 export function toggleObjectSpawnHUD(state) {
@@ -114,6 +143,12 @@ export function toggleObjectObjectsHUD(state) {
             trackSceneObjects();
         }
     );
+}
+
+export function toggleObjectInspectHUD(state) {
+    toggleHUD(state, ObjectHUD, 'inspect', ObjectHUD.buttons.inspect, () => {
+        showInspect();
+    });
 }
 
 export function toggleObjectSettingsHUD(state) {

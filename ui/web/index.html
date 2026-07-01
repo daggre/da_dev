@@ -329,6 +329,7 @@
                         <div id="button-scenecontrol" class="control" tabindex="11" role="button" aria-pressed="false" aria-label="Scene Control">scenes</div>
                         <div id="button-objects" class="control" tabindex="16" role="button" aria-pressed="false" aria-label="Scene Objects">objects</div>
                         <div id="button-trackedobjlist" class="control" tabindex="21" role="button" aria-pressed="false" aria-label="Nearby Objects">nearby</div>
+                        <div id="button-inspect" class="control" tabindex="25" role="button" aria-pressed="false" aria-label="Inspect Entity">inspect</div>
                     </div>
 
                     <!-- SPAWN -->
@@ -435,6 +436,34 @@
                             </div>
                         </div>
                         <div id="objNearbyResults" class="card list"></div>
+                    </div>
+
+                    <!-- INSPECT (entity bones / attributes) -->
+                    <div id="objInspectLeftColumn" class="colstack">
+                        <div id="objInspectSubNav" class="card subbar">
+                            <div id="inspect-sub-bones" class="control selected" tabindex="25" role="button" aria-pressed="true" aria-label="Inspect Bones">bones</div>
+                            <div id="inspect-sub-attributes" class="control" tabindex="25" role="button" aria-pressed="false" aria-label="Inspect Attributes">attributes</div>
+                        </div>
+
+                        <!-- bones sub-section (ped skeleton viewer) -->
+                        <div id="objInspectBones" class="colstack">
+                            <div class="card colgroup">
+                                <div id="bonesAlphaField" class="field">
+                                    <span class="label">alpha</span>
+                                    <div id="bonesAlpha" class="entry" tabindex="27" contenteditable="true" aria-label="Entity Transparency">255</div>
+                                </div>
+                                <div id="bonesSearchField" class="field">
+                                    <span class="label">filter</span>
+                                    <div id="bonesSearch" class="entry" tabindex="26" contenteditable="true" aria-label="Bone Filter"></div>
+                                </div>
+                            </div>
+                            <div id="bonesList" class="card list tall"></div>
+                        </div>
+
+                        <!-- attributes sub-section (ped-type-specific stats) -->
+                        <div id="objInspectAttributes" class="colstack hidden">
+                            <div id="attrList" class="card list tall"></div>
+                        </div>
                     </div>
 
                     <!-- legacy settings placeholder (kept for JS toggle targets) -->
@@ -944,6 +973,13 @@
                             ></div>
                         </li>
                     </ul>
+                </div>
+            </section>
+            <section id="keymon-hud" class="hud hidden">
+                <div id="keymon-panel">
+                    <div class="title f4">active controls</div>
+                    <ul id="keymon-list" class="options-list"></ul>
+                    <div id="keymon-empty">(press a key…)</div>
                 </div>
             </section>
         </main>

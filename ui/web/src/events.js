@@ -1,6 +1,8 @@
 import { toggleAnimationHUD, toggleAnimationSearchHUD, toggleAnimationConfigureHUD, toggleAnimDetail } from './hud/anim.js';
 import { searchAnimDicts, playConfiguredAnimations, stopAnimation, playSelectedAnimation, addAnimation, resetSelectedAnimConfig, clearAnimation, deleteAllAnimations, setSelectedAnimation, updateSelectedAnimationEntity } from '../src/anims.js';
-import { toggleCrosshair, toggleObjectSpawnHUD, toggleObjectNearbyHUD, toggleObjectSceneControlHUD, toggleObjectObjectsHUD, toggleObjectDetail, toggleObjectHUD, updateObjectDetails } from './hud/obj.js';
+import { toggleCrosshair, toggleObjectSpawnHUD, toggleObjectNearbyHUD, toggleObjectSceneControlHUD, toggleObjectObjectsHUD, toggleObjectInspectHUD, toggleObjectDetail, toggleObjectHUD, updateObjectDetails } from './hud/obj.js';
+import { searchBones, setBonesAlpha } from './bones.js';
+import { switchInspectSub } from './inspect.js';
 import { selectSpawnType, selectNearbyOrigin, toggleNearbyFilter, getTrackedObjects, toggleVisible, toggleFrozen, toggleCollision } from '../src/obj.js';
 import { saveScene, clearScene, clearAllScenes, reloadScene, deleteScene } from '../src/scene.js';
 import { showImport } from '../src/hud/import.js';
@@ -17,6 +19,7 @@ import { initTrie, setDevTreeCursor, isDevTreeCursorMode } from '../src/trie.js'
 import { DropDownMapOptions, showDropdown } from '../src/dropdown.js';
 import { searchSpawnObject, tagSelectSort, ObjectContextOptions } from '../src/obj.js';
 import { updateCrosshair } from '../src/crosshair.js';
+import { toggleKeyMonitor, renderKeyMonitor } from '../src/keymon.js';
 import { Settings } from '../src/settings.js';
 
 export let MCP = false;
@@ -70,6 +73,8 @@ const InputFields = {
     '#objSearch': event => searchSpawnObject(event.target.textContent),
     // '#selectedScene': event => saveScene(),
     '#nearbyRange': event => getTrackedObjects(),
+    '#bonesSearch': event => searchBones(event.target.textContent),
+    '#bonesAlpha': event => setBonesAlpha(event.target.textContent),
     '#animSearch': event => searchAnimDicts(document.getElementById('animSearch').textContent),
     '#animConfigureEntity': event => updateSelectedAnimationEntity(document.getElementById('animConfigureEntity').textContent),
     // Ped parameters
@@ -220,6 +225,7 @@ export let KeyActions = {
         2: () => toggleObjectSceneControlHUD(),
         3: () => toggleObjectObjectsHUD(),
         4: () => toggleObjectNearbyHUD(),
+        5: () => toggleObjectInspectHUD(),
         f: () => sendKey('f'),
         g: () => sendKey('g'),
         h: () => toggleHelp('objHelp'),
@@ -282,6 +288,9 @@ export const EventActions = {
         '#button-trackedobjlist': () => toggleObjectNearbyHUD(),
         '#button-scenecontrol': () => toggleObjectSceneControlHUD(),
         '#button-objects': () => toggleObjectObjectsHUD(),
+        '#button-inspect': () => toggleObjectInspectHUD(),
+        '#inspect-sub-bones': () => switchInspectSub('bones'),
+        '#inspect-sub-attributes': () => switchInspectSub('attributes'),
 
         '#button-objDetailsPosition': () =>
             toggleObjectDetail('button-objDetailsPosition'),
@@ -453,6 +462,9 @@ export const EventActions = {
                 if (shouldClear) {
                     event.target.textContent = ''; // Clear the div manually
                     event.preventDefault(); // Prevent <br> or any default action
+                    // Programmatic clear doesn't emit 'input', so field listeners
+                    // (e.g. resetting a filter to "show all") wouldn't fire. Notify them.
+                    event.target.dispatchEvent(new Event('input', { bubbles: true }));
                 }
                 break;
             }
@@ -524,6 +536,10 @@ const MessageActions = {
     ui_camera: data => {
         document.getElementById('camera-hud').classList.toggle('hidden', data.state == false);
         document.getElementById('camStatus').classList.toggle('hidden', data.state == false);
+    },
+    ui_keymon: data => {
+        if (data.state !== undefined) toggleKeyMonitor(data.state);
+        if (data.controls !== undefined) renderKeyMonitor(data.controls);
     },
     updateCrosshair: data => {
         updateCrosshair(data);

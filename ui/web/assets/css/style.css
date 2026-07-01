@@ -728,6 +728,19 @@ ul li {
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer;
 }
 
+/* inspect > attributes: read-only grouped label/value rows (not clickable) */
+#object-hud #attrList li.attr-group {
+    color: var(--primary); font-size: 10px; text-transform: lowercase;
+    letter-spacing: .06em; cursor: default; padding: 5px 10px 1px;
+}
+#object-hud #attrList li.attr-row { display: flex; gap: 8px; cursor: default; }
+#object-hud #attrList li.attr-row .attr-label { flex: none; min-width: 7rem; color: var(--muted); font-size: 11px; }
+#object-hud #attrList li.attr-row .attr-value {
+    flex: 1; min-width: 0; color: var(--text); text-align: right;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#object-hud #attrList li.attr-empty { color: var(--dim); cursor: default; font-style: italic; }
+
 /* ---- interaction states (same four-state model as the anim HUD) ---- */
 #object-hud :hover { color: inherit; text-shadow: none; }
 #object-hud :focus { outline: none; }
@@ -984,3 +997,33 @@ ul li {
 }
 #camera-hud #camStatus ul { list-style: none; margin: 0; padding: 0; }
 #camera-hud #camStatus li { display: flex; align-items: center; gap: 6px; }
+
+/* devRoot > keys — passive live readout of the controls currently pressed.
+   Top-left card, intentionally NO pointer-events so it never blocks the game
+   (the player keeps pressing real keys while this just mirrors them). */
+#keymon-panel {
+    position: absolute;
+    top: 2vh;
+    left: 2vh;
+    min-width: 14rem;
+    max-width: 28vw;
+    max-height: 92vh;
+    overflow-y: auto;
+    background: var(--surface);
+    border-left: var(--brd-size) solid var(--primary);
+    border-radius: 0 8px 8px 0;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.5);
+    color: var(--text);
+    padding: 10px 12px;
+}
+#keymon-panel .title {
+    color: var(--primary); text-transform: lowercase; letter-spacing: .08em;
+    text-shadow: var(--glow); margin-bottom: 6px; font-size: 1rem;
+}
+#keymon-list { display: flex; flex-direction: column; gap: 3px; }
+#keymon-list li { display: flex; justify-content: space-between; gap: 12px; white-space: nowrap; }
+#keymon-list .kname.active { color: #ffffff; text-shadow: var(--glow); }   /* currently held */
+#keymon-list .kname.recent { color: #9fd8ff; }                            /* released < 2s ago */
+#keymon-list .kkey { color: var(--text); opacity: 0.65; }
+#keymon-empty { color: var(--text); opacity: 0.55; }
+#keymon-empty.hidden { display: none; }
