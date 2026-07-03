@@ -4,7 +4,7 @@ Development Kit for RedM. Provides in-game tools for building scenes, testing an
 
 ## Version & Status
 
-v0.0.1
+v0.2
 
 ## Dependencies
 
