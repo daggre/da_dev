@@ -78,18 +78,15 @@ local PlayAnimation = function(anim)
             anim.config.bitset
         )
     elseif objType == "ped" then
-        da_anim.ped(
-            entity,
-            anim.dict,
-            anim.name,
-            anim.config.blendin,
-            anim.config.blendout,
-            anim.config.duration,
-            anim.config.flags,
-            anim.config.rate,
-            anim.config.ikflags,
-            anim.config.taskfilter
-        )
+        da_anim.ped(entity, anim.dict, anim.name, {
+            blendIn  = anim.config.blendin,
+            blendOut = anim.config.blendout,
+            duration = anim.config.duration,
+            flags    = anim.config.flags,
+            rate     = anim.config.rate,
+            ikFlags  = anim.config.ikflags,
+            filter   = anim.config.taskfilter,
+        })
     elseif objType == "vehicle" then
         log.warn("Animations are not supported for vehicles")
     elseif objType == "propset" then

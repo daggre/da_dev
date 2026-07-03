@@ -111,3 +111,7 @@ files {
 ui_page {
     'ui/web/index.html',
 }
+
+dependencies {
+    "da_lib"
+}

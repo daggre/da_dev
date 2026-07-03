@@ -8,6 +8,7 @@ local peds = {
     coyote = { key = "c", model = `a_c_coyote_01`, outfit = 1 },
     robot = { key = "r", model = `cs_crackpotrobot`, outfit = 2 },
     wapiti = { key = "w", model = `a_m_m_wapwarriors_01`, outfit = 17 },
+    wolf = { key = "p", model = `a_c_wolf_medium`, outfit = 4 },
 }
 
 
