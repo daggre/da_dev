@@ -156,18 +156,10 @@ local PlayerAnim = function(mode, opts)
     opts.uninterrupt = opts.uninterrupt and 4 or 0
 
     local anim = BullRideAnim[mode].player
-    da_anim.ped(
-        Bull.player,
-        anim.dict,
-        anim.anim,
-        0.5, -- blendIn
-        0.5, -- blendOut
-        -1, -- duration
-        opts.loop + opts.uninterrupt, -- flags
-        0, -- rate
-        0, -- ikFlags
-        false -- taskFilter
-    )
+    da_anim.ped(Bull.player, anim.dict, anim.anim, {
+        blendIn = 0.5, blendOut = 0.5, duration = -1,
+        flags = opts.loop + opts.uninterrupt,
+    })
 end
 
 local BullAnim = function(mode, opts)
@@ -176,61 +168,29 @@ local BullAnim = function(mode, opts)
     opts.uninterrupt = opts.uninterrupt and 4 or 0
 
     local anim = BullRideAnim[mode].bull
-    da_anim.ped(
-        Bull.entity,
-        anim.backDict,
-        anim.backAnim,
-        0.8, -- blendIn
-        0.6, -- blendOut
-        -1, -- duration
-        opts.loop + opts.uninterrupt, -- flags
-        0, -- rate
-        0, -- ikFlags
-        false -- taskFilter
-    )
-    da_anim.ped(
-        Bull.entity,
-        anim.frontDict,
-        anim.frontAnim,
-        0.8, -- blendIn
-        0.6, -- blendOut
-        -1, -- duration
-        24 + opts.loop + opts.uninterrupt, -- flags (UPPERBODY + SECONDARY)
-        0, -- rate
-        0, -- ikFlags
-        false -- taskFilter
-    )
+    da_anim.ped(Bull.entity, anim.backDict, anim.backAnim, {
+        blendIn = 0.8, blendOut = 0.6, duration = -1,
+        flags = opts.loop + opts.uninterrupt,
+    })
+    da_anim.ped(Bull.entity, anim.frontDict, anim.frontAnim, {
+        blendIn = 0.8, blendOut = 0.6, duration = -1,
+        flags = 24 + opts.loop + opts.uninterrupt, -- UPPERBODY + SECONDARY
+    })
 
     if not anim.back2Anim and not anim.front2Anim then return end
     local delay = anim.anim2delay or 350
     Citizen.Wait(delay)
     if anim.back2Dict then
-        da_anim.ped(
-            Bull.entity,
-            anim.back2Dict,
-            anim.back2Anim,
-            0.6, -- blendIn
-            0.3, -- blendOut
-            -1, -- duration
-            opts.loop + opts.uninterrupt, -- flags
-            0, -- rate
-            0, -- ikFlags
-            false -- taskFilter
-        )
+        da_anim.ped(Bull.entity, anim.back2Dict, anim.back2Anim, {
+            blendIn = 0.6, blendOut = 0.3, duration = -1,
+            flags = opts.loop + opts.uninterrupt,
+        })
     end
     if anim.front2Dict then
-        da_anim.ped(
-            Bull.entity,
-            anim.front2Dict,
-            anim.front2Anim,
-            0.6, -- blendIn
-            0.3, -- blendOut
-            -1, -- duration
-            24 + opts.loop + opts.uninterrupt, -- flags (UPPERBODY + SECONDARY)
-            0, -- rate
-            0, -- ikFlags
-            false -- taskFilter
-        )
+        da_anim.ped(Bull.entity, anim.front2Dict, anim.front2Anim, {
+            blendIn = 0.6, blendOut = 0.3, duration = -1,
+            flags = 24 + opts.loop + opts.uninterrupt, -- UPPERBODY + SECONDARY
+        })
     end
 end
 
@@ -251,9 +211,9 @@ local BullRide = function(mode, clearPedTasks)
 end
 
 local ReleaseBull = function()
-    da_anim.ped(Bull.entity, "creatures_mammal@bull@agitated@canter", "stop_l", 0.6, 0.9, -1, 0, 0, 0, false)
+    da_anim.ped(Bull.entity, "creatures_mammal@bull@agitated@canter", "stop_l", { blendIn = 0.6, blendOut = 0.9, duration = -1 })
     Citizen.Wait(1900)
-    da_anim.ped(Bull.entity, "creatures_mammal@bull@agitated@walk@one_step@forward", "move", 0.6, 0.9, -1, 0, 0, 0, false)
+    da_anim.ped(Bull.entity, "creatures_mammal@bull@agitated@walk@one_step@forward", "move", { blendIn = 0.6, blendOut = 0.9, duration = -1 })
     ClearPedTasks(Bull.entity)
     SetBlockingOfNonTemporaryEvents(Bull.entity, false)
     -- TaskCombatHatedTargetsAroundPedTimed(Bull.entity, 25.0, 5000, 0)

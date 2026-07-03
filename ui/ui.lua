@@ -54,17 +54,15 @@ da_ui.events({
                 tonumber(data.animTime),
                 nil, nil, nil)
         else
-            da_anim.ped(
-                entity or PlayerPedId(),
-                data.animDict,
-                data.animName,
-                tonumber(data.blendInSpeed),
-                tonumber(data.blendOutSpeed),
-                tonumber(data.duration),
-                tonumber(data.flag),
-                tonumber(data.playbackRate),
-                tonumber(data.ikFlag),
-                data.taskFilter)
+            da_anim.ped(entity or PlayerPedId(), data.animDict, data.animName, {
+                blendIn  = tonumber(data.blendInSpeed),
+                blendOut = tonumber(data.blendOutSpeed),
+                duration = tonumber(data.duration),
+                flags    = tonumber(data.flag),
+                rate     = tonumber(data.playbackRate),
+                ikFlags  = tonumber(data.ikFlag),
+                filter   = data.taskFilter,
+            })
         end
     end,
     stopAnim = function(data)
