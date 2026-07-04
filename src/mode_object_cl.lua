@@ -73,6 +73,16 @@ function MarkSceneDirtyByHandle(handle)
     end
 end
 
+-- True if entityHandle is currently tracked as part of the given scene.
+local function IsHandleInScene(entityHandle, sceneName)
+    local scene = Scenes[sceneName]
+    if not scene or not scene.objects then return false; end
+    for _, obj in ipairs(scene.objects) do
+        if obj.handle == entityHandle then return true; end
+    end
+    return false
+end
+
 local function GetObjectTypeStr(entity)
     if IsEntityAPed(entity) then return "ped"; end
     if IsEntityAVehicle(entity) then return "vehicle"; end
@@ -901,7 +911,11 @@ local GetRaycast = function(data)
     if not hit then return {}; end
     local model = GetEntityModel(obj)
     if not model or UntrackedModels[model] then return {}; end
-    return { handle = obj }
+    return {
+        handle = obj,
+        modelName = tostring(dat.getName(model)),
+        inScene = IsHandleInScene(obj, ActiveScene),
+    }
 end
 
 local DispatchKeyEvents = function(data)
@@ -1024,8 +1038,44 @@ local function setTheme(theme)
     Theme.Secondary = parseHexColor(theme[3][2])
 end
 
+-- Track an existing world object as part of the active scene so it persists on
+-- save. No-op (added = false) if the object is already tracked.
+local function AddToScene(data)
+    local handle = tonumber(data.handle)
+    if not handle then return { added = false }; end
+    local sceneName = ActiveScene or DefaultScene
+    -- Only add to a scene that is resident in memory. Creating an empty scene
+    -- here for a saved-but-unloaded name would clobber its persisted objects on
+    -- the next save.
+    if not Scenes[sceneName] or not Scenes[sceneName].objects then
+        log.warn("AddToScene: scene not loaded, ignoring", sceneName)
+        return { added = false }
+    end
+    if IsHandleInScene(handle, sceneName) then return { added = false }; end
+    table.insert(Scenes[sceneName].objects, GetObjData(handle))
+    MarkSceneDirty(sceneName)
+    return { added = true }
+end
+
+-- Stop tracking an object as part of the active scene. Leaves the world entity
+-- in place (use the delete action to remove the entity itself).
+local function RemoveFromScene(data)
+    local handle = tonumber(data.handle)
+    if not handle or not Scenes[ActiveScene] then return { removed = false }; end
+    for i, obj in ipairs(Scenes[ActiveScene].objects) do
+        if obj.handle == handle then
+            table.remove(Scenes[ActiveScene].objects, i)
+            MarkSceneDirty(ActiveScene)
+            return { removed = true }
+        end
+    end
+    return { removed = false }
+end
+
 da_ui.callbacks({
     nearbyObjects = function(data) return { nearbyObjects = GetNearbyObjects(data.range, data.origin) } end,
+    addToScene = function(data) return AddToScene(data) end,
+    removeFromScene = function(data) return RemoveFromScene(data) end,
     scenesList = function(data) return GetScenesList() end,
     focusedScene = function(data) return { scene = ActiveScene } end,
     getScene = function(data) return GetScene(data.scene) end,
@@ -1054,6 +1104,12 @@ da_ui.events({
     end,
     trackObject = TrackObject,
     setNearbyOriginPos = SetNearbyOriginPos,
+    -- Keep the client's notion of the focused scene in sync with the UI, so
+    -- scene-targeting actions (add/remove/save) act on the scene the user has
+    -- selected rather than a stale default.
+    setActiveScene = function(data)
+        if data.scene and data.scene ~= "" then ActiveScene = data.scene end
+    end,
     saveScene = function(data) CheckRename(data.scene); SaveScene(data.scene) end,
     setTheme = function(data) setTheme(data.theme); end,
 })

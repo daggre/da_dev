@@ -40,6 +40,14 @@ export function isVisible(elOrId) {
         console.error(`Element not found: ${elOrId}`);
         return false; // Return false if the element is not found
     }
+    // A hidden ancestor (e.g. the object-hud section) hides this element too,
+    // but getComputedStyle only reports the element's own style. `.hidden` is
+    // `display: none !important` — the app's single hide mechanism — so the
+    // nearest-or-self `.hidden` reliably means "not rendered". This stops the
+    // scene/obj/inspect polling loops when their whole mode is hidden.
+    if (el.closest('.hidden')) {
+        return false;
+    }
     const style = window.getComputedStyle(el);
     if (style.display === 'none') {
         return false;
