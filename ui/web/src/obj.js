@@ -22,6 +22,51 @@ export const ObjectContextOptions = {
     'Clone Object': data => copyObject(data.handle),
 };
 
+/**
+ * Build the right-click context menu for a raycast-hit object. Includes a
+ * favorite toggle whose label reflects whether the object's model is already
+ * favorited.
+ * @param {{handle: number, modelName?: string}} data - Raycast hit data.
+ * @returns {Object<string, function>} Map of menu label -> handler.
+ */
+export function objectContextMenu(data) {
+    const options = { ...ObjectContextOptions };
+    if (data.inScene) {
+        options['Remove from Scene'] = d =>
+            sendClientMessage('removeFromScene', { handle: d.handle });
+    } else {
+        options['Add to Scene'] = d =>
+            sendClientMessage('addToScene', { handle: d.handle });
+    }
+    if (data.modelName) {
+        if (Settings.objFavorites.has(data.modelName)) {
+            options['Remove Favorite'] = d => setObjFavorite(d.modelName, false);
+        } else {
+            options['Add Favorite'] = d => setObjFavorite(d.modelName, true);
+        }
+    }
+    return options;
+}
+
+/**
+ * Add or remove a model name from the persisted object favorites and refresh
+ * the spawn search list so its fav highlighting stays in sync.
+ * @param {string} name - The object model name.
+ * @param {boolean} add - True to favorite, false to unfavorite.
+ */
+function setObjFavorite(name, add) {
+    if (!name) return;
+    if (add) {
+        Settings.objFavorites.add(name);
+    } else {
+        Settings.objFavorites.delete(name);
+    }
+    sendClientMessage('saveSettings', {
+        objFavorites: JSON.stringify([...Settings.objFavorites]),
+    });
+    searchSpawnObject(document.getElementById('objSearch').textContent);
+}
+
 export function searchSpawnObject(searchString) {
     resetList('objSpawnList');
     searchObjects(

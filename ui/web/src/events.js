@@ -17,7 +17,7 @@ import { toggleSettingsHUD } from './hud/settings.js';
 import { toggleHelp } from './hud/help.js';
 import { initTrie, setDevTreeCursor, isDevTreeCursorMode } from '../src/trie.js';
 import { DropDownMapOptions, showDropdown } from '../src/dropdown.js';
-import { searchSpawnObject, tagSelectSort, ObjectContextOptions } from '../src/obj.js';
+import { searchSpawnObject, tagSelectSort, objectContextMenu } from '../src/obj.js';
 import { updateCrosshair } from '../src/crosshair.js';
 import { toggleKeyMonitor, renderKeyMonitor } from '../src/keymon.js';
 import { Settings } from '../src/settings.js';
@@ -143,12 +143,13 @@ const MouseActions = {
                     if (!data.handle) {
                         return;
                     }
-                    showDropdown(Object.keys(ObjectContextOptions), x, y).then(
+                    const options = objectContextMenu(data);
+                    showDropdown(Object.keys(options), x, y).then(
                         option => {
                             if (!option) {
                                 return;
                             }
-                            ObjectContextOptions[option](data);
+                            options[option](data);
                         }
                     );
                 });

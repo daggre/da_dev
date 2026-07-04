@@ -30,6 +30,7 @@ function loadSceneByName(name) {
 
     ActiveScene = name;
     document.getElementById('selectedScene').textContent = name;
+    sendClientMessage('setActiveScene', { scene: name });
 
     // Already resident in the world? Just focus it — no reload, no flicker.
     if (loadedSceneNames.has(name)) {
@@ -49,6 +50,7 @@ export function saveScene() {
     const newSceneName = document.getElementById('selectedScene').textContent;
     sendClientMessage('saveScene', { scene: newSceneName }).then(() => {
         ActiveScene = newSceneName;
+        sendClientMessage('setActiveScene', { scene: newSceneName });
         refreshSceneViews();
     });
 }
@@ -101,6 +103,7 @@ export function deleteScene() {
             sendClientMessage('deleteScene', { scene: sceneName }).then(() => {
                 ActiveScene = DefaultScene;
                 document.getElementById('selectedScene').textContent = ActiveScene;
+                sendClientMessage('setActiveScene', { scene: ActiveScene });
                 refreshSceneViews();
             });
         } else {
@@ -236,6 +239,7 @@ export function getLoadedScenes() {
             if (!li) return;
             ActiveScene = li.dataset.sceneName;
             document.getElementById('selectedScene').textContent = ActiveScene;
+            sendClientMessage('setActiveScene', { scene: ActiveScene });
             renderFocusedScene();
             // jump to the objects tab to browse the focused scene
             document.getElementById('button-objects').click();
