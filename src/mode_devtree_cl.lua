@@ -43,19 +43,15 @@ da_mode.register({
             key = devTreeKeyMap, -- default z
             event = "justPressed",
             fn = function()
-                log.debug("justPressed")
                 if da_mode.isActive("gizmo") then return end
                 da_control.trackShortPress(devTreeKeyMap, function()
-                    log.debug("shortpressing")
                     openWithCursor = false
                     da_mode.activate("devTree")
                 end, 150)
                 da_control.trackLongPress(devTreeKeyMap, function()
-                    log.debug("longpressing")
                     openWithCursor = true
                     da_mode.activate("devTree")
                     Citizen.CreateThread(function()
-                        log.debug("launching thread")
                         while da_mode.isActive("devTree") do
                             DisableAllControlActions(0)
                             Citizen.Wait(0)
