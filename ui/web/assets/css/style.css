@@ -932,7 +932,7 @@ ul li {
 .center ul { list-style: none; margin: 4px 0; padding: 0; }
 .center li { display: flex; align-items: center; gap: 8px; padding: 2px 0; }
 .center .label, #camStatus .label {
-    flex: none; min-width: 5rem; color: var(--muted); font-size: 11px;
+    flex: none; min-width: 2rem; color: var(--muted); font-size: 11px;
     background: none; text-shadow: none;
 }
 .center .bgi, #camStatus .bgi { background: none; color: var(--muted); text-shadow: none; }
