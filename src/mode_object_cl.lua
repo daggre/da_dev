@@ -99,6 +99,7 @@ local GetTrackedObjData = function(entityHandle)
     local modelHash = GetEntityModel(entityHandle)
     local modelName = dat.getName(modelHash)
     local pos_x, pos_y, pos_z = table.unpack(GetEntityCoords(entityHandle))
+    local rot_x, rot_y, rot_z = table.unpack(GetEntityRotation(entityHandle, 2))
 
     objData.handle = entityHandle
     objData.networkID = networkID ~= false and networkID or "-"
@@ -107,6 +108,9 @@ local GetTrackedObjData = function(entityHandle)
     objData.pos_x = pos_x
     objData.pos_y = pos_y
     objData.pos_z = pos_z
+    objData.rot_x = rot_x
+    objData.rot_y = rot_y
+    objData.rot_z = rot_z
 
 
     if entityHandle == Hover then
