@@ -1,7 +1,9 @@
 local peds = {
     john = { key = "j", model = `player_zero`, outfit = 0 },
     arthur = { key = "a", model = `player_three`, outfit = 0 },
-    male = { key = "m", model = `mp_male`, outfit = 4 },
+    male = { key = "m", model = `mp_male`, outfit = 4, fn = function()
+        TriggerEvent("da_game:playerSpawned")
+    end },
     female = { key = "f", model = `mp_female`, outfit = 4 },
     fear = { key = "1", model = `mp_g_m_m_armyoffear_01`, outfit = 0 },
     eagle = { key = "e", model = `a_c_eagle_01`, outfit = 2 },
@@ -404,7 +406,11 @@ end
 
 da_trie.add("devRoot", "ped", "p")
 for pedName, pedData in pairs(peds) do
-    da_trie.addOpt("ped", pedName, pedData.key or pedName:sub(1,1), function() SetPed(pedData.model, pedData.outfit) end)
+    da_trie.addOpt("ped", pedName, pedData.key or pedName:sub(1,1), function()
+        SetPed(pedData.model, pedData.outfit)
+        if pedData.fn then pedData.fn() end
+    end)
+
 end
 
 cli.add_cmd("ped", { desc = "Ped commands"})
