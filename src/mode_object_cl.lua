@@ -520,6 +520,8 @@ da_mode.register({
         da_ui.send("mcp", { active = objectMCPState, })
         if objectMCPState then
             da_mode.activateMCP("object")
+        else
+            SetCursorLocation(0.5, 0.5)
         end
     end,
     onDeactivate = function()
@@ -530,14 +532,13 @@ da_mode.register({
         da_ui.send("ui_object", { state = false })
         if da_bones_reset then da_bones_reset() end -- stop inspect bone draw / restore alpha
         da_mcp.deactivate()
-        if not da_mode.isActive("noclip") then
+        if not da_mode.isActive("noclip") and not da_mode.isActive("freecam") then
             da_ui.send("ui_camera", { state = false, })
         end
         CurrentTree = "devRoot"
     end,
     onPrimary = function()
         if SelectMode == "Cursor" then
-            SetCursorLocation(0.5, 0.5)
             SetNuiFocus(true, true)
             SetNuiFocusKeepInput(false)
         else

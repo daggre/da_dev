@@ -36,16 +36,7 @@ da_mode.register({
     priority = 20,
     disableGame = true, -- suppress baseline Game keymaps (e.g. xanims x) while active
     onActivate = function()
-        -- When another mode (e.g. the wardrobe/tack editor) engaged freecam just
-        -- for its camera, that mode owns NUI focus and its own HUD — so don't grab
-        -- focus or push da_dev's camera HUD. We still set up the scripted cam and
-        -- the control thread: the thread is input-starved under a cursor and only
-        -- drives the cam during the editor's MCP passthrough.
-        if da_mode.isPrimary("freecam") then
-            SetNuiFocus(true, false)
-            SetNuiFocusKeepInput(true)
-            da_ui.send("ui_camera", {})
-        end
+        da_ui.send("ui_camera", {})
 
         local x, y, z = table.unpack(GetGameplayCamCoord())
         local pitch, roll, yaw = table.unpack(GetGameplayCamRot(2))
@@ -124,6 +115,7 @@ da_mode.register({
         SetEntityInvincible(playerPedId, true)
         SetEntityVisible(playerPedId, false)
         NetworkSetEntityInvisibleToNetwork(playerPedId, true)
+        da_ui.send("ui_camera", {})
         CameraControlThread:Start()
     end,
     onDeactivate = function()
