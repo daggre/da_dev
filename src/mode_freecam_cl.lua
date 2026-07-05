@@ -148,6 +148,7 @@ da_mode.register({
 
 da_mode.register({
     name = "focus",
+
     onActivate = function()
         local trackedObject = Select
         if trackedObject then

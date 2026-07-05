@@ -17,6 +17,7 @@ export let Settings = {
         vehicle: [],
         propset: [],
         pickup: [],
+        other: [],
     },
     tag: { sort: 'dist' },
     theme: {
