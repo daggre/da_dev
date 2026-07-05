@@ -77,6 +77,16 @@ export function searchSpawnObject(searchString) {
     );
 }
 
+// Live-refresh a spawn category's model list (pushed from Lua when another
+// resource registers/unregisters models, e.g. da_props). Re-renders the search
+// results if that category is the one currently shown.
+export function updateSpawnList(category, list) {
+    Settings.spawn[category] = list || [];
+    if (SelectedObjectSpawnType === category) {
+        searchSpawnObject(document.getElementById('objSearch').textContent);
+    }
+}
+
 function searchObjects(searchValue, searchList, elementId, tabIndex) {
     const el = document.getElementById(elementId);
     el.style.minHeight = '0';

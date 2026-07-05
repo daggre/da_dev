@@ -17,7 +17,7 @@ import { toggleSettingsHUD } from './hud/settings.js';
 import { toggleHelp } from './hud/help.js';
 import { initTrie, setDevTreeCursor, isDevTreeCursorMode } from '../src/trie.js';
 import { DropDownMapOptions, showDropdown } from '../src/dropdown.js';
-import { searchSpawnObject, tagSelectSort, objectContextMenu } from '../src/obj.js';
+import { searchSpawnObject, tagSelectSort, objectContextMenu, updateSpawnList } from '../src/obj.js';
 import { updateCrosshair } from '../src/crosshair.js';
 import { toggleKeyMonitor, renderKeyMonitor } from '../src/keymon.js';
 import { Settings } from '../src/settings.js';
@@ -547,6 +547,7 @@ const MessageActions = {
         updateObjectDetails(data);
     },
     updateCamera: data => updateCamera(data.camera),
+    updateSpawnList: data => updateSpawnList(data.category, data.list),
     // updateSceneObjects: data => updateSceneObjects(data.objects),
     clipboard: data => clipboardCopy(data.text),
     mcp: data => toggleMCP(data.active),

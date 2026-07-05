@@ -19,6 +19,7 @@ da_ui.callbacks({
         pickup = json.encode(dat.pickup),
         vehicle = json.encode(dat.vehicle),
         propset = json.encode(dat.propset),
+        other = json.encode(dat.other or {}),
     } end,
 })
 

@@ -65,7 +65,6 @@ da_mode.register({
             event = "justReleased",
             active = true,
             fn = function()
-                log.debug("justReleased")
                 if openWithCursor then
                     da_mode.deactivate("devTree")
                     openWithCursor = false

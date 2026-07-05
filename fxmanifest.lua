@@ -50,6 +50,7 @@ client_scripts {
     '@da_lib/features/event/event_cl.lua',
     'ui/ui.lua',
 
+    'src/models_cl.lua',
     'src/menu_cl.lua',
     'src/environment_cl.lua',
     'src/mode_anim_cl.lua',

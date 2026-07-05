@@ -383,6 +383,7 @@ const mockResponses = {
         pickup: JSON.stringify(mockData.pickup),
         vehicle: JSON.stringify(mockData.vehicle),
         propset: JSON.stringify(mockData.propset),
+        other: JSON.stringify(mockData.other || []),
     }),
     scenesList: () => ({
         scenes: JSON.stringify([
