@@ -48,6 +48,8 @@ client_scripts {
     '@da_lib/features/weapon/weapon_cl.lua',
     '@da_lib/features/camera/camera_cl.lua',
     '@da_lib/features/event/event_cl.lua',
+    '@da_lib/features/raycast/raycast_cl.lua',
+    '@da_lib/features/vegmod/vegmod_cl.lua',
     'ui/ui.lua',
 
     'src/models_cl.lua',
@@ -70,6 +72,7 @@ client_scripts {
     'src/wardrobe_cl.lua',
     'src/tack_cl.lua',
     'src/xinteracts_cl.lua',
+    'src/vegmod_cl.lua',
 }
 
 files {
