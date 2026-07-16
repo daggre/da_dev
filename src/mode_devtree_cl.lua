@@ -48,6 +48,8 @@ da_mode.register({
                     openWithCursor = false
                     da_mode.activate("devTree")
                 end, 150)
+                -- The `150` used to sit on Citizen.CreateThread instead of trackLongPress, so the
+                -- hold time silently fell back to DefaultLongPressMS.
                 da_control.trackLongPress(devTreeKeyMap, function()
                     openWithCursor = true
                     da_mode.activate("devTree")
@@ -56,8 +58,8 @@ da_mode.register({
                             DisableAllControlActions(0)
                             Citizen.Wait(0)
                         end
-                    end, 150)
-                end)
+                    end)
+                end, 150)
             end
         },
         {

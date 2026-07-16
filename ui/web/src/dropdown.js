@@ -123,6 +123,17 @@ export function showDropdown(options, x, y, multiSelect = false) {
         menu.appendChild(fragment);
         document.body.appendChild(menu);
 
+        // Keep the menu on-screen: if it would spill past the bottom edge (e.g. the state chip
+        // sits low, above the timeline), flip it up so it opens above the click. Same for the right
+        // edge. Measured after append because the height isn't known until it's laid out.
+        const rect = menu.getBoundingClientRect();
+        if (y + rect.height > window.innerHeight) {
+            menu.style.top = `${Math.max(4, y - rect.height)}px`;
+        }
+        if (x + rect.width > window.innerWidth) {
+            menu.style.left = `${Math.max(4, window.innerWidth - rect.width - 4)}px`;
+        }
+
         function cleanup() {
             menu.remove();
             document.removeEventListener('pointerdown', handleOutsideClick, {

@@ -1,4 +1,4 @@
-import { toggleAnimationHUD, toggleAnimationSearchHUD, toggleAnimationConfigureHUD, toggleAnimDetail } from './hud/anim.js';
+import { toggleAnimationHUD, toggleAnimationSearchHUD, toggleAnimationConfigureHUD, toggleAnimationScenarioHUD, toggleAnimDetail } from './hud/anim.js';
 import { searchAnimDicts, playConfiguredAnimations, stopAnimation, playSelectedAnimation, addAnimation, resetSelectedAnimConfig, clearAnimation, deleteAllAnimations, setSelectedAnimation, updateSelectedAnimationEntity } from '../src/anims.js';
 import { toggleCrosshair, toggleObjectSpawnHUD, toggleObjectNearbyHUD, toggleObjectSceneControlHUD, toggleObjectObjectsHUD, toggleObjectInspectHUD, toggleObjectDetail, toggleObjectHUD, updateObjectDetails } from './hud/obj.js';
 import { searchBones, setBonesAlpha } from './bones.js';
@@ -206,6 +206,7 @@ export let KeyActions = {
         ' ': event => clickElement(event),
         1: () => toggleAnimationSearchHUD(),
         2: () => toggleAnimationConfigureHUD(),
+        3: () => toggleAnimationScenarioHUD(),
         h: () => toggleHelp('animHelp'),
         s: () => Pressed.Shift && !Pressed.Control && toggleSettingsHUD(),
         '?': () => toggleHelp('animHelp'),
@@ -269,6 +270,7 @@ export const EventActions = {
         // Animation HUD
         '#button-animsearch': () => toggleAnimationSearchHUD(),
         '#button-animconfigure': () => toggleAnimationConfigureHUD(),
+        '#button-animscenario': () => toggleAnimationScenarioHUD(),
 
         '#button-animconf-play': () => playConfiguredAnimations(),
         '#button-animconf-stop': () => stopAnimation(),

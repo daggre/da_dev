@@ -572,6 +572,7 @@
                     <span class="atitle">animation</span>
                     <div id="button-animsearch" class="control" tabindex="1" role="button" aria-pressed="false" aria-label="Search Animations">search</div>
                     <div id="button-animconfigure" class="control" tabindex="11" role="button" aria-pressed="false" aria-label="Configure Animations">configure</div>
+                    <div id="button-animscenario" class="control" tabindex="14" role="button" aria-pressed="false" aria-label="Scenario Editor">scenario</div>
                 </div>
 
                 <!-- SEARCH mode: search card / dict card / name card, each gapped -->
@@ -654,6 +655,80 @@
                             <div class="field"><span class="flabel">delay</span><div id="animConfigureDelay" class="entry" contenteditable="true" tabindex="13" aria-label="Start Delay">0</div></div>
                         </div>
                     </div>
+                </div>
+
+                <!-- Scenario editor: authors a da_anims scenario config, round-tripped through the
+                     real registry. The document lives here (localStorage); Lua is stateless. -->
+                <div id="animScenarioColumns" class="colstack hidden">
+                    <!-- Toolbar = FILE/PROJECT ops only (new · import · export). Playback lives on the
+                         timeline transport, not up here — one home for "run it", one for "manage it". -->
+                    <div id="scnToolbar" class="card subbar">
+                        <div id="button-scn-new" class="control" tabindex="15" role="button" aria-label="New Scenario">new</div>
+                        <div id="button-scn-import" class="control" tabindex="15" role="button" aria-label="Import Scenario">import</div>
+                        <div id="button-scn-export" class="control" tabindex="15" role="button" aria-label="Export Lua">export</div>
+                        <span id="scnStatus" aria-live="polite"></span>
+                    </div>
+                    <div id="scnErrors" class="card hidden" aria-live="polite"></div>
+                    <div id="scnImportCard" class="card hidden">
+                        <div id="scnImportSearch" class="searchbox" tabindex="15" contenteditable="true" data-placeholder="filter scenarios and drafts" aria-label="Filter Scenarios"></div>
+                        <div id="scnImportListWrap" class="list"><ul id="scnImportList"></ul></div>
+                    </div>
+                    <!-- Export panel: the emitted Lua, selectable and scrollable, with an explicit copy
+                         action — the mirror of the import picker, so both ends feel like one feature. -->
+                    <div id="scnExportCard" class="card hidden">
+                        <div id="scnExportHead" class="subbar">
+                            <span id="scnExportTitle" class="flabel">da_anims.scenario Lua</span>
+                            <div id="button-scn-export-copy" class="control" tabindex="15" role="button" aria-label="Copy Lua to Clipboard">copy</div>
+                        </div>
+                        <pre id="scnExportText" tabindex="15" aria-label="Emitted Lua"></pre>
+                    </div>
+                    <div id="scnBody">
+                        <div id="scnTreeCard" class="card">
+                            <div id="scnTreeControls" class="subbar">
+                                <div id="button-scn-addstate" class="control" tabindex="15" role="button" aria-label="Add State">+ state</div>
+                                <div id="button-scn-addrow" class="control" tabindex="15" role="button" aria-label="Add Row From Search Selection">+ row</div>
+                            </div>
+                            <div id="scnTreeWrap" class="list"><ul id="scnTree"></ul></div>
+                        </div>
+                        <div id="scnPanelCard" class="card">
+                            <div id="scnPanelTitle" class="atitle"></div>
+                            <div id="scnPanel" class="fieldset"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Full-width time-scaled timeline, pinned to the bottom of the screen. Sibling of
+                     the columns (not inside them) so it escapes their max-width. -->
+                <div id="scnTimelineBar" class="hidden">
+                    <!-- Transport: play/stop the focused state, a live clock, then the state chip that
+                         says WHAT is loaded, and the zoom controls. A video-editor's control strip. -->
+                    <div id="scnTimelineHead">
+                        <div id="scnTransport">
+                            <div id="button-scn-play" class="control scn-transport-btn" tabindex="15" role="button" aria-label="Play the focused state">▶</div>
+                            <div id="button-scn-stop" class="control scn-transport-btn" tabindex="15" role="button" aria-label="Stop playback">◼</div>
+                            <span id="scnClock" aria-live="off">0.00s</span>
+                            <div id="button-scn-enforce-when" class="control" tabindex="15" role="checkbox" aria-checked="false" aria-label="Enforce when-conditions on play (default off — preview ignores availability)">☐ when</div>
+                        </div>
+                        <span id="scnStateSelect" class="entry dropdown" tabindex="15" role="button" aria-label="Selected State — the state these bars belong to"></span>
+                        <span id="scnHeadSpacer"></span>
+                        <span id="scnTimelineZoom">
+                            <div id="button-scn-zoomout" class="control" tabindex="15" role="button" aria-label="Zoom Out">−</div>
+                            <span id="scnZoomLabel"></span>
+                            <div id="button-scn-zoomin" class="control" tabindex="15" role="button" aria-label="Zoom In">+</div>
+                            <div id="button-scn-snap" class="control" tabindex="15" role="checkbox" aria-checked="true" aria-label="Snap dragged anims to a 100ms grid and to neighbouring bars (hold Ctrl to disable while dragging)">☐ snap</div>
+                            <div id="button-scn-zoomfit" class="control" tabindex="15" role="button" aria-label="Fit Timeline">fit</div>
+                        </span>
+                    </div>
+                    <div id="scnTimelineScroll">
+                        <div id="scnTimelineInner">
+                            <div id="scnRuler"></div>
+                            <div id="scnTracks"></div>
+                            <!-- The playhead: a persistent sibling of the tracks (renderTimeline wipes
+                                 the ruler and tracks, not this), swept by polling the live run. -->
+                            <div id="scnPlayhead" class="hidden"></div>
+                        </div>
+                    </div>
+                    <div id="scnTimelineInfo"><span id="scnTimelineTitle" class="flabel"></span></div>
                 </div>
             </section>
             <section id="settings-hud" class="hud hidden">

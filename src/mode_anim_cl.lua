@@ -108,6 +108,72 @@ local PlayConfiguredAnimations = function(data)
     end
 end
 
+-- ===================== the scenario editor =====================
+--
+-- The UI round-trips an authored config through da_anims' REAL registry: register it live under
+-- the scratch id, play it through the real Timeline, serialize the authored table back to Lua.
+-- da_dev holds no editor state — the document lives in the NUI (localStorage) and every callback
+-- here is a stateless forward to da_anims.
+local SCN_EDIT_ID = "_edit_dev"
+
+da_ui.callbacks({
+    scnList = function()
+        local out = {}
+        for _, s in ipairs(exports.da_anims:animsList()) do
+            if s.id:sub(1, 6) ~= "_test_" and s.id:sub(1, 6) ~= "_edit_" then
+                local n = 0
+                for _ in pairs(s.states or {}) do n = n + 1 end
+                out[#out + 1] = { id = s.id, name = s.name, nStates = n }
+            end
+        end
+        table.sort(out, function(a, b) return a.id < b.id end)
+        return { scenarios = out }
+    end,
+    scnImport = function(data)
+        return exports.da_anims:animsGetRaw(data.id) or { error = "no such scenario: " .. tostring(data.id) }
+    end,
+    scnRegister = function(data)
+        -- `focus` is the one state the timeline is drawing — the only one worth the streaming cost
+        -- of measuring row lengths. Everything else registers as plain structure.
+        return exports.da_anims:animsRegisterLive(SCN_EDIT_ID, data.cfg, data.focus)
+    end,
+    scnPlay = function(data)
+        -- Preview the draft the way you'd REACH the state in game: a fidget is layered over the idle
+        -- (so upper-body fidgets keep the idle's lower body), other roles play from their start.
+        -- By default the `when` availability gate is IGNORED — you're authoring a scenario where its
+        -- trigger can't fire yet — unless the editor's "enforce when" toggle asked to honour it.
+        local ok = exports.da_anims:animsPreview(SCN_EDIT_ID, data.state,
+            { ignoreWhen = not data.enforceWhen })
+        return { ok = ok and true or false }
+    end,
+    scnStop = function(data)
+        if data and data.force then exports.da_anims:animsCancel()
+        else exports.da_anims:animsExit() end
+        return {}
+    end,
+    scnState = function()
+        -- The live run, for the timeline playhead. `running` is true only when it's OUR draft on the
+        -- ped (not some other scenario the player fired), so the editor never sweeps a playhead for a
+        -- run it didn't start. `elapsed` is ms since the current state began — the playhead position.
+        local st = exports.da_anims:animsState()
+        if not st then return { running = false } end
+        return {
+            running  = st.scenario == SCN_EDIT_ID,
+            scenario = st.scenario,
+            state    = st.state,
+            role     = st.role,
+            elapsed  = st.stateElapsed,
+        }
+    end,
+    scnSerialize = function(data)
+        -- Serialized under the id the AUTHOR chose — the scratch id is a registration detail.
+        return exports.da_anims:animsSerialize(data.id, data.cfg)
+    end,
+    scnAnimLength = function(data)
+        return { len = exports.da_anims:animsAnimLength(data.dict, data.anim) }
+    end,
+})
+
 da_ui.callbacks({
     playAnimation = function(data) PlayAnimation(data) end,
     playAnimations = function(data) PlayConfiguredAnimations(data) end,

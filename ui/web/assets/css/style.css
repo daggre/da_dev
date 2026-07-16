@@ -779,6 +779,10 @@ ul li {
        border-radius toggle (theme.js drives --brd-rad; we pin it here) */
     --rad: 8px;
     --brd-rad: 8px;
+    /* timeline anim-bar fill: a deeper, desaturated blue with a soft top→bottom gradient — calmer
+       than the bright --primary block, but still the theme's blue. Light label reads on top. */
+    --scn-bar-top: #56739f;
+    --scn-bar-bot: #3d5379;
     position: fixed;
     inset: 0;
     width: 100vw;
@@ -1027,3 +1031,394 @@ ul li {
 #keymon-list .kkey { color: var(--text); opacity: 0.65; }
 #keymon-empty { color: var(--text); opacity: 0.55; }
 #keymon-empty.hidden { display: none; }
+
+
+/* ===================== scenario editor (anim-hud) ===================== */
+
+/* The working columns: toolbar, errors, import, and the tree+panel body. Capped so the
+   full-width timeline pinned to the bottom of the screen never overlaps them. */
+#animScenarioColumns {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap);
+    /* a single stacked column now (list over fields), so it needn't be wide */
+    max-width: 40vw;
+    /* FILL the space above the timeline: the timeline is in-flow below (content-sized), so the
+       column just takes whatever height is left — tree stretches, fields land right above it. */
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+}
+#animScenarioColumns.hidden { display: none; }
+
+/* Toolbar, errors, and the import picker keep their size; only the tree/panel body gives and
+   scrolls — so a long scenario can't squeeze the import list down to nothing. */
+#scnToolbar, #scnErrors, #scnImportCard, #scnExportCard { flex: 0 0 auto; }
+#scnBody { flex: 1 1 auto; }
+
+#scnToolbar { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; padding: 4px 6px; }
+#scnStatus { margin-left: 8px; font-size: 0.85rem; white-space: nowrap; }
+#scnStatus.scn-ok { color: #8fdf9f; }
+#scnStatus.scn-err { color: #ff9f9f; }
+#scnStatus.scn-warn { color: #ffcf8f; }
+
+/* Errors get their own clamped, scrollable box — a long validator message scrolls here instead
+   of stretching the toolbar. */
+/* Two ids so this beats `#anim-hud .card { overflow: hidden }` — otherwise the box clips its
+   overflow instead of scrolling it. Capped, so a broken scenario's wall of errors stays contained. */
+#animScenarioColumns #scnErrors {
+    max-height: 15vh;
+    overflow-y: auto;
+    padding: 5px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    user-select: text;
+}
+#scnErrors.hidden { display: none; }
+.scn-err-line { color: #ff9f9f; font-size: 0.82rem; line-height: 1.3; word-break: break-word; }
+.scn-note-line { color: var(--text); opacity: 0.75; font-size: 0.82rem; word-break: break-word; }
+
+#scnImportCard { padding: 6px 8px; }
+#scnImportListWrap { min-height: 18vh; max-height: 40vh; overflow-y: auto; }
+#scnImportList li { cursor: pointer; padding: 1px 6px; white-space: nowrap; }
+#scnImportList li:hover { text-shadow: var(--glow); }
+#scnImportList .scn-import-draft { color: #9fd8ff; }
+
+/* One column, stacked: the state/row list on top (it STRETCHES to fill), the fields for the
+   selected node below it (sized to content, capped so it scrolls rather than starving the list). */
+#scnBody { display: flex; flex-direction: column; gap: var(--gap); min-height: 0; overflow: hidden; }
+#scnTreeCard { flex: 1 1 auto; min-height: 100px; display: flex; flex-direction: column; }
+/* flex: 0 0 auto (no shrink) so the fields size to their content and never collapse to one line —
+   the nested-flex trap when the card is allowed to shrink. Capped at half the column; scrolls past. */
+#scnPanelCard { flex: 0 0 auto; min-height: 0; max-height: 50%; display: flex; flex-direction: column; }
+#scnTreeWrap { flex: 1 1 auto; overflow-y: auto; }
+
+#scnTree .scn-node {
+    cursor: pointer;
+    padding: 1px 6px;
+    white-space: nowrap;
+    display: flex;
+    align-items: baseline;
+    gap: 2px;
+}
+#scnTree .scn-node:hover { text-shadow: var(--glow); }
+#scnTree .scn-node.selected { color: #ffffff; text-shadow: var(--glow); background: rgba(255, 255, 255, 0.06); }
+#scnTree .scn-caret {
+    display: inline-block;
+    width: 1.1em;
+    text-align: center;
+    opacity: 0.55;
+    flex: 0 0 auto;
+}
+#scnTree .scn-caret-active { cursor: pointer; opacity: 0.9; }
+#scnTree .scn-caret-active:hover { text-shadow: var(--glow); }
+#scnTree .scn-scenario { font-weight: bold; }
+#scnTree .scn-state .scn-caret { margin-left: 0.6em; }   /* one tab in */
+#scnTree .scn-row { opacity: 0.9; font-size: 0.9rem; }
+#scnTree .scn-row .scn-caret { margin-left: 2.0em; }     /* two tabs in */
+
+/* the panel title (.atitle carries no padding of its own) — pad it off the card's accent border so
+   it lines up with the fields below instead of hugging the edge */
+#scnPanelTitle { padding: 4px 10px 2px; }
+#scnPanel { flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px; padding: 4px 10px; overflow-y: auto; }
+/* the anim field's "pick from dict" caret — a small fixed-width button, NOT a flex:1 entry */
+#scnPanel .scn-pick {
+    flex: 0 0 auto;
+    cursor: pointer;
+    padding: 0 6px;
+    border: 1px solid var(--primary);
+    border-radius: var(--rad);
+    color: var(--text);
+    opacity: 0.8;
+    user-select: none;
+}
+#scnPanel .scn-pick:hover { color: var(--accent-hi); opacity: 1; text-shadow: var(--glow); }
+/* the dict autocomplete popup reuses .context-menu; just make its rows monospace-legible */
+.scn-autocomplete .context-menu-item { font-size: 0.8rem; white-space: nowrap; }
+#scnPanel .scn-sep { margin-top: 8px; opacity: 0.7; }
+/* min-height so an EMPTY field (e.g. an unset `next`) keeps a clickable line instead of collapsing
+   to nothing; a faint dash marks it as an empty, editable slot */
+#scnPanel .scn-entry { min-width: 10em; min-height: 1.2em; line-height: 1.2em; user-select: text; }
+#scnPanel .scn-entry:empty::before { content: '—'; opacity: 0.35; }
+#scnPanel .scn-danger { color: #ff9f9f; }
+
+/* ── the timeline: full width, pinned to the bottom of the screen ── */
+#scnTimelineBar {
+    /* In flow, last child of #anim-hud, so it sits at the BOTTOM and is only as tall as its
+       content (the scroll area caps itself). `align-self: stretch` fills the full width inside
+       #anim-hud's 14px padding — the column above stays narrow, the timeline spans. */
+    align-self: stretch;
+    flex: 0 0 auto;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    border-left: var(--brd-size) solid var(--primary);
+    border-radius: 0 8px 8px 0;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    padding: 6px 10px 8px;
+    z-index: 5;
+}
+#scnTimelineHead, #scnTimelineInfo { flex: 0 0 auto; }
+#scnTimelineBar.hidden { display: none; }
+
+#scnTimelineHead {
+    display: flex;
+    align-items: center;
+    /* transport | state chip | (spacer grows) | zoom — the spacer, not space-between, so the
+       transport and chip stay grouped on the left instead of drifting apart. */
+    justify-content: flex-start;
+    gap: 10px;
+    margin-bottom: 4px;
+}
+#scnHeadSpacer { flex: 1 1 auto; }
+
+/* transport: play/stop + a live clock, a video-editor's control strip */
+#scnTransport { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; }
+.scn-transport-btn { min-width: 2em; text-align: center; font-size: 0.95rem; }
+#button-scn-play.scn-playing { color: #8fdf9f; text-shadow: var(--glow); }
+#scnClock {
+    font-family: 'LiterationMonoNerd', monospace;
+    font-size: 0.82rem; opacity: 0.85; min-width: 4.5em; text-align: right;
+}
+/* the "what these bars belong to" chip — a dropdown of the scenario's states. Two ids to beat
+   `#anim-hud .entry { flex: 1 }`, which would otherwise stretch it across the header. */
+#scnTimelineHead #scnStateSelect {
+    flex: 0 0 auto;
+    width: max-content;
+    max-width: 20vw;
+    cursor: pointer;
+    padding: 2px 8px;
+    border: 1px solid var(--primary);
+    border-radius: var(--rad);
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+#scnStateSelect:hover { color: var(--accent-hi); text-shadow: var(--glow); }
+#scnTimelineZoom { display: flex; align-items: center; gap: 4px; flex: 0 0 auto; }
+#scnZoomLabel { font-size: 0.8rem; opacity: 0.75; min-width: 5em; text-align: center; }
+
+/* the state summary line, moved to below the bars */
+#scnTimelineInfo { margin-top: 4px; }
+#scnTimelineTitle { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* the horizontal scroller; the inner is time-scaled (width = totalMs * pxPerMs), so a long or
+   zoomed-in state overflows and scrolls sideways on the themed bar below */
+/* Content-sized: as short as the tracks need (a two-lane state is tiny), growing only until the
+   cap, past which it scrolls. This is what keeps the footer small when there's little to show. */
+#scnTimelineScroll { max-height: 26vh; overflow-x: auto; overflow-y: auto; }
+
+/* Themed scrollbars for the editor's scroll areas (CEF is Chromium — webkit pseudo-elements). */
+#scnTimelineScroll::-webkit-scrollbar,
+#scnTreeWrap::-webkit-scrollbar,
+#scnPanel::-webkit-scrollbar,
+#scnImportListWrap::-webkit-scrollbar,
+#animScenarioColumns #scnErrors::-webkit-scrollbar {
+    height: 11px;
+    width: 11px;
+}
+#scnTimelineScroll::-webkit-scrollbar-track,
+#scnTreeWrap::-webkit-scrollbar-track,
+#scnPanel::-webkit-scrollbar-track,
+#scnImportListWrap::-webkit-scrollbar-track,
+#animScenarioColumns #scnErrors::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+}
+#scnTimelineScroll::-webkit-scrollbar-thumb,
+#scnTreeWrap::-webkit-scrollbar-thumb,
+#scnPanel::-webkit-scrollbar-thumb,
+#scnImportListWrap::-webkit-scrollbar-thumb,
+#animScenarioColumns #scnErrors::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 6px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+}
+#scnTimelineScroll::-webkit-scrollbar-thumb:hover,
+#scnTreeWrap::-webkit-scrollbar-thumb:hover,
+#scnPanel::-webkit-scrollbar-thumb:hover,
+#scnImportListWrap::-webkit-scrollbar-thumb:hover,
+#animScenarioColumns #scnErrors::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-hi);
+    background-clip: content-box;
+}
+/* padding-bottom leaves a strip under the tracks for the draggable await line's pennant tab */
+#scnTimelineInner { position: relative; min-width: 100%; padding-bottom: 24px; }
+
+#scnRuler { position: relative; height: 16px; margin-bottom: 2px; border-bottom: 1px solid rgba(255, 255, 255, 0.15); }
+.scn-tick { position: absolute; top: 0; bottom: 0; border-left: 1px solid rgba(255, 255, 255, 0.18); }
+.scn-tick-label { font-size: 0.68rem; opacity: 0.6; padding-left: 3px; white-space: nowrap; }
+
+#scnTracks { position: relative; display: flex; flex-direction: column; gap: 2px; padding-top: 2px; }
+.scn-track { position: relative; height: 32px; background: rgba(255, 255, 255, 0.04); border-radius: 2px; }
+.scn-bar {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    min-width: 2px;
+    display: flex;
+    align-items: center;
+    /* A deeper blue with a soft vertical gradient (no color-mix — CEF lacks it — just a plain
+       linear-gradient between two solid stops, so the fill always renders). Light label on top. */
+    background: linear-gradient(180deg, var(--scn-bar-top), var(--scn-bar-bot));
+    border: 1px solid rgba(0, 0, 0, 0.4);
+    border-radius: 2px;
+    cursor: grab;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+.scn-bar:hover { filter: brightness(1.08); }
+/* while sliding: lift above its neighbours and the await line, and show the grabbing cursor */
+.scn-bar-drag { cursor: grabbing; z-index: 5; filter: brightness(1.14); }
+/* An upper-body LAYER (plays over a full-body primary): hatched, so layers and primaries read
+   apart without a second colour token. `.scn-bar.selected` (two classes) still wins over this. */
+/* Upper-body LAYER: diagonal hatch over the SAME gradient fill (rgba lines, so no color-mix). */
+.scn-bar-upper {
+    background:
+        repeating-linear-gradient(
+            45deg,
+            rgba(0, 0, 0, 0) 0,
+            rgba(0, 0, 0, 0) 5px,
+            rgba(0, 0, 0, 0.22) 5px,
+            rgba(0, 0, 0, 0.22) 10px
+        ),
+        linear-gradient(180deg, var(--scn-bar-top), var(--scn-bar-bot));
+}
+/* Selected: a bright highlighted border + soft glow, and only a SLIGHT brightness lift. Crucially it
+   does NOT override the background, so the gradient and the upper-body hatch stay fully visible. */
+.scn-bar.selected {
+    border-color: #eaf0fc;
+    box-shadow: 0 0 0 1px #eaf0fc, 0 0 7px var(--primary);
+    filter: brightness(1.1);
+}
+.scn-bar-cut { border-right: 2px solid #ff9f9f; }
+.scn-bar-unmeasured { border-style: dashed; opacity: 0.6; }
+/* an unconfigured row: solid red fill, dark label — it can't play, so it reads as a problem to fix.
+   Wins over .scn-bar-upper (both single-class) by coming later; .selected (two classes) still wins. */
+.scn-bar-invalid {
+    background: #e06666;
+    border: 1px dashed #7a1f1f;
+}
+.scn-bar-invalid .scn-bar-label { color: #2a0d0d; }
+.scn-bar-label {
+    font-size: 0.72rem;
+    padding: 0 4px;
+    white-space: nowrap;
+    pointer-events: none;
+    line-height: 1.1;
+    /* light, for contrast against the deeper blue fill; a faint dark shadow keeps it legible */
+    color: #eaf0fc;
+    font-weight: 600;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.45);
+}
+
+/* the await cutoff: a draggable handle. The element is a wide transparent grab strip centred on
+   the time; ::before draws the dashed line down its middle, and the label sits just below. */
+.scn-await {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 10px;
+    margin-left: -5px;
+    cursor: ew-resize;
+    pointer-events: auto;
+    z-index: 4;
+    background: transparent;
+}
+.scn-await::before {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 0;
+    bottom: 0;
+    border-left: 2px dashed #ff9f9f;
+}
+.scn-await:hover::before { border-left-color: #ffc9c9; }
+/* the pennant tab: a rounded square body hanging below the line, with a triangle point on its top
+   edge leading up to the line. The whole handle is grabbable. */
+.scn-await-tab {
+    position: absolute;
+    left: 5px;
+    bottom: -20px;
+    transform: translateX(-50%);
+    min-width: 34px;
+    height: 15px;
+    padding: 0 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ff9f9f;
+    border-radius: 3px;
+    color: #14161a;
+    font-size: 0.62rem;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: ew-resize;
+}
+.scn-await-tab::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-bottom: 5px solid #ff9f9f;   /* point up, to the line */
+}
+.scn-await:hover .scn-await-tab,
+.scn-await:hover .scn-await-tab::before { border-bottom-color: #ffc9c9; }
+.scn-await:hover .scn-await-tab { background: #ffc9c9; }
+
+/* ── the playhead: a green line swept across the timeline by polling the live run ── */
+#scnPlayhead {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 0;
+    border-left: 2px solid #8fdf9f;
+    box-shadow: 0 0 6px rgba(143, 223, 159, 0.7);
+    pointer-events: none;
+    z-index: 6;
+}
+#scnPlayhead.hidden { display: none; }
+/* a downward triangle cap sitting on the ruler, so the head reads as a marker, not a gridline */
+#scnPlayhead::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -5px;
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid #8fdf9f;
+}
+
+/* ── export panel: the emitted Lua, selectable, with its own copy action ── */
+#scnExportCard { padding: 6px 8px; display: flex; flex-direction: column; gap: 4px; }
+#scnExportCard.hidden { display: none; }
+#scnExportHead { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+#scnExportText {
+    margin: 0;
+    max-height: 30vh;
+    overflow: auto;
+    user-select: text;
+    font-family: 'LiterationMonoNerd', monospace;
+    font-size: 0.78rem;
+    line-height: 1.35;
+    white-space: pre;
+    background: rgba(0, 0, 0, 0.28);
+    padding: 6px 8px;
+    border-radius: var(--rad);
+    color: var(--text);
+}
+#scnExportText::-webkit-scrollbar { width: 10px; height: 10px; }
+#scnExportText::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); }
+#scnExportText::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 5px; }
+#scnExportText::-webkit-scrollbar-thumb:hover { background: var(--accent-hi); }

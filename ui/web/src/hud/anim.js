@@ -1,4 +1,5 @@
 import { toggleHUD, toggleSection } from './common.js';
+import { onScenarioShown } from '../scenario.js';
 
 const AnimHUD = {
     all: [
@@ -15,11 +16,14 @@ const AnimHUD = {
         'animListConfigureList',
         'animListConfigureDict',
         'animListConfigureName',
+        'animScenarioColumns',
+        'scnTimelineBar',
     ],
     visible: ['animHUDControls'], // Default visible elements
     buttons: {
         search: 'button-animsearch',
         configure: 'button-animconfigure',
+        scenario: 'button-animscenario',
     },
     sections: {
         search: [
@@ -37,6 +41,8 @@ const AnimHUD = {
             'animListConfigureDict',
             'animListConfigureName',
         ],
+        // Two containers: the working columns, and the full-width timeline pinned at the bottom.
+        scenario: ['animScenarioColumns', 'scnTimelineBar'],
     },
 };
 
@@ -54,6 +60,15 @@ export function toggleAnimationSearchHUD(state) {
 
 export function toggleAnimationConfigureHUD(state) {
     toggleHUD(state, AnimHUD, 'configure', AnimHUD.buttons.configure);
+}
+
+export function toggleAnimationScenarioHUD(state) {
+    toggleHUD(state, AnimHUD, 'scenario', AnimHUD.buttons.scenario);
+    // If the scenario section is now visible, let the editor register/measure/fit against a real
+    // width (it couldn't while hidden at init).
+    if (!document.getElementById('animScenarioColumns').classList.contains('hidden')) {
+        onScenarioShown();
+    }
 }
 
 const AnimConfigureCategoryMap = new Map([

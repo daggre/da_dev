@@ -104,6 +104,7 @@ files {
     'ui/web/src/msg.js',
     'ui/web/src/nav.js',
     'ui/web/src/obj.js',
+    'ui/web/src/scenario.js',
     'ui/web/src/scene.js',
     'ui/web/src/settings.js',
     'ui/web/src/theme.js',

@@ -3,6 +3,7 @@ import { fetchSpawnData, initSettings } from './src/settings.js';
 import { addTooltipListener } from './src/tooltip.js';
 import { addDropdownsListener } from './src/dropdown.js';
 import { addTriePaletteListener } from './src/trie.js';
+import { initScenario } from './src/scenario.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     addMessageListener();
@@ -18,4 +19,5 @@ window.netReady.promise.then(() => {
     addDropdownsListener();
     addTriePaletteListener();
     addEventActionsListener();
+    initScenario();
 });

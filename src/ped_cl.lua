@@ -386,7 +386,7 @@ local function ApplyAnimalFix()
             end
             if IsControlJustPressed(0, 0xD9D0E1C0) then
                 if GetEntityModel(lastPlayerPedId) == `a_c_chicken_01` then
-                    TriggerEvent("da_xanims:queueAnim", "chicken_flap", "enter")
+                    exports.da_anims:animsPlay("chicken_flap")
                 end
             end
             Citizen.Wait(0)
