@@ -11,21 +11,17 @@ const AnimHUD = {
         'animSearchField',
         'animDictList',
         'animNameList',
-        'animListConfigureLeftColumn',
-        'animListConfigureOptions',
-        'animListConfigureList',
-        'animListConfigureDict',
-        'animListConfigureName',
+        'animPreviewParams',
         'animScenarioColumns',
         'scnTimelineBar',
     ],
     visible: ['animHUDControls'], // Default visible elements
     buttons: {
         search: 'button-animsearch',
-        configure: 'button-animconfigure',
         scenario: 'button-animscenario',
     },
     sections: {
+        // Search now also carries the persistent preview-params panel (configure mode was merged in).
         search: [
             'animSearchLeftColumn',
             'animSearchDict',
@@ -33,13 +29,7 @@ const AnimHUD = {
             'animSearchField',
             'animDictList',
             'animNameList',
-        ],
-        configure: [
-            'animListConfigureLeftColumn',
-            'animListConfigureOptions',
-            'animListConfigureList',
-            'animListConfigureDict',
-            'animListConfigureName',
+            'animPreviewParams',
         ],
         // Two containers: the working columns, and the full-width timeline pinned at the bottom.
         scenario: ['animScenarioColumns', 'scnTimelineBar'],
@@ -58,9 +48,9 @@ export function toggleAnimationSearchHUD(state) {
     toggleHUD(state, AnimHUD, 'search', AnimHUD.buttons.search);
 }
 
-export function toggleAnimationConfigureHUD(state) {
-    toggleHUD(state, AnimHUD, 'configure', AnimHUD.buttons.configure);
-}
+// Configure mode was merged into search (the persistent preview-params panel) and the scenario
+// editor. Kept as a no-op so the historical import/keybind can't throw.
+export function toggleAnimationConfigureHUD() {}
 
 export function toggleAnimationScenarioHUD(state) {
     toggleHUD(state, AnimHUD, 'scenario', AnimHUD.buttons.scenario);

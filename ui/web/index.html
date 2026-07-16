@@ -525,7 +525,7 @@
                         <li>
                             <div class="label brdl pl05 bgi">2</div>
                             <div class="entry brdr pr05 bgt1">
-                                Toggle Animation Configuration HUD
+                                Scenario Editor
                             </div>
                         </li>
                         <li> </li>
@@ -571,7 +571,6 @@
                 <div id="animHUDControls" class="bar">
                     <span class="atitle">animation</span>
                     <div id="button-animsearch" class="control" tabindex="1" role="button" aria-pressed="false" aria-label="Search Animations">search</div>
-                    <div id="button-animconfigure" class="control" tabindex="11" role="button" aria-pressed="false" aria-label="Configure Animations">configure</div>
                     <div id="button-animscenario" class="control" tabindex="14" role="button" aria-pressed="false" aria-label="Scenario Editor">scenario</div>
                 </div>
 
@@ -594,65 +593,16 @@
                         </div>
                         <div id="animNameList" class="list"></div>
                     </div>
-                </div>
-
-                <!-- CONFIGURE mode: transport card / working-set card / params card -->
-                <div id="animListConfigureLeftColumn" class="colstack">
-                    <div id="animListConfigureControls" class="card subbar">
-                        <div id="button-animconf-play" class="control" tabindex="12" role="button" aria-pressed="false" aria-label="Play Configured Animations">play</div>
-                        <div id="button-animconf-stop" class="control" tabindex="12" role="button" aria-pressed="false" aria-label="Stop Animations">stop</div>
-                    </div>
-                    <div class="card colgroup">
-                        <div id="animListConfigureDict" class="field">
-                            <span class="flabel">dict</span>
-                            <div id="animConfSelectedDict" class="fval" aria-label="Animation Dictionary"></div>
-                        </div>
-                        <div id="animListConfigureName" class="field">
-                            <span class="flabel">name</span>
-                            <div id="animConfSelectedName" class="fval" aria-label="Animation Name"></div>
-                        </div>
-                        <div id="animListConfigureOptions" class="subbar">
-                            <div id="button-animconf-previewselected" class="control" tabindex="12" role="button" aria-pressed="false" aria-label="Preview Configured Animation">preview</div>
-                            <div id="button-animconf-add" class="control" tabindex="12" role="button" aria-pressed="false" aria-label="Add Selected Animation">add</div>
-                            <div id="button-animconf-resetselected" class="control" tabindex="12" role="button" aria-pressed="false" aria-label="Reset Current Config To Default">reset</div>
-                            <div id="button-animconf-clear" class="control" tabindex="12" role="button" aria-pressed="false" aria-label="Clear Selection">clear</div>
-                            <div id="button-animconf-deleteall" class="control" tabindex="12" role="button" aria-pressed="false" aria-label="Remove All Configured Animations">delete all</div>
-                        </div>
-                        <div id="animListConfigureList" class="list">
-                            <ul id="animConfigureListUl"></ul>
-                        </div>
-                    </div>
-
-                    <div id="animConfigureRightColumn" class="card colgroup hidden">
-                        <div id="animConfigureButtons" class="subbar tabs">
-                            <div id="button-animTimings" class="control selected" tabindex="13" role="button" aria-pressed="false" aria-label="Animation Timings">timings</div>
-                            <div id="button-animFlags" class="control selected" tabindex="13" role="button" aria-pressed="false" aria-label="Animation Flags">flags</div>
-                            <div id="button-animExtras" class="control selected" tabindex="13" role="button" aria-pressed="false" aria-label="Animation Extras">extras</div>
-                        </div>
-                        <div id="animConfigureNames" class="fieldset">
-                            <div class="field"><span class="flabel">entity</span><div id="animConfigureEntity" class="entry" tabindex="13" contenteditable="true" aria-label="Entity Handle"></div></div>
-                            <div class="field"><span class="flabel">dict</span><div id="animConfigureDict" class="fval" aria-label="Animation Dictionary Name"></div></div>
-                            <div class="field"><span class="flabel">name</span><div id="animConfigureName" class="fval" aria-label="Animation Name"></div></div>
-                        </div>
-                        <div id="animConfigureTimings" class="fieldset anim-ped-params">
-                            <div class="field"><span class="flabel">blend-in</span><div id="animConfigureBlendIn" class="entry" contenteditable="true" tabindex="13" aria-label="Blend In Speed">0.0</div></div>
-                            <div class="field"><span class="flabel">blend-out</span><div id="animConfigureBlendOut" class="entry" contenteditable="true" tabindex="13" aria-label="Blend Out Speed">0.0</div></div>
-                            <div class="field"><span class="flabel">duration</span><div id="animConfigureDuration" class="entry" contenteditable="true" tabindex="13" aria-label="Animation Duration">0</div></div>
-                            <div class="field"><span class="flabel">rate</span><div id="animConfigureRate" class="entry" contenteditable="true" tabindex="13" aria-label="Animation Rate">0</div></div>
-                        </div>
-                        <div id="animConfigureFlags" class="fieldset anim-ped-params">
-                            <div class="field"><span class="flabel">flags</span><div id="animConfigureAnimFlags" class="entry dropdown" tabindex="13" aria-label="Animation Flags">0</div></div>
-                            <div class="field"><span class="flabel">ik-flags</span><div id="animConfigureAnimIKFlags" class="entry dropdown" tabindex="13" aria-label="Animation Inverse Kinematics Flags">0</div></div>
-                            <div class="field"><span class="flabel">taskfilter</span><div id="animConfigureTaskfilter" class="entry dropdown" tabindex="13" aria-label="Animation Taskfilter">false</div></div>
-                        </div>
-                        <div id="animConfigureObjectParams" class="fieldset anim-object-params hidden">
-                            <div class="field"><span class="flabel">loop</span><div id="animConfigureLoop" class="entry" contenteditable="true" tabindex="13" aria-label="Loop Flag">0</div></div>
-                            <div class="field"><span class="flabel">stay-in-anim</span><div id="animConfigureStayInAnim" class="entry" contenteditable="true" tabindex="13" aria-label="Stay In Animation Flag">0</div></div>
-                            <div class="field"><span class="flabel">delta</span><div id="animConfigureDelta" class="entry" contenteditable="true" tabindex="13" aria-label="Animation Delta">0.0</div></div>
-                            <div class="field"><span class="flabel">bitset</span><div id="animConfigureBitset" class="entry" contenteditable="true" tabindex="13" aria-label="Bitset Flags">0</div></div>
-                        </div>
-                        <div id="animConfigureExtras" class="fieldset">
-                            <div class="field"><span class="flabel">delay</span><div id="animConfigureDelay" class="entry" contenteditable="true" tabindex="13" aria-label="Start Delay">0</div></div>
+                    <!-- Preview params: tweak these once and they persist as you preview different
+                         anims (they are NOT reset per anim). Every preview plays with these. -->
+                    <div id="animPreviewParams" class="card colgroup">
+                        <div class="subbar"><span class="atitle">preview params</span></div>
+                        <div class="fieldset">
+                            <div class="field"><span class="flabel">blend-in</span><div id="animPreviewBlendIn" class="entry" contenteditable="true" tabindex="5" aria-label="Blend In Speed">0.9</div></div>
+                            <div class="field"><span class="flabel">blend-out</span><div id="animPreviewBlendOut" class="entry" contenteditable="true" tabindex="5" aria-label="Blend Out Speed">0.9</div></div>
+                            <div class="field"><span class="flabel">flags</span><div id="animPreviewFlags" class="entry dropdown" tabindex="5" aria-label="Animation Flags">0</div></div>
+                            <div class="field"><span class="flabel">ik-flags</span><div id="animPreviewIKFlags" class="entry dropdown" tabindex="5" aria-label="IK Flags">0</div></div>
+                            <div class="field"><span class="flabel">taskfilter</span><div id="animPreviewTaskfilter" class="entry dropdown" tabindex="5" aria-label="Taskfilter">none</div></div>
                         </div>
                     </div>
                 </div>

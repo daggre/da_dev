@@ -4,6 +4,7 @@ import { addTooltipListener } from './src/tooltip.js';
 import { addDropdownsListener } from './src/dropdown.js';
 import { addTriePaletteListener } from './src/trie.js';
 import { initScenario } from './src/scenario.js';
+import { initAnimPreviewParams } from './src/anims.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     addMessageListener();
@@ -20,4 +21,5 @@ window.netReady.promise.then(() => {
     addTriePaletteListener();
     addEventActionsListener();
     initScenario();
+    initAnimPreviewParams();
 });

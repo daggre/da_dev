@@ -25,6 +25,44 @@ const defaultConfig = {
     delay: 0,
 }
 
+// ── preview params ──
+//
+// The search HUD previews an anim with THESE params, and they PERSIST as you preview different anims
+// (they are not reset per anim). Set your blend/flags once, then audition anims against them.
+const LS_PREVIEW = 'da_dev.previewParams';
+let previewParams = loadPreviewParams();
+function loadPreviewParams() {
+    try {
+        const s = JSON.parse(localStorage.getItem(LS_PREVIEW));
+        if (s && typeof s === 'object') return s;
+    } catch { /* fall through */ }
+    return { blendin: 0.9, blendout: 0.9, flags: 0, ikflags: 0, taskfilter: false };
+}
+function savePreviewParams() {
+    localStorage.setItem(LS_PREVIEW, JSON.stringify(previewParams));
+}
+
+// Called from an input handler (events.js) as the blend fields are edited.
+export function setPreviewParam(key, text) {
+    const n = Number(String(text).trim());
+    previewParams[key] = Number.isFinite(n) ? n : 0;
+    savePreviewParams();
+}
+
+// Paint the preview-param fields from the stored values (numbers directly; taskfilter resolves to its
+// name). Called once the HUD is ready.
+export function initAnimPreviewParams() {
+    const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+    set('animPreviewBlendIn', previewParams.blendin);
+    set('animPreviewBlendOut', previewParams.blendout);
+    set('animPreviewFlags', previewParams.flags || 0);
+    set('animPreviewIKFlags', previewParams.ikflags || 0);
+    getTaskFilters().then(tfs => {
+        const m = tfs.find(t => t.value === previewParams.taskfilter);
+        set('animPreviewTaskfilter', m ? m.name.toLowerCase() : 'none');
+    });
+}
+
 async function fetchData(key, messageType, modifier) {
     if (!globalThis[key]) {
         const resp = await sendClientMessage(messageType, {});
@@ -111,8 +149,6 @@ export async function searchAnimDicts(searchValue) {
         } else {
             document.getElementById('animSelectedDict').textContent = animDict;
             document.getElementById('animSelectedName').textContent = '';
-            document.getElementById('animConfSelectedDict').textContent = animDict;
-            document.getElementById('animSearchDict').value = animDict;
             selectAnimDict(animDict);
         }
     });
@@ -174,15 +210,10 @@ async function selectAnimDict(animDict) {
         if (!li) return;
 
         const anim = li.dataset.anim;
-        if (event.shiftKey) {
-            document.getElementById('animSelectedName').textContent = anim;
-            document.getElementById('animConfSelectedName').textContent = anim;
-            addAnimation();
-        } else if (event.ctrlKey) {
+        if (event.ctrlKey) {
             li.remove();
         } else {
             document.getElementById('animSelectedName').textContent = anim;
-            document.getElementById('animConfSelectedName').textContent = anim;
             previewAnimation(animDict, anim);
         }
     });
@@ -327,20 +358,28 @@ export function deleteAllAnimations() {
 }
 
 function previewAnimation(dict, name) {
-    sendClientMessage('playAnimation', { dict: dict, name: name, config: {}, });
+    // Play with the PERSISTENT preview params (blend/flags/ik/taskfilter). duration -1 = natural end.
+    sendClientMessage('playAnimation', {
+        dict, name,
+        config: {
+            blendin: previewParams.blendin,
+            blendout: previewParams.blendout,
+            duration: -1,
+            rate: 0,
+            flags: previewParams.flags || 0,
+            ikflags: previewParams.ikflags || 0,
+            taskfilter: previewParams.taskfilter,
+        },
+    });
 }
 
-DropDownAdvOptions.animConfigureTaskfilter = () => {
-    const anim = selectedAnimation;
+DropDownAdvOptions.animPreviewTaskfilter = () => {
     return getTaskFilters().then(taskfilters => {
         return taskfilters.map(taskfilter => ({
             name: taskfilter.name.toLowerCase(),
             tooltip: taskfilter.note,
-            value: anim === null ? false : anim.config.taskfilter,
-            fn: () => {
-                if (anim === null) { return; }
-                anim.config.taskfilter = taskfilter.value;
-            },
+            value: taskfilter.value,
+            fn: () => { previewParams.taskfilter = taskfilter.value; savePreviewParams(); },
         }));
     });
 }
@@ -353,51 +392,47 @@ function getFlagsTotal(flags) {
 
 
 
-DropDownMultiOptions.animConfigureAnimFlags = {
+DropDownMultiOptions.animPreviewFlags = {
     result: () => getAnimFlags().then(flags => getFlagsTotal(flags)),
     fetch: () => {
         return getAnimFlags().then(animFlags => {
-            const anim = selectedAnimation;
-            return animFlags.map((flag, index) => ({
+            return animFlags.map(flag => ({
                 name: flag.name.toLowerCase(),
                 tooltip: `${flag.value}: ${flag.note}`,
                 value: flag.value,
+                selected: (previewParams.flags & flag.value) === flag.value,
                 click: () => {
-                    const el = document.getElementById('animConfigureAnimFlags');
-                    const cur = el.textContent;
-                    el.textContent = cur ^ flag.value;
+                    const el = document.getElementById('animPreviewFlags');
+                    el.textContent = Number(el.textContent) ^ flag.value;
                 },
-                selected: (anim.config.flags & flag.value) === flag.value,
-                fn: () => getAnimFlags().then(flags => {
-                    if (anim === null) { return; }
-                    anim.config.flags ^= flag.value;
-                    document.getElementById('animConfigureAnimFlags').textContent = anim.config.flags;
-                }),
+                fn: () => {
+                    previewParams.flags ^= flag.value;
+                    savePreviewParams();
+                    document.getElementById('animPreviewFlags').textContent = previewParams.flags;
+                },
             }));
         });
     },
 };
 
-DropDownMultiOptions.animConfigureAnimIKFlags = {
+DropDownMultiOptions.animPreviewIKFlags = {
     result: () => getAnimIKFlags().then(flags => getFlagsTotal(flags)),
     fetch: () => {
         return getAnimIKFlags().then(animFlags => {
-            const anim = selectedAnimation;
-            return animFlags.map((flag, index) => ({
+            return animFlags.map(flag => ({
                 name: flag.name.toLowerCase(),
                 tooltip: `${flag.value}: ${flag.note}`,
                 value: flag.value,
+                selected: (previewParams.ikflags & flag.value) === flag.value,
                 click: () => {
-                    const el = document.getElementById('animConfigureAnimIKFlags');
-                    const cur = el.textContent;
-                    el.textContent = cur ^ flag.value;
+                    const el = document.getElementById('animPreviewIKFlags');
+                    el.textContent = Number(el.textContent) ^ flag.value;
                 },
-                selected: (anim.config.ikflags & flag.value) === flag.value,
-                fn: () => getAnimIKFlags().then(flags => {
-                    if (anim === null) { return; }
-                    anim.config.ikflags ^= flag.value;
-                    document.getElementById('animConfigureAnimIKFlags').textContent = anim.config.ikflags;
-                }),
+                fn: () => {
+                    previewParams.ikflags ^= flag.value;
+                    savePreviewParams();
+                    document.getElementById('animPreviewIKFlags').textContent = previewParams.ikflags;
+                },
             }));
         });
     },

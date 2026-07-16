@@ -1,5 +1,5 @@
 import { toggleAnimationHUD, toggleAnimationSearchHUD, toggleAnimationConfigureHUD, toggleAnimationScenarioHUD, toggleAnimDetail } from './hud/anim.js';
-import { searchAnimDicts, playConfiguredAnimations, stopAnimation, playSelectedAnimation, addAnimation, resetSelectedAnimConfig, clearAnimation, deleteAllAnimations, setSelectedAnimation, updateSelectedAnimationEntity } from '../src/anims.js';
+import { searchAnimDicts, playConfiguredAnimations, stopAnimation, playSelectedAnimation, addAnimation, resetSelectedAnimConfig, clearAnimation, deleteAllAnimations, setSelectedAnimation, updateSelectedAnimationEntity, setPreviewParam } from '../src/anims.js';
 import { toggleCrosshair, toggleObjectSpawnHUD, toggleObjectNearbyHUD, toggleObjectSceneControlHUD, toggleObjectObjectsHUD, toggleObjectInspectHUD, toggleObjectDetail, toggleObjectHUD, updateObjectDetails } from './hud/obj.js';
 import { searchBones, setBonesAlpha } from './bones.js';
 import { switchInspectSub } from './inspect.js';
@@ -76,6 +76,9 @@ const InputFields = {
     '#bonesSearch': event => searchBones(event.target.textContent),
     '#bonesAlpha': event => setBonesAlpha(event.target.textContent),
     '#animSearch': event => searchAnimDicts(document.getElementById('animSearch').textContent),
+    // preview params (persist across previews): blend fields commit to the shared previewParams
+    '#animPreviewBlendIn': () => setPreviewParam('blendin', document.getElementById('animPreviewBlendIn').textContent),
+    '#animPreviewBlendOut': () => setPreviewParam('blendout', document.getElementById('animPreviewBlendOut').textContent),
     '#animConfigureEntity': event => updateSelectedAnimationEntity(document.getElementById('animConfigureEntity').textContent),
     // Ped parameters
     '#animConfigureBlendIn': event => setSelectedAnimation('blendin', document.getElementById('animConfigureBlendIn').textContent),
@@ -205,7 +208,7 @@ export let KeyActions = {
     'anim-hud': {
         ' ': event => clickElement(event),
         1: () => toggleAnimationSearchHUD(),
-        2: () => toggleAnimationConfigureHUD(),
+        2: () => toggleAnimationScenarioHUD(),
         3: () => toggleAnimationScenarioHUD(),
         h: () => toggleHelp('animHelp'),
         s: () => Pressed.Shift && !Pressed.Control && toggleSettingsHUD(),
