@@ -779,10 +779,8 @@ ul li {
        border-radius toggle (theme.js drives --brd-rad; we pin it here) */
     --rad: 8px;
     --brd-rad: 8px;
-    /* timeline anim-bar fill: a deeper, desaturated blue with a soft top→bottom gradient — calmer
-       than the bright --primary block, but still the theme's blue. Light label reads on top. */
-    --scn-bar-top: #56739f;
-    --scn-bar-bot: #3d5379;
+    /* timeline bar fills (--scn-bar-* anim, --scn-prop-* prop) are DERIVED per theme by theme.js
+       and set on :root; base.css carries the night-king fallback. Not pinned here, so they theme. */
     position: fixed;
     inset: 0;
     width: 100vw;
@@ -1057,10 +1055,12 @@ ul li {
 #scnBody { flex: 1 1 auto; }
 
 #scnToolbar { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; padding: 4px 6px; }
-#scnStatus { margin-left: 8px; font-size: 0.85rem; white-space: nowrap; }
+#scnStatus { flex: 0 0 auto; font-size: 0.85rem; white-space: nowrap; }
 #scnStatus.scn-ok { color: #8fdf9f; }
 #scnStatus.scn-err { color: #ff9f9f; }
 #scnStatus.scn-warn { color: #ffcf8f; }
+/* edited-but-not-yet-validated: register runs on play/export only, so this is the resting state */
+#scnStatus.scn-note { color: var(--text); opacity: 0.6; }
 
 /* Errors get their own clamped, scrollable box — a long validator message scrolls here instead
    of stretching the toolbar. */
@@ -1117,6 +1117,9 @@ ul li {
 #scnTree .scn-state .scn-caret { margin-left: 0.6em; }   /* one tab in */
 #scnTree .scn-row { opacity: 0.9; font-size: 0.9rem; }
 #scnTree .scn-row .scn-caret { margin-left: 2.0em; }     /* two tabs in */
+/* prop rows read warm against the anim rows' plain text — same tint as their timeline lanes */
+#scnTree .scn-row-prop .scn-label { color: #e8d9a8; }
+#scnTree .scn-row-prop.selected .scn-label { color: #fff2cf; }
 
 /* the panel title (.atitle carries no padding of its own) — pad it off the card's accent border so
    it lines up with the fields below instead of hugging the edge */
@@ -1137,10 +1140,22 @@ ul li {
 /* the dict autocomplete popup reuses .context-menu; just make its rows monospace-legible */
 .scn-autocomplete .context-menu-item { font-size: 0.8rem; white-space: nowrap; }
 #scnPanel .scn-sep { margin-top: 8px; opacity: 0.7; }
+/* the scenario card's compact prop overview: one clickable line per prop, id → model */
+#scnPanel .scn-prop-line {
+    display: flex; align-items: baseline; gap: 8px;
+    padding: 2px 8px; cursor: pointer; border-radius: 3px;
+}
+#scnPanel .scn-prop-line:hover { background: rgba(255, 255, 255, 0.06); }
+#scnPanel .scn-prop-id { color: #e8d9a8; font-weight: 600; min-width: 5rem; }
+#scnPanel .scn-prop-model { color: var(--muted); font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#scnPanel .scn-prop-empty { padding: 2px 8px; color: var(--dim); font-size: 0.85rem; }
 /* min-height so an EMPTY field (e.g. an unset `next`) keeps a clickable line instead of collapsing
    to nothing; a faint dash marks it as an empty, editable slot */
 #scnPanel .scn-entry { min-width: 10em; min-height: 1.2em; line-height: 1.2em; user-select: text; }
 #scnPanel .scn-entry:empty::before { content: '—'; opacity: 0.35; }
+/* a field showing an INHERITED default rather than its own value: dimmed, so it reads as the
+   effective value the row will use, not an explicit setting. Focus clears it to type your own. */
+#scnPanel .scn-inherited { color: var(--dim); font-style: italic; }
 #scnPanel .scn-danger { color: #ff9f9f; }
 
 /* ── the timeline: full width, pinned to the bottom of the screen ── */
@@ -1201,9 +1216,16 @@ ul li {
 #scnTimelineZoom { display: flex; align-items: center; gap: 4px; flex: 0 0 auto; }
 #scnZoomLabel { font-size: 0.8rem; opacity: 0.75; min-width: 5em; text-align: center; }
 
-/* the state summary line, moved to below the bars */
-#scnTimelineInfo { margin-top: 4px; }
-#scnTimelineTitle { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* the bottom line: state summary on the left, status on the right. The title takes the slack and
+   ellipsises, so a long summary can't push the status off. */
+#scnTimelineInfo {
+    margin-top: 4px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+}
+#scnTimelineTitle { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* the horizontal scroller; the inner is time-scaled (width = totalMs * pxPerMs), so a long or
    zoomed-in state overflows and scrolls sideways on the themed bar below */
@@ -1315,6 +1337,216 @@ ul li {
     font-weight: 600;
     text-shadow: 0 1px 1px rgba(0, 0, 0, 0.45);
 }
+
+/* ── prop lanes ──
+   One THIN lane per prop, below the anim lanes: props are a different species on the strip, so
+   they get a different height AND a different look (a desaturated woven taupe against the flat anim
+   blue). The
+   lifecycle bar is cut into clickable SECTIONS by draggable SEPARATORS — one per lifecycle row;
+   prop-anim / expression riders and invalid rows stay as glyph markers on top. */
+/* Prop lanes read at ~66% of the 32px anim-bar thickness — thinner, a different species, but not a
+   sliver. Track 25px, bar 21px (25 − 2 − 2). */
+.scn-track-prop { height: 25px; }
+/* The lifecycle bar is a PICTURE ONLY — the sections and separators laid over it take every click
+   and drag. A DESATURATED taupe base under a faint DOT STIPPLE — deliberately not the diagonal
+   hatch the upper-body anim layer uses, so a prop reads as its own texture against the anim bars
+   rather than a loud yellow. */
+.scn-prop-bar {
+    position: absolute;
+    top: 2px;
+    bottom: 2px;
+    min-width: 2px;
+    background:
+        radial-gradient(circle, rgba(255, 255, 255, 0.1) 0.5px, transparent 1px) 0 0 / 5px 5px,
+        radial-gradient(circle, rgba(0, 0, 0, 0.12) 0.5px, transparent 1px) 2.5px 2.5px / 5px 5px,
+        linear-gradient(180deg, var(--scn-prop-top), var(--scn-prop-bot));
+    border: 1px solid rgba(0, 0, 0, 0.45);
+    border-radius: 2px;
+    box-sizing: border-box;
+    pointer-events: none;
+}
+/* Alive from an earlier state: the bar has no left edge here, so it fades IN from the left. */
+.scn-prop-bar.scn-prop-open-l {
+    border-left: none;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 16px);
+    mask-image: linear-gradient(90deg, transparent, #000 16px);
+}
+/* Still held when the state ends: no right edge — a LONG fade that reads as "keeps going". The
+   chevrons (.scn-prop-continues, drawn in JS) sit past the fade to make the continuation explicit. */
+.scn-prop-bar.scn-prop-open-r {
+    border-right: none;
+    -webkit-mask-image: linear-gradient(270deg, transparent, #000 44px);
+    mask-image: linear-gradient(270deg, transparent, #000 44px);
+}
+.scn-prop-bar.scn-prop-open-l.scn-prop-open-r {
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 16px, #000 calc(100% - 44px), transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 16px, #000 calc(100% - 44px), transparent);
+}
+/* "still held" continuation cue: forward chevrons trailing off the right end, bright and NOT masked
+   so they don't dissolve with the bar's own fade. */
+.scn-prop-continues {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.72rem;
+    letter-spacing: -1px;
+    color: var(--scn-prop-hi);
+    text-shadow: 0 0 4px rgba(0, 0, 0, 0.9);
+    pointer-events: none;
+    z-index: 2;
+    white-space: nowrap;
+}
+/* The propset declares fadeIn: a bright lead-in taper on the head. */
+.scn-prop-bar.scn-prop-head-fade::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 10px;
+    background: linear-gradient(90deg, rgba(255, 244, 214, 0.55), transparent);
+}
+/* Spawned into the WORLD, not a hand: a dashed head. */
+.scn-prop-bar.scn-prop-head-spawn { border-left: 2px dashed rgba(255, 244, 214, 0.8); }
+
+/* A clickable SECTION of the lifecycle — the span a single row owns, from its `at` to the next
+   boundary. Transparent until hovered or selected, when it lights up as its own discrete bar so
+   you can see exactly which slice a click will grab. */
+.scn-prop-section {
+    position: absolute;
+    top: 2px;
+    bottom: 2px;
+    cursor: grab;
+    z-index: 2;
+    box-sizing: border-box;
+    border-radius: 2px;
+}
+.scn-prop-section:hover,
+.scn-prop-section.scn-prop-section-drag {
+    background: rgba(255, 255, 255, 0.16);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+}
+.scn-prop-section.scn-prop-section-drag { cursor: grabbing; }
+.scn-prop-section.selected {
+    background: rgba(120, 176, 255, 0.22);
+    box-shadow: inset 0 0 0 1px var(--primary);
+}
+/* The action glyph riding the left of its section, so a slice still says what it is. */
+.scn-prop-glyph {
+    position: absolute;
+    left: 3px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.7rem;
+    line-height: 1;
+    color: var(--scn-prop-lo);
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.25);
+    pointer-events: none;
+    z-index: 3;
+}
+/* A boundary between two sections — the DARK separator, draggable to move the row that starts to
+   its right. Drawn dark so the two sides read as separate pieces; a wide invisible hit area (9px,
+   centred on the boundary) makes it easy to grab. */
+.scn-prop-sep {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 9px;
+    transform: translateX(-50%);
+    cursor: col-resize;
+    z-index: 4;
+}
+.scn-prop-sep::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 1px;
+    bottom: 1px;
+    width: 2px;
+    background: rgba(0, 0, 0, 0.72);
+    box-shadow: 1px 0 0 rgba(255, 255, 255, 0.18);
+}
+.scn-prop-sep:hover::before { background: rgba(0, 0, 0, 0.92); }
+.scn-prop-sep.scn-bar-drag::before,
+.scn-prop-sep.selected::before {
+    background: var(--primary);
+    box-shadow: 0 0 4px var(--primary);
+}
+/* The detach settle window: loose and tumbling, no longer owned — a hatched, fading trail. Clickable
+   to select the detach/discard that owns it. */
+.scn-prop-tail {
+    position: absolute;
+    top: 5px;
+    bottom: 5px;
+    background: repeating-linear-gradient(90deg,
+        var(--scn-prop-bot) 0, var(--scn-prop-bot) 4px,
+        transparent 4px, transparent 8px);
+    -webkit-mask-image: linear-gradient(90deg, #000, transparent);
+    mask-image: linear-gradient(90deg, #000, transparent);
+    cursor: pointer;
+    z-index: 2;
+}
+/* A prop-anim row's measured duration: a translucent segment riding the lane. */
+.scn-prop-anim-seg {
+    position: absolute;
+    top: 5px;
+    bottom: 5px;
+    background: rgba(255, 255, 255, 0.16);
+    border: 1px dashed rgba(255, 255, 255, 0.4);
+    border-radius: 2px;
+    box-sizing: border-box;
+    pointer-events: none;
+    z-index: 1;
+}
+.scn-prop-lane-label {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    padding-left: 6px;
+    font-size: 0.66rem;
+    font-weight: 600;
+    color: #fff4d6;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 5;
+}
+/* Markers remain for the ROWS THAT AREN'T LIFECYCLE SECTIONS: invalid rows, and prop-anim /
+   expression riders — a glyph centred on its `at`. */
+.scn-prop-marker {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.78rem;
+    line-height: 1;
+    color: #ffe9ae;
+    text-shadow: 0 0 3px rgba(0, 0, 0, 0.9);
+    cursor: grab;
+    z-index: 6;
+    padding: 2px 3px; /* a little slop so a 10px glyph isn't a pixel-hunt to grab */
+}
+.scn-prop-marker:hover { filter: brightness(1.2); }
+.scn-prop-marker.selected {
+    color: #ffffff;
+    text-shadow: 0 0 6px var(--primary), 0 0 3px rgba(0, 0, 0, 0.9);
+}
+.scn-prop-marker-invalid { color: #e06666; font-weight: 700; }
+/* Scheduled past a numeric await: the state advances before it fires — visibly inert. */
+.scn-prop-marker-dead { opacity: 0.35; }
+
+/* ── prop mode (the propset-authoring section) ── */
+#propCard { min-width: 22rem; }
+/* title carries the same inset as the scenario card titles, so the two sections line up */
+#propTitle { padding: 4px 10px 2px; }
+/* three coordinates share a row — narrow entries, evenly split */
+.prop-num { flex: 1 1 0; min-width: 3.5rem; text-align: right; }
+/* the inline offset/rotation fields in the SCENARIO panel: beat #scnPanel .scn-entry's 10em min so
+   x/y/z fit on one line (same specificity, later in source, so this wins) */
+#scnPanel .prop-num { min-width: 3.2rem; flex: 1 1 0; text-align: right; }
+#propModelList, #propBoneList { max-height: 30vh; overflow-y: auto; }
+/* the status line reads inside the card, so it needs the same horizontal inset as the fields */
+#propStatus { display: block; padding: 4px 10px; font-size: 0.8rem; opacity: 0.85; }
+/* the base field while a pick is armed — same selected glow the rest of the HUD uses */
+#propBase.selected { color: #ffffff; text-shadow: var(--glow); }
 
 /* the await cutoff: a draggable handle. The element is a wide transparent grab strip centred on
    the time; ::before draws the dashed line down its middle, and the label sits just below. */

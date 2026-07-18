@@ -57,13 +57,7 @@ export async function fetchSpawnData() {
 export async function initSettings() {
     await fetchSettings();
     updateUI();
-    initUIStyle(
-        Settings.theme.color,
-        Settings.theme.divider,
-        Settings.theme.border,
-        Settings.theme.borderrad,
-        Settings.theme.borderradamount
-    );
+    initUIStyle(Settings.theme.color);
 }
 
 // Dynamically update UI elements

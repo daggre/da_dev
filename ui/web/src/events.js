@@ -1,4 +1,4 @@
-import { toggleAnimationHUD, toggleAnimationSearchHUD, toggleAnimationConfigureHUD, toggleAnimationScenarioHUD, toggleAnimDetail } from './hud/anim.js';
+import { toggleAnimationHUD, toggleAnimationSearchHUD, toggleAnimationConfigureHUD, toggleAnimationScenarioHUD, toggleAnimationPropHUD, toggleAnimDetail } from './hud/anim.js';
 import { searchAnimDicts, playConfiguredAnimations, stopAnimation, playSelectedAnimation, addAnimation, resetSelectedAnimConfig, clearAnimation, deleteAllAnimations, setSelectedAnimation, updateSelectedAnimationEntity, setPreviewParam } from '../src/anims.js';
 import { toggleCrosshair, toggleObjectSpawnHUD, toggleObjectNearbyHUD, toggleObjectSceneControlHUD, toggleObjectObjectsHUD, toggleObjectInspectHUD, toggleObjectDetail, toggleObjectHUD, updateObjectDetails } from './hud/obj.js';
 import { searchBones, setBonesAlpha } from './bones.js';
@@ -7,9 +7,7 @@ import { selectSpawnType, selectNearbyOrigin, toggleNearbyFilter, getTrackedObje
 import { saveScene, clearScene, clearAllScenes, reloadScene, deleteScene } from '../src/scene.js';
 import { showImport } from '../src/hud/import.js';
 import { showExport } from '../src/hud/export.js';
-import { setTooltips } from '../src/tooltip.js';
 import { toggleHideCamera, updateCamera } from '../src/camera.js';
-import { setBorder, setCurvedBorder, setCurvedBorderAmount } from '../src/theme.js';
 import { sendClientMessage } from '../src/msg.js';
 import { isVisible, isInterruptingElement } from '../src/nav.js';
 import { clipboardCopy } from '../src/clipboard.js';
@@ -92,7 +90,6 @@ const InputFields = {
     '#animConfigureBitset': event => setSelectedAnimation('bitset', document.getElementById('animConfigureBitset').textContent),
     // Common
     '#animConfigureDelay': event => setSelectedAnimation('delay', document.getElementById('animConfigureDelay').textContent),
-    '#objSettingsCurvedBorderAmount': () => setCurvedBorderAmount(),
 };
 
 const MouseActions = {
@@ -209,7 +206,7 @@ export let KeyActions = {
         ' ': event => clickElement(event),
         1: () => toggleAnimationSearchHUD(),
         2: () => toggleAnimationScenarioHUD(),
-        3: () => toggleAnimationScenarioHUD(),
+        3: () => toggleAnimationPropHUD(),
         h: () => toggleHelp('animHelp'),
         s: () => Pressed.Shift && !Pressed.Control && toggleSettingsHUD(),
         '?': () => toggleHelp('animHelp'),
@@ -274,6 +271,7 @@ export const EventActions = {
         '#button-animsearch': () => toggleAnimationSearchHUD(),
         '#button-animconfigure': () => toggleAnimationConfigureHUD(),
         '#button-animscenario': () => toggleAnimationScenarioHUD(),
+        '#button-animprop': () => toggleAnimationPropHUD(),
 
         '#button-animconf-play': () => playConfiguredAnimations(),
         '#button-animconf-stop': () => stopAnimation(),
@@ -346,9 +344,6 @@ export const EventActions = {
         '#objDetailsEntityFrozen': () => toggleFrozen(),
         '#objDetailsEntityCollision': () => toggleCollision(),
 
-        '#objSettingsTooltip': () => setTooltips(),
-        '#objSettingsBorder': () => setBorder(),
-        '#objSettingsCurvedBorder': () => setCurvedBorder(),
         '#objSettingsHideCamera': () => toggleHideCamera(),
 
         '#button-animTimings': () => toggleAnimDetail('button-animTimings'),

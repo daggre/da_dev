@@ -1,5 +1,6 @@
 import { toggleHUD, toggleSection } from './common.js';
 import { onScenarioShown } from '../scenario.js';
+import { onPropShown } from '../prop.js';
 
 const AnimHUD = {
     all: [
@@ -13,12 +14,14 @@ const AnimHUD = {
         'animNameList',
         'animPreviewParams',
         'animScenarioColumns',
+        'animPropColumns',
         'scnTimelineBar',
     ],
     visible: ['animHUDControls'], // Default visible elements
     buttons: {
         search: 'button-animsearch',
         scenario: 'button-animscenario',
+        prop: 'button-animprop',
     },
     sections: {
         // Search now also carries the persistent preview-params panel (configure mode was merged in).
@@ -33,6 +36,8 @@ const AnimHUD = {
         ],
         // Two containers: the working columns, and the full-width timeline pinned at the bottom.
         scenario: ['animScenarioColumns', 'scnTimelineBar'],
+        // Prop mode: author a propset attachment (mode_prop_cl.lua owns the live helper).
+        prop: ['animPropColumns'],
     },
 };
 
@@ -59,6 +64,13 @@ export function toggleAnimationScenarioHUD(state) {
     if (!document.getElementById('animScenarioColumns').classList.contains('hidden')) {
         onScenarioShown();
     }
+}
+
+export function toggleAnimationPropHUD(state) {
+    toggleHUD(state, AnimHUD, 'prop', AnimHUD.buttons.prop);
+    // Tell Lua whether the section is showing: it points `Select` at the base (the bone picker
+    // reads it) and shuts the skeleton overlay off on close.
+    onPropShown(!document.getElementById('animPropColumns').classList.contains('hidden'));
 }
 
 const AnimConfigureCategoryMap = new Map([

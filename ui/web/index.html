@@ -572,6 +572,7 @@
                     <span class="atitle">animation</span>
                     <div id="button-animsearch" class="control" tabindex="1" role="button" aria-pressed="false" aria-label="Search Animations">search</div>
                     <div id="button-animscenario" class="control" tabindex="14" role="button" aria-pressed="false" aria-label="Scenario Editor">scenario</div>
+                    <div id="button-animprop" class="control" tabindex="14" role="button" aria-pressed="false" aria-label="Prop Mode — author a propset attachment">prop</div>
                 </div>
 
                 <!-- SEARCH mode: search card / dict card / name card, each gapped -->
@@ -616,7 +617,6 @@
                         <div id="button-scn-new" class="control" tabindex="15" role="button" aria-label="New Scenario">new</div>
                         <div id="button-scn-import" class="control" tabindex="15" role="button" aria-label="Import Scenario">import</div>
                         <div id="button-scn-export" class="control" tabindex="15" role="button" aria-label="Export Lua">export</div>
-                        <span id="scnStatus" aria-live="polite"></span>
                     </div>
                     <div id="scnErrors" class="card hidden" aria-live="polite"></div>
                     <div id="scnImportCard" class="card hidden">
@@ -637,12 +637,64 @@
                             <div id="scnTreeControls" class="subbar">
                                 <div id="button-scn-addstate" class="control" tabindex="15" role="button" aria-label="Add State">+ state</div>
                                 <div id="button-scn-addrow" class="control" tabindex="15" role="button" aria-label="Add Row From Search Selection">+ row</div>
+                                <div id="button-scn-addprop" class="control" tabindex="15" role="button" aria-label="Add Prop Row">+ prop</div>
                             </div>
                             <div id="scnTreeWrap" class="list"><ul id="scnTree"></ul></div>
                         </div>
                         <div id="scnPanelCard" class="card">
                             <div id="scnPanelTitle" class="atitle"></div>
                             <div id="scnPanel" class="fieldset"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Prop mode: author a propset (model + bone + offset/rotation) against a live
+                     base entity. Lua re-attaches the helper on every edit; [copy lua] emits the
+                     Propset block. Gizmo integration lands after the prop_attach spike (ADR). -->
+                <div id="animPropColumns" class="colstack hidden">
+                    <div id="propCard" class="card">
+                        <div id="propTitle" class="atitle">prop mode</div>
+                        <div id="propBoundHdr" class="flabel hidden"></div>
+                        <div id="propFields" class="fieldset">
+                            <div class="field">
+                                <span class="flabel">base</span>
+                                <div id="propBase" class="entry" tabindex="15" role="button" aria-label="Base Entity — click, then click an entity in the game window">player</div>
+                                <div id="button-propbase-reset" class="control" tabindex="15" role="button" aria-label="Reset base to your ped">↺</div>
+                            </div>
+                            <div class="field">
+                                <span class="flabel">model</span>
+                                <div id="propModel" class="entry" tabindex="15" contenteditable="true" data-placeholder="search objects" aria-label="Attach Model"></div>
+                            </div>
+                            <div id="propModelList" class="list hidden"></div>
+                            <div class="field">
+                                <span class="flabel">bone</span>
+                                <div id="propBone" class="entry dropdown" tabindex="15" contenteditable="true" data-placeholder="(root)" aria-label="Attach Bone — hover a name to highlight it in-world"></div>
+                            </div>
+                            <div id="propBoneList" class="list hidden"></div>
+                            <div class="field">
+                                <span class="flabel">pos</span>
+                                <div id="propPosX" class="entry prop-num" tabindex="15" contenteditable="true" aria-label="Offset X"></div>
+                                <div id="propPosY" class="entry prop-num" tabindex="15" contenteditable="true" aria-label="Offset Y"></div>
+                                <div id="propPosZ" class="entry prop-num" tabindex="15" contenteditable="true" aria-label="Offset Z"></div>
+                            </div>
+                            <div class="field">
+                                <span class="flabel">rot</span>
+                                <div id="propRotX" class="entry prop-num" tabindex="15" contenteditable="true" aria-label="Rotation X"></div>
+                                <div id="propRotY" class="entry prop-num" tabindex="15" contenteditable="true" aria-label="Rotation Y"></div>
+                                <div id="propRotZ" class="entry prop-num" tabindex="15" contenteditable="true" aria-label="Rotation Z"></div>
+                            </div>
+                            <div class="field">
+                                <span class="flabel">name</span>
+                                <div id="propName" class="entry" tabindex="15" contenteditable="true" aria-label="Propset Name — the Propset.<Name> key the Lua is emitted under"></div>
+                            </div>
+                            <div class="subbar">
+                                <div id="button-prop-apply" class="control hidden" tabindex="15" role="button" aria-label="Apply placement to the attach row">apply</div>
+                                <div id="button-prop-reset" class="control" tabindex="15" role="button" aria-label="Reset offset and rotation to zero">reset</div>
+                                <div id="button-prop-save" class="control" tabindex="15" role="button" aria-label="Save propset into the prop dropdown">save</div>
+                                <div id="button-prop-copy" class="control" tabindex="15" role="button" aria-label="Copy Propset Lua">copy lua</div>
+                                <div id="button-prop-clear" class="control" tabindex="15" role="button" aria-label="Remove the helper prop">clear</div>
+                            </div>
+                            <span id="propStatus" aria-live="polite"></span>
                         </div>
                     </div>
                 </div>
@@ -678,7 +730,13 @@
                             <div id="scnPlayhead" class="hidden"></div>
                         </div>
                     </div>
-                    <div id="scnTimelineInfo"><span id="scnTimelineTitle" class="flabel"></span></div>
+                    <!-- Bottom line: the state summary on the left, the validate/edited status on the
+                         right. The status lives HERE, not in the toolbar, so its changing text can't
+                         stretch the left column's width. -->
+                    <div id="scnTimelineInfo">
+                        <span id="scnTimelineTitle" class="flabel"></span>
+                        <span id="scnStatus" aria-live="polite"></span>
+                    </div>
                 </div>
             </section>
             <section id="settings-hud" class="hud hidden">
@@ -696,49 +754,6 @@
                             >default</div>
                         </li>
                         <li>
-                            <div class="label brdl pl05 bgi">divider</div>
-                            <div
-                                id="objSettingsDividerStyle"
-                                class="entry dropdown brdr pr05 bgt1"
-                                tabindex="92"
-                                aria-label="Change UI Divider Style"
-                            >chevron</div>
-                        </li>
-                        <li>
-                            <div class="label brdl pl05 bgi">
-                                left/right border
-                            </div>
-                            <div
-                                id="objSettingsBorder"
-                                class="entry check brdr pr05 bgt1 selected"
-                                tabindex="92"
-                                aria-label="Enable UI Borders"
-                            ></div>
-                        </li>
-                        <li>
-                            <div class="label brdl pl05 bgi">
-                                rounded edges
-                            </div>
-                            <div
-                                id="objSettingsCurvedBorder"
-                                class="entry check brdr pr05 bgt1 selected"
-                                tabindex="92"
-                                aria-label="Enable UI Rounded Edges"
-                            ></div>
-                        </li>
-                        <li>
-                            <div class="label brdl pl05 bgi">
-                                roundness
-                            </div>
-                            <div
-                                id="objSettingsCurvedBorderAmount"
-                                class="entry brdr pr05 bgt1"
-                                tabindex="92"
-                                contenteditable="true"
-                                aria-label="Modify UI Rounded Edges"
-                            >8</div>
-                        </li>
-                        <li>
                             <div class="label brdl pl05 bgi">
                                 autohide camera speed
                             </div>
@@ -747,15 +762,6 @@
                                 class="entry check brdr pr05 bgt1 selected"
                                 tabindex="92"
                                 aria-label="Toggle Autohide on Camera Speed UI"
-                            ></div>
-                        </li>
-                        <li>
-                            <div class="label brdl pl05 bgi">tooltips</div>
-                            <div
-                                id="objSettingsTooltip"
-                                class="entry check brdr pr05 bgt1 selected"
-                                tabindex="92"
-                                aria-label="Enable Tooltips"
                             ></div>
                         </li>
                         <li>

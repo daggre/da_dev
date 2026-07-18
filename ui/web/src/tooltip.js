@@ -57,10 +57,3 @@ export function addTooltipListener() {
     // document.addEventListener('focusout', handleFocusOut);
     void handleHover; void handleFocus; void handleFocusOut;
 }
-
-export function setTooltips() {
-    TooltipEnabled = document.getElementById('objSettingsTooltip').classList.toggle('selected');
-    if (!TooltipEnabled) {
-        document.getElementById('tooltip').classList.add('hidden');
-    }
-}

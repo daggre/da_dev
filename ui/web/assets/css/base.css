@@ -24,6 +24,15 @@
   --brd-size: 2px;
   --divider: ' ';
 
+  /* timeline bar fills — theme.js derives these per theme and overrides on :root; these are the
+     night-king fallback used before a theme applies. */
+  --scn-bar-top: #56739f;
+  --scn-bar-bot: #3d5379;
+  --scn-prop-top: #97906f;
+  --scn-prop-bot: #6d664e;
+  --scn-prop-hi: #dcd4bd;
+  --scn-prop-lo: #2a1e04;
+
   /* derived structural tokens */
   --rad: var(--brd-rad);
   --gap: 8px;

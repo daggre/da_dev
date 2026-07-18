@@ -172,6 +172,20 @@ da_ui.callbacks({
     scnAnimLength = function(data)
         return { len = exports.da_anims:animsAnimLength(data.dict, data.anim) }
     end,
+    scnResolveAwait = function(data)
+        -- The one engine number the timeline needs per edit, without paying for a full register.
+        return { ms = exports.da_anims:animsResolveAwait(data.await, data.anims) }
+    end,
+    scnPropsets = function()
+        -- The propset catalogue (flat names incl. dotted variants) — the declaration picker, the
+        -- attach-ref picker and the timeline's fade-in head all read from it.
+        return { propsets = exports.da_anims:animsPropsets() }
+    end,
+    scnBoneNames = function()
+        -- The static ped bone-name vocabulary (da_lib/data/bones.lua) — what an inline attach's
+        -- `bone` field autocompletes against. Same list the skeleton picker brute-forces.
+        return { bones = dat.bones }
+    end,
 })
 
 da_ui.callbacks({

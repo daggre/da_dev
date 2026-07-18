@@ -140,6 +140,51 @@ const themes = {
     ],
 };
 
+// ── colour helpers: derive the timeline bar fills from a theme's primary hue ──
+function hexToRgb(hex) {
+    const h = hex.replace('#', '');
+    const n = h.length === 3 ? h.split('').map(c => c + c).join('') : h;
+    const int = parseInt(n, 16);
+    return [(int >> 16) & 255, (int >> 8) & 255, int & 255];
+}
+function rgbToHsl(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h = 0, s = 0; const l = (max + min) / 2;
+    if (max !== min) {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
+        else if (max === g) h = (b - r) / d + 2;
+        else h = (r - g) / d + 4;
+        h /= 6;
+    }
+    return [h * 360, s, l];
+}
+const hslCss = (h, s, l) =>
+    `hsl(${(((h % 360) + 360) % 360).toFixed(0)}, ${Math.round(s * 100)}%, ${Math.round(l * 100)}%)`;
+
+// Timeline bar fills, DERIVED from the theme so every palette gets matching colours (the hand-tuned
+// night-king look falls straight out of these formulas). Anim bars take the primary hue at a muted
+// saturation; prop bars take the near-complement, more desaturated, so props read as their own
+// species. An achromatic primary (white/grey themes) stays grey — no hue is injected.
+function applyTimelineColors(root, t) {
+    const primaryHex = (t.find(([k]) => k === 'primary') || [])[1] || '#8fb8ff';
+    const [ph, ps] = rgbToHsl(...hexToRgb(primaryHex));
+    const animS = Math.min(ps, 0.32);
+    const propH = ph + 190;              // ~complement: night-king's blue → warm taupe
+    const propS = Math.min(ps, 0.18);
+    const vars = {
+        'scn-bar-top':  hslCss(ph, animS, 0.48),
+        'scn-bar-bot':  hslCss(ph, animS + 0.02, 0.36),
+        'scn-prop-top': hslCss(propH, propS, 0.51),
+        'scn-prop-bot': hslCss(propH, propS, 0.37),
+        'scn-prop-hi':  hslCss(propH, propS, 0.82),  // continuation chevrons / bright accents
+        'scn-prop-lo':  hslCss(propH, propS, 0.14),  // the dark action glyph
+    };
+    Object.entries(vars).forEach(([k, v]) => root.style.setProperty(`--${k}`, v));
+}
+
 function setTheme(theme) {
     if (!themes[theme]) {
         console.error(`Theme not found: ${theme}`);
@@ -157,6 +202,7 @@ function setTheme(theme) {
             root.style.setProperty('--bg-t3', `${value}22`);
         }
     });
+    applyTimelineColors(root, t);
     sendClientMessage('setTheme', { theme: t });
     const displayTheme = theme.replace(/_/g, ' ');
     document.getElementById('objSettingsTheme').textContent = displayTheme;
@@ -176,122 +222,9 @@ DropDownOptions.objSettingsTheme = Object.fromEntries(
     })
 );
 
-function setDividerStyle(divider) {
-    const style = dividerStyles[divider];
-    document.documentElement.style.setProperty('--divider', `"${style} "`);
-    document.getElementById('objSettingsDividerStyle').textContent = divider;
-    if (Settings.theme.divider != divider) {
-        Settings.theme.divider = divider;
-        sendClientMessage('saveSettings', {
-            theme: JSON.stringify(Settings.theme),
-        });
-    }
-}
-
-// Define the mapping of option names to divider style values
-const dividerStyles = {
-    'angle down': '',
-    'angle up': '',
-    chevron: '',
-    flame: '',
-    // 'honeycomb': "", // optional entry
-    'inverted chevron': '',
-    pixelated: '',
-    'quadrant top': '▛',
-    'quadrant bottom': '▙',
-    round: '',
-    // 'trapezoid': "", // optional entry
-    vertical: '▌',
-    waveform: '',
-};
-
-DropDownOptions.objSettingsDividerStyle = Object.fromEntries(
-    Object.entries(dividerStyles).map(([name]) => [
-        name,
-        () => setDividerStyle(name),
-    ])
-);
-
-export function initUIStyle(
-    theme,
-    divider,
-    border,
-    borderrad,
-    borderradamount
-) {
+// The Settings card now only carries the theme (plus autohide + submit-form, handled elsewhere).
+// Divider style, border toggle and rounded-edge controls were removed — the border/radius still
+// come from base.css defaults (--brd-size / --brd-rad), just no longer user-toggled.
+export function initUIStyle(theme) {
     setTheme(theme);
-    setDividerStyle(divider);
-    document
-        .getElementById('objSettingsBorder')
-        .classList.toggle('selected', !border);
-    setBorder();
-    document
-        .getElementById('objSettingsCurvedBorder')
-        .classList.toggle('selected', !borderrad);
-    setCurvedBorder();
-    document.getElementById('objSettingsCurvedBorderAmount').textContent =
-        borderradamount;
-    setCurvedBorderAmount();
-}
-
-export function setBorder() {
-    // Toggle var(--brd-size) if #objSettingsBorder is selected
-    const selected = document
-        .getElementById('objSettingsBorder')
-        .classList.toggle('selected');
-    if (selected) {
-        document.documentElement.style.setProperty('--brd-size', '2px');
-    } else {
-        document.documentElement.style.setProperty('--brd-size', '0px');
-    }
-    if (Settings.theme.border != selected) {
-        Settings.theme.border = selected;
-        sendClientMessage('saveSettings', {
-            theme: JSON.stringify(Settings.theme),
-        });
-    }
-}
-
-export function setCurvedBorderAmount() {
-    const curved = document
-        .getElementById('objSettingsCurvedBorder')
-        .classList.contains('selected');
-    const el = document.getElementById('objSettingsCurvedBorderAmount');
-    // Check that the text content is a number
-    if (!isNaN(el.textContent)) {
-        const borderRad = el.textContent;
-        if (curved) {
-            document.documentElement.style.setProperty(
-                '--brd-rad',
-                `${borderRad}px`
-            );
-        }
-        if (Settings.theme.borderradamount != borderRad) {
-            Settings.theme.borderradamount = borderRad;
-            sendClientMessage('saveSettings', {
-                theme: JSON.stringify(Settings.theme),
-            });
-        }
-    }
-}
-
-export function setCurvedBorder() {
-    const selected = document
-        .getElementById('objSettingsCurvedBorder')
-        .classList.toggle('selected');
-    if (selected) {
-        document.documentElement.style.setProperty(
-            '--brd-rad',
-            `${Settings.theme.borderradamount}px`
-        );
-    } else {
-        document.documentElement.style.setProperty('--brd-rad', '0px');
-    }
-
-    if (Settings.theme.borderrad != selected) {
-        Settings.theme.borderrad = selected;
-        sendClientMessage('saveSettings', {
-            theme: JSON.stringify(Settings.theme),
-        });
-    }
 }
