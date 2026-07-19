@@ -37,6 +37,7 @@ client_scripts {
     '@da_lib/features/draw/draw_cl.lua',
     '@da_lib/features/control/control_cl.lua',
     '@da_lib/features/object/object_cl.lua',
+    '@da_lib/features/object/bone_transform_cl.lua',
     '@da_lib/features/mode/mode_cl.lua',
     '@da_lib/features/mode/mcp_cl.lua',
     '@da_lib/features/net/net_cl.lua',

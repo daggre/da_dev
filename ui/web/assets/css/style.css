@@ -1120,6 +1120,10 @@ ul li {
 /* prop rows read warm against the anim rows' plain text — same tint as their timeline lanes */
 #scnTree .scn-row-prop .scn-label { color: #e8d9a8; }
 #scnTree .scn-row-prop.selected .scn-label { color: #fff2cf; }
+/* carried-in props: inherited from an earlier state, not declared here — dimmed and italic so they
+   read as a hint, not an editable row. Same warm tint as prop rows, just quieter. */
+#scnTree .scn-row-carried .scn-label { color: #e8d9a8; opacity: 0.5; font-style: italic; }
+#scnTree .scn-row-carried:hover .scn-label { opacity: 0.8; }
 
 /* the panel title (.atitle carries no padding of its own) — pad it off the card's accent border so
    it lines up with the fields below instead of hugging the edge */
@@ -1510,6 +1514,23 @@ ul li {
     white-space: nowrap;
     z-index: 5;
 }
+/* Carried-in ghost lane: a prop inherited from an earlier state, present the whole time here but not
+   declared. Dimmed and italic to read as a hint, matching the tree's carried-in node. The bar (unlike
+   real lifecycle bars) takes the click, jumping to the row that establishes the prop. */
+.scn-track-carried { height: 20px; }
+.scn-prop-bar.scn-prop-carried {
+    opacity: 0.42;
+    filter: grayscale(0.35);
+    pointer-events: auto;
+    cursor: pointer;
+}
+.scn-prop-bar.scn-prop-carried:hover { opacity: 0.62; }
+.scn-prop-carried-label {
+    color: #e8d9a8;
+    opacity: 0.6;
+    font-weight: 500;
+    font-style: italic;
+}
 /* Markers remain for the ROWS THAT AREN'T LIFECYCLE SECTIONS: invalid rows, and prop-anim /
    expression riders — a glyph centred on its `at`. */
 .scn-prop-marker {
@@ -1619,12 +1640,15 @@ ul li {
     z-index: 6;
 }
 #scnPlayhead.hidden { display: none; }
-/* a downward triangle cap sitting on the ruler, so the head reads as a marker, not a gridline */
+/* a downward triangle cap sitting on the ruler, so the head reads as a marker, not a gridline. The
+   line is a 2px border-left, so its visual centre is 1px right of the element's left edge; the
+   triangle (10px wide, apex at its centre) is offset so its apex lands on that centre, not 1px right
+   of it — otherwise the bar reads as sitting just left of the chevron. */
 #scnPlayhead::before {
     content: '';
     position: absolute;
     top: 0;
-    left: -5px;
+    left: -6px;
     width: 0;
     height: 0;
     border-left: 5px solid transparent;

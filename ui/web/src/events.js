@@ -8,6 +8,7 @@ import { saveScene, clearScene, clearAllScenes, reloadScene, deleteScene } from 
 import { showImport } from '../src/hud/import.js';
 import { showExport } from '../src/hud/export.js';
 import { toggleHideCamera, updateCamera } from '../src/camera.js';
+import { launchPropGizmo, applyGizmoOffset } from '../src/prop.js';
 import { sendClientMessage } from '../src/msg.js';
 import { isVisible, isInterruptingElement } from '../src/nav.js';
 import { clipboardCopy } from '../src/clipboard.js';
@@ -207,6 +208,7 @@ export let KeyActions = {
         1: () => toggleAnimationSearchHUD(),
         2: () => toggleAnimationScenarioHUD(),
         3: () => toggleAnimationPropHUD(),
+        r: () => launchPropGizmo(), // no-op unless the prop subsection is active (see prop.js)
         h: () => toggleHelp('animHelp'),
         s: () => Pressed.Shift && !Pressed.Control && toggleSettingsHUD(),
         '?': () => toggleHelp('animHelp'),
@@ -555,6 +557,9 @@ const MessageActions = {
         GizmoActive = data.data.shown;
         document.getElementById('gizmo').classList.toggle('hidden', !GizmoActive);
     },
+    // Prop mode's gizmo drag: Lua pushes the freshly-computed bone-local offset so the numeric
+    // fields track the drag live (the gizmo edits the propset numbers, not a world position).
+    propGizmoOffset: data => applyGizmoOffset(data.data.pos, data.data.rot),
     toggleHelp: data => toggleHelp(data.mode, data.state, data.toggleCursor),
     keyPress: data => handleKeyPress({ key: data.key }, data.mode),
 };

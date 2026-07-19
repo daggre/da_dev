@@ -1201,6 +1201,85 @@ function select(s) {
     renderAll(); // measurement for a newly-drawn state is fetched by renderTimeline, not a register
 }
 
+// ── carried-in props (preview inheritance) ──
+//
+// A state that isn't `enter` inherits the props its predecessors left on the ped — the lantern
+// `enter` lit is still in hand during the idle and its fidgets. The engine reconstructs this for a
+// preview (da_anims: Queue.carriedStates → Timeline.establishProps); these helpers compute what's on
+// the ped at a state's START, so the author can SEE a prop is present without a row for it here.
+//
+// One deliberate difference from the engine's carriedStates: for a FIDGET this folds the idle too.
+// The engine only ESTABLISHES `enter` for a fidget because it PLAYS the idle (a fidget layers over
+// it) — but that means the idle's prop rows HAVE run by the time the fidget starts, so for an honest
+// "what's in hand and where" the display has to read the idle's final attach. Same on-ped result,
+// reached two ways. The predecessor rule otherwise tracks the Lua — change one, check the other.
+
+// The scenario's single enter / idle state ids, by role (mirrors the engine's s.enter / s.idle).
+function stateByRole(role) {
+    for (const sid of Object.keys(doc.states)) {
+        if (doc.states[sid].role === role) return sid;
+    }
+    return null;
+}
+
+// The predecessor states whose prop rows have run by the time `sid` starts: enter is always upstream;
+// the idle is upstream of everything except itself and enter (a fidget layers over it, an exit/
+// transition passed through it). See the block comment for why a fidget folds the idle here.
+function carriedPredecessors(sid) {
+    const role = doc.states[sid] && doc.states[sid].role;
+    if (!role || role === 'enter') return [];
+    const out = [];
+    const e = stateByRole('enter');
+    if (e) out.push(e);
+    if (role !== 'idle') {
+        const idle = stateByRole('idle');
+        if (idle && idle !== sid) out.push(idle);
+    }
+    return out;
+}
+
+// The bone an attach lands a prop on: the inline placement's bone, else the propset's own bone.
+function heldBoneLabel(r) {
+    if (isInlineAttach(r)) return (r.attach && r.attach.bone) || 'root';
+    const info = propsetInfo(attachRefOf(r));
+    return (info && info.bone) || attachRefOf(r) || 'attached';
+}
+
+// Fold one predecessor's prop rows onto a running presence map (prop -> { bone, sid, i }): spawn
+// makes a prop present but loose, attach records the bone it lands on, detach leaves it present but
+// loose, discard removes it, anim/expression change nothing. Row order, so a spawn later discarded
+// in the same state nets out to absent — the same result the engine's replay reaches.
+function foldPropPresence(present, sid) {
+    const rows = (doc.states[sid] && doc.states[sid].props) || [];
+    rows.map((r, i) => ({ r, i }))
+        .sort((a, b) => (a.r.at || 0) - (b.r.at || 0) || a.i - b.i)
+        .forEach(({ r, i }) => {
+            if (!r.prop) return;
+            const a = propAction(r);
+            if (a === 'discard') present.delete(r.prop);
+            else if (a === 'detach') { const e = present.get(r.prop); if (e) e.bone = null; }
+            else if (a === 'spawn') { if (!present.has(r.prop)) present.set(r.prop, { bone: null, sid, i }); }
+            else if (a === 'attach') present.set(r.prop, { bone: heldBoneLabel(r), sid, i });
+        });
+}
+
+// The props a state inherits but has NO row of its own for — the ones with no other cue in the tree
+// that they're already on the ped. Props the state does act on are left out: their own row is the cue.
+function carriedInProps(sid) {
+    const present = new Map();
+    for (const pid of carriedPredecessors(sid)) foldPropPresence(present, pid);
+    if (present.size === 0) return [];
+
+    const acted = new Set(((doc.states[sid] && doc.states[sid].props) || [])
+        .map(r => r.prop).filter(Boolean));
+
+    const out = [];
+    for (const [prop, at] of present) {
+        if (!acted.has(prop)) out.push({ prop, bone: at.bone, from: at.sid, fromI: at.i });
+    }
+    return out;
+}
+
 function renderTree() {
     const ul = document.getElementById('scnTree');
     ul.innerHTML = '';
@@ -1215,14 +1294,16 @@ function renderTree() {
         const st = doc.states[sid];
         const rows = st.anims || [];
         const pRows = st.props || [];
+        const carried = carriedInProps(sid);
         const nRows = rows.length + pRows.length;
+        const hasChildren = nRows + carried.length;
         const isCollapsed = collapsed.has(sid);
 
         const li = h('li', 'scn-node scn-state' +
             (sel.kind === 'state' && sel.state === sid ? ' selected' : ''));
         // Caret toggles collapse without moving the selection; the label selects.
-        const caret = h('span', 'scn-caret', nRows ? (isCollapsed ? '▸' : '▾') : '·');
-        if (nRows) {
+        const caret = h('span', 'scn-caret', hasChildren ? (isCollapsed ? '▸' : '▾') : '·');
+        if (hasChildren) {
             caret.classList.add('scn-caret-active');
             caret.onclick = e => {
                 e.stopPropagation();
@@ -1253,6 +1334,18 @@ function renderTree() {
             rowLi.appendChild(h('span', 'scn-label', `@${r.at || 0}  ${r.prop || '(no prop)'} · ${what}`));
             rowLi.onclick = () => select({ kind: 'prop', state: sid, i });
             ul.appendChild(rowLi);
+        });
+        // Carried-in props: dimmed, informational, not part of the config. Clicking jumps to the
+        // predecessor row that establishes the prop, so "where did this come from?" is one click.
+        carried.forEach(c => {
+            const ghost = h('li', 'scn-node scn-row scn-row-carried');
+            ghost.appendChild(h('span', 'scn-caret', ''));
+            const held = c.bone ? `holding · ${c.bone}` : 'present · loose';
+            ghost.appendChild(h('span', 'scn-label', `↳ ${c.prop} · ${held}`));
+            ghost.title = `inherited — established in '${c.from}', still on the ped when '${sid}' starts.\n` +
+                `Preview reconstructs it; it is NOT declared here. Click to jump to the row that sets it up.`;
+            ghost.onclick = () => select({ kind: 'prop', state: c.from, i: c.fromI });
+            ul.appendChild(ghost);
         });
     }
 }
@@ -1874,6 +1967,17 @@ function renderTimeline() {
         }
     }
 
+    // ── carried-in prop lanes ──
+    //
+    // Props inherited from an earlier state and present for the WHOLE of this one (they have no rows
+    // here). Drawn as a dimmed full-width ghost bar in the same tint as the tree's carried-in node,
+    // so the timeline shows the prop is in hand even though nothing acts on it.
+    const carriedHere = carriedInProps(sid);
+    if (carriedHere.length) {
+        ensurePropsets(); // held-bone label reads the catalogue for legacy propset refs
+        for (const c of carriedHere) tracks.appendChild(carriedLane(sid, c, totalMs));
+    }
+
     // While playing, the rAF loop re-places the playhead every frame (it reads the current
     // pxPerMs), so a zoom or redraw needs no explicit reposition here.
 }
@@ -1881,6 +1985,26 @@ function renderTimeline() {
 const PROP_MARKER_SYMBOL = {
     spawn: '▲', attach: '◆', detach: '▼', discard: '✕', anim: '♪', expression: '◇',
 };
+
+// A carried-in prop's ghost lane: a dimmed bar the full width of the state, labelled with the prop
+// and the bone it's held on. Not a lifecycle (there are no rows here) — just a presence hint mirror-
+// ing the tree's carried-in node. Clicking jumps to the predecessor row that establishes the prop.
+function carriedLane(sid, c, totalMs) {
+    const track = h('div', 'scn-track scn-track-prop scn-track-carried');
+    const bar = h('div', 'scn-prop-bar scn-prop-carried scn-prop-open-l scn-prop-open-r');
+    bar.style.left = '0px';
+    bar.style.width = (totalMs * pxPerMs) + 'px';
+    bar.title = `${c.prop} — inherited from '${c.from}', ${c.bone ? 'held on ' + c.bone : 'loose'} ` +
+        `through this state.\nNot declared here; preview reconstructs it. Click to jump to the row ` +
+        `that sets it up.`;
+    bar.onclick = () => select({ kind: 'prop', state: c.from, i: c.fromI });
+    track.appendChild(bar);
+    const held = c.bone ? `holding · ${c.bone}` : 'present · loose';
+    const label = h('span', 'scn-prop-lane-label scn-prop-carried-label', `↳ ${c.prop} · ${held}`);
+    label.style.left = '4px';
+    track.appendChild(label);
+    return track;
+}
 
 // One prop's lane: the derived lifecycle bar cut into CLICKABLE SECTIONS by DRAGGABLE SEPARATORS —
 // one section per spawn/attach/detach/discard row, owning the span from its `at` to the next

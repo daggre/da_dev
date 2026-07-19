@@ -23,6 +23,7 @@ const cfg = {
 let armed = false;      // base field clicked; next backdrop click picks the base
 let applyTimer = null;
 let status = '';
+let sectionActive = false; // prop subsection is the one showing (gates the R = gizmo key)
 
 // Set when the prop section was opened by a scenario field's "＋ new" — on the next successful
 // save we write the name back into that field and return to the scenario editor.
@@ -386,6 +387,7 @@ export function openPropForNew(seed) {
 // Called by hud/anim.js when the prop section shows/hides, so Lua can point `Select` at the base
 // (bone picker) and shut the skeleton overlay off when the section closes.
 export function onPropShown(state) {
+    sectionActive = !!state;
     sendClientMessage('propModeActive', { state: !!state });
     if (state) {
         // A bare open (key 3 / the nav button) starts a fresh standalone session — drop any stale
@@ -402,6 +404,36 @@ export function onPropShown(state) {
         disarmBasePick();
         closeBoneList();
     }
+}
+
+// Grab the attached prop with the gizmo (R key / the gizmo button). No-op unless the prop
+// subsection is showing (the `r` key is shared across anim-hud subsections). Surfaces the Lua-side
+// gate — "bone math not locked" — as a status line, so it reads clearly while the feature is inert.
+export async function launchPropGizmo() {
+    if (!sectionActive) return;
+    // Don't fire from an `r` typed into a field (the anim-hud `r` key is shared across subsections).
+    const ae = document.activeElement;
+    if (ae && (ae.isContentEditable || ae.tagName === 'INPUT')) return;
+    if (!cfg.model) { setStatus('pick a model first', false); return; }
+    const res = await sendClientMessage('propGizmo', {});
+    if (!res?.ok) { setStatus(res?.reason || 'gizmo unavailable', false); return; }
+    setStatus('gizmo active — drag to place; Esc to finish', true);
+}
+
+// Lua pushes the freshly-computed bone-local offset each gizmo drag frame; mirror it into the
+// fields so they track live. Rounded for a clean display + clean emitted Lua (sub-mm / 0.01°).
+export function applyGizmoOffset(pos, rot) {
+    const r4 = n => Math.round((Number(n) || 0) * 1e4) / 1e4;
+    const r2 = n => Math.round((Number(n) || 0) * 1e2) / 1e2;
+    if (pos) cfg.pos = { x: r4(pos.x), y: r4(pos.y), z: r4(pos.z) };
+    if (rot) cfg.rot = { x: r2(rot.x), y: r2(rot.y), z: r2(rot.z) };
+    // Only the six numeric fields — leave name/model/bone untouched during a live drag.
+    el('propPosX').textContent = String(cfg.pos.x);
+    el('propPosY').textContent = String(cfg.pos.y);
+    el('propPosZ').textContent = String(cfg.pos.z);
+    el('propRotX').textContent = String(cfg.rot.x);
+    el('propRotY').textContent = String(cfg.rot.y);
+    el('propRotZ').textContent = String(cfg.rot.z);
 }
 
 export function initProp() {
@@ -443,6 +475,7 @@ export function initProp() {
     numEntry('propRotY', cfg.rot, 'y');
     numEntry('propRotZ', cfg.rot, 'z');
 
+    el('button-prop-gizmo').onclick = launchPropGizmo;
     el('button-prop-apply').onclick = applyToRow;
     el('button-prop-reset').onclick = () => {
         // Zero the offset and rotation (model + bone kept) and re-attach live.
