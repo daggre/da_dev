@@ -44,12 +44,22 @@ export function showConfirm(msg = 'Are you sure?', yes = 'Yes', no = 'No') {
             resolve(false);
         }
 
+        // Same keyboard rules as every other transient thing in this UI: Escape cancels, Tab moves
+        // between the choices, and Enter/Space activate the focused one (the global handler in
+        // events.js does that part — these are `.control` elements).
+        //
+        // Escape was missing, which made this the one popup you couldn't back out of without aiming
+        // at "No". Tab only went one way, too — No to Yes and then nowhere.
         function handleKeydown(event) {
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                event.stopPropagation();
+                handleNo(); // backing out is a "no"
+                return;
+            }
             if (event.key === 'Tab') {
                 event.preventDefault();
-                if (document.activeElement === noButton) {
-                    yesButton.focus();
-                }
+                (document.activeElement === noButton ? yesButton : noButton).focus();
             }
         }
 
@@ -57,6 +67,7 @@ export function showConfirm(msg = 'Are you sure?', yes = 'Yes', no = 'No') {
             yesButton.removeEventListener('click', handleYes);
             noButton.removeEventListener('click', handleNo);
             noButton.removeEventListener('keydown', handleKeydown);
+            yesButton.removeEventListener('keydown', handleKeydown);
             observer.disconnect();
             infoHud.classList.remove('clear');
             infoHud.classList.add('hidden');
@@ -68,5 +79,7 @@ export function showConfirm(msg = 'Are you sure?', yes = 'Yes', no = 'No') {
         yesButton.addEventListener('click', handleYes);
         noButton.addEventListener('click', handleNo);
         noButton.addEventListener('keydown', handleKeydown);
+        // On BOTH buttons: Escape has to work wherever focus happens to be sitting.
+        yesButton.addEventListener('keydown', handleKeydown);
     });
 }

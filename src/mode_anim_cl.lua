@@ -62,8 +62,39 @@ Citizen.CreateThread(function()
     })
 end)
 
+-- Which entity a configured animation plays on: the one the config names, else the player.
+local function animEntity(anim)
+    local e = anim and anim.config and tonumber(anim.config.entity)
+    return (e and e ~= 0) and e or PlayerPedId()
+end
+
+-- Previewing an animation REPLACES whatever the last preview left on the ped.
+--
+-- TaskPlayAnim does not do that by itself. An upper-body or secondary anim rides on top of what's
+-- already playing — and the search tab's preview params are exactly those flags — so trying three
+-- animations in a row showed you a composite of all three instead of the one you just clicked. Worse,
+-- a full-body task replaces the full-body layer and leaves the secondary one running, so the leftover
+-- could outlive several previews.
+--
+-- Only peds have tasks to clear. An object's anim is replaced outright by the next PlayEntityAnim, so
+-- there is nothing to undo there.
+--
+-- Asked of the ENTITY (IsEntityAPed, as mode_object_cl does) rather than of its model: the model
+-- lookup PlayAnimation uses answers nil for anything not in the object database, and "I don't know
+-- what this is" must not silently mean "don't bother clearing it".
+local function clearAnims(entity)
+    if not entity or entity == 0 or not DoesEntityExist(entity) then return end
+    if not IsEntityAPed(entity) then return end
+    -- ClearPedTasks, not ...Immediately: this is a preview, and the harsher call is also the one
+    -- that can eat a TaskPlayAnim issued on the same frame.
+    da_anim.stop(entity)
+    -- The secondary slot is NOT covered by ClearPedTasks, and it is where every upper-body preview
+    -- lands — clearing only the primary is what let the leftovers stack up in the first place.
+    ClearPedSecondaryTask(entity)
+end
+
 local PlayAnimation = function(anim)
-    local entity = tonumber(anim.config.entity) ~= 0 and tonumber(anim.config.entity) or PlayerPedId()
+    local entity = animEntity(anim)
     local objType = da_obj.getType(GetEntityModel(entity))
     if objType == nil or objType == "object" then
         da_anim.object(
@@ -116,6 +147,42 @@ end
 -- here is a stateless forward to da_anims.
 local SCN_EDIT_ID = "_edit_dev"
 
+-- Saved scenarios: one kvp key each, under a shared prefix so they can be enumerated.
+local SAVED_PREFIX = "dev:scn:saved:"
+
+-- Every saved scenario, newest first. `kvp.search` walks the prefix, so this is the whole store with
+-- no index to keep in step — an entry that fails to decode is skipped rather than taking the list
+-- down with it, since a half-written blob must not make the import card unopenable.
+local function savedScenarios()
+    local out = {}
+    -- pcall'd: `kvp.search` walks StartFindKvp/FindKvp, and if that ever misbehaves the failure must
+    -- cost the SAVED SECTION, not the whole import card. A NUI callback that throws never calls its
+    -- `cb`, so the UI's fetch simply never settles and the list stays blank with nothing to show why.
+    local ok, keys = pcall(kvp.search, SAVED_PREFIX)
+    if not ok then
+        log.error("da_mode_anim_cl: could not read saved scenarios: " .. tostring(keys))
+        return out
+    end
+    for _, key in ipairs(keys or {}) do
+        local entry = kvp.decode(key)
+        if type(entry) == "table" and type(entry.cfg) == "table" then
+            local id = entry.id or key:sub(#SAVED_PREFIX + 1)
+            local n = 0
+            for _ in pairs(entry.cfg.states or {}) do n = n + 1 end
+            -- The tags come off the config itself (`menu` names the folders it appears in), so the
+            -- UI groups saved scenarios exactly the way it groups registered ones.
+            local tags = {}
+            for tag in pairs(entry.cfg.menu or {}) do tags[#tags + 1] = tag end
+            table.sort(tags)
+            out[#out + 1] = { id = id, name = entry.cfg.name or id, nStates = n, tags = tags }
+        else
+            log.warn("da_mode_anim_cl: unreadable saved scenario at " .. tostring(key))
+        end
+    end
+    table.sort(out, function(a, b) return a.id < b.id end)
+    return out
+end
+
 da_ui.callbacks({
     scnList = function()
         local out = {}
@@ -123,14 +190,87 @@ da_ui.callbacks({
             if s.id:sub(1, 6) ~= "_test_" and s.id:sub(1, 6) ~= "_edit_" then
                 local n = 0
                 for _ in pairs(s.states or {}) do n = n + 1 end
-                out[#out + 1] = { id = s.id, name = s.name, nStates = n }
+                -- `menu` is the scenario's TAG placement — which menu folder it appears in. The
+                -- import list groups by it, so it has to survive the hop; the tag tree below turns
+                -- those names into the labels the player sees.
+                local tags = {}
+                for tag in pairs(s.menu or {}) do tags[#tags + 1] = tag end
+                table.sort(tags)
+                out[#out + 1] = { id = s.id, name = s.name, nStates = n, tags = tags }
             end
         end
         table.sort(out, function(a, b) return a.id < b.id end)
-        return { scenarios = out }
+        -- Tags and saved scenarios ride along — one round trip renders all three sections. Both are
+        -- pcall'd for the reason above: this callback MUST return. An older da_anims with no
+        -- `animsTags` export, or an unreadable kvp entry, costs a section (categories flatten, saved
+        -- goes missing) and says so on the status line — it does not leave the card empty.
+        local okTags, tags = pcall(function() return exports.da_anims:animsTags() end)
+        local okSaved, saved = pcall(savedScenarios)
+        local warn = nil
+        if not okTags then
+            warn = "tag categories unavailable (restart da_anims?)"
+            log.error("da_mode_anim_cl: animsTags failed: " .. tostring(tags))
+        elseif not okSaved then
+            warn = "saved scenarios unavailable"
+            log.error("da_mode_anim_cl: savedScenarios failed: " .. tostring(saved))
+        end
+        return {
+            scenarios = out,
+            tags  = okTags  and tags  or {},
+            saved = okSaved and saved or {},
+            warn  = warn,
+        }
     end,
     scnImport = function(data)
         return exports.da_anims:animsGetRaw(data.id) or { error = "no such scenario: " .. tostring(data.id) }
+    end,
+
+    -- ---- saved scenarios ----
+    --
+    -- A DRAFT lives in the browser's localStorage: scratch, and gone with the cache. SAVING puts the
+    -- config in da_lib's kvp instead — the same durable client-side store da_anims keeps menu prefs
+    -- in. It survives a cache clear and a resource restart, which is what "save" has to mean before
+    -- anyone trusts it with an evening's work.
+    --
+    -- One key per scenario (`dev:scn:saved:<id>`) rather than one blob: saving a scenario rewrites
+    -- only its own key, so two saves can't clobber each other, and a corrupt entry costs one
+    -- scenario instead of the library.
+    scnSave = function(data)
+        local id = data and data.id
+        if type(id) ~= "string" or id == "" or type(data.cfg) ~= "table" then
+            return { error = "save needs an id and a config" }
+        end
+        -- No timestamp: `os.time()` is not available client-side (see carcass_probe_cl.lua) and
+        -- GetGameTimer resets every session, so it could only ever sort wrongly. The list is
+        -- alphabetical instead, which is at least honest about what it knows.
+        kvp.encode(SAVED_PREFIX .. id, { id = id, cfg = data.cfg })
+        log.debug("da_mode_anim_cl saved scenario", id)
+        return { ok = true, id = id }
+    end,
+    -- Just the ids, without decoding a single config. The editor asks this on load and after every
+    -- save/delete so the scenario card can say whether what you're editing has a saved copy behind
+    -- it — a question you need answered constantly and shouldn't have to open the import card for.
+    scnSavedIds = function()
+        local out = {}
+        local ok, keys = pcall(kvp.search, SAVED_PREFIX)
+        if ok then
+            for _, key in ipairs(keys or {}) do out[#out + 1] = key:sub(#SAVED_PREFIX + 1) end
+        end
+        return { ids = out }
+    end,
+    scnSavedLoad = function(data)
+        local id = data and data.id
+        local entry = type(id) == "string" and kvp.decode(SAVED_PREFIX .. id) or nil
+        if type(entry) ~= "table" or type(entry.cfg) ~= "table" then
+            return { error = "no saved scenario: " .. tostring(id) }
+        end
+        return { cfg = entry.cfg, id = entry.id or id }
+    end,
+    scnSavedDelete = function(data)
+        local id = data and data.id
+        if type(id) ~= "string" or id == "" then return { error = "delete needs an id" } end
+        kvp.delete(SAVED_PREFIX .. id)
+        return { ok = true, id = id }
     end,
     scnRegister = function(data)
         -- `focus` is the one state the timeline is drawing — the only one worth the streaming cost
@@ -189,8 +329,22 @@ da_ui.callbacks({
 })
 
 da_ui.callbacks({
-    playAnimation = function(data) PlayAnimation(data) end,
-    playAnimations = function(data) PlayConfiguredAnimations(data) end,
+    -- Both PLAY paths clear first — a preview shows one thing, not an accumulation.
+    playAnimation = function(data)
+        clearAnims(animEntity(data))
+        PlayAnimation(data)
+    end,
+    playAnimations = function(data)
+        -- Once per entity, BEFORE the batch — never per animation. A configured sequence is meant to
+        -- layer within itself (that is what the per-anim delays are for); it's only the previous
+        -- preview that has to go.
+        local cleared = {}
+        for _, anim in pairs(data.animations or {}) do
+            local e = animEntity(anim)
+            if not cleared[e] then cleared[e] = true; clearAnims(e) end
+        end
+        PlayConfiguredAnimations(data)
+    end,
     stopAnimation = function(data) da_anim.stop(data.entity or PlayerPedId()) end,
     getEntityType = function(data)
         local entity = tonumber(data.entity) ~= 0 and tonumber(data.entity) or PlayerPedId()

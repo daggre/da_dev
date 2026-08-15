@@ -636,8 +636,8 @@
                         <div id="scnTreeCard" class="card">
                             <div id="scnTreeControls" class="subbar">
                                 <div id="button-scn-addstate" class="control" tabindex="15" role="button" aria-label="Add State">+ state</div>
-                                <div id="button-scn-addrow" class="control" tabindex="15" role="button" aria-label="Add Row From Search Selection">+ row</div>
-                                <div id="button-scn-addprop" class="control" tabindex="15" role="button" aria-label="Add Prop Row">+ prop</div>
+                                <div id="button-scn-addrow" class="control" tabindex="15" role="button" aria-label="Add Animation From Search Selection">+ anim</div>
+                                <div id="button-scn-addprop" class="control" tabindex="15" role="button" aria-label="Add Prop">+ prop</div>
                             </div>
                             <div id="scnTreeWrap" class="list"><ul id="scnTree"></ul></div>
                         </div>
@@ -712,13 +712,13 @@
                             <span id="scnClock" aria-live="off">0.00s</span>
                             <div id="button-scn-enforce-when" class="control" tabindex="15" role="checkbox" aria-checked="false" aria-label="Enforce when-conditions on play (default off — preview ignores availability)">☐ when</div>
                         </div>
-                        <span id="scnStateSelect" class="entry dropdown" tabindex="15" role="button" aria-label="Selected State — the state these bars belong to"></span>
+                        <span id="scnStateSelect" class="entry dropdown" tabindex="15" role="button" aria-label="Selected State — the state these bars belong to. Click to pick one; with it focused, Up and Down step to the previous and next state"></span>
                         <span id="scnHeadSpacer"></span>
                         <span id="scnTimelineZoom">
                             <div id="button-scn-zoomout" class="control" tabindex="15" role="button" aria-label="Zoom Out">−</div>
                             <span id="scnZoomLabel"></span>
                             <div id="button-scn-zoomin" class="control" tabindex="15" role="button" aria-label="Zoom In">+</div>
-                            <div id="button-scn-snap" class="control" tabindex="15" role="checkbox" aria-checked="true" aria-label="Snap dragged anims to a 100ms grid and to neighbouring bars (hold Ctrl to disable while dragging)">☐ snap</div>
+                            <div id="button-scn-snap" class="control" tabindex="15" role="checkbox" aria-checked="false" aria-label="Snap timeline drags — anim bars, prop handles and the await cutoff — to a 100ms grid and to row edges (hold Ctrl while dragging for the opposite mode)">☐ snap</div>
                             <div id="button-scn-zoomfit" class="control" tabindex="15" role="button" aria-label="Fit Timeline">fit</div>
                         </span>
                     </div>

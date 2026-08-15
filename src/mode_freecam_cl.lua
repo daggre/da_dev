@@ -16,6 +16,29 @@ local radian = math.pi / 180
 local CamHandle = nil
 local reframeCam = nil   -- in-flight da_cam spline during a reframe (released on stop)
 
+-- ---- what `focus` mode points at ----
+--
+-- Normally the object editor's selection (the `Select` global) — you're inspecting a thing. The
+-- devRoot camera option arms PLAYER tracking instead, because there you're watching a performance:
+-- the ped has to stay centred in frame while it animates, wherever the animation carries it.
+--
+-- A flag resolved per frame, not a cached entity id: PlayerPedId() changes across a respawn or a ped
+-- swap, and a stale handle would stop tracking with nothing to show why.
+local trackPlayer = false
+
+-- Did the devRoot `orbit player` option engage freecam itself? Then switching the orbit off puts the
+-- gameplay camera back. If the player was ALREADY flying when they picked it, freecam is theirs and
+-- switching off only gives up the lock. Declared up here because freecam's own onDeactivate clears it.
+local orbitOwnsFreecam = false
+
+local function focusTarget()
+    if trackPlayer then
+        local ped = PlayerPedId()
+        if ped ~= 0 and DoesEntityExist(ped) then return ped end
+    end
+    return Select
+end
+
 GizmoMovedRecently = nil
 
 -- Cursor-grab lock: while a mouse-driven mode (dev menu hold, da_xinteracts) owns
@@ -52,6 +75,13 @@ da_mode.register({
     onDeactivate = function()
         SetNuiFocus(false, false)
         SetNuiFocusKeepInput(false)
+
+        -- Player tracking belongs to this freecam session. `f` toggles focus off and on within it and
+        -- keeps tracking the player; leaving freecam forgets it, so the next `f` means what it always
+        -- did — focus the object editor's selection. However freecam ends — the orbit toggle, Escape,
+        -- another mode — the orbit is off and owns nothing.
+        trackPlayer = false
+        orbitOwnsFreecam = false
 
         if reframeCam then da_cam.release(reframeCam); reframeCam = nil end
 
@@ -150,9 +180,9 @@ da_mode.register({
     name = "focus",
 
     onActivate = function()
-        local trackedObject = Select
+        local trackedObject = focusTarget()
         if trackedObject then
-            log.debug(("Focusing on object %s"):format(trackedObject))
+            log.debug(("Focusing on %s%s"):format(trackedObject, trackPlayer and " (the player)" or ""))
             PointCamAtEntity(CamHandle, trackedObject)
         end
         da_ui.send("ui_camera", { focus = true, })
@@ -190,7 +220,9 @@ local SetCoords = function(ped, x, y, z, rot_x, rot_y, rot_z, fov)
         SetCamRot(CamHandle, rot_x, 0.0, rot_z, 2)
         SetCamFov(CamHandle, fov+0.0)
         if da_mode.isActive("focus") then
-            local selectedObject = Select
+            -- Re-resolved EVERY frame, which is what makes tracking continuous: the ped moves through
+            -- the animation and the camera keeps it centred without touching the mouse.
+            local selectedObject = focusTarget()
             if selectedObject then
                 if not IsCameraLockActive then
                     PointCamAtEntity(CamHandle, selectedObject)
@@ -423,6 +455,83 @@ local function reframeFreecam(toPose, duration, smoothing)
         end
     end)
 end
+
+-- ---- devRoot > orbit player : freecam, locked on you ----
+--
+-- `freecam` (f) hands you the camera wherever the GAMEPLAY camera was — which is behind your own
+-- head, so the first thing anyone does is fly around to see themselves. This does that part: engage
+-- freecam if it isn't up, spline to a framed shot of the ped, and LOCK ON — `focus` mode re-points the
+-- camera at the ped every frame, so it stays centred while an animation carries it around. That's the
+-- reason it exists: watching a performance in the anim menu, not inspecting a static object.
+--
+-- It TOGGLES, and it undoes exactly what it did. Picking it again unlocks; if it was also the thing
+-- that engaged freecam, it drops freecam too and you're back on the gameplay camera. Reaching for the
+-- `freecam` option to get out of a camera you never turned on that way is the kind of thing you have
+-- to be told, and nobody should have to be told.
+--
+-- The framing move uses the same path the wardrobe and tack editors frame through (poseFromOffset ->
+-- reframeFreecam), so there's one way to fly this camera.
+--
+-- While locked, the mouse doesn't rotate the view (CheckMovementControls skips aim under `focus`) —
+-- WASD and the ctrl/shift mouse planes move the camera and it keeps looking at you. `f` unlocks to
+-- look around freely without leaving freecam; picking the option again then re-frames and re-locks.
+--
+-- The offset is in the PED's local frame — x = right, y = forward, z = up, origin at the PELVIS (the
+-- body spans z -0.85 boots .. +0.65 head, per da_wardrobe/data/camera.lua) — so `look` at z = 0 is
+-- the waist and the whole ped sits in frame. Heading-agnostic: it frames you from your front-right
+-- whichever way you're facing.
+local PLAYER_FRAME = {
+    offset    = { x = 1.2, y = 2.4, z = 0.5 },   -- front-right 3/4, a little above the waist
+    look      = { x = 0.0, y = 0.0, z = 0.0 },
+    fov       = 45.0,
+    duration  = 900,
+    smoothing = 3,
+}
+
+-- Is the orbit ON right now? Not just "armed": `f` can unlock the view while keeping the flag set for
+-- the session, and in that state the option should re-frame and re-lock rather than switch off
+-- something the player can already see isn't happening.
+local function orbitActive()
+    return trackPlayer and da_mode.isActive("focus") and da_mode.isActive("freecam")
+end
+
+-- Registered down HERE rather than beside the other devRoot options above, because it calls
+-- `reframeFreecam` — a local defined further down the file, which a closure built earlier would
+-- capture as nil.
+local function toggleOrbitPlayer()
+    if orbitActive() then
+        da_mode.deactivate("focus")
+        trackPlayer = false
+        if orbitOwnsFreecam then da_mode.deactivate("freecam") end
+        orbitOwnsFreecam = false
+        return
+    end
+
+    if not da_mode.isActive("freecam") then
+        da_mode.activate("freecam")
+        -- onActivate seeds CamHandle from the gameplay cam and calls RenderScriptCams; the reframe
+        -- splines FROM the rendered pose, so give the render a frame to actually be that cam.
+        Citizen.Wait(50)
+        if not da_mode.isActive("freecam") then return end   -- something else took the mode
+        orbitOwnsFreecam = true
+    end
+    -- Reframe FIRST: it reads the start pose synchronously and hands the render to a spline cam. Then
+    -- arm the lock. Ordered this way on purpose — arming first would point CamHandle at the ped before
+    -- that start pose is read, snapping the view round a frame before the move begins.
+    reframeFreecam(da_cam.poseFromOffset(PlayerPedId(), PLAYER_FRAME),
+        PLAYER_FRAME.duration, PLAYER_FRAME.smoothing)
+
+    -- CamHandle is inactive while the spline plays, so pointing it now is invisible; when the spline
+    -- lands, reframeFreecam reactivates it (already pointed) and restarts the control loop, which
+    -- re-points every frame from there. No snap at either end: the framed pose is already looking at
+    -- the ped, so the lock has nothing to correct.
+    trackPlayer = true
+    if not da_mode.isActive("focus") then da_mode.activate("focus") end
+end
+
+-- Its own thread: the toggle waits a frame on the way up, and a trie callback runs on the menu's
+-- input loop.
+da_trie.addOpt("devRoot", "orbit player", "c", function() Citizen.CreateThread(toggleOrbitPlayer) end)
 
 exports("startFreecam", function() if not da_mode.isActive("freecam") then da_mode.activate("freecam") end end)
 exports("stopFreecam", function() if da_mode.isActive("freecam") then da_mode.deactivate("freecam") end end)

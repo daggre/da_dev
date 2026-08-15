@@ -1081,9 +1081,31 @@ ul li {
 
 #scnImportCard { padding: 6px 8px; }
 #scnImportListWrap { min-height: 18vh; max-height: 40vh; overflow-y: auto; }
-#scnImportList li { cursor: pointer; padding: 1px 6px; white-space: nowrap; }
-#scnImportList li:hover { text-shadow: var(--glow); }
-#scnImportList .scn-import-draft { color: #9fd8ff; }
+/* TWO IDS on every rule below, and they are not decoration.
+ *
+ * `#anim-hud .list li` (line ~832) sets `padding: 2px 10px` and `color` on every row in every list in
+ * this HUD, and its specificity is (1 id, 1 class, 1 type). A rule written `#scnImportList .scn-…`
+ * is (1, 1, 0) — it LOSES, silently. That is why the indent below never appeared no matter how it was
+ * written, while background rails did show up: nothing else was setting `background`, so those won by
+ * default. Same trap the `#animScenarioColumns #scnErrors` rule above documents.
+ *
+ * If you simplify these selectors back to one id, the indentation disappears again. */
+#anim-hud #scnImportList li { cursor: pointer; padding: 1px 6px; white-space: nowrap; }
+#anim-hud #scnImportList li:hover { text-shadow: var(--glow); }
+#anim-hud #scnImportList .scn-import-draft { color: #9fd8ff; }
+/* section and category headers: quieter than the rows they hold, so the list reads as a structure
+   rather than as one long column of equals. The caret is the same glyph the scenario tree uses. */
+#anim-hud #scnImportList .scn-import-group {
+    color: var(--muted);
+    font-weight: 600;
+    user-select: none;
+    padding-top: 3px;   /* a little air above each section and category */
+}
+#anim-hud #scnImportList .scn-import-group .scn-caret { display: inline-block; width: 1em; }
+/* One indent per level — sections hold categories, categories hold scenarios. Rails were tried twice
+   (background gradients, then │ glyphs in the markup) and dropped: the indent alone says "child of". */
+#anim-hud #scnImportList .scn-import-child { padding-left: 20px; }
+#anim-hud #scnImportList .scn-import-leaf { padding-left: 38px; }
 
 /* One column, stacked: the state/row list on top (it STRETCHES to fill), the fields for the
    selected node below it (sized to content, capped so it scrolls rather than starving the list). */
@@ -1124,6 +1146,13 @@ ul li {
    read as a hint, not an editable row. Same warm tint as prop rows, just quieter. */
 #scnTree .scn-row-carried .scn-label { color: #e8d9a8; opacity: 0.5; font-style: italic; }
 #scnTree .scn-row-carried:hover .scn-label { opacity: 0.8; }
+/* a state's player-facing menu label, trailing its id/role/count: quieter than the structure it
+   annotates, because it is the one thing on the line that isn't part of the config's shape here — it
+   lives in a menu entry on another state. */
+#scnTree .scn-menu-name {
+    margin-left: 0.7em; color: var(--accent-hi); opacity: 0.75; font-size: 0.9rem;
+}
+#scnTree .selected .scn-menu-name { opacity: 1; }
 
 /* the panel title (.atitle carries no padding of its own) — pad it off the card's accent border so
    it lines up with the fields below instead of hugging the edge */
@@ -1143,6 +1172,15 @@ ul li {
 #scnPanel .scn-pick:hover { color: var(--accent-hi); opacity: 1; text-shadow: var(--glow); }
 /* the dict autocomplete popup reuses .context-menu; just make its rows monospace-legible */
 .scn-autocomplete .context-menu-item { font-size: 0.8rem; white-space: nowrap; }
+/* the keyboard highlight in an autocomplete. A dropdown marks its row by FOCUSING it; an
+   autocomplete can't — focus has to stay in the text you're typing — so the row carries the same
+   look via a class instead. Deliberately identical to :hover/:focus above: one highlight, three ways
+   of arriving at it. */
+.scn-autocomplete .context-menu-item.selected {
+    color: var(--accent-hi);
+    text-shadow: var(--glow);
+    box-shadow: inset 2px 0 0 var(--primary);
+}
 #scnPanel .scn-sep { margin-top: 8px; opacity: 0.7; }
 /* the scenario card's compact prop overview: one clickable line per prop, id → model */
 #scnPanel .scn-prop-line {
@@ -1153,6 +1191,19 @@ ul li {
 #scnPanel .scn-prop-id { color: #e8d9a8; font-weight: 600; min-width: 5rem; }
 #scnPanel .scn-prop-model { color: var(--muted); font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 #scnPanel .scn-prop-empty { padding: 2px 8px; color: var(--dim); font-size: 0.85rem; }
+/* a state's in-scenario menu, one line per option: the key, the player-facing label, the target.
+   Clicking a line selects the state it names, where that key and label are edited. */
+#scnPanel .scn-menu-line {
+    display: flex; align-items: baseline; gap: 8px;
+    padding: 2px 8px; cursor: pointer; border-radius: 3px;
+}
+#scnPanel .scn-menu-line:hover { background: rgba(255, 255, 255, 0.06); }
+#scnPanel .scn-menu-key {
+    flex: 0 0 auto; min-width: 1.1rem; text-align: center;
+    color: var(--accent-hi); font-weight: 600;
+}
+#scnPanel .scn-menu-label { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#scnPanel .scn-menu-target { flex: 0 0 auto; color: var(--muted); font-size: 0.85rem; }
 /* min-height so an EMPTY field (e.g. an unset `next`) keeps a clickable line instead of collapsing
    to nothing; a faint dash marks it as an empty, editable slot */
 #scnPanel .scn-entry { min-width: 10em; min-height: 1.2em; line-height: 1.2em; user-select: text; }
@@ -1160,7 +1211,23 @@ ul li {
 /* a field showing an INHERITED default rather than its own value: dimmed, so it reads as the
    effective value the row will use, not an explicit setting. Focus clears it to type your own. */
 #scnPanel .scn-inherited { color: var(--dim); font-style: italic; }
+/* an informational line about a value declared SOMEWHERE ELSE (a source state's `nextBlendIn`
+   overriding this state's arrival blend): dim and italic like an inherited value, indented under the
+   field it qualifies, and not editable — you fix it on the state that forces it. */
+#scnPanel .scn-arrival {
+    color: var(--dim); font-style: italic; font-size: 0.82rem;
+    padding: 1px 8px 2px 8px; word-break: break-word;
+}
 #scnPanel .scn-danger { color: #ff9f9f; }
+/* The draft/saved indicator: a plain field row, so it sits in the same column grid as `id`, `name`
+   and the rest. Only its COLOUR is doing the signalling — the same vocabulary the status line uses
+   (green agrees, amber needs attention, dim is nothing to worry about). No badge, no border: nothing
+   else in this UI wears one. */
+#anim-hud #scnPanel .scn-state { user-select: none; white-space: nowrap; }
+#anim-hud #scnPanel .scn-state-none { color: var(--dim); }           /* nothing saved behind it */
+#anim-hud #scnPanel .scn-state-match { color: #8fdf9f; }             /* saved and identical */
+#anim-hud #scnPanel .scn-state-differs { color: #ffcf8f; }           /* saved, but you've edited */
+#anim-hud #scnPanel .scn-state-unknown { color: var(--muted); }      /* saved, not compared */
 
 /* ── the timeline: full width, pinned to the bottom of the screen ── */
 #scnTimelineBar {
@@ -1230,6 +1297,14 @@ ul li {
     gap: 10px;
 }
 #scnTimelineTitle { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* the `await poll → poll` segment of the title, when clicking it would pin the await at the length
+   the poll already waits for. A dotted underline marks it as the one live word in a status line. */
+#scnTimelineTitle .scn-await-pin {
+    cursor: pointer;
+    border-bottom: 1px dotted var(--primary);
+    user-select: none;
+}
+#scnTimelineTitle .scn-await-pin:hover { color: var(--accent-hi); text-shadow: var(--glow); }
 
 /* the horizontal scroller; the inner is time-scaled (width = totalMs * pxPerMs), so a long or
    zoomed-in state overflows and scrolls sideways on the themed bar below */

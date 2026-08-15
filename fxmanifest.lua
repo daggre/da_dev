@@ -51,6 +51,11 @@ client_scripts {
     '@da_lib/features/event/event_cl.lua',
     '@da_lib/features/raycast/raycast_cl.lua',
     '@da_lib/features/vegmod/vegmod_cl.lua',
+
+    -- Must load before anything that registers a mode: it holds registrations back
+    -- until the server authorizes this player. See src/auth_srv.lua.
+    'src/auth_cl.lua',
+
     'ui/ui.lua',
 
     'src/models_cl.lua',
@@ -75,6 +80,10 @@ client_scripts {
     'src/tack_cl.lua',
     'src/xinteracts_cl.lua',
     'src/vegmod_cl.lua',
+}
+
+server_scripts {
+    'src/auth_srv.lua',
 }
 
 files {

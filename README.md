@@ -101,7 +101,10 @@ Browse and configure animations from the game's animation dictionaries.
 | 2 | Configuration HUD |
 | Shift + S | Settings panel |
 | Tab | Cycle keyboard focus |
-| Spacebar | Toggle focused element |
+| Enter / Spacebar | Activate the focused element (open a dropdown, press a button) |
+| ↑ / ↓ | Move through an open dropdown or suggestion list |
+| Enter | Choose the highlighted entry |
+| Escape | Close a dropdown, list or dialog without choosing |
 | H | Toggle help |
 | Esc | Exit Animation Editor |
 

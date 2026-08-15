@@ -10,6 +10,7 @@
 import { sendClientMessage } from '../src/msg.js';
 import { clipboardCopy } from '../src/clipboard.js';
 import { showDropdown } from '../src/dropdown.js';
+import { showConfirm } from '../src/confirm.js';
 import { openPropForNew, openPropForRow } from '../src/prop.js';
 import { Settings } from '../src/settings.js';
 // Reuse the configure HUD's flag/filter data (AF_* bits, AIK_* bits, task filters) so the two
@@ -62,9 +63,11 @@ function clampZoom(v) {
     return Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, Number.isFinite(v) ? v : 0.12));
 }
 
-// Snap-to-grid for dragging anims: a 100ms grid plus edge-snap to neighbouring bars. Toggled from
-// the timeline head, persisted, and flipped BOTH WAYS by holding Ctrl during a drag (snap-on →
-// Ctrl frees it; snap-off → Ctrl snaps it). Defaults OFF.
+// Snap-to-grid for every timeline drag — anim bars, prop lifecycle handles and the await cutoff all
+// go through `snapActive` + `snapDragAt`, so one toggle and one modifier govern the whole strip: a
+// 100ms grid plus edge-snap to neighbouring bars. Toggled from the timeline head, persisted, and
+// flipped BOTH WAYS by holding Ctrl during a drag (snap-on → Ctrl frees it; snap-off → Ctrl snaps
+// it). Defaults OFF.
 const LS_SNAP = 'da_dev.scnSnap';
 const SNAP_GRID = 100; // ms
 const SNAP_PX = 8;     // edge-snap pulls in within this many screen pixels of a neighbour's edge
@@ -108,6 +111,59 @@ function renameDraft(oldId, newId) {
     localStorage.setItem(LS_DRAFTS, JSON.stringify(all));
     docId = newId;
     saveDraft();
+}
+
+// Drop a draft from localStorage for good. Drafts are the only thing in this editor with no undo and
+// no copy anywhere else, so every caller asks first.
+//
+// Deleting the one you're EDITING has to start a fresh scenario, not just forget the entry: the
+// document would still be in memory under the same id, and the next keystroke's autosave would write
+// it straight back. Deleting something and watching it return is worse than not being able to delete.
+function deleteDraft(name) {
+    const all = drafts();
+    delete all[name];
+    localStorage.setItem(LS_DRAFTS, JSON.stringify(all));
+    if (localStorage.getItem(LS_LAST) === name) localStorage.removeItem(LS_LAST);
+    if (docId === name) newScenario();
+}
+
+// Move a draft out of the way under the next free `<id>_N`, so opening something else over the top
+// of it costs nothing. Returns the name it was kept under.
+function preserveDraft(id) {
+    const all = drafts();
+    const existing = all[id];
+    if (!existing) return null;
+    let n = 1;
+    while (all[`${id}_${n}`]) n++;
+    const kept = `${id}_${n}`;
+    all[kept] = existing;
+    delete all[id];           // the incoming document takes this id
+    localStorage.setItem(LS_DRAFTS, JSON.stringify(all));
+    return kept;
+}
+
+// Called before loading anything OVER an id that may already have a draft: the working copy you were
+// editing is the one thing here with no other copy anywhere, so it is never simply dropped.
+//
+// Nothing is kept when the draft is byte-identical to what's arriving — that isn't a rescue, it's
+// litter, and it would leave `pipe_1`, `pipe_2`, `pipe_3` behind every time you reopened the same
+// saved scenario to look at it.
+function keepDraftAside(id, incomingCfg) {
+    const existing = drafts()[id];
+    if (!existing) return null;
+    if (JSON.stringify(existing.cfg) === JSON.stringify(incomingCfg)) return null;
+    return preserveDraft(id);
+}
+
+// Ask, then delete. `after` runs only if it actually happened, so a list can redraw itself.
+function confirmDeleteDraft(name, after) {
+    showConfirm(`Delete the draft "${name}"? This cannot be undone.`, 'Delete', 'Cancel')
+        .then(yes => {
+            if (!yes) return;
+            deleteDraft(name);
+            setStatus(`deleted draft "${name}"`, 'scn-note');
+            if (after) after();
+        });
 }
 
 // ===================== engine sync =====================
@@ -427,6 +483,23 @@ function resolveAwaitFor(sid) {
     return undefined; // draw as the poll until the real answer lands
 }
 
+// What a POLLING state is actually waiting for, in ms — the number to pin its await at.
+//
+// The engine's poll blocks on the PRIMARY row: the first full-body row, or the first row at all if
+// every row is a layer (timeline_cl_ctl's primaryRow). Its `at` counts, because a row starting 400ms
+// in doesn't finish until 400ms later than its length. `items` are the drawn rows, so their lengths
+// are the ones already measured and cached.
+//
+// null when there's nothing honest to offer: no valid rows, or the primary's length isn't known yet
+// (a dict still streaming, or a typo'd anim the engine can't measure). Guessing there would write a
+// number the state was never waiting for.
+function pollLengthMs(items) {
+    const valid = items.filter(it => !it.invalid);
+    const primary = valid.find(it => !it.isLayer) || valid[0];
+    if (!primary || !primary.len) return null;
+    return Math.round(primary.at + primary.len);
+}
+
 function invalidRowCount() {
     let n = 0;
     for (const st of Object.values(doc.states || {})) {
@@ -448,6 +521,7 @@ function changed() {
     saveDraft();
     dirty = true;
     renderStatus();
+    refreshSavedBadge();   // the draft has just moved away from (or back to) the saved copy
     redraw();
 }
 
@@ -493,7 +567,7 @@ function renderStatus() {
     const lines = []; // { text, cls }
     const bad = invalidRowCount();
     if (bad > 0) lines.push({
-        text: `${bad} unconfigured row${bad === 1 ? '' : 's'} — shown red on the timeline, left out of play`,
+        text: `${bad} unconfigured ${bad === 1 ? 'entry' : 'entries'} — shown red on the timeline, left out of play`,
         cls: 'scn-note-line',
     });
     for (const p of importedDropped) lines.push({ text: `hook not imported: ${p}`, cls: 'scn-note-line' });
@@ -878,10 +952,19 @@ function dictPopupOutside(e) {
 
 // A lightweight autocomplete popup anchored under a field. Reuses the .context-menu look. Items are
 // picked on mousedown (before the field's blur fires) so the pick lands instead of being lost.
+//
+// It carries the SAME keyboard contract as a dropdown — up/down highlight, Enter chooses, Escape
+// closes — because to the person typing there is no difference between the two: both are a list that
+// appeared under the thing they're editing. The keys arrive from the FIELD (`autocompleteKeys`
+// below), since focus stays in the text you're typing; this side owns the highlight and exposes what
+// to do with it.
 function buildAutocomplete(items, anchor, onPick) {
     closeDictPopup(); // only ever one open
     const menu = h('div', 'context-menu scn-autocomplete');
     menu._anchor = anchor;
+    menu._items = items;
+    menu._onPick = onPick;
+    menu._active = -1;   // nothing highlighted: Enter commits what you typed, as it always did
     const rect = anchor.getBoundingClientRect();
     menu.style.left = (rect.left + window.scrollX) + 'px';
     menu.style.top = (rect.bottom + window.scrollY + 2) + 'px';
@@ -903,6 +986,44 @@ function buildAutocomplete(items, anchor, onPick) {
     // doesn't immediately close it)
     setTimeout(() => document.addEventListener('pointerdown', dictPopupOutside, true), 0);
     return menu;
+}
+
+// Move the highlight in the open autocomplete. Wraps, like a dropdown does, and scrolls the row into
+// view — a 40vh popup over the whole anim database is mostly off-screen.
+function moveAutocomplete(step) {
+    const menu = dictPopup;
+    if (!menu || !menu._items || menu._items.length === 0) return false;
+    const rows = menu.children;
+    if (menu._active >= 0 && rows[menu._active]) rows[menu._active].classList.remove('selected');
+    menu._active = (menu._active + step + rows.length) % rows.length;
+    const row = rows[menu._active];
+    row.classList.add('selected');
+    if (row.scrollIntoView) row.scrollIntoView({ block: 'nearest' });
+    return true;
+}
+
+// The field side of the contract. Call it FIRST in a field's keydown: if it returns true the key was
+// the popup's, and the field should do nothing else with it.
+//
+//   Down / Up   highlight a suggestion (opening nothing — the list is already there)
+//   Enter       take the highlighted suggestion; with none highlighted, fall through so Enter still
+//               commits whatever you typed, which is what it did before there was a highlight
+//   Escape      close the list, leaving the text alone — the field's own Escape then reverts it
+function autocompleteKeys(e) {
+    if (!dictPopup) return false;
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        if (!moveAutocomplete(e.key === 'ArrowDown' ? 1 : -1)) return false;
+        e.preventDefault();
+        return true;
+    }
+    if (e.key === 'Enter' && dictPopup._active >= 0) {
+        const menu = dictPopup;
+        const picked = menu._items[menu._active];
+        e.preventDefault();
+        menu._onPick(picked);   // same callback the mousedown path uses
+        return true;
+    }
+    return false;
 }
 
 // The dict field: editable, with type-to-filter autocomplete against the anim database.
@@ -959,6 +1080,9 @@ function dictField(obj, key, label, hint, inherited) {
         setTimeout(() => { if (suppressCommit) return; closeDictPopup(); commit(); }, 120);
     });
     entry.addEventListener('keydown', e => {
+        // The open suggestion list gets first refusal on arrows, and on Enter while a row is
+        // highlighted. Anything it doesn't take is the field's own key, as before.
+        if (autocompleteKeys(e)) { e.stopPropagation(); return; }
         if (e.key === 'Enter') { e.preventDefault(); entry.blur(); }
         if (e.key === 'Escape') { closeDictPopup(); entry.textContent = obj[key] ?? ''; entry.blur(); }
         e.stopPropagation();
@@ -1088,6 +1212,9 @@ function autocompleteField(obj, key, label, hint, matchFn) {
         setTimeout(() => { if (suppressCommit) return; closeDictPopup(); commit(); }, 120);
     });
     entry.addEventListener('keydown', e => {
+        // The open suggestion list gets first refusal on arrows, and on Enter while a row is
+        // highlighted. Anything it doesn't take is the field's own key, as before.
+        if (autocompleteKeys(e)) { e.stopPropagation(); return; }
         if (e.key === 'Enter') { e.preventDefault(); entry.blur(); }
         if (e.key === 'Escape') { closeDictPopup(); entry.textContent = obj[key] ?? ''; entry.blur(); }
         e.stopPropagation();
@@ -1116,7 +1243,7 @@ function propIdField(r) {
     entry.contentEditable = 'true';
     entry.tabIndex = 15;
     entry.textContent = r.prop ?? '';
-    entry.title = 'the prop id — rename it, or type another prop’s id to point this row at it';
+    entry.title = 'the prop id — rename it, or type another prop’s id to point this entry at it';
 
     let suppress = false;
     const retargetOrRename = v => {
@@ -1153,6 +1280,7 @@ function propIdField(r) {
         }, 120);
     });
     entry.addEventListener('keydown', e => {
+        if (autocompleteKeys(e)) { e.stopPropagation(); return; }
         if (e.key === 'Enter') { e.preventDefault(); entry.blur(); }
         if (e.key === 'Escape') { closeDictPopup(); entry.textContent = r.prop ?? ''; entry.blur(); }
         e.stopPropagation();
@@ -1222,6 +1350,86 @@ function stateByRole(role) {
     return null;
 }
 
+// ===================== the in-scenario menu =====================
+//
+// A fidget's player-facing NAME and its key are not on the fidget. They live in a `menu` entry on the
+// state you pick it FROM — the idle — because that's the list the trie builds:
+//
+//     idle = { role = "idle", menu = { { fidget = "puff", key = "s", label = "Smoke" } } }
+//
+// Which is correct for the engine and backwards for an author, who is looking at the fidget and asking
+// "what is this called?". Nothing in the editor showed these at all: an imported scenario kept its
+// labels (the document is the authored config, so they round-tripped into the export) but they were
+// invisible and unsettable, and `addState` makes a fidget with no entry anywhere — unreachable in
+// game, with no way to fix that from here. So the fidget's card edits its own entry, wherever it
+// lives, and the owning state lists what its menu holds.
+
+// The entry pointing at `sid`, and who owns it. Folders are walked, and an entry inside one is
+// returned in place — editing it must not restructure the menu the author built.
+function findMenuEntry(sid) {
+    const walk = (list, folder) => {
+        for (const opt of (list || [])) {
+            if (opt.folder) {
+                const hit = walk(opt.options, opt.folder);
+                if (hit) return hit;
+            } else if (opt.fidget === sid) {
+                return { entry: opt, folder };
+            }
+        }
+        return null;
+    };
+    for (const owner of stateIds()) {
+        const hit = walk(doc.states[owner].menu, null);
+        if (hit) return { owner, ...hit };
+    }
+    return null;
+}
+
+// Where a NEW entry goes: the idle's menu, since that's the state a fidget is picked from. Returns
+// null when there's nowhere to put one (no idle, or the idle itself) — the caller then offers no
+// fields rather than writing an entry nothing can reach.
+function menuHomeFor(sid) {
+    const idle = stateByRole('idle');
+    return idle && idle !== sid ? idle : null;
+}
+
+function ensureMenuEntry(sid) {
+    const found = findMenuEntry(sid);
+    if (found) return found.entry;
+    const home = menuHomeFor(sid);
+    if (!home) return null;
+    const st = doc.states[home];
+    st.menu = st.menu || [];
+    const entry = { fidget: sid };
+    st.menu.push(entry);
+    return entry;
+}
+
+// Menu entries are the one cross-reference between states that the registry REFUSES over ("menu: no
+// such fidget state 'x'"), so renaming or deleting a state has to carry them. `next` is the same kind
+// of reference and the same kind of refusal, so it rides along here.
+function repointStateRefs(oldId, newId) {
+    const walk = list => {
+        for (const opt of (list || [])) {
+            if (opt.folder) walk(opt.options);
+            else if (opt.fidget === oldId) {
+                if (newId) opt.fidget = newId; else opt._drop = true;
+            }
+        }
+        if (list) {
+            for (let i = list.length - 1; i >= 0; i--) if (list[i]._drop) list.splice(i, 1);
+        }
+    };
+    for (const sid of Object.keys(doc.states)) {
+        const st = doc.states[sid];
+        walk(st.menu);
+        if (st.menu && st.menu.length === 0) delete st.menu;
+        // A dangling `next` is refused too; dropping it falls back to the one idle, which is the
+        // sane resting place for a state whose successor just went away.
+        if (st.next === oldId) { if (newId) st.next = newId; else delete st.next; }
+    }
+}
+
 // The predecessor states whose prop rows have run by the time `sid` starts: enter is always upstream;
 // the idle is upstream of everything except itself and enter (a fidget layers over it, an exit/
 // transition passed through it). See the block comment for why a fidget folds the idle here.
@@ -1236,6 +1444,268 @@ function carriedPredecessors(sid) {
         if (idle && idle !== sid) out.push(idle);
     }
     return out;
+}
+
+// ===================== who forces this state's arrival blend =====================
+//
+// `nextBlendIn` is declared by the state you LEAVE and spent on the state you enter, so the number
+// that governs an arrival row's blend can live anywhere in the config except on the row itself. That
+// is invisible in an editor that shows one node at a time, and it is exactly the question an author
+// asks ("why does my idle ease in when it says 3.0?"). So the row says who is overriding it.
+//
+// The edges INTO `sid`, as the queue walks them:
+//   * a state whose `next` names it
+//   * an enter or fidget with NO `next` — those fall back to the one idle
+//   * a menu entry pointing at it (a fidget pick leaves whichever state offered the menu)
+// A `transition` is not an edge here: it lands on ANOTHER scenario's idle, outside this document.
+function incomingEdges(sid) {
+    const idle = stateByRole('idle');
+    const out = [];
+    for (const from of stateIds()) {
+        if (from === sid) continue;
+        const st = doc.states[from];
+        if (!st) continue;
+
+        let reaches = st.next === sid;
+        if (!reaches && st.next === undefined && sid === idle &&
+            (st.role === 'enter' || st.role === 'fidget')) reaches = true;
+        if (!reaches) {
+            const walk = list => (list || []).some(o =>
+                o.folder ? walk(o.options) : o.fidget === sid);
+            reaches = walk(st.menu);
+        }
+        if (reaches) out.push(from);
+    }
+    return out;
+}
+
+// Only the ARRIVAL rows (`at = 0`) cross-fade with the outgoing anim, so only they can be overridden
+// — mirrors playAnimRow in timeline_cl_ctl.lua.
+function arrivalOverrides(sid) {
+    return incomingEdges(sid)
+        .filter(from => typeof doc.states[from].nextBlendIn === 'number')
+        .map(from => ({ from, value: doc.states[from].nextBlendIn }));
+}
+
+// Does `sid` hand off to anything at all? An enter/fidget follows `next` or falls back to the one
+// idle, an idle is left by whichever fidget the menu picks, a transition lands on another scenario's
+// idle — but nothing follows an exit, so `nextBlendIn` has nothing to spend itself on there.
+function handsOff(sid) {
+    const st = doc.states[sid];
+    if (!st) return false;
+    if (st.role === 'exit') return false;
+    if (st.role === 'transition') return true;
+    if (st.next) return true;
+    if (st.role === 'idle') return true;
+    const idle = stateByRole('idle');
+    return !!idle && idle !== sid;
+}
+
+// One field of this state's own menu entry (`key` or `label`), edited from the fidget's card. The
+// entry is CREATED on the idle's menu the moment you type into either — which is how a new fidget
+// becomes reachable at all — and clearing a field deletes just that key, never the entry: an entry
+// with no key is auto-keyed and one with no label shows the state id, both still on the menu.
+function menuEntryField(sid, key, label, hint, fallback) {
+    return field({
+        label, hint,
+        inherited: fallback,
+        get: () => {
+            const found = findMenuEntry(sid);
+            return (found && found.entry[key]) || '';
+        },
+        set: t => {
+            const v = t.trim();
+            const found = findMenuEntry(sid);
+            if (v === '') {
+                if (found) delete found.entry[key];
+                return;
+            }
+            const entry = found ? found.entry : ensureMenuEntry(sid);
+            if (!entry) return;
+            entry[key] = v;
+            // Creating an entry changes what the card should SAY (which state owns it), and the
+            // commit that called us paints only this one field. Re-render after it finishes.
+            if (!found) queueMicrotask(() => { if (sel.kind === 'state' && sel.state === sid) renderPanel(); });
+        },
+    });
+}
+
+// A state's menu, as the player will read it: key, label, what it points at. Read-only here — each
+// entry's key and label are edited on the state it names — but clicking a row jumps to that state,
+// so "rename this option" is one click from seeing it.
+function menuOverviewNodes(st) {
+    const out = [];
+    const add = (list, depth) => {
+        for (const opt of (list || [])) {
+            const target = opt.fidget || opt.scenario || null;
+            const line = h('div', 'scn-menu-line');
+            line.style.paddingLeft = (8 + depth * 12) + 'px';
+            line.appendChild(h('span', 'scn-menu-key', opt.key || '·'));
+            line.appendChild(h('span', 'scn-menu-label', opt.label || opt.folder || target || '(empty)'));
+            line.appendChild(h('span', 'scn-menu-target',
+                opt.folder ? 'folder' : opt.scenario ? `→ scenario ${opt.scenario}` : `→ ${target}`));
+
+            if (opt.fidget && doc.states[opt.fidget]) {
+                line.title = `'${opt.fidget}' — click to edit its key and label on its own card` +
+                    (opt.label ? '' : `\nNo label: the menu shows the state id, '${opt.fidget}'.`);
+                line.onclick = () => select({ kind: 'state', state: opt.fidget });
+            } else if (opt.fidget) {
+                // The registry refuses the whole scenario over this, so it can't be a quiet nothing.
+                line.classList.add('scn-danger');
+                line.title = `'${opt.fidget}' is not a state in this scenario — registration will fail`;
+            }
+            out.push(line);
+            if (opt.folder) add(opt.options, depth + 1);
+        }
+    };
+    add(st.menu, 0);
+    return out;
+}
+
+// The `next blend-in` editor. One field, two places: on the state card, and again at the foot of
+// every anim row of that state — because tuning blends is a ROW job (blend-in, blend-out and this one
+// are the same conversation), and making an author leave the row they're listening to in order to
+// reach it is how the old `nextBlendInSpeed` got forgotten. It is the STATE's key either way: edit it
+// from any row and it's the same number, which is what the separator above it says.
+function nextBlendField(st, sid) {
+    return numField(st, 'nextBlendIn', 'next blend-in',
+        'blend-in forced on the at=0 animations of the state this one hands off to, for that handoff only ' +
+        "— blank means the arriving state uses its own. Belongs to the state '" + sid + "'.");
+}
+
+// ===================== duplicate / delete =====================
+//
+// One implementation each, called from the panel's buttons AND the tree's right-click menu, so the
+// two can't drift into doing subtly different things to the document.
+//
+// The document is plain JSON by construction — it crosses NUI, and hooks can't come with it — so a
+// JSON round-trip is a complete deep copy and needs no per-shape clone code to keep in step with the
+// config schema.
+function deepCopy(v) { return JSON.parse(JSON.stringify(v)); }
+
+// A duplicated ANIM row lands AFTER the one it came from, not on top of it. Two identical rows at the
+// same offset are invisible (the bars sit exactly on each other) and, when the row is upper-body, a
+// registration error — the engine holds one upper-body layer at a time, so `validateLayers` refuses
+// the whole scenario. Offset by the source's measured length: the copy is the next beat, which is
+// what "another one of these" means on a timeline, and it's one drag from anywhere else.
+function duplicateAnimRow(sid, i) {
+    const st = doc.states[sid];
+    const src = st && st.anims && st.anims[i];
+    if (!src) return;
+    const copy = deepCopy(src);
+    copy.at = (src.at || 0) + (rowLenOf(src) || DRAW_FALLBACK);
+    st.anims.splice(i + 1, 0, copy);
+    select({ kind: 'row', state: sid, i: i + 1 });
+    changed();
+}
+
+// A prop row is an instant, not a span — no length to step past and no layer rule to break — so the
+// copy keeps the original's offset. Same instant, one row down: usually you're about to point it at a
+// different prop, or change the action.
+function duplicatePropRow(sid, i) {
+    const st = doc.states[sid];
+    const src = st && st.props && st.props[i];
+    if (!src) return;
+    st.props.splice(i + 1, 0, deepCopy(src));
+    select({ kind: 'prop', state: sid, i: i + 1 });
+    changed();
+}
+
+// A duplicated STATE needs a free id, and a menu entry of its own if the original had one — a fidget
+// nothing points at is unreachable in game. The copy's entry deliberately carries NO key: two
+// unconditional entries sharing one is a hard registration error, and the trie assigns a free key to
+// an entry that doesn't ask for one.
+function duplicateState(sid) {
+    const src = doc.states[sid];
+    if (!src) return;
+
+    let id = `${sid}_copy`, n = 2;
+    while (doc.states[id]) id = `${sid}_copy${n++}`;
+    doc.states[id] = deepCopy(src);
+
+    // Exactly one idle, exactly one enter, exactly one exit — the registry refuses a second of any of
+    // them, so the copy of a singleton becomes a fidget, which is the only thing it could be.
+    const role = doc.states[id].role;
+    if (role === 'idle' || role === 'enter' || role === 'exit') doc.states[id].role = 'fidget';
+
+    const entry = findMenuEntry(sid);
+    if (entry) {
+        const copy = { fidget: id };
+        if (entry.entry.label) copy.label = `${entry.entry.label} copy`;
+        // Into the same list the original sits in — a folder member's copy belongs in that folder.
+        const list = entry.folder
+            ? (doc.states[entry.owner].menu.find(o => o.folder === entry.folder) || {}).options
+            : doc.states[entry.owner].menu;
+        if (list) list.push(copy);
+    }
+
+    select({ kind: 'state', state: id });
+    changed();
+}
+
+function deleteAnimRow(sid, i) {
+    const st = doc.states[sid];
+    if (!st || !st.anims) return;
+    st.anims.splice(i, 1);
+    select({ kind: 'state', state: sid });
+    changed();
+}
+
+function deletePropRow(sid, i) {
+    const st = doc.states[sid];
+    if (!st || !st.props) return;
+    st.props.splice(i, 1);
+    if (st.props.length === 0) delete st.props;
+    pruneOrphanProps(); // the prop may now be unused — drop its declaration
+    select({ kind: 'state', state: sid });
+    changed();
+}
+
+function deleteState(sid) {
+    delete doc.states[sid];
+    // Take its menu entry and any `next` pointing at it with it — a dangling reference is refused at
+    // registration, so a delete would otherwise break the whole scenario.
+    repointStateRefs(sid, null);
+    select({ kind: 'scenario' });
+    changed();
+}
+
+// The tree's right-click: the same two operations, on the node under the pointer. Wired onto every
+// state and row node, because "duplicate this" is a thing you want where you can SEE the list, not
+// only after selecting a node and looking at the panel.
+function nodeContextMenu(e, kind, sid, i) {
+    e.preventDefault();
+    e.stopPropagation();
+    const what = kind === 'state' ? 'state' : kind === 'prop' ? 'prop' : 'animation';
+    showDropdown([
+        { name: `duplicate ${what}`, value: 'duplicate' },
+        { name: `delete ${what}`, value: 'delete' },
+    ], e.pageX, e.pageY).then(picked => {
+        if (picked === null) return;
+        if (picked.value === 'duplicate') {
+            if (kind === 'state') duplicateState(sid);
+            else if (kind === 'row') duplicateAnimRow(sid, i);
+            else duplicatePropRow(sid, i);
+        } else {
+            if (kind === 'state') deleteState(sid);
+            else if (kind === 'row') deleteAnimRow(sid, i);
+            else deletePropRow(sid, i);
+        }
+    });
+}
+
+// A dim, informational line naming what overrides this state's arrival blend — not part of the
+// config, and not editable here: you fix it on the state that forces it. Two sources listed means
+// two edges in, each with its own blend, which is the whole point of the field.
+function arrivalNote(sid) {
+    const list = arrivalOverrides(sid);
+    if (list.length === 0) return null;
+    const el = h('div', 'scn-arrival',
+        '↳ arrives at ' + list.map(o => `${o.value} from ${o.from}`).join(' · '));
+    el.title = 'These states declare `nextBlendIn`, which overrides the blend-in of this state\'s ' +
+        'at=0 animations for that one handoff. Later ones keep their own. Edit the number ' +
+        'on the state that forces it.';
+    return el;
 }
 
 // The bone an attach lands a prop on: the inline placement's bone, else the propset's own bone.
@@ -1288,6 +1758,32 @@ function renderTree() {
     scnLi.appendChild(h('span', 'scn-caret', ''));
     scnLi.appendChild(h('span', 'scn-label', `${docId} — ${doc.name || ''}`));
     scnLi.onclick = () => select({ kind: 'scenario' });
+    // The scenario node offers what the scenario CARD offers — the same two actions, reachable from
+    // the tree like every other node's are. `delete saved` only appears when there is one to delete.
+    scnLi.oncontextmenu = e => {
+        e.preventDefault();
+        e.stopPropagation();
+        const opts = [
+            { name: 'save scenario', value: 'save' },
+            { name: 'delete draft', value: 'draft' },
+        ];
+        if (savedIds.has(docId)) opts.push({ name: `delete saved "${docId}"`, value: 'saved' });
+        showDropdown(opts, e.pageX, e.pageY).then(picked => {
+            if (picked === null) return;
+            if (picked.value === 'save') { saveScenario(); return; }
+            if (picked.value === 'draft') { confirmDeleteDraft(docId); return; }
+            showConfirm(`Delete the saved scenario "${docId}"? This cannot be undone.`,
+                'Delete', 'Cancel').then(async yes => {
+                if (!yes) return;
+                const del = await sendClientMessage('scnSavedDelete', { id: docId });
+                if (!del?.ok) { setStatus(del?.error || 'delete failed', 'scn-err'); return; }
+                savedIds.delete(docId);
+                savedSnapshot = null;
+                setStatus(`deleted saved "${docId}" — the draft is untouched`, 'scn-note');
+                renderPanel();
+            });
+        });
+    };
     ul.appendChild(scnLi);
 
     for (const sid of stateIds()) {
@@ -1314,7 +1810,19 @@ function renderTree() {
         li.appendChild(caret);
         const count = `${rows.length}` + (pRows.length ? `+${pRows.length}p` : '');
         li.appendChild(h('span', 'scn-label', `${sid}  ·  ${st.role || '?'}  (${count})`));
+        // The player-facing name, after the structure: `puff · fidget (1)  Smoke`. It's kept in a
+        // menu entry on ANOTHER state, so without this the tree is a list of ids and the labels are
+        // one click away each. Only shown when the entry actually sets one — the engine falls back to
+        // the id, which is already the first thing on this line.
+        const named = findMenuEntry(sid);
+        if (named && named.entry.label) {
+            const tag = h('span', 'scn-menu-name', named.entry.label);
+            tag.title = `what the player reads for '${sid}' — from the menu entry on '${named.owner}'`;
+            li.appendChild(tag);
+        }
         li.onclick = () => select({ kind: 'state', state: sid });
+        // Right-click acts on the node under the pointer, whether or not it's the selected one.
+        li.oncontextmenu = e => nodeContextMenu(e, 'state', sid);
         ul.appendChild(li);
 
         if (isCollapsed) continue;
@@ -1324,6 +1832,7 @@ function renderTree() {
             rowLi.appendChild(h('span', 'scn-caret', ''));
             rowLi.appendChild(h('span', 'scn-label', `@${r.at || 0}  ${r.anim || '(no anim)'}`));
             rowLi.onclick = () => select({ kind: 'row', state: sid, i });
+            rowLi.oncontextmenu = e => nodeContextMenu(e, 'row', sid, i);
             ul.appendChild(rowLi);
         });
         pRows.forEach((r, i) => {
@@ -1333,6 +1842,7 @@ function renderTree() {
             const what = r.expression !== undefined && !propAction(r) ? 'expression' : (propAction(r) || '…');
             rowLi.appendChild(h('span', 'scn-label', `@${r.at || 0}  ${r.prop || '(no prop)'} · ${what}`));
             rowLi.onclick = () => select({ kind: 'prop', state: sid, i });
+            rowLi.oncontextmenu = e => nodeContextMenu(e, 'prop', sid, i);
             ul.appendChild(rowLi);
         });
         // Carried-in props: dimmed, informational, not part of the config. Clicking jumps to the
@@ -1343,7 +1853,7 @@ function renderTree() {
             const held = c.bone ? `holding · ${c.bone}` : 'present · loose';
             ghost.appendChild(h('span', 'scn-label', `↳ ${c.prop} · ${held}`));
             ghost.title = `inherited — established in '${c.from}', still on the ped when '${sid}' starts.\n` +
-                `Preview reconstructs it; it is NOT declared here. Click to jump to the row that sets it up.`;
+                `Preview reconstructs it; it is NOT declared here. Click to jump to the prop that sets it up.`;
             ghost.onclick = () => select({ kind: 'prop', state: c.from, i: c.fromI });
             ul.appendChild(ghost);
         });
@@ -1448,7 +1958,7 @@ function propDeclNodes() {
         const line = h('div', 'scn-prop-line');
         line.appendChild(h('span', 'scn-prop-id', id));
         line.appendChild(h('span', 'scn-prop-model', model));
-        line.title = 'jump to this prop’s first row';
+        line.title = 'jump to this prop’s first entry';
         line.onclick = () => {
             for (const sid of stateIds()) {
                 const rows = doc.states[sid].props || [];
@@ -1468,14 +1978,16 @@ function renderPanel() {
     if (sel.kind === 'scenario') {
         doc.defaults = doc.defaults || {};
         const nodes = [
+            savedBadgeNode(),
             field({
                 label: 'id',
-                hint: 'the scenario id the Lua is emitted under (and the draft name)',
+                hint: 'the id EVERYTHING keys off: the draft this autosaves to, the saved copy it ' +
+                      'writes, and the id the emitted Lua carries. Changing it renames the draft.',
                 get: () => docId,
                 set: t => { const v = t.trim(); if (v) renameDraft(docId, v); },
             }),
             strField(doc, 'name', 'name', 'what the player reads'),
-            dictField(doc, 'dict', 'dict', 'default dict; rows may use "@suffix" of it'),
+            dictField(doc, 'dict', 'dict', 'default dict; animations may use "@suffix" of it'),
             field({
                 label: 'menu', hint: 'placement: tag:key, tag:key — e.g. stand:q',
                 get: () => menuText(doc.menu),
@@ -1486,7 +1998,7 @@ function renderPanel() {
                 get: () => whenText(doc.when),
                 set: t => { doc.when = parseWhen(t); },
             }),
-            h('div', 'flabel scn-sep', 'row defaults'),
+            h('div', 'flabel scn-sep', 'animation defaults'),
             bitmaskField({
                 label: 'flag', fetch: getAnimFlags,
                 get: () => doc.defaults.flag,
@@ -1504,7 +2016,19 @@ function renderPanel() {
         if (Object.keys(doc.defaults).length === 0) delete doc.defaults;
         nodes.push(h('div', 'flabel scn-sep', 'props'));
         nodes.push(...propDeclNodes());
-        panelInto(el, 'scenario', nodes);
+
+        // (the indicator is prepended below, so it sits at the TOP of the card)
+
+        // The scenario's own actions, on the scenario's own card: saving it, and deleting the draft
+        // you're looking at (which leaves you on a fresh scenario rather than on a document whose
+        // next autosave would write the draft back — see deleteDraft). The toolbar above stays for
+        // things that act on the EDITOR — new, import, export, the transport.
+        const bar = h('div', 'subbar');
+        bar.appendChild(actionButton('save scenario', saveScenario));
+        bar.appendChild(actionButton('delete draft', () => confirmDeleteDraft(docId), true));
+        nodes.push(bar);
+
+        panelInto(el, `scenario · ${docId}`, nodes);
         return;
     }
 
@@ -1513,6 +2037,9 @@ function renderPanel() {
 
     if (sel.kind === 'state') {
         const sid = sel.state;
+        // Held so the notes and a transition's `to` can be positioned against it by identity rather
+        // than by a hardcoded index that shifts whenever a field is added.
+        const nextBlend = nextBlendField(st, sid);
         const nodes = [
             field({
                 label: 'id',
@@ -1522,6 +2049,9 @@ function renderPanel() {
                     if (!v || v === sid || doc.states[v]) return;
                     doc.states[v] = st;
                     delete doc.states[sid];
+                    // Menu entries and `next` name states by id; leaving them on the old name is a
+                    // config the registry refuses.
+                    repointStateRefs(sid, v);
                     sel = { kind: 'state', state: v };
                 },
             }),
@@ -1535,6 +2065,11 @@ function renderPanel() {
                 get: () => st.next ?? '',
                 set: v => { if (v === undefined) delete st.next; else st.next = v; },
             }),
+            // Not the blend of THIS state — the blend of whatever it hands off to. Named on the
+            // source because `blendIn` belongs to the arriving state and one number can't serve two
+            // edges in: a weighty enter wants the idle to ease in under it, the fidget flicking back
+            // to that same idle wants it snapped on.
+            nextBlend,
             field({
                 label: 'await', hint: 'ms, "auto", "auto 0.8", "auto trim 0", "false", blank = poll',
                 get: () => awaitText(st.await),
@@ -1558,17 +2093,45 @@ function renderPanel() {
                 set: t => { st.when = parseWhen(t); },
             }),
         ];
+        // `to` sits after `next blend-in`, matching the key order the serializer emits
+        // (role, next, nextBlendIn, to, await).
         if (st.role === 'transition') {
-            nodes.splice(3, 0, strField(st, 'to', 'to', 'target scenario id'));
+            nodes.splice(nodes.indexOf(nextBlend) + 1, 0,
+                strField(st, 'to', 'to', 'target scenario id'));
         }
+        // Who overrides THIS state's arrival, if anyone — the other half of `next blend-in`, read
+        // from the receiving end.
+        const arriving = arrivalNote(sid);
+        if (arriving) nodes.push(arriving);
+
+        // How the player REACHES this one: its key and its name on the menu it appears in. Only
+        // fidgets and transitions are menu options — an enter is reached by the scenario's own key
+        // (the scenario card's `menu`), an idle and an exit are reached by playing.
+        if (st.role === 'fidget' || st.role === 'transition') {
+            const entry = findMenuEntry(sid);
+            const home = entry ? entry.owner : menuHomeFor(sid);
+            if (home) {
+                nodes.push(h('div', 'flabel scn-sep', entry
+                    ? `menu · in '${home}'` + (entry.folder ? ` > ${entry.folder}` : '')
+                    : `menu · not on one yet — typing adds it to '${home}'`));
+                nodes.push(menuEntryField(sid, 'key', 'menu key',
+                    'the key the player presses for this option; blank lets the trie assign one'));
+                nodes.push(menuEntryField(sid, 'label', 'menu label',
+                    'what the player reads. Blank shows the state id.', () => sid));
+            }
+        }
+
+        // What this state's OWN menu offers (an idle's, mostly) — the list the labels above land in.
+        if (st.menu && st.menu.length) {
+            nodes.push(h('div', 'flabel scn-sep', 'menu offers'));
+            nodes.push(...menuOverviewNodes(st));
+        }
+
         const bar = h('div', 'subbar');
         // No per-state "play" button — the timeline transport plays whatever state is focused, and
         // selecting a state focuses it, so "play" always runs what you're looking at.
-        bar.appendChild(actionButton('delete state', () => {
-            delete doc.states[sid];
-            select({ kind: 'scenario' });
-            changed();
-        }, true));
+        bar.appendChild(actionButton('duplicate state', () => duplicateState(sid)));
+        bar.appendChild(actionButton('delete state', () => deleteState(sid), true));
         nodes.push(bar);
         panelInto(el, `state · ${sid}`, nodes);
         return;
@@ -1591,7 +2154,7 @@ function renderPanel() {
             }),
             selectField({
                 label: 'action',
-                hint: 'one per row — exclusive; expression may ride along or stand alone',
+                hint: 'one per prop entry — exclusive; expression may ride along or stand alone',
                 options: PROP_ACTIONS.map(a => ({ name: a, value: a }))
                     .concat([{ name: '(none — expression only)', value: undefined }]),
                 get: () => action || (r.expression !== undefined ? '(expression only)' : '—'),
@@ -1683,7 +2246,7 @@ function renderPanel() {
             if (decl) nodes.push(boolField(decl, 'persist', 'persist', 'the prop outlives the run — survives scenario transitions instead of being cleaned up'));
         } else if (action === 'anim') {
             nodes.push(
-                dictField(r, 'dict', 'dict', '"@suffix" of the scenario dict or absolute — prop rows do NOT inherit the scenario dict'),
+                dictField(r, 'dict', 'dict', '"@suffix" of the scenario dict or absolute — props do NOT inherit the scenario dict'),
                 animField(r, effectivePropDict),
                 boolField(r, 'loop', 'loop'),
                 boolField(r, 'stayInAnim', 'stay in anim'),
@@ -1702,15 +2265,10 @@ function renderPanel() {
         }));
 
         const bar = h('div', 'subbar');
-        bar.appendChild(actionButton('delete row', () => {
-            st.props.splice(sel.i, 1);
-            if (st.props.length === 0) delete st.props;
-            pruneOrphanProps(); // the prop may now be unused — drop its declaration
-            select({ kind: 'state', state: sel.state });
-            changed();
-        }, true));
+        bar.appendChild(actionButton('duplicate prop', () => duplicatePropRow(sel.state, sel.i)));
+        bar.appendChild(actionButton('delete prop', () => deletePropRow(sel.state, sel.i), true));
         nodes.push(bar);
-        panelInto(el, `prop row · ${sel.state}[${sel.i + 1}]`, nodes);
+        panelInto(el, `prop · ${sel.state}[${sel.i + 1}]`, nodes);
         return;
     }
 
@@ -1721,19 +2279,26 @@ function renderPanel() {
     // engine's built-in default (ENGINE_ROW_DEFAULTS) — so the effective value is always visible.
     const d = doc.defaults || {};
     const inh = key => d[key] !== undefined ? d[key] : ENGINE_ROW_DEFAULTS[key];
+    // Held so the arrival note can be slotted in directly beneath the field it qualifies.
+    const blendInField = numField(r, 'blendIn', 'blend-in', undefined, () => inh('blendIn'));
     const nodes = [
         numField(r, 'at', 'at', 'offset ms from the start of the state'),
         dictField(r, 'dict', 'dict', '"@suffix" of the scenario dict, absolute, or blank = scenario dict',
             () => doc.dict),
         animField(r),
-        numField(r, 'hold', 'hold', 'ms this row plays; -1/blank = natural end'),
+        numField(r, 'hold', 'hold', 'ms this animation plays; -1/blank = natural end'),
         bitmaskField({
             label: 'flag', hint: Object.keys(FLAG_PRESETS).join(' '), fetch: getAnimFlags,
             get: () => r.flag,
             set: v => { if (v === undefined) delete r.flag; else r.flag = v; },
             inherited: () => flagText(inh('flag')),
         }),
-        numField(r, 'blendIn', 'blend-in', undefined, () => inh('blendIn')),
+        // Sits with `flag` because it's about the same thing: which slot this row occupies and what
+        // it does to the one that's already there.
+        boolField(r, 'clearLayers', 'clear layers',
+            "stop the ped's upper-body layer as this animation starts — how a full-body one " +
+            'interrupts a looping upper-body one, instead of a throwaway 10ms animation to evict it'),
+        blendInField,
         numField(r, 'blendOut', 'blend-out', undefined, () => inh('blendOut')),
         numField(r, 'rate', 'rate', undefined, () => inh('rate')),
         bitmaskField({
@@ -1754,14 +2319,31 @@ function renderPanel() {
             set: t => { r.when = parseWhen(t); },
         }),
     ];
+    // An `at = 0` row is what cross-fades with the outgoing state's last frame, so an incoming
+    // `nextBlendIn` REPLACES the blend-in above it. Say so where the number is, not in a manual.
+    if ((r.at || 0) === 0) {
+        const arriving = arrivalNote(sel.state);
+        if (arriving) nodes.splice(nodes.indexOf(blendInField) + 1, 0, arriving);
+    }
+
+    // The OUTGOING side of the same conversation. It's the state's key, not the row's — hence the
+    // separator naming the state — but blend-in, blend-out and "what the next state blends at" are
+    // one tuning job, and this is the card you're on while you do it. Every anim row of a state shows
+    // the same number; editing it from any of them edits that one value.
+    //
+    // Skipped on an exit: nothing arrives after the run ends, so the field would be dead weight on
+    // every row of it. The state card still offers it, for the rare `onEnd` hook that steers out of
+    // an exit.
+    if (handsOff(sel.state)) {
+        nodes.push(h('div', 'flabel scn-sep', `handoff · state '${sel.state}'`));
+        nodes.push(nextBlendField(st, sel.state));
+    }
+
     const bar = h('div', 'subbar');
-    bar.appendChild(actionButton('delete row', () => {
-        st.anims.splice(sel.i, 1);
-        select({ kind: 'state', state: sel.state });
-        changed();
-    }, true));
+    bar.appendChild(actionButton('duplicate animation', () => duplicateAnimRow(sel.state, sel.i)));
+    bar.appendChild(actionButton('delete animation', () => deleteAnimRow(sel.state, sel.i), true));
     nodes.push(bar);
-    panelInto(el, `row · ${sel.state}[${sel.i + 1}]`, nodes);
+    panelInto(el, `animation · ${sel.state}[${sel.i + 1}]`, nodes);
 }
 
 // ===================== timeline =====================
@@ -1881,11 +2463,39 @@ function renderTimeline() {
         pRows.filter(r => propRowInvalidReason(r)).length;
     const awaitLabel = awaitMs === false ? 'advance' :
         typeof awaitMs === 'number' ? fmtMs(awaitMs) : 'poll';
-    titleEl.textContent = `${sid} · await ${awaitText(docSt.await) || 'poll'}` +
-        ` → ${awaitLabel} · ${items.length} row${items.length === 1 ? '' : 's'}` +
-        (pRows.length ? ` · ${pRows.length} prop row${pRows.length === 1 ? '' : 's'}` : '') +
+    const awaitSeg = `await ${awaitText(docSt.await) || 'poll'} → ${awaitLabel}`;
+    const tail = ` · ${items.length} anim${items.length === 1 ? '' : 's'}` +
+        (pRows.length ? ` · ${pRows.length} prop${pRows.length === 1 ? '' : 's'}` : '') +
         (nBad ? ` · ${nBad} unconfigured` : '') +
         (laneCount > 1 ? ` · ${laneCount} lanes` : '');
+
+    // A POLLING state draws no cutoff — there's no number to draw one at — so the timeline offers no
+    // way to give it one, and the await that governs the state is reachable only from the panel. So
+    // the `await poll → poll` segment is itself the button: clicking it pins the await at the length
+    // the poll is already waiting out (the primary row's measured end), turning an implicit wait into
+    // an explicit number you can then drag. Nothing about the state's behaviour changes at the moment
+    // you click — that's the point of using the poll's own number.
+    titleEl.textContent = '';
+    titleEl.appendChild(h('span', null, `${sid} · `));
+    // Gated on the AUTHORED await, not the resolved one: `false` is a deliberate fire-and-forget, and
+    // an `"auto"` state reads as a poll for the one frame before the engine answers — clicking then
+    // would quietly replace `auto` with a number.
+    const polls = docSt.await === undefined || docSt.await === null;
+    const pinTo = polls ? pollLengthMs(items) : null;
+    if (pinTo !== null) {
+        const pin = h('span', 'scn-await-pin', awaitSeg);
+        pin.title = `click to pin await at ${pinTo}ms — the primary animation's measured end, which is ` +
+            'what this poll already waits for. Then drag the cutoff to trim it.';
+        pin.onclick = () => {
+            docSt.await = pinTo;
+            changed();   // redraws the strip, so the cutoff appears at pinTo, draggable from there
+            if (sel.kind === 'state' && sel.state === sid) renderPanel();
+        };
+        titleEl.appendChild(pin);
+    } else {
+        titleEl.appendChild(h('span', null, awaitSeg));
+    }
+    titleEl.appendChild(h('span', null, tail));
 
     // The ruler: a labelled tick every `step` ms. THESE are the measure indicators — a bar's width
     // reads against a real time scale, not a stretch-to-fit.
@@ -1907,9 +2517,10 @@ function renderTimeline() {
     }
     const trackFor = it => laneEls[it.isLayer ? it.lane : layerLanes + it.lane];
 
-    // The await cutoff, spanning every lane — draggable to set the await value (below).
+    // The await cutoff, spanning every lane — draggable to set the await value (below). It snaps
+    // against the same anchors a bar does, `items` being the drawn rows.
     if (typeof awaitMs === 'number') {
-        tracks.appendChild(makeAwaitHandle(sid, awaitMs, totalMs));
+        tracks.appendChild(makeAwaitHandle(sid, awaitMs, totalMs, items));
     }
 
     for (const it of items) {
@@ -1995,7 +2606,7 @@ function carriedLane(sid, c, totalMs) {
     bar.style.left = '0px';
     bar.style.width = (totalMs * pxPerMs) + 'px';
     bar.title = `${c.prop} — inherited from '${c.from}', ${c.bone ? 'held on ' + c.bone : 'loose'} ` +
-        `through this state.\nNot declared here; preview reconstructs it. Click to jump to the row ` +
+        `through this state.\nNot declared here; preview reconstructs it. Click to jump to the entry ` +
         `that sets it up.`;
     bar.onclick = () => select({ kind: 'prop', state: c.from, i: c.fromI });
     track.appendChild(bar);
@@ -2110,6 +2721,9 @@ function propLane(sid, name, items, totalMs, awaitMs) {
             track.appendChild(sepEl);
 
             // One start-drag, wired onto every grab handle for this row.
+            // The lifecycle handles stand for the same prop entry as the marker, so they answer to
+            // the same right-click.
+            const wireMenu = el => { el.oncontextmenu = e => nodeContextMenu(e, 'prop', sid, it.i); };
             const wireStart = el => el.addEventListener('mousedown', e => {
                 const r = doc.states[sid] && doc.states[sid].props && doc.states[sid].props[it.i];
                 if (!r) return;
@@ -2148,9 +2762,9 @@ function propLane(sid, name, items, totalMs, awaitMs) {
                 document.addEventListener('mouseup', onUp);
             });
 
-            wireStart(sepEl);
-            if (secEl) wireStart(secEl);
-            if (isClose && tailEl) wireStart(tailEl);
+            wireStart(sepEl); wireMenu(sepEl);
+            if (secEl) { wireStart(secEl); wireMenu(secEl); }
+            if (isClose && tailEl) { wireStart(tailEl); wireMenu(tailEl); }
         }
     }
 
@@ -2208,6 +2822,7 @@ function propLane(sid, name, items, totalMs, awaitMs) {
 // The prop-row counterpart of makeBarDraggable: slide a marker along its lane to set `at`; a
 // press without movement selects the row. Snaps to the grid and to sibling markers.
 function makeMarkerDraggable(mk, sid, i, items) {
+    mk.oncontextmenu = e => nodeContextMenu(e, 'prop', sid, i);
     mk.addEventListener('mousedown', e => {
         const r = doc.states[sid] && doc.states[sid].props && doc.states[sid].props[i];
         if (!r) return;
@@ -2267,6 +2882,9 @@ function snapDragAt(rawAt, dragLen, anchors) {
 // selects the row. Snaps to a 100ms grid and to neighbouring bars' edges (unless snap is toggled off
 // or Ctrl is held); committed on release, where the debounced re-register redraws the whole strip.
 function makeBarDraggable(bar, sid, i, items) {
+    // Right-click a bar for the same two actions the tree offers. Wired here rather than at the call
+    // site because this is already the function that owns "this element IS row i of state sid".
+    bar.oncontextmenu = e => nodeContextMenu(e, 'row', sid, i);
     bar.addEventListener('mousedown', e => {
         const r = doc.states[sid] && doc.states[sid].anims && doc.states[sid].anims[i];
         if (!r) return;
@@ -2320,10 +2938,16 @@ function makeBarDraggable(bar, sid, i, items) {
 // number of ms (converting an `auto`/poll state to an explicit value, which is the edit the drag
 // intends). The line is previewed live during the drag; the commit re-registers so the timeline
 // redraws from what the engine actually resolves.
-function makeAwaitHandle(sid, awaitMs, totalMs) {
+//
+// Snapping is the SAME rule the bars follow (`snapActive` + `snapDragAt`): the toggle, inverted by
+// Ctrl, edge-snap to a row's start or end first and the 100ms grid otherwise. It used to snap to 100ms
+// unconditionally, which made the two most valuable awaits unreachable — a row's exact natural end (a
+// handoff with no truncation) and a deliberate few-ms trim off it. `dragLen` is 0 because a cutoff is
+// a line, not a bar: only its own position can land on an anchor.
+function makeAwaitHandle(sid, awaitMs, totalMs, items) {
     const cut = h('div', 'scn-await');
     cut.style.left = (awaitMs * pxPerMs) + 'px';
-    cut.title = 'drag to set await';
+    cut.title = 'drag to set await — snaps to animation edges and 100ms; Ctrl inverts the snap toggle';
     // A pennant tab hanging below the line — a square body with a point on top that leads up to
     // the dashed line, so it reads as a grab handle. It carries the current value.
     const tab = h('div', 'scn-await-tab', fmtMs(awaitMs));
@@ -2335,10 +2959,15 @@ function makeAwaitHandle(sid, awaitMs, totalMs) {
         const tracks = document.getElementById('scnTracks');
         let ms = awaitMs;
 
+        // Every drawn row's start and end, plus time 0 — so the cutoff can be butted exactly against
+        // the end of the row it's cutting, which is the number an author is usually reaching for.
+        const anchors = [0];
+        for (const it of (items || [])) anchors.push(it.at, it.end);
+
         const onMove = ev => {
-            // track the cursor, but snap the value to the nearest 100ms
+            // Track the cursor; snap only if snapping is in effect for this event (toggle XOR Ctrl).
             const raw = Math.max(0, (ev.clientX - tracks.getBoundingClientRect().left) / pxPerMs);
-            ms = Math.round(raw / 100) * 100;
+            ms = snapActive(ev) ? snapDragAt(raw, 0, anchors) : Math.round(raw);
             cut.style.left = (ms * pxPerMs) + 'px';
             tab.textContent = fmtMs(ms);
         };
@@ -2489,10 +3118,11 @@ function setClock(ms) {
 async function pollState() {
     const res = await sendClientMessage('scnState', {});
     if (!res || !res.running) { stopPlayhead(); return; }
-    // A fidget preview establishes the IDLE first, then jumps to the fidget — so the run legitimately
-    // sits on another state for a moment before ours appears. Only retire once we've actually SEEN
-    // the state we launched (then a move away from it means it advanced/ended), with a safety
-    // timeout in case it never comes up (e.g. a gated idle).
+    // Anything reached from the idle — a fidget, an exit, a transition — is previewed by playing the
+    // IDLE first and then jumping, so the run legitimately sits on another state for up to ~1.5s
+    // before ours appears (da_anims Queue.preview). Only retire once we've actually SEEN the state we
+    // launched (then a move away from it means it advanced/ended), with a safety timeout in case it
+    // never comes up (e.g. a gated idle).
     if (res.state === playFromState) {
         seenPlayState = true;
     } else if (seenPlayState) {
@@ -2624,25 +3254,126 @@ function addState() {
 
 // ===================== front door =====================
 
+// ===================== the import list =====================
+//
+// Two sections — your drafts, and everything da_anims has registered — and the second one is 270-odd
+// scenarios, which is a wall of ids unless it's grouped. So it's grouped the way the PLAYER meets
+// them: by menu tag, resolved through the tag tree into the folder path they appear under ("Smoke ›
+// Pipe", "Lean › Front"). A scenario in two menus is listed under both, because it is in both.
+//
+// Collapse state is remembered, so the shape you left the list in is the shape you come back to.
+const LS_IMPORT_OPEN = 'da_dev.scnImportOpen';
+
+// All three SECTIONS start open (`saved` was missing here, so it defaulted shut and looked like it
+// hadn't been built); the tag CATEGORIES inside da_anims start shut, because 271 scenarios expanded
+// is the wall this grouping exists to prevent.
+const IMPORT_OPEN_DEFAULT = ['drafts', 'saved', 'scenarios'];
+
+function importOpen() {
+    try {
+        const saved = JSON.parse(localStorage.getItem(LS_IMPORT_OPEN));
+        return new Set(Array.isArray(saved) ? saved : IMPORT_OPEN_DEFAULT);
+    } catch { return new Set(IMPORT_OPEN_DEFAULT); }
+}
+
+function setImportOpen(set) {
+    localStorage.setItem(LS_IMPORT_OPEN, JSON.stringify([...set]));
+}
+
+// Where a tag hangs, as a readable path. Walks `parent` up the tag tree and joins the labels; an
+// undeclared tag (a plugin's, before it loads) is its own name rather than nothing.
+function tagPath(tag, tags) {
+    const parts = [];
+    const seen = new Set();
+    let t = tag;
+    while (t && tags[t] && !seen.has(t)) {
+        seen.add(t);                                  // a malformed parent cycle must not hang the UI
+        parts.unshift(tags[t].label || t);
+        t = tags[t].parent;
+    }
+    return parts.length ? parts.join(' › ') : tag;
+}
+
+// Scenarios by the folder path they appear under. Untagged ones are real (a scenario reached only by
+// another scenario's transition), so they get a group rather than vanishing.
+function groupByTag(scenarios, tags) {
+    const groups = new Map();
+    const add = (path, s) => {
+        if (!groups.has(path)) groups.set(path, []);
+        groups.get(path).push(s);
+    };
+    for (const s of scenarios) {
+        const names = s.tags || [];
+        if (names.length === 0) add('(no menu)', s);
+        else for (const t of names) add(tagPath(t, tags), s);
+    }
+    return [...groups.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+}
+
 async function toggleImport() {
     const card = document.getElementById('scnImportCard');
     if (!card.classList.contains('hidden')) { card.classList.add('hidden'); return; }
     card.classList.remove('hidden');
 
-    const res = await sendClientMessage('scnList', {});
     const ul = document.getElementById('scnImportList');
     const search = document.getElementById('scnImportSearch');
 
+    // Filled in when the engine answers. The list is NOT held hostage to that answer: drafts come
+    // from localStorage and can be drawn immediately, and a Lua callback that throws never calls its
+    // `cb` — the fetch then never settles, and awaiting it up here is what would leave the whole card
+    // blank with no clue why. Render now, render again when (if) the rest arrives.
+    let res = null;
+    let tags = {};
+    // Mutable: deleting a saved scenario prunes this rather than re-fetching the whole list.
+    let saved = [];
+
     const render = () => {
         const q = search.textContent.trim().toLowerCase();
+        const open = importOpen();
+        // While you're searching, collapse state is not the question you're asking — every section
+        // with a hit opens, and sections with none disappear entirely.
+        const isOpen = key => !!q || open.has(key);
+        const toggle = key => {
+            const s = importOpen();
+            if (s.has(key)) s.delete(key); else s.add(key);
+            setImportOpen(s);
+            render();
+        };
+
+        // Category headers get `scn-import-child` from the caller, which is what indents them.
+        const header = (key, label, count) => {
+            const li = h('li', 'scn-import-group');
+            li.appendChild(h('span', 'scn-caret', isOpen(key) ? '▾' : '▸'));
+            li.appendChild(h('span', null, `${label}  (${count})`));
+            li.onclick = () => toggle(key);
+            if (q) li.title = 'searching — sections open themselves while the filter is set';
+            return li;
+        };
+
         ul.innerHTML = '';
 
-        for (const [name, d] of Object.entries(drafts())) {
-            if (q && !name.toLowerCase().includes(q)) continue;
-            const li = h('li', 'scn-import-draft', `${name}  ·  draft`);
+        const draftRows = Object.entries(drafts())
+            .filter(([name]) => !q || name.toLowerCase().includes(q));
+        if (draftRows.length) ul.appendChild(header('drafts', 'drafts', draftRows.length));
+
+        for (const [name, d] of (isOpen('drafts') ? draftRows : [])) {
+            const li = h('li', 'scn-import-draft scn-import-child', `${name}  ·  draft`);
+            li.title = 'click to open · right-click to delete';
+            // Only DRAFTS get this: a registered scenario in the list below lives in a lib file, and
+            // nothing in a UI should offer to delete something it can't delete.
+            li.oncontextmenu = e => {
+                e.preventDefault();
+                e.stopPropagation();
+                showDropdown([{ name: `delete draft "${name}"`, value: 'delete' }], e.pageX, e.pageY)
+                    .then(picked => {
+                        if (picked === null) return;
+                        confirmDeleteDraft(name, render);   // redraw the list without it
+                    });
+            };
             li.onclick = () => {
                 doc = d.cfg;
                 docId = name;
+                docFrom = 'draft';
                 importedDropped = [];
                 sanitizeDoc(doc);
                 localStorage.setItem(LS_LAST, docId);
@@ -2650,33 +3381,239 @@ async function toggleImport() {
                 card.classList.add('hidden');
                 select({ kind: 'scenario' });
                 changed();
+                setStatus(`resumed draft "${name}"`, 'scn-note');
+                syncSavedSnapshot().then(renderPanel);   // does a saved copy stand behind it?
             };
             ul.appendChild(li);
         }
 
-        for (const s of (res?.scenarios || [])) {
-            if (q && !s.id.toLowerCase().includes(q) && !s.name.toLowerCase().includes(q)) continue;
-            const li = h('li', null, `${s.id}  ·  ${s.name}  ·  ${s.nStates} states`);
-            li.onclick = async () => {
-                const raw = await sendClientMessage('scnImport', { id: s.id });
-                if (!raw?.cfg) { setStatus(raw?.error || 'import failed', 'scn-err'); return; }
-                doc = raw.cfg;
-                docId = s.id;
-                importedDropped = raw.dropped || [];
-                lastFitSid = null; // re-fit the imported scenario
-                card.classList.add('hidden');
-                select({ kind: 'scenario' });
-                changed();
-            };
-            ul.appendChild(li);
+        // Saved scenarios: durable, and grouped by menu category exactly like the registered ones,
+        // because a saved config carries the same `menu` tags. Right-click deletes, as with drafts.
+        const savedMatches = (saved || []).filter(s =>
+            !q || s.id.toLowerCase().includes(q) || (s.name || '').toLowerCase().includes(q));
+        if (savedMatches.length) ul.appendChild(header('saved', 'saved', savedMatches.length));
+
+        if (isOpen('saved')) {
+            for (const [path, list] of groupByTag(savedMatches, tags)) {
+                const key = 'saved:' + path;
+                const sub = header(key, path, list.length);
+                sub.classList.add('scn-import-child');
+                ul.appendChild(sub);
+                if (!isOpen(key)) continue;
+
+                for (const s of list) {
+                    const li = h('li', 'scn-import-saved scn-import-leaf',
+                        `${s.id}  ·  ${s.name}  ·  ${s.nStates} states`);
+                    li.title = 'click to open · right-click to delete';
+                    li.oncontextmenu = e => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        showDropdown([{ name: `delete saved "${s.id}"`, value: 'delete' }],
+                            e.pageX, e.pageY).then(picked => {
+                            if (picked === null) return;
+                            showConfirm(`Delete the saved scenario "${s.id}"? This cannot be undone.`,
+                                'Delete', 'Cancel').then(async yes => {
+                                if (!yes) return;
+                                const del = await sendClientMessage('scnSavedDelete', { id: s.id });
+                                if (!del?.ok) { setStatus(del?.error || 'delete failed', 'scn-err'); return; }
+                                saved = saved.filter(x => x.id !== s.id);
+                                savedIds.delete(s.id);   // the card's status line reads from this
+                                setStatus(`deleted saved "${s.id}"`, 'scn-note');
+                                render();
+                            });
+                        });
+                    };
+                    li.onclick = async () => {
+                        const got = await sendClientMessage('scnSavedLoad', { id: s.id });
+                        if (!got?.cfg) { setStatus(got?.error || 'load failed', 'scn-err'); return; }
+                        const id = got.id || s.id;
+                        // An id has one working copy, so this takes over that id's draft — but the
+                        // draft is moved aside under `<id>_N` rather than dropped. Opening a saved
+                        // scenario to LOOK at it must never cost you the edits you had going.
+                        const kept = keepDraftAside(id, got.cfg);
+                        doc = got.cfg;
+                        docId = id;
+                        docFrom = 'saved';
+                        savedSnapshot = JSON.stringify(got.cfg);   // straight from the saved copy
+                        importedDropped = [];
+                        sanitizeDoc(doc);
+                        lastFitSid = null;
+                        card.classList.add('hidden');
+                        select({ kind: 'scenario' });
+                        changed();   // writes the draft: from here on you are editing a draft of it
+                        setStatus(kept
+                            ? `opened saved "${id}" — your draft was kept as "${kept}"`
+                            : `opened saved "${id}" — now editing a draft of it`, 'scn-note');
+                    };
+                    ul.appendChild(li);
+                }
+            }
+        }
+
+        const matches = (res?.scenarios || []).filter(s =>
+            !q || s.id.toLowerCase().includes(q) || s.name.toLowerCase().includes(q));
+        if (matches.length) ul.appendChild(header('scenarios', 'da_anims', matches.length));
+
+        if (isOpen('scenarios')) {
+            for (const [path, list] of groupByTag(matches, tags)) {
+                const key = 'tag:' + path;
+                const sub = header(key, path, list.length);
+                sub.classList.add('scn-import-child');
+                ul.appendChild(sub);
+                if (!isOpen(key)) continue;
+
+                for (const s of list) {
+                    const li = h('li', 'scn-import-leaf',
+                        `${s.id}  ·  ${s.name}  ·  ${s.nStates} states`);
+                    li.onclick = async () => {
+                        const raw = await sendClientMessage('scnImport', { id: s.id });
+                        if (!raw?.cfg) { setStatus(raw?.error || 'import failed', 'scn-err'); return; }
+                        // Same rule as opening a saved scenario: whatever draft holds this id gets
+                        // moved aside, not overwritten.
+                        const keptDraft = keepDraftAside(s.id, raw.cfg);
+                        doc = raw.cfg;
+                        docId = s.id;
+                        docFrom = 'library';
+                        importedDropped = raw.dropped || [];
+                        syncSavedSnapshot().then(renderPanel);
+                        lastFitSid = null; // re-fit the imported scenario
+                        card.classList.add('hidden');
+                        select({ kind: 'scenario' });
+                        changed();
+                        if (keptDraft) setStatus(`imported "${s.id}" — your draft was kept as "${keptDraft}"`, 'scn-note');
+                    };
+                    ul.appendChild(li);
+                }
+            }
         }
     };
     search.oninput = render;
+    render();   // drafts, straight away
+
+    // A timeout, because "never settles" is a real outcome here and an empty card that stays empty
+    // teaches you nothing. Whatever comes back — data, an error, or nothing — the list redraws and
+    // the status line says what it got.
+    const answer = await Promise.race([
+        sendClientMessage('scnList', {}),
+        new Promise(r => setTimeout(() => r({ timedOut: true }), 5000)),
+    ]);
+    if (answer && !answer.error && !answer.timedOut) {
+        res = answer;
+        tags = answer.tags || {};
+        saved = answer.saved || [];
+        savedIds = new Set(saved.map(x => x.id));
+        if (answer.warn) setStatus(answer.warn, 'scn-err');
+    } else {
+        setStatus(answer?.timedOut
+            ? 'scnList did not answer — check the F8 console for a Lua error'
+            : (answer?.message || 'scenario list unavailable'), 'scn-err');
+    }
     render();
+}
+
+// ===================== draft vs saved =====================
+//
+// One document, two stores, and a rule for which is which:
+//
+//   DRAFT   the working copy, keyed by scenario id, autosaved to localStorage on every edit. There is
+//           at most one per id, and it is always what you are editing.
+//   SAVED   the durable copy in kvp. It only ever changes when you press save.
+//
+// So: opening a SAVED scenario starts editing a draft of it — which replaces that id's draft, since
+// an id has one working copy. Opening a DRAFT resumes exactly where you left off. Saving overwrites
+// the saved copy from what you're editing and leaves the draft alone.
+//
+// The confusion this replaces was not knowing which of the two you had in front of you. `docFrom`
+// answers that, and the scenario card says it out loud.
+let docFrom = 'new';          // 'new' | 'draft' | 'saved' | 'library'
+let savedIds = new Set();     // ids that have a saved copy, for the card's status line
+
+async function refreshSavedIds() {
+    const res = await sendClientMessage('scnSavedIds', {});
+    if (res && Array.isArray(res.ids)) savedIds = new Set(res.ids);
+}
+
+// The saved copy as it was the last time we saw it, so the card can say whether what you're editing
+// still matches it. Null means "there is one but we haven't read it" — the honest third answer.
+let savedSnapshot = null;
+
+// Pull the saved copy for the current id (if any) so the indicator can compare against it. Called
+// whenever the document changes identity by a route that doesn't already know the answer.
+async function syncSavedSnapshot() {
+    savedSnapshot = null;
+    if (!savedIds.has(docId)) return;
+    const got = await sendClientMessage('scnSavedLoad', { id: docId });
+    if (got && got.cfg) savedSnapshot = JSON.stringify(got.cfg);
+}
+
+// You are ALWAYS editing a draft — that is the working copy. The question the card has to answer is
+// what stands behind it:
+//
+//   none     no saved copy for this id; the draft is the only thing that exists
+//   match    saved, and the draft still equals it — nothing to lose
+//   differs  saved, but you've edited since; `save` would overwrite it with this
+//   unknown  saved, and we haven't read it to compare
+function savedState() {
+    if (!savedIds.has(docId)) return 'none';
+    if (savedSnapshot === null) return 'unknown';
+    return JSON.stringify(doc) === savedSnapshot ? 'match' : 'differs';
+}
+
+// The indicator — a FIELD ROW like every other line on this card (label left, value right), not a
+// chip. Nothing else in this UI wears a badge: state is carried by the colour of text, the way the
+// status line and the dim inherited values already do.
+//
+// You are always editing a DRAFT (that's what the working copy is), so the value leads with that and
+// then says what stands behind it.
+function savedBadgeNode() {
+    const state = savedState();
+    const row = h('div', 'field scn-badges');   // `scn-badges` is the hook refreshSavedBadge swaps
+    row.appendChild(h('span', 'flabel', 'storage'));
+    // NAME the draft. `docId` is the key every store uses — the autosaved draft, the saved copy, and
+    // the id the emitted Lua carries — and after a draft has been kept aside as `<id>_1` you need to
+    // be able to see at a glance which of them you are typing into.
+    row.appendChild(h('span', `scn-state scn-state-${state}`, {
+        none:    `draft "${docId}" · no saved copy`,
+        match:   `draft "${docId}" · saved copy up to date`,
+        differs: `draft "${docId}" · saved copy out of date`,
+        unknown: `draft "${docId}" · saved copy exists`,
+    }[state]));
+    row.title =
+        'A DRAFT is the working copy: autosaved on every edit, one per scenario id.\n' +
+        'SAVED is the durable copy, and only `save scenario` changes it.\n' +
+        'Opening a saved scenario starts a draft of it; any draft already on that id is kept aside\n' +
+        'as "<id>_1" rather than lost.';
+    return row;
+}
+
+// Swap the chips in place as you edit. NOT a full renderPanel: `changed()` fires on every commit,
+// and rebuilding the card underneath the field you just left is how you lose a focus or a popup.
+function refreshSavedBadge() {
+    const cur = document.querySelector('#scnPanel .scn-badges');
+    if (cur && cur.parentNode) cur.parentNode.replaceChild(savedBadgeNode(), cur);
+}
+
+// SAVE, as distinct from the autosaved draft.
+//
+// A draft is scratch and lives in the browser's localStorage — one cache clear from gone. Saving puts
+// the config in da_lib's kvp on the client (where da_anims keeps its menu prefs), so it survives a
+// cache clear and a resource restart. Same document either way; the difference is that you said so.
+async function saveScenario() {
+    sanitizeDoc(doc);
+    const overwrote = savedIds.has(docId);
+    const res = await sendClientMessage('scnSave', { id: docId, cfg: doc });
+    if (!res?.ok) { setStatus(res?.error || 'save failed', 'scn-err'); return; }
+    savedIds.add(docId);
+    savedSnapshot = JSON.stringify(doc);   // the saved copy IS this, until the next edit
+    // The draft stays: saving is a checkpoint, not a handover. You carry on editing the same working
+    // copy, and the card now says a saved copy is behind it.
+    setStatus(overwrote ? `saved "${docId}" (overwrote the saved copy)` : `saved "${docId}"`, 'scn-note');
+    renderPanel();
 }
 
 function newScenario() {
     doc = blankDoc();
+    docFrom = 'new';
     let n = 1;
     while (drafts()['my_scenario_' + n]) n++;
     docId = 'my_scenario_' + n;
@@ -2701,6 +3638,31 @@ function renderStateSelect() {
         const picked = await showDropdown(opts, e.pageX, e.pageY);
         if (picked !== null) select({ kind: 'state', state: picked.value });
     };
+
+    // With the chip FOCUSED, up/down step through the states without opening the dropdown — flicking
+    // along a scenario watching each state's bars in turn, which is what you actually do when reading
+    // one. The order is the tree's (role first, then name), so the keyboard walk and the list you're
+    // looking at agree.
+    //
+    // Clamped at the ends, like a native select: wrapping from the exit back round to the enter is a
+    // jump, not a step, and you can't tell you've done it without looking. An open dropdown handles
+    // its own arrows — it focuses its menu items, so those keys never reach this element.
+    el.onkeydown = e => {
+        if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+        const ids = stateIds();
+        if (ids.length === 0) return;
+        e.preventDefault();    // arrows would otherwise scroll the strip out from under the chip
+        e.stopPropagation();   // bare keys switch HUD views; this one is ours
+
+        const at = ids.indexOf(timelineStateId());
+        // Nothing sensibly selected yet (a drawn state that isn't in the list): start at the top
+        // rather than swallow the keypress.
+        const to = at === -1 ? 0 : (e.key === 'ArrowDown' ? at + 1 : at - 1);
+        if (to < 0 || to >= ids.length) return;
+
+        select({ kind: 'state', state: ids[to] });
+        el.focus();   // renderStateSelect only rewrites the text, but hold the focus for the next press
+    };
 }
 
 function renderAll() {
@@ -2710,11 +3672,19 @@ function renderAll() {
     redraw();
 }
 
+// Printed once on load so "is the client even running this file?" is answerable from the F8 console.
+// NUI assets are cached hard: Lua reloads on `restart`, the web page does not always follow, and a UI
+// change that appears to do nothing is usually a stale page rather than a wrong stylesheet.
+const SCN_BUILD = 'grouped import list + tree rails + save/delete';
+
 export function initScenario() {
+    console.log(`[da_dev] scenario editor: ${SCN_BUILD}`);
     const last = localStorage.getItem(LS_LAST);
     const saved = last && drafts()[last];
-    if (saved) { doc = saved.cfg; docId = last; sanitizeDoc(doc); }
-    else { doc = blankDoc(); docId = 'my_scenario'; }
+    if (saved) { doc = saved.cfg; docId = last; docFrom = 'draft'; sanitizeDoc(doc); }
+    else { doc = blankDoc(); docId = 'my_scenario'; docFrom = 'new'; }
+    // Which ids have a saved copy — the card's status line needs it before anything is opened.
+    refreshSavedIds().then(syncSavedSnapshot).then(renderPanel);
 
     ensureBoneNames(); // warm the bone vocabulary so the first bone-field keystroke has matches
 

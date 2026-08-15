@@ -87,6 +87,8 @@ local function configFlagLine(e)
 end
 
 RegisterCommand("carcassdump", function(_, args)
+    if not da_dev_authorized() then return end
+
     local label = args[1] or "unlabeled"
     local e = findCarcass()
     if not e then

@@ -427,10 +427,31 @@ export const EventActions = {
         Pressed[event.key] = true;
         // Check universal nav keys
         if (event.target.classList.contains('contentbox')) { return; }
+        // A focused CONTROL activates on Enter as well as Space. Space alone was the rule, which left
+        // the keyboard half-wired: a dropdown CHOOSES with Enter, so Enter has to be able to open the
+        // list in the first place — otherwise you learn one key inside the menu and a different key
+        // to reach it. (Enter is also the ARIA convention for role="button".)
+        //
+        // `.click()` rather than `onclick.apply()`: a third of this UI registers with
+        // addEventListener — the bone picker, the dropdown rows themselves — and those were simply
+        // unreachable from the keyboard while the `.onclick` half worked. One dispatch reaches both.
+        //
+        // Never inside a text field: there, Space types a space and Enter is the field's own business
+        // (commit, or a registered form action). Every contenteditable in the scenario editor already
+        // stops propagation before this handler sees it; the guard is what makes that a rule rather
+        // than a habit each field has to remember.
+        const activatable =
+            !isInputField &&
+            (typeof event.target.onclick === 'function' ||
+                (typeof event.target.matches === 'function' &&
+                    event.target.matches(
+                        '.control, .entry.dropdown, [role="button"], [role="checkbox"]'
+                    )));
+
         switch (event.key) {
             case ' ':
-                if (typeof event.target.onclick == 'function') {
-                    event.target.onclick.apply();
+                if (activatable) {
+                    event.target.click();
                     event.preventDefault();
                     return;
                 }
@@ -472,6 +493,11 @@ export const EventActions = {
                 break;
             }
             case 'Enter':
+                if (activatable) {
+                    event.target.click();
+                    event.preventDefault();
+                    return;
+                }
                 Object.keys(InputFields).forEach(selector => {
                     if (shouldEvalForm(event.key) && event.target.matches(selector)) {
                         const action = InputFields[selector];
