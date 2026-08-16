@@ -168,6 +168,11 @@ The UI supports runtime theme customization via the settings panel (Shift+S). Th
 
 - daggre_actual
 
+## Support
+
+Questions, bug reports, or help getting set up — the **[da.dev Discord](https://discord.com/invite/JgteBpXGaA)**
+is the fastest way to reach me. GitHub issues on this repo work too.
+
 ## License
 
 [GPL-3.0](LICENSE) © daggre_actual
