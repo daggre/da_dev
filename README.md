@@ -167,3 +167,12 @@ The UI supports runtime theme customization via the settings panel (Shift+S). Th
 ## Authors
 
 - daggre_actual
+
+## License
+
+[GPL-3.0](LICENSE) © daggre_actual
+
+GPL rather than MIT because `da_dev` bundles [object_gizmo](https://github.com/DemiAutomatic/object_gizmo)
+(GPL-3.0) for its transform gizmo. See [NOTICE.md](NOTICE.md) for attribution, the
+Corresponding Source pointer, and why this does not affect the MIT-licensed resources
+`da_dev` depends on.
