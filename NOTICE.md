@@ -31,6 +31,12 @@ upstream release is not the right comparison point.
 > not yet recorded. It needs to be, because Corresponding Source has to correspond to
 > that version. Once identified, add the release tag here and commit a diff of this
 > bundle against that release's published build.
+>
+> Narrowing so far: upstream's tagged releases begin at `v2.0.0`, and the move off
+> three.js appears in the `v2.0.x` notes. Since this bundle still contains three.js, the
+> base most likely predates `v2.0.0` — check upstream history rather than the tag list.
+> Upstream's default branch commits no built bundle, so the build was obtained from a
+> release asset.
 
 ### Corresponding Source
 
