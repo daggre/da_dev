@@ -85,18 +85,20 @@ RegisterNetEvent("da_dev:auth:result", function(ok)
     if ok then grant() else revoke() end
 end)
 
-local function request()
-    TriggerServerEvent("da_dev:auth:request")
+local function request(reason)
+    TriggerServerEvent("da_dev:auth:request", reason)
 end
 
 -- Ask on load, and again on spawn: the first request can land before the player is
 -- fully connected on a fresh join.
 Citizen.CreateThread(function()
     Citizen.Wait(500)
-    request()
+    request("on load")
 end)
 
-AddEventHandler("playerSpawned", request)
+AddEventHandler("playerSpawned", function()
+    request("player spawn")
+end)
 
 -- Other da_dev files check this before doing anything that isn't mode-gated
 -- (console commands, NUI callbacks).

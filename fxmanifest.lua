@@ -76,10 +76,10 @@ client_scripts {
     'src/event_cl.lua',
     'src/keymonitor_cl.lua',
     'src/weapon_cl.lua',
-    'src/wardrobe_cl.lua',
-    'src/tack_cl.lua',
-    'src/xinteracts_cl.lua',
     'src/vegmod_cl.lua',
+
+    -- Last: remote entries collide against da_dev's own keys, not the reverse.
+    'src/devmenu_cl.lua',
 }
 
 server_scripts {

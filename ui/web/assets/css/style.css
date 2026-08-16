@@ -933,6 +933,14 @@ ul li {
 /* field rows */
 .center ul { list-style: none; margin: 4px 0; padding: 0; }
 .center li { display: flex; align-items: center; gap: 8px; padding: 2px 0; }
+/* help-panel group heading (mouse / panels / selection …) — the key lists are long
+   enough that a bare blank row no longer says where one group ends and the next starts */
+.center li.grp {
+    display: block; margin: 8px 0 2px; color: var(--primary); font-size: 11px;
+    text-transform: lowercase; letter-spacing: .12em; opacity: .75;
+    border-bottom: 1px solid var(--soft); padding-bottom: 2px;
+}
+.center li.grp:first-child { margin-top: 0; }
 .center .label, #camStatus .label {
     flex: none; min-width: 2rem; color: var(--muted); font-size: 11px;
     background: none; text-shadow: none;

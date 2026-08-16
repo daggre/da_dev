@@ -184,19 +184,26 @@
             </section>
             <section id="object-hud" class="hud hidden">
                 <div id="objHelp" class="center bgt2 p1 brdlr mb03li hidden">
-                    <div class="f15">Object Editor</div>
-                    <div class="p1 f4 clr2l"></div>
+                    <div class="title">Object Editor</div>
+                    <div class="p1 f4 clr2l"></div>
                     <ul>
+                        <li class="grp">mouse</li>
                         <li>
                             <div class="label brdl pl05 bgi">LMB</div>
                             <div class="entry brdr pr05 bgt1">
-                                Select Object Under Cursor/Crosshair
+                                Select Entity Under Cursor/Crosshair
+                            </div>
+                        </li>
+                        <li>
+                            <div class="label brdl pl05 bgi">Shift LMB</div>
+                            <div class="entry brdr pr05 bgt1">
+                                Spawn Active Object At Cursor
                             </div>
                         </li>
                         <li>
                             <div class="label brdl pl05 bgi">RMB</div>
                             <div class="entry brdr pr05 bgt1">
-                                Open Dropdown Menu For Object Under Cursor
+                                Open Context Menu For Entity Under Cursor
                             </div>
                         </li>
                         <li>
@@ -208,16 +215,10 @@
                         <li>
                             <div class="label brdl pl05 bgi">MMB (Hold)</div>
                             <div class="entry brdr pr05 bgt1">
-                                Enable Control Passthrough
+                                Enable Control Passthrough While Held
                             </div>
                         </li>
-                        <li>
-                            <div class="label brdl pl05 bgi">Shift LMB</div>
-                            <div class="entry brdr pr05 bgt1">
-                                Spawn Object
-                            </div>
-                        </li>
-                        <li> </li>
+                        <li class="grp">panels</li>
                         <li>
                             <div class="label brdl pl05 bgi">1</div>
                             <div class="entry brdr pr05 bgt1">
@@ -242,11 +243,17 @@
                                 Toggle Nearby Object HUD
                             </div>
                         </li>
-                        <li> </li>
+                        <li>
+                            <div class="label brdl pl05 bgi">5</div>
+                            <div class="entry brdr pr05 bgt1">
+                                Toggle Inspect HUD (Bones/Attributes)
+                            </div>
+                        </li>
+                        <li class="grp">selection</li>
                         <li>
                             <div class="label brdl pl05 bgi">f</div>
                             <div class="entry brdr pr05 bgt1">
-                                Focus Selected Object
+                                Toggle Camera Focus On Selected Object
                             </div>
                         </li>
                         <li>
@@ -256,34 +263,21 @@
                             </div>
                         </li>
                         <li>
-                            <div class="label brdl pl05 bgi">h</div>
+                            <div class="label brdl pl05 bgi">r</div>
                             <div class="entry brdr pr05 bgt1">
-                                Toggle Help Panel
+                                Open Move/Rotate Gizmo On Selected Object
                             </div>
                         </li>
                         <li>
-                            <div class="label brdl pl05 bgi">r</div>
+                            <div class="label brdl pl05 bgi">Alt r</div>
                             <div class="entry brdr pr05 bgt1">
-                                Toggle Move/Rotate Tool
+                                Select Hovered Object And Open Gizmo
                             </div>
                         </li>
-                        <li> </li>
                         <li>
                             <div class="label brdl pl05 bgi">Ctrl f</div>
                             <div class="entry brdr pr05 bgt1">
                                 Toggle Selected Object Frozen State
-                            </div>
-                        </li>
-                        <li>
-                            <div class="label brdl pl05 bgi">Ctrl r</div>
-                            <div class="entry brdr pr05 bgt1">
-                                Reload Current Scene From Save
-                            </div>
-                        </li>
-                        <li>
-                            <div class="label brdl pl05 bgi">Ctrl s</div>
-                            <div class="entry brdr pr05 bgt1">
-                                Save Current Scene
                             </div>
                         </li>
                         <li>
@@ -292,20 +286,130 @@
                                 Toggle Object Transparency (Does Not Save)
                             </div>
                         </li>
-                        <li> </li>
-                        <li>
-                            <div class="label brdl pl05 bgi">Shift s</div>
-                            <div class="entry brdr pr05 bgt1">
-                                Toggle Settings
-                            </div>
-                        </li>
                         <li>
                             <div class="label brdl pl05 bgi">Shift x</div>
                             <div class="entry brdr pr05 bgt1">
                                 Delete Selected Object
                             </div>
                         </li>
-                        <li> </li>
+                        <li class="grp">scene</li>
+                        <li>
+                            <div class="label brdl pl05 bgi">Ctrl s</div>
+                            <div class="entry brdr pr05 bgt1">
+                                Save Current Scene
+                            </div>
+                        </li>
+                        <li>
+                            <div class="label brdl pl05 bgi">Ctrl r</div>
+                            <div class="entry brdr pr05 bgt1">
+                                Reload Current Scene From Save
+                            </div>
+                        </li>
+                        <li class="grp">camera (hold MMB)</li>
+                        <li>
+                            <div class="label brdl pl05 bgi">w a s d</div>
+                            <div class="entry brdr pr05 bgt1">
+                                Move Camera Forward/Left/Back/Right
+                            </div>
+                        </li>
+                        <li>
+                            <div class="label brdl pl05 bgi">e / q</div>
+                            <div class="entry brdr pr05 bgt1">
+                                Move Camera Up/Down
+                            </div>
+                        </li>
+                        <li>
+                            <div class="label brdl pl05 bgi">Wheel</div>
+                            <div class="entry brdr pr05 bgt1">
+                                Increase/Decrease Camera Speed
+                            </div>
+                        </li>
+                        <li>
+                            <div class="label brdl pl05 bgi">Spacebar (Hold)</div>
+                            <div class="entry brdr pr05 bgt1">
+                                Fine Adjustment Speed ( 0.33x )
+                            </div>
+                        </li>
+                        <li>
+                            <div class="label brdl pl05 bgi">LSHIFT (Hold)</div>
+                            <div class="entry brdr pr05 bgt1">
+                                Quick Adjustment Speed ( 3x )
+                            </div>
+                        </li>
+                        <li>
+                            <div class="label brdl pl05 bgi">LALT + Mouse</div>
+                            <div class="entry brdr pr05 bgt1">
+                                Adjust FreeCam FOV
+                            </div>
+                        </li>
+                        <li>
+                            <div class="label brdl pl05 bgi">LALT x</div>
+                            <div class="entry brdr pr05 bgt1">
+                                Reset FOV
+                            </div>
+                        </li>
+                        <li>
+                            <div class="label brdl pl05 bgi">z</div>
+                            <div class="entry brdr pr05 bgt1">
+                                Open Dev Tree Menu
+                            </div>
+                        </li>
+                        <li class="grp">gizmo</li>
+                        <li>
+                            <div class="label brdl pl05 bgi">LMB Drag</div>
+                            <div class="entry brdr pr05 bgt1">
+                                Move/Rotate Along Gizmo Handle
+                            </div>
+                        </li>
+                        <li>
+                            <div class="label brdl pl05 bgi">MMB (Hold)</div>
+                            <div class="entry brdr pr05 bgt1">
+                                Orbit Camera While Gizmo Is Up
+                            </div>
+                        </li>
+                        <li>
+                            <div class="label brdl pl05 bgi">Esc</div>
+                            <div class="entry brdr pr05 bgt1">
+                                Finish Gizmo
+                            </div>
+                        </li>
+                        <li class="grp">interface</li>
+                        <li>
+                            <div class="label brdl pl05 bgi">Tab</div>
+                            <div class="entry brdr pr05 bgt1">
+                                Cycle Focused Element
+                            </div>
+                        </li>
+                        <li>
+                            <div class="label brdl pl05 bgi">Spacebar</div>
+                            <div class="entry brdr pr05 bgt1">
+                                Toggle Focused Element
+                            </div>
+                        </li>
+                        <li>
+                            <div class="label brdl pl05 bgi">Enter</div>
+                            <div class="entry brdr pr05 bgt1">
+                                Activate Focused Element
+                            </div>
+                        </li>
+                        <li>
+                            <div class="label brdl pl05 bgi">Up/Down</div>
+                            <div class="entry brdr pr05 bgt1">
+                                Move Highlight In Dropdown
+                            </div>
+                        </li>
+                        <li>
+                            <div class="label brdl pl05 bgi">Enter/Esc</div>
+                            <div class="entry brdr pr05 bgt1">
+                                Choose/Cancel In Dropdown
+                            </div>
+                        </li>
+                        <li>
+                            <div class="label brdl pl05 bgi">h</div>
+                            <div class="entry brdr pr05 bgt1">
+                                Toggle Help Panel
+                            </div>
+                        </li>
                         <li>
                             <div class="label brdl pl05 bgi">?</div>
                             <div class="entry brdr pr05 bgt1">
@@ -313,9 +417,15 @@
                             </div>
                         </li>
                         <li>
+                            <div class="label brdl pl05 bgi">Shift s</div>
+                            <div class="entry brdr pr05 bgt1">
+                                Toggle Settings
+                            </div>
+                        </li>
+                        <li>
                             <div class="label brdl pl05 bgi">Esc</div>
                             <div class="entry brdr pr05 bgt1">
-                                Exit Active Menu
+                                Exit Active Menu / Object Editor
                             </div>
                         </li>
                     </ul>
@@ -501,8 +611,9 @@
             <section id="anim-hud" class="hud hidden">
                 <div id="animHelp" class="center bgt2 p1 brdlr hidden mb03li">
                     <div class="title">Animation Editor</div>
-                    <div class="p1 f4 clr2l"></div>
+                    <div class="p1 f4 clr2l"></div>
                     <ul>
+                        <li class="grp">mouse</li>
                         <li>
                             <div class="label brdl pl05 bgi">MMB (Click)</div>
                             <div class="entry brdr pr05 bgt1">
@@ -512,10 +623,10 @@
                         <li>
                             <div class="label brdl pl05 bgi">MMB (Hold)</div>
                             <div class="entry brdr pr05 bgt1">
-                                Enable Control Passthrough
+                                Enable Control Passthrough While Held
                             </div>
                         </li>
-                        <li> </li>
+                        <li class="grp">panels</li>
                         <li>
                             <div class="label brdl pl05 bgi">1</div>
                             <div class="entry brdr pr05 bgt1">
@@ -525,10 +636,78 @@
                         <li>
                             <div class="label brdl pl05 bgi">2</div>
                             <div class="entry brdr pr05 bgt1">
-                                Scenario Editor
+                                Toggle Scenario Editor
                             </div>
                         </li>
-                        <li> </li>
+                        <li>
+                            <div class="label brdl pl05 bgi">3</div>
+                            <div class="entry brdr pr05 bgt1">
+                                Toggle Prop Editor
+                            </div>
+                        </li>
+                        <li class="grp">prop editor</li>
+                        <li>
+                            <div class="label brdl pl05 bgi">r</div>
+                            <div class="entry brdr pr05 bgt1">
+                                Open Placement Gizmo On Helper Prop
+                            </div>
+                        </li>
+                        <li>
+                            <div class="label brdl pl05 bgi">LMB Drag</div>
+                            <div class="entry brdr pr05 bgt1">
+                                Move/Rotate Along Gizmo Handle
+                            </div>
+                        </li>
+                        <li>
+                            <div class="label brdl pl05 bgi">MMB (Hold)</div>
+                            <div class="entry brdr pr05 bgt1">
+                                Orbit Camera While Gizmo Is Up
+                            </div>
+                        </li>
+                        <li>
+                            <div class="label brdl pl05 bgi">Esc</div>
+                            <div class="entry brdr pr05 bgt1">
+                                Finish Gizmo
+                            </div>
+                        </li>
+                        <li class="grp">passthrough (hold MMB)</li>
+                        <li>
+                            <div class="label brdl pl05 bgi">z</div>
+                            <div class="entry brdr pr05 bgt1">
+                                Open Dev Tree Menu
+                            </div>
+                        </li>
+                        <li class="grp">interface</li>
+                        <li>
+                            <div class="label brdl pl05 bgi">Tab</div>
+                            <div class="entry brdr pr05 bgt1">
+                                Cycle Focused Element
+                            </div>
+                        </li>
+                        <li>
+                            <div class="label brdl pl05 bgi">Spacebar</div>
+                            <div class="entry brdr pr05 bgt1">
+                                Toggle Focused Element
+                            </div>
+                        </li>
+                        <li>
+                            <div class="label brdl pl05 bgi">Enter</div>
+                            <div class="entry brdr pr05 bgt1">
+                                Activate Focused Element
+                            </div>
+                        </li>
+                        <li>
+                            <div class="label brdl pl05 bgi">Up/Down</div>
+                            <div class="entry brdr pr05 bgt1">
+                                Move Highlight In Dropdown
+                            </div>
+                        </li>
+                        <li>
+                            <div class="label brdl pl05 bgi">Enter/Esc</div>
+                            <div class="entry brdr pr05 bgt1">
+                                Choose/Cancel In Dropdown
+                            </div>
+                        </li>
                         <li>
                             <div class="label brdl pl05 bgi">h</div>
                             <div class="entry brdr pr05 bgt1">
@@ -547,23 +726,10 @@
                                 Toggle Settings
                             </div>
                         </li>
-                        <li> </li>
                         <li>
                             <div class="label brdl pl05 bgi">Esc</div>
                             <div class="entry brdr pr05 bgt1">
-                                Exit Active Menu
-                            </div>
-                        </li>
-                        <li>
-                            <div class="label brdl pl05 bgi">Tab</div>
-                            <div class="entry brdr pr05 bgt1">
-                                Cycle Focused Element
-                            </div>
-                        </li>
-                        <li>
-                            <div class="label brdl pl05 bgi">Spacebar</div>
-                            <div class="entry brdr pr05 bgt1">
-                                Toggle Focused Element
+                                Exit Active Menu / Animation Editor
                             </div>
                         </li>
                     </ul>

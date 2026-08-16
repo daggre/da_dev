@@ -63,9 +63,10 @@ Spawn, place, and manage objects (props, peds, vehicles) in scenes. Objects can 
 | RMB | Context menu for object |
 | MMB click | Toggle control passthrough |
 | MMB hold | Hold control passthrough |
-| F | Focus camera on selected object |
+| F | Focus camera on selected object (toggle) |
 | G | Clone selected object |
-| R | Toggle gizmo (position/rotation handles) |
+| R | Open gizmo (position/rotation handles) on the selection |
+| Alt + R | Select the hovered object and open the gizmo |
 | Ctrl + F | Freeze / unfreeze selected object |
 | Ctrl + R | Reload current scene |
 | Ctrl + S | Save current scene |
@@ -74,15 +75,25 @@ Spawn, place, and manage objects (props, peds, vehicles) in scenes. Objects can 
 | Shift + S | Open settings panel |
 | 1 | Object spawn HUD |
 | 2 | Scene management HUD |
-| 3 | Nearby objects HUD |
-| H | Toggle help |
+| 3 | Scene objects HUD |
+| 4 | Nearby objects HUD |
+| 5 | Inspect HUD (bones / attributes) |
+| Tab | Cycle keyboard focus |
+| Enter / Spacebar | Activate the focused element (open a dropdown, press a button) |
+| ↑ / ↓ | Move through an open dropdown or suggestion list |
+| H or ? | Toggle help |
+| Esc | Close the active menu, or exit the Object Editor |
+
+FreeCam runs alongside the Object Editor, so its camera keys (W/A/S/D, Q/E, wheel, Alt+Mouse) and the dev tree menu (Z) are live while control passthrough is held — the NUI owns the keyboard otherwise.
 
 **UI Panels:**
 - **Object Spawn** — Browse the object database, filter by name, spawn by clicking
 - **Scene Management** — Save named scenes, reload, delete; scenes persist across sessions
+- **Scene Objects** — Entities belonging to the active scene
 - **Nearby Objects** — List all entities near the player, filterable by type (object/ped/vehicle/scene)
+- **Inspect** — Bone list and entity attributes for the selection
 
-**Gizmo:** 3D handles for dragging position and rotating objects. Toggle with R while an object is selected.
+**Gizmo:** 3D handles for dragging position and rotating objects. Open with R while an object is selected (Alt + R picks the hovered one first); drag a handle with LMB, hold MMB to orbit the camera, Esc to finish.
 
 **Export:** Scenes can be exported to YMAP format for use as server-side map additions.
 
@@ -97,16 +108,19 @@ Browse and configure animations from the game's animation dictionaries.
 | Key | Action |
 |-----|--------|
 | MMB click | Toggle control passthrough |
+| MMB hold | Hold control passthrough |
 | 1 | Animation search HUD |
-| 2 | Configuration HUD |
+| 2 | Scenario editor HUD |
+| 3 | Prop editor HUD |
+| R | Open the placement gizmo on the helper prop (prop editor, model picked) |
 | Shift + S | Settings panel |
 | Tab | Cycle keyboard focus |
 | Enter / Spacebar | Activate the focused element (open a dropdown, press a button) |
 | ↑ / ↓ | Move through an open dropdown or suggestion list |
 | Enter | Choose the highlighted entry |
 | Escape | Close a dropdown, list or dialog without choosing |
-| H | Toggle help |
-| Esc | Exit Animation Editor |
+| H or ? | Toggle help |
+| Esc | Finish the gizmo, or exit the Animation Editor |
 
 **UI Panels:**
 - **Animation Search** — Type to search animation dictionaries and names; click to preview on your character

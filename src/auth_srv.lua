@@ -28,7 +28,7 @@ Citizen.CreateThread(function()
     Citizen.Wait(0)
 
     if level < 1 then
-        log.warn(("disabled (%s is %d) - stopping. Set `setr %s 1` to enable.")
+        log.warn(("%s is %d - All da_dev kit permissions disabled. Set `setr %s 1` to enable.")
             :format(CONVAR, level, CONVAR))
         StopResource(GetCurrentResourceName())
         return
@@ -38,7 +38,8 @@ Citizen.CreateThread(function()
         log.warn(("%s is %d - ALL players are authorized to use da_dev tools.")
             :format(CONVAR, level))
     else
-        log.info(("enabled, ACE gated. Grant with: add_ace group.admin %s allow"):format(ACE))
+        log.info(("%s is %d - ACE permissions enabled. Grant with: add_ace group.admin %s allow")
+            :format(CONVAR, level, ACE))
     end
 end)
 
@@ -48,14 +49,14 @@ local function isAuthorized(src)
     return IsPlayerAceAllowed(src, ACE)
 end
 
-RegisterNetEvent("da_dev:auth:request", function()
+RegisterNetEvent("da_dev:auth:request", function(reason)
     local src = source
     local ok = isAuthorized(src)
 
     if ok then
-        log.info(("authorized %s (%d)"):format(GetPlayerName(src) or "?", src))
+        log.info(("permission authorized %s (%d) %s"):format(GetPlayerName(src) or "?", src, reason or ""))
     else
-        log.debug(("denied %s (%d)"):format(GetPlayerName(src) or "?", src))
+        log.debug(("permission denied %s (%d) %s"):format(GetPlayerName(src) or "?", src, reason or ""))
     end
 
     TriggerClientEvent("da_dev:auth:result", src, ok)
