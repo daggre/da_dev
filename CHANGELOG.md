@@ -5,10 +5,10 @@
 First stable release.
 
 ### Added
-- **Authorization gate.** `da_dev` is now deny-by-default and safe to ship in a shared
-  resources folder. The `da_dev_enabled` convar controls it:
-  `0` (default) stops the resource at boot, `1` runs it with a per-player `da_dev` ACE
-  check, `2` allows everyone (solo/local only). See `SECURITY.md` in the devkit repo.
+- **Access control.** `da_dev` is off unless a server turns it on, so it ships happily
+  in the same resources folder you deploy anywhere. The `da_dev_enabled` convar controls
+  it: `0` (default) doesn't load, `1` runs with a per-player `da_dev` ACE check, `2`
+  allows everyone (local box only). See `DEV-TOOLS.md` in the devkit repo.
 - `da_dev_reauth` console command, to re-check every player after editing ACEs.
 
 ### Provides
@@ -21,4 +21,5 @@ First stable release.
 - Dev menu registration so other resources can add their own entries
 
 ### Notes
-- Development tool. Read `SECURITY.md` before installing anywhere players can connect.
+- A development tool — meant for a dev server rather than a live one. See
+  `DEV-TOOLS.md` in the devkit repo for turning it on and granting access.

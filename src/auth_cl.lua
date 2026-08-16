@@ -9,8 +9,7 @@
 -- state, and the facade is a stub that forwards to da_lib through exports. Wrapping it
 -- affects this resource only.
 --
--- See src/auth_srv.lua for the levels, and docs/SECURITY.md in the toolkit repo for
--- what this does and does not protect against.
+-- See src/auth_srv.lua for the levels, and docs/DEV-TOOLS.md in the devkit repo.
 
 local authorized = false
 local pending = {}      -- modes registered before authorization came through

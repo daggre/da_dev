@@ -1,22 +1,21 @@
--- Authorization gate for the dev kit.
+-- Access control for the dev kit.
 --
--- da_dev hands out freecam, teleport, entity spawning and scene editing. None of that
--- belongs on a production server, but keeping two copies of the resources folder is
--- how people end up shipping the dev build by accident. So the gate lives here and is
--- driven by a convar, letting the same folder deploy to dev and prod unchanged.
+-- da_dev is a development tool — editors, freecam, a placement gizmo. It's for building
+-- things rather than playing on, so it stays off unless a server asks for it. Driving
+-- that from a convar means one resources folder works on both a dev and a live server,
+-- instead of maintaining two copies and remembering which is which.
 --
---   setr da_dev_enabled 0   (default) resource stops at boot. Production.
---   setr da_dev_enabled 1             runs, but each player must pass an ACE check.
---   setr da_dev_enabled 2             runs, every player allowed. Solo/local dev only.
+--   setr da_dev_enabled 0   (default) doesn't load. Live servers.
+--   setr da_dev_enabled 1             runs, each player needs the ACE check.
+--   setr da_dev_enabled 2             runs, every player allowed. Local box only.
 --
 -- Level 1 is the useful one on a shared dev server:
 --   add_ace group.admin da_dev allow
 --
--- Level 0 is the only real security boundary. A stopped resource is never sent to
--- connecting clients, so there is nothing on their machine to bypass. The ACE check at
--- level 1 gates client-side code and stops honest users wandering in; it will not stop
--- someone running an injector. That tradeoff is documented for server owners rather
--- than papered over -- see docs/SECURITY.md in the toolkit repo.
+-- Note the ACE check gates client-side code, so it's the right tool for keeping the kit
+-- to the right people on a dev server rather than something to lean on with untrusted
+-- players connected — that's what level 0 is for, and why it's the default. See
+-- docs/DEV-TOOLS.md in the devkit repo.
 
 local ACE = "da_dev"
 local CONVAR = "da_dev_enabled"
